@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import config from '../../src/payload.config.js'
+import config from '@payload-config'
 
 export const testUser = {
   email: 'dev@payloadcms.com',
