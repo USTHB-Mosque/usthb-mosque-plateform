@@ -1,0 +1,110 @@
+import { CollectionConfig } from 'payload'
+
+export const Book: CollectionConfig = {
+  slug: 'books',
+  admin: {
+    useAsTitle: 'title',
+  },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'author',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'type',
+      type: 'select',
+      options: [
+        { label: 'Atelier', value: 'workshop' },
+        { label: 'Conférence', value: 'conference' },
+        { label: 'Club de lecture', value: 'reading_club' },
+        { label: 'Autre', value: 'other' },
+      ],
+      required: true,
+    },
+    {
+      name: 'tags',
+      type: 'array',
+      fields: [
+        {
+          name: 'tag',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      name: 'shortDescription',
+      type: 'textarea',
+    },
+    {
+      name: 'longDescription',
+      type: 'richText',
+    },
+    {
+      name: 'ratings',
+      type: 'number',
+      min: 0,
+      max: 5,
+    },
+    {
+      name: 'publisher',
+      type: 'text',
+    },
+    {
+      name: 'language',
+      type: 'select',
+      options: [
+        { label: 'Français', value: 'fr' },
+        { label: 'Arabe', value: 'ar' },
+        { label: 'Anglais', value: 'en' },
+      ],
+    },
+    {
+      name: 'pageCount',
+      type: 'number',
+    },
+    {
+      name: 'isbn',
+      type: 'text',
+      unique: true,
+    },
+    {
+      name: 'editionNumber',
+      type: 'text',
+    },
+    {
+      name: 'publishDate',
+      type: 'date',
+    },
+    {
+      name: 'availableBooks',
+      type: 'number',
+      defaultValue: 0,
+    },
+    {
+      name: 'location',
+      type: 'text',
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+    },
+    {
+      name: 'gallery',
+      type: 'array',
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+        },
+      ],
+    },
+  ],
+}

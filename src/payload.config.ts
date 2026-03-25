@@ -4,24 +4,22 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
-import { Admins } from './collections/Admin'
-import { Media } from './collections/Media'
+import { Admin, User, Media, Book, Activity, Article } from './collections'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: Admins.slug,
+    user: Admin.slug,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Admins, Media],
+  collections: [Admin, Media, Book, Activity, Article],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
