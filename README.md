@@ -1,67 +1,88 @@
-# Payload Blank Template
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-This template comes configured with the bare minimum to get started on anything you need.
+## Getting Started
 
-## Quick start
+First, run the development server:
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Quick Start - local setup
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To spin up this template locally, follow these steps:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Clone
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+## PayPal Configuration
 
-### Development
+### Development (Sandbox)
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+The project is currently configured for PayPal sandbox testing. The sandbox credentials are already set in `.env`.
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+### Production Setup
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+For production deployment, follow these steps:
 
-#### Docker (Optional)
+1. **Create PayPal Live App:**
+   - Go to [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/applications)
+   - Create a new Live App (not sandbox)
+   - Copy the Client ID and Client Secret
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+2. **Update Environment Variables:**
 
-To do so, follow these steps:
+   ```env
+   # Production PayPal Credentials
+   PAYPAL_CLIENT_ID=your_live_client_id_here
+   PAYPAL_CLIENT_SECRET=your_live_client_secret_here
+   NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_live_client_id_here
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+   # Production Webhook
+   PAYPAL_WEBHOOK_ID=your_live_webhook_id_here
 
-## How it works
+   # Production URLs
+   NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
+   NEXT_PUBLIC_GRAPHQL_URL=https://yourdomain.com/api/graphql
+   ```
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+3. **Setup Webhooks:**
+   - In PayPal Developer Dashboard, go to your Live App
+   - Add webhook URL: `https://yourdomain.com/api/paypal/webhook`
+   - Subscribe to events:
+     - `PAYMENT.CAPTURE.COMPLETED`
+     - `CHECKOUT.ORDER.APPROVED`
+     - `PAYMENT.CAPTURE.DENIED`
+     - `PAYMENT.CAPTURE.REFUNDED`
+   - Copy the Webhook ID to `PAYPAL_WEBHOOK_ID`
 
-### Collections
+4. **Deploy:**
+   - Set `NODE_ENV=production` in your deployment environment
+   - The app will automatically use production PayPal APIs
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+### Security Notes
 
-- #### Users (Authentication)
+- Webhook signature verification is **mandatory** in production
+- Never commit real PayPal credentials to version control
+- Use environment variables for all sensitive data
+- Test thoroughly in sandbox before going live
 
-  Users are auth-enabled collections that have access to the admin panel.
+## Learn More
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+To learn more about Next.js, take a look at the following resources:
 
-- #### Media
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Docker
+## Deploy on Vercel
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

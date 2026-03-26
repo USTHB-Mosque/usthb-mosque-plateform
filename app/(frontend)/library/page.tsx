@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button } from '../common/components/ui/button'
-import Layout from '../common/layouts'
+import { Button } from '@/components/ui/button'
+import Layout from '@/components/layouts'
 
 const LibraryPage: React.FC = () => {
   return (

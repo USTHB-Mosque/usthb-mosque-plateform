@@ -1,42 +1,42 @@
-import './styles.css'
+import './globals.css'
 import React from 'react'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 
 const khalidArt = localFont({
-  src: './common/assets/fonts/Khalid-Art-bold-Regular.ttf',
+  src: '../../public/static/fonts/Khalid-Art-bold-Regular.ttf',
   variable: '--font-khalid',
 })
 
 const alyamama = localFont({
   src: [
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-Light.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-Light.ttf',
       weight: '300',
       style: 'normal',
     },
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-Regular.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-Regular.ttf',
       weight: '400',
       style: 'normal',
     },
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-SemiBold.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-SemiBold.ttf',
       weight: '600',
       style: 'normal',
     },
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-Bold.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-Bold.ttf',
       weight: '700',
       style: 'normal',
     },
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-ExtraBold.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-ExtraBold.ttf',
       weight: '800',
       style: 'normal',
     },
     {
-      path: './common/assets/fonts/alyamama/ttf/Alyamama-Black.ttf',
+      path: '../../public/static/fonts/alyamama/ttf/Alyamama-Black.ttf',
       weight: '900',
       style: 'normal',
     },
