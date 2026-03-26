@@ -10,18 +10,21 @@ const ListingToolbar: React.FC = () => {
 
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex gap-4 justify-between">
         <div className="flex gap-3">
           <Button onClick={openFiltersDisclosure.onOpen}>
             <Funnel />
           </Button>
-          <div className="relative">
-            <Input placeholder="اسم الكتاب / المؤلف ..." className="pr-10 bg-background" />
-            <Search className="absolute top-1/2 right-3 -translate-y-1/2 w-6 h-6 text-primary" />
+          <div className="relative w-full lg:w-sm">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="اسم الكتاب / المؤلف ..."
+              className="pr-10 bg-background w-full rounded-xl"
+            />
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex justify-end flex-wrap gap-3">
           <Button>تفسير</Button>
           <Button>تفسير</Button>
           <Button>تفسير</Button>
