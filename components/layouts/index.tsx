@@ -6,7 +6,7 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <div>
       <Navbar />
-      <div className="container mx-auto py-8 bg-background">{children}</div>
+      <div className="container mx-auto py-8">{children}</div>
       <Footer />
     </div>
   )

@@ -62,18 +62,19 @@
 
   /*  */
   --radius: 0.625rem;
-  --background: #f2f8fc;
-  --foreground: oklch(0.145 0 0);
+  --background: #ffffff;
+  --background-2: #f2f8fc;
+  --foreground: primary button/text;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: #808080;
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: #d9d9d9;
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -93,6 +94,7 @@
 
 .dark {
   --background: oklch(0.145 0 0);
+  --background-2: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -140,6 +142,7 @@
   --color-primary-foreground: var(--primary-foreground);
 
   --color-background: var(--background);
+  --color-background-2: var(--background-2);
   --color-foreground: var(--foreground);
 
   --color-secondary: var(--secondary);
@@ -174,6 +177,7 @@
   /* Shadcn Colors */
 
   --color-background: var(--background);
+  --color-background-2: var(--background-2);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -222,7 +226,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background-2 text-foreground;
   }
 }
 

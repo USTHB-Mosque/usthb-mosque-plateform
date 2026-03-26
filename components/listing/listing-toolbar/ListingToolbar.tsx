@@ -7,22 +7,22 @@ const ListingToolbar: React.FC = () => {
   return (
     <div className="flex justify-between">
       <div className="flex gap-3">
-        <Button>تفسير</Button>
-        <Button>تفسير</Button>
-        <Button>تفسير</Button>
-        <Button>تفسير</Button>
-        <Button>تفسير</Button>
-        <Button>تفسير</Button>
-      </div>
-
-      <div className="flex gap-3">
-        <div className="relative">
-          <Input placeholder="اسم الكتاب / المؤلف ..." className="pr-10" />
-          <Search className="absolute top-1/2 right-3 -translate-y-1/2" />
-        </div>
         <Button>
           <Funnel />
         </Button>
+        <div className="relative">
+          <Input placeholder="اسم الكتاب / المؤلف ..." className="pr-10 bg-background" />
+          <Search className="absolute top-1/2 right-3 -translate-y-1/2" />
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <Button>تفسير</Button>
+        <Button>تفسير</Button>
+        <Button>تفسير</Button>
+        <Button>تفسير</Button>
+        <Button>تفسير</Button>
+        <Button>تفسير</Button>
       </div>
     </div>
   )
