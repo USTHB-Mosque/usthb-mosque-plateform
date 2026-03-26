@@ -15,7 +15,7 @@ const ArticleCard: React.FC<ArticleCardProps> = () => {
         <div className="relative">
           <Badge
             variant="secondary"
-            className="absolute top-4 right-4 rounded-md text-base text-background font-dubai font-bold border border-background bg-secondary/70"
+            className="absolute top-4 right-4 rounded-md text-background font-dubai font-bold border border-background bg-secondary/70"
           >
             {format(new Date(), 'dd/MM/yyyy')}
           </Badge>
