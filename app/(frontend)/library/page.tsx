@@ -48,7 +48,7 @@ const LibraryPage: React.FC = () => {
             emptyFallback={<div>ok</div>}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array(40)
+              {Array(8)
                 .fill(0)
                 .map((_, i) => (
                   <BookCard key={i} />
