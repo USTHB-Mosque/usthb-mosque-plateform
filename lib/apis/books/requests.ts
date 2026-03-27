@@ -12,17 +12,17 @@ export const booksRequests = {
       andFilters.push({ category: { equals: params.category } })
     }
 
-    if (params?.type) {
-      andFilters.push({ type: { equals: params.type } })
+    if (params?.types) {
+      andFilters.push({ type: { in: params.types } })
     }
 
-    if (params?.language) {
-      andFilters.push({ language: { equals: params.language } })
+    if (params?.languages) {
+      andFilters.push({ language: { in: params.languages } })
     }
 
-    if (params?.available === true) {
+    if (params?.availability === 'available') {
       andFilters.push({ availableBooks: { greater_than: 0 } })
-    } else if (params?.available === false) {
+    } else if (params?.availability === 'not-available') {
       andFilters.push({ availableBooks: { equals: 0 } })
     }
 

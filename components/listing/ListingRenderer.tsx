@@ -15,7 +15,7 @@ const ListingRenderer: React.FC<ListingRendererProps> = ({
   isLoading,
   errorFallback = null,
   emptyFallback = null,
-  loader = <div>Loading...</div>,
+  loader,
 }) => {
   if (isLoading) {
     return loader

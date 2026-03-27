@@ -1,85 +1,139 @@
-import React from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog'
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { BookOpenCheck, Languages, Tag, User } from 'lucide-react'
-import ListingFiltersGroup from './ListingFiltersGroup'
+import { BookOpenCheck, Languages, Tag } from 'lucide-react'
+import ListingFiltersGroup, { ListingFilter } from './ListingFiltersGroup'
 import { Separator } from '@/components/ui/separator'
-
-const categories = Array.from({ length: 10 }, (_, i) => ({
-  value: `category-${i + 1}`,
-  label: `تفسير ${i + 1}`,
-}))
-
-const availability = [
-  {
-    value: 'available',
-    label: 'الكل',
-    buttonClassName: 'flex-1',
-  },
-  {
-    value: 'borrowed',
-    label: 'متوفر',
-    buttonClassName: 'flex-1',
-  },
-  {
-    value: 'borrowed',
-    label: 'غير متوفر',
-    buttonClassName: 'flex-1',
-  },
-]
-const languages = [
-  {
-    value: 'all',
-    label: 'جميع اللغات',
-    buttonClassName: 'flex-1',
-  },
-  {
-    value: 'arabic',
-    label: 'العربية',
-    buttonClassName: 'flex-1',
-  },
-  {
-    value: 'french',
-    label: 'الفرنسية',
-    buttonClassName: 'flex-1',
-  },
-  {
-    value: 'english',
-    label: 'الإنجليزية',
-    buttonClassName: 'flex-1',
-  },
-]
+import {
+  ListingAvailabilityProps,
+  ListingFiltersProps,
+  ListingLanguageProps,
+} from './ListingToolbar'
 
 interface ListingFiltersDialogProps {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  filtersProps?: ListingFiltersProps
+  languageProps?: ListingLanguageProps
+  availabilityProps?: ListingAvailabilityProps
+  /** Called after filters are committed (e.g. reset pagination). */
+  onApplyFilters?: () => void
 }
 
-const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({ isOpen, setIsOpen }) => {
+const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
+  isOpen,
+  setIsOpen,
+  filtersProps,
+  languageProps,
+  availabilityProps,
+  onApplyFilters,
+}) => {
+  const [draftTypes, setDraftTypes] = useState<string[]>([])
+  const [draftLanguages, setDraftLanguages] = useState<string[]>([])
+  const [draftAvailability, setDraftAvailability] = useState<string>('all')
+
+  useEffect(() => {
+    if (!isOpen) return
+    setDraftTypes(filtersProps?.enabled ? (filtersProps.values ?? []) : [])
+    setDraftLanguages(languageProps?.enabled ? (languageProps.values ?? []) : [])
+    setDraftAvailability(availabilityProps?.enabled ? (availabilityProps.value ?? 'all') : 'all')
+  }, [isOpen])
+
+  const handleResetDraft = () => {
+    if (filtersProps?.enabled) setDraftTypes([])
+    if (languageProps?.enabled) setDraftLanguages([])
+    if (availabilityProps?.enabled) setDraftAvailability('all')
+  }
+
+  const handleApply = () => {
+    if (filtersProps?.enabled) {
+      filtersProps.onChange(draftTypes)
+    }
+    if (languageProps?.enabled) {
+      languageProps.onChange(draftLanguages)
+    }
+    if (availabilityProps?.enabled) {
+      availabilityProps.onChange(draftAvailability)
+    }
+    onApplyFilters?.()
+    setIsOpen(false)
+  }
+
+  const showReset =
+    Boolean(filtersProps?.enabled) ||
+    Boolean(languageProps?.enabled) ||
+    Boolean(availabilityProps?.enabled)
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent showCloseButton={false} className="max-w-3xl">
         <DialogHeader>
           <div className="flex justify-between">
             <p className="text-2xl font-bold">خيارات التصفية</p>
-            <Button variant="outline" className="border border-primary text-primary">
-              إعادة تعيين
-            </Button>
+            {showReset ? (
+              <Button
+                variant="outline"
+                className="border border-primary text-primary"
+                type="button"
+                onClick={handleResetDraft}
+              >
+                إعادة تعيين
+              </Button>
+            ) : null}
           </div>
         </DialogHeader>
         <Separator />
         <div className="flex flex-col gap-10">
-          <ListingFiltersGroup title="التصنيفات" icon={<Tag />} filters={categories} />
-          <ListingFiltersGroup title="التوفر" icon={<BookOpenCheck />} filters={availability} />
-          <ListingFiltersGroup title="اللغة" icon={<Languages />} filters={languages} />
+          {filtersProps?.enabled ? (
+            <ListingFiltersGroup
+              title="التصنيفات"
+              icon={<Tag />}
+              options={filtersProps.options}
+              values={draftTypes}
+              onChange={setDraftTypes}
+              multiple
+            />
+          ) : null}
+          {availabilityProps?.enabled ? (
+            <ListingFiltersGroup
+              title="التوفر"
+              icon={<BookOpenCheck />}
+              options={availabilityProps.options}
+              values={draftAvailability}
+              onChange={setDraftAvailability}
+              buttonClassName="flex-1"
+            />
+          ) : null}
+          {languageProps?.enabled ? (
+            <ListingFiltersGroup
+              title="اللغة"
+              icon={<Languages />}
+              options={languageProps.options}
+              values={draftLanguages}
+              onChange={setDraftLanguages}
+              buttonClassName="flex-1"
+            />
+          ) : null}
         </div>
         <Separator />
 
         <DialogFooter>
-          <Button variant="outline" className="border border-primary text-primary">
-            إلغاء
+          <DialogClose asChild>
+            <Button variant="outline" className="border border-primary text-primary" type="button">
+              إلغاء
+            </Button>
+          </DialogClose>
+          <Button type="button" className="text-foreground" onClick={handleApply}>
+            تطبيق التصفية
           </Button>
-          <Button className="text-foreground">تطبيق التصفية</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,6 +5,7 @@ import * as React from 'react'
 import { Button } from '../ui/button'
 import { ChevronLeft, ChevronRight, Ellipsis } from 'lucide-react'
 import { DOTS, usePagination } from '@/hooks/use-pagination'
+import { flushSync } from 'react-dom'
 
 function PaginationRoot({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
@@ -153,7 +154,12 @@ function Pagination({
           <PaginationItem>
             <PaginationPrevious
               disabled={prevDisabled}
-              onClick={() => onPrevClick(page - 1)}
+              onClick={() => {
+                flushSync(() => {
+                  onPrevClick(page - 1)
+                })
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
               dir={dir}
             >
               {previousButtonLabel}
@@ -172,7 +178,10 @@ function Pagination({
             return (
               <PaginationItem key={key}>
                 <PaginationLink
-                  onClick={() => onPageChange(item as number)}
+                  onClick={() => {
+                    onPageChange(item as number)
+                    if (page !== item) window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
                   isActive={item === page}
                 >
                   {item}
@@ -181,7 +190,16 @@ function Pagination({
             )
           })}
           <PaginationItem>
-            <PaginationNext disabled={nextDisabled} onClick={() => onNextClick(page + 1)} dir={dir}>
+            <PaginationNext
+              disabled={nextDisabled}
+              onClick={() => {
+                flushSync(() => {
+                  onNextClick(page + 1)
+                })
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              dir={dir}
+            >
               {nextButtonLabel}
             </PaginationNext>
           </PaginationItem>

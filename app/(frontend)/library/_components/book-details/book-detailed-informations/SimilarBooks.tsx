@@ -29,10 +29,12 @@ const SimilarBooks = async ({ type, currentBookId }: SimilarBooksProps) => {
   })
 
   return (
-    <div className="flex gap-6 p-6">
-      {books.docs.map((book) => (
-        <BookCard key={book.id} book={book} />
-      ))}
+    <div className="flex justify-center p-6">
+      <div className="flex gap-6">
+        {books.docs.map((book) => (
+          <BookCard key={book.id} book={book} />
+        ))}
+      </div>
     </div>
   )
 }

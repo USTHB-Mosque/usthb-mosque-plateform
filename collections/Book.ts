@@ -1,4 +1,8 @@
-import { languagesConfigArray } from '@/utils/constants/data'
+import {
+  bookCategoriesConfigArray,
+  bookTypesConfigArray,
+  languagesConfigArray,
+} from '@/utils/constants/data'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -20,41 +24,13 @@ export const Book: CollectionConfig = {
     {
       name: 'type',
       type: 'select',
-      options: [
-        { label: 'عقيدة', value: 'aqidah' },
-        { label: 'فقه', value: 'fiqh' },
-        { label: 'حديث', value: 'hadith' },
-        { label: 'تفسير', value: 'tafsir' },
-        { label: 'سيرة', value: 'sirah' },
-        { label: 'علوم القرآن', value: 'quranic-sciences' },
-        { label: 'دعوة', value: 'dawah' },
-        { label: 'تاريخ', value: 'history' },
-        { label: 'فلسفة', value: 'philosophy' },
-        { label: 'منطق', value: 'logic' },
-        { label: 'رياضيات', value: 'mathematics' },
-        { label: 'فيزياء', value: 'physics' },
-        { label: 'كيمياء', value: 'chemistry' },
-        { label: 'أحياء', value: 'biology' },
-        { label: 'هندسة', value: 'engineering' },
-        { label: 'طب', value: 'medicine' },
-        { label: 'اقتصاد', value: 'economics' },
-        { label: 'سياسة', value: 'politics' },
-        { label: 'اجتماع', value: 'sociology' },
-        { label: 'علم نفس', value: 'psychology' },
-        { label: 'لغة', value: 'language' },
-        { label: 'أدب', value: 'literature' },
-        { label: 'فنون', value: 'arts' },
-        { label: 'أخرى', value: 'other' },
-      ],
+      options: bookTypesConfigArray,
       required: true,
     },
     {
       name: 'category',
       type: 'select',
-      options: [
-        { label: 'علمي', value: 'scientific' },
-        { label: 'ديني', value: 'religious' },
-      ],
+      options: bookCategoriesConfigArray,
       defaultValue: 'religious',
     },
     {

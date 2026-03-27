@@ -235,22 +235,15 @@ export interface Book {
     | 'dawah'
     | 'history'
     | 'philosophy'
-    | 'logic'
     | 'mathematics'
     | 'physics'
     | 'chemistry'
     | 'biology'
     | 'engineering'
-    | 'medicine'
     | 'economics'
-    | 'politics'
-    | 'sociology'
-    | 'psychology'
     | 'language'
-    | 'literature'
-    | 'arts'
     | 'other';
-  category?: ('scientific' | 'religious') | null;
+  category?: ('religious' | 'scientific') | null;
   tags?:
     | {
         name?: string | null;

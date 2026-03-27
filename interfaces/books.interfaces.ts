@@ -15,26 +15,19 @@ export enum BookType {
   Dawah = 'dawah',
   History = 'history',
   Philosophy = 'philosophy',
-  Logic = 'logic',
   Mathematics = 'mathematics',
   Physics = 'physics',
   Chemistry = 'chemistry',
   Biology = 'biology',
   Engineering = 'engineering',
-  Medicine = 'medicine',
   Economics = 'economics',
-  Politics = 'politics',
-  Sociology = 'sociology',
-  Psychology = 'psychology',
   Language = 'language',
-  Literature = 'literature',
-  Arts = 'arts',
   Other = 'other',
 }
 
 export interface BookSearchParams extends BaseSearchParams {
-  type?: BookType
-  language?: string
-  available?: boolean
+  types?: BookType[]
+  languages?: string[]
+  availability?: 'available' | 'not-available' | 'all'
   category: BookCategory
 }
