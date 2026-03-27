@@ -1,20 +1,15 @@
 import React from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 type BookCardProps = {}
 
 const BookCard: React.FC<BookCardProps> = () => {
+  const router = useRouter()
   return (
     <Card>
       <CardContent className="p-0">
@@ -47,8 +42,8 @@ const BookCard: React.FC<BookCardProps> = () => {
           }}
         >
           <div className="flex gap-2.5">
-            <Badge className="bg-primary/15 text-primary">تفسير</Badge>
-            <Badge className="bg-primary/15 text-primary">قرآن</Badge>
+            <Badge className="bg-primary/15 text-primary text-base">تفسير</Badge>
+            <Badge className="bg-primary/15 text-primary text-base">قرآن</Badge>
           </div>
           <div className="flex flex-col gap-0.5">
             <p className="text-sm">مختصر تفسير ابن كثير</p>
@@ -60,7 +55,14 @@ const BookCard: React.FC<BookCardProps> = () => {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="text-foreground w-full">سجل الآن</Button>
+        <Button
+          className="text-foreground w-full"
+          onClick={() => {
+            router.push(`/library/book/${1}`)
+          }}
+        >
+          سجل الآن
+        </Button>
       </CardFooter>
     </Card>
   )

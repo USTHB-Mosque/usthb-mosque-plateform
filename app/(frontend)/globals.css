@@ -219,6 +219,7 @@
 
   --font-khalid: var(--font-khalid);
   --font-yamama: var(--font-alyamama);
+  --font-dubai: var(--font-dubai);
 }
 
 @layer base {
