@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -219,11 +220,12 @@
 
   --font-khalid: var(--font-khalid);
   --font-yamama: var(--font-alyamama);
+  --font-dubai: var(--font-dubai);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 text-base;
   }
   body {
     @apply bg-background-2 text-foreground;

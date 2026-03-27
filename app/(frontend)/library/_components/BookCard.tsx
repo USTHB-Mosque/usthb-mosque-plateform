@@ -1,22 +1,21 @@
 import React from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
-type BookCardProps = {}
+type BookCardProps = {
+  className?: string
+  imageClassName?: string
+}
 
-const BookCard: React.FC<BookCardProps> = () => {
+const BookCard: React.FC<BookCardProps> = ({ className, imageClassName }) => {
+  const router = useRouter()
   return (
-    <Card>
+    <Card className={className}>
       <CardContent className="p-0">
         <div className="relative">
           <Badge
@@ -34,7 +33,7 @@ const BookCard: React.FC<BookCardProps> = () => {
             alt="Book"
             width={0}
             height={0}
-            className="w-full h-98 object-cover rounded-b-xl"
+            className={cn('w-full h-98 object-cover rounded-b-xl', imageClassName)}
             style={{
               width: '100%',
             }}
@@ -47,8 +46,8 @@ const BookCard: React.FC<BookCardProps> = () => {
           }}
         >
           <div className="flex gap-2.5">
-            <Badge className="bg-primary/15 text-primary">تفسير</Badge>
-            <Badge className="bg-primary/15 text-primary">قرآن</Badge>
+            <Badge className="bg-primary/15 text-primary text-base">تفسير</Badge>
+            <Badge className="bg-primary/15 text-primary text-base">قرآن</Badge>
           </div>
           <div className="flex flex-col gap-0.5">
             <p className="text-sm">مختصر تفسير ابن كثير</p>
@@ -60,7 +59,14 @@ const BookCard: React.FC<BookCardProps> = () => {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="text-foreground w-full">سجل الآن</Button>
+        <Button
+          className="text-foreground w-full"
+          onClick={() => {
+            router.push(`/library/book/${1}`)
+          }}
+        >
+          سجل الآن
+        </Button>
       </CardFooter>
     </Card>
   )

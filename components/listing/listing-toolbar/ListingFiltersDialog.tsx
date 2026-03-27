@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/
 import { Button } from '@/components/ui/button'
 import { BookOpenCheck, Languages, Tag, User } from 'lucide-react'
 import ListingFiltersGroup from './ListingFiltersGroup'
-import Separator from '@/components/ui/separator'
+import { Separator } from '@/components/ui/separator'
 
 const categories = Array.from({ length: 10 }, (_, i) => ({
   value: `category-${i + 1}`,

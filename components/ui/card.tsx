@@ -11,6 +11,7 @@ function Card({
     <div
       data-slot="card"
       data-size={size}
+      dir="rtl"
       className={cn(
         'group/card flex flex-col overflow-hidden border border-border rounded-xl bg-card text-xs/relaxed text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-2 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-none *:[img:last-child]:rounded-none',
         className,

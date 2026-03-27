@@ -44,6 +44,32 @@ const alyamama = localFont({
   variable: '--font-alyamama',
 })
 
+const dubai = localFont({
+  src: [
+    {
+      path: '../../public/static/fonts/dubai/Dubai-Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: '../../public/static/fonts/dubai/Dubai-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/static/fonts/dubai/Dubai-Medium.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../public/static/fonts/dubai/Dubai-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-dubai',
+})
+
 export const metadata: Metadata = {
   description: 'A project using Payload and Next.js with Arabic Typography',
   title: 'Payload Arabic Project',
@@ -51,7 +77,11 @@ export const metadata: Metadata = {
 
 const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
-    <html lang="ar" dir="rtl" className={`${khalidArt.variable} ${alyamama.variable}`}>
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
+    >
       <body suppressHydrationWarning>
         <main>{children}</main>
       </body>
