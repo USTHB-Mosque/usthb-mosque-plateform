@@ -1,11 +1,8 @@
 import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
-import Image from 'next/image'
-import Ratings from '@/components/common/Ratings'
-import { Button } from '@/components/ui/button'
-import { BookmarkPlus, BookSearch, Share, MapPin, Timer } from 'lucide-react'
-import Separator from '@/components/ui/separator'
+import { BookSearch, MapPin, Timer } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 

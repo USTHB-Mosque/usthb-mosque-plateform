@@ -4,4 +4,4 @@ const Separator: React.FC = () => {
   return <div className="w-full h-px bg-border" />
 }
 
-export default Separator
+export { Separator }

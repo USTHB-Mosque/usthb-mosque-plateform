@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
 import { User } from 'lucide-react'
 
-interface BookDetailsBenefitsProps {}
+interface BookBasicInformationsProps {}
 
-const BookDetailsBenefits: React.FC<BookDetailsBenefitsProps> = () => {
+const BookBasicInformations: React.FC<BookBasicInformationsProps> = () => {
   return (
     <Card className="p-6">
       <CardHeader className="flex justify-between p-0 space-y-4">
@@ -30,4 +30,4 @@ const BookDetailsBenefits: React.FC<BookDetailsBenefitsProps> = () => {
   )
 }
 
-export default BookDetailsBenefits
+export default BookBasicInformations
