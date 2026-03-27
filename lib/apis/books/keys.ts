@@ -1,6 +1,6 @@
 import { BaseSearchParams } from '@/interfaces/apis'
 
-export const agentsOnboardingKeys = {
+export const booksKeys = {
   all: ['books'] as const,
   lists: ['books', 'list'] as const,
   list: (params?: BaseSearchParams) => ['books', 'list', params] as const,

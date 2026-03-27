@@ -53,15 +53,15 @@ const BookDetailPage: React.FC = () => {
         </div>
         <div className="flex flex-col gap-10 max-w-6xl mx-auto">
           <p className="text-center text-4xl text-secondary font-bold">أهمية المكتبة في المسجد</p>
+
           <Image
             src="/static/images/usthb-mosque.jpg"
             alt="Book"
             width={0}
             height={0}
-            className={'w-full object-cover h-100 rounded-xl'}
-            style={{
-              width: '100%',
-            }}
+            className="w-full object-cover h-100 rounded-xl"
+            sizes="100vw"
+            priority
           />
           <div
             className="prose prose-lg max-w-none font-yamama text-right leading-relaxed 

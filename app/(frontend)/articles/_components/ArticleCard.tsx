@@ -19,15 +19,15 @@ const ArticleCard: React.FC<ArticleCardProps> = () => {
           >
             {format(new Date(), 'dd/MM/yyyy')}
           </Badge>
+
           <Image
             src="/static/images/quran.png"
             alt="Article"
             width={0}
             height={0}
-            className="w-full h-50 object-cover rounded-b-xl"
-            style={{
-              width: '100%',
-            }}
+            className="w-full object-cover h-50"
+            sizes="100vw"
+            priority
           />
         </div>
         <div

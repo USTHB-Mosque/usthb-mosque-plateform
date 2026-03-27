@@ -8,10 +8,19 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
+import { useBooksQuery } from '@/lib/apis/books/queries'
 
 const LibraryPage: React.FC = () => {
   const [page, setPage] = useState(1)
   const [tab, setTab] = useState('religious-books')
+  const {
+    data: { docs: books = [], totalPages = 1, totalDocs = 0, hasNextPage, hasPrevPage } = {},
+    isLoading,
+    isError,
+  } = useBooksQuery()
+
+  if (isLoading || !books) return null
+  console.log(books)
   return (
     <Layout>
       <div className="flex flex-col space-y-14">
@@ -48,14 +57,12 @@ const LibraryPage: React.FC = () => {
             emptyFallback={<div>ok</div>}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array(8)
-                .fill(0)
-                .map((_, i) => (
-                  <BookCard key={i} />
-                ))}
+              {books.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
             </div>
             <Pagination
-              totalPages={100}
+              totalPages={totalPages}
               onPageChange={(value) => setPage(value)}
               page={page}
               dir="rtl"

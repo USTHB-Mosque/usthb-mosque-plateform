@@ -40,16 +40,25 @@ export const Book: CollectionConfig = {
     {
       name: 'shortDescription',
       type: 'textarea',
+      required: true,
     },
     {
       name: 'longDescription',
       type: 'richText',
     },
+
     {
-      name: 'ratings',
+      name: 'ratingCount',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+    },
+    {
+      name: 'averageRating',
       type: 'number',
       min: 0,
       max: 5,
+      defaultValue: 0,
     },
     {
       name: 'publisher',
@@ -83,6 +92,11 @@ export const Book: CollectionConfig = {
     },
     {
       name: 'availableBooks',
+      type: 'number',
+      defaultValue: 0,
+    },
+    {
+      name: 'totalBooks',
       type: 'number',
       defaultValue: 0,
     },
