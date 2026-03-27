@@ -17,7 +17,7 @@ const LibraryPage: React.FC = () => {
     data: { docs: books = [], totalPages = 1, totalDocs = 0, hasNextPage, hasPrevPage } = {},
     isLoading,
     isError,
-  } = useBooksQuery()
+  } = useBooksQuery({ limit: 12 })
 
   if (isLoading || !books) return null
   console.log(books)

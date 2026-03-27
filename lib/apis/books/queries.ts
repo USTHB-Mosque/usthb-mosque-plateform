@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { booksRequests } from './requests'
 import { booksKeys } from './keys'
+import { BaseSearchParams } from '@/interfaces/apis'
 
-export const useBooksQuery = () => {
+export const useBooksQuery = (params?: BaseSearchParams) => {
   return useQuery({
     queryKey: booksKeys.all,
-    queryFn: () => booksRequests.getAll(),
+    queryFn: () => booksRequests.getAll(params),
   })
 }
 

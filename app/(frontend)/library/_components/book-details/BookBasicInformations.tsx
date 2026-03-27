@@ -23,9 +23,9 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
         <p className="text-foreground text-4xl">{title}</p>
         {tags ? (
           <div className="flex gap-4">
-            {tags.map(({ id, tag }) => (
-              <Badge key={id} className="bg-primary/15 text-primary text-base">
-                {tag}
+            {tags.map((tag) => (
+              <Badge key={tag.id} className="bg-primary/15 text-primary text-base">
+                {tag.name}
               </Badge>
             ))}
           </div>

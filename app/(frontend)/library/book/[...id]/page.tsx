@@ -1,4 +1,3 @@
-import React from 'react'
 import Layout from '@/components/layouts'
 import BookBasicInformations from '../../_components/book-details/BookBasicInformations'
 import BookDetailedInformation from '../../_components/book-details/book-detailed-informations/BookDetailedInformations'
@@ -7,16 +6,27 @@ import BookAvailability from '../../_components/book-details/BookAvailability'
 import { ChevronLeft } from 'lucide-react'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
+import { notFound } from 'next/navigation'
 
-const BookDetailPage: React.FC = async () => {
-  const id = 1
+const BookDetailPage = async ({
+  params,
+}: {
+  params: Promise<{
+    id: string[]
+  }>
+}) => {
+  const { id } = await params
 
   const payload = await getPayload({ config })
 
-  const book = await payload.findByID({
+  const result = await payload.find({
     collection: 'books',
-    id,
+    where: {
+      id: { equals: id[0] },
+    },
   })
+  const book = result.docs[0]
+  if (!book) return notFound()
 
   return (
     <Layout>
@@ -48,7 +58,7 @@ const BookDetailPage: React.FC = async () => {
               shortDescription={book.shortDescription}
               tags={book.tags}
             />
-            <BookDetailedInformation longDescription={book.longDescription} />
+            <BookDetailedInformation book={book} />
           </div>
         </div>
       </div>

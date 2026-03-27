@@ -1,3 +1,4 @@
+import { languagesConfigArray } from '@/utils/constants/data'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -20,10 +21,9 @@ export const Book: CollectionConfig = {
       name: 'type',
       type: 'select',
       options: [
-        { label: 'Atelier', value: 'workshop' },
-        { label: 'Conférence', value: 'conference' },
-        { label: 'Club de lecture', value: 'reading_club' },
-        { label: 'Autre', value: 'other' },
+        { label: 'كتاب', value: 'book' },
+        { label: 'مخطوط', value: 'manuscript' },
+        { label: 'مجلد', value: 'volume' },
       ],
       required: true,
     },
@@ -32,7 +32,7 @@ export const Book: CollectionConfig = {
       type: 'array',
       fields: [
         {
-          name: 'tag',
+          name: 'name',
           type: 'text',
         },
       ],
@@ -67,11 +67,7 @@ export const Book: CollectionConfig = {
     {
       name: 'language',
       type: 'select',
-      options: [
-        { label: 'Français', value: 'fr' },
-        { label: 'Arabe', value: 'ar' },
-        { label: 'Anglais', value: 'en' },
-      ],
+      options: languagesConfigArray,
     },
     {
       name: 'pageCount',

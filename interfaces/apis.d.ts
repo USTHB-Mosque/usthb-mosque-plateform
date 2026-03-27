@@ -1,4 +1,7 @@
-export interface BaseSearchParams {}
+export interface BaseSearchParams {
+  limit?: number
+  page?: number
+}
 export interface ApiResponse<T> {
   message: string
   statusCode: HttpStatusCode

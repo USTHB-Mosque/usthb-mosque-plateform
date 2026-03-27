@@ -6,7 +6,7 @@ import { User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Book } from '@/payload-types'
+import { Book, Media } from '@/payload-types'
 
 type BookCardProps = {
   book: Book
@@ -15,6 +15,7 @@ type BookCardProps = {
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) => {
+  const media = book.image as Media
   const router = useRouter()
   return (
     <Card className={className}>
@@ -33,8 +34,8 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
             </Badge>
           ) : null}
           <Image
-            src="/static/images/quran.png"
-            alt="Book"
+            src={media.url || ''}
+            alt={media.alt || 'Book'}
             width={0}
             height={0}
             className={cn('w-full object-cover h-50 rounded-b-xl', imageClassName)}
@@ -49,9 +50,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
           }}
         >
           <div className="flex flex-wrap gap-2.5">
-            {book.tags?.map(({ id, tag }) => (
-              <Badge key={id} className="bg-primary/15 text-primary text-base">
-                {tag}
+            {book.tags?.map((tag) => (
+              <Badge key={tag.id} className="bg-primary/15 text-primary text-base">
+                {tag.name}
               </Badge>
             ))}
           </div>
@@ -68,7 +69,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
         <Button
           className="text-foreground w-full"
           onClick={() => {
-            router.push(`/library/book/${1}`)
+            router.push(`/library/book/${book.id}`)
           }}
         >
           سجل الآن

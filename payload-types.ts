@@ -225,10 +225,10 @@ export interface Book {
   id: number;
   title: string;
   author: string;
-  type: 'workshop' | 'conference' | 'reading_club' | 'other';
+  type: 'book' | 'manuscript' | 'volume';
   tags?:
     | {
-        tag?: string | null;
+        name?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -560,7 +560,7 @@ export interface BooksSelect<T extends boolean = true> {
   tags?:
     | T
     | {
-        tag?: T;
+        name?: T;
         id?: T;
       };
   shortDescription?: T;

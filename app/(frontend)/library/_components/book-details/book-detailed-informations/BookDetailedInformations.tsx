@@ -7,10 +7,10 @@ import FullDescription from './FullDescription'
 import { Book } from '@/payload-types'
 
 interface BookDetailedInformationsProps {
-  longDescription: Book['longDescription']
+  book: Book
 }
 
-const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ longDescription }) => {
+const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ book }) => {
   return (
     <Card>
       <Tabs defaultValue="similar-books">
@@ -24,7 +24,15 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ lon
           <BookRatings />
         </TabsContent>
         <TabsContent value="full-description">
-          <FullDescription longDescription={longDescription} />
+          <FullDescription
+            longDescription={book.longDescription}
+            editionNumber={book.editionNumber}
+            isbn={book.isbn}
+            language={book.language}
+            pageCount={book.pageCount}
+            publishDate={book.publishDate}
+            publisher={book.publisher}
+          />
         </TabsContent>
       </Tabs>
     </Card>
