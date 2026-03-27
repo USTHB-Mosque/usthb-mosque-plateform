@@ -45,6 +45,7 @@
     "payload": "^3.68.3",
     "payload-cloud-storage-vercel-adapter": "^0.1.5",
     "playwright": "^1.57.0",
+    "radix-ui": "^1.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.68.0",
