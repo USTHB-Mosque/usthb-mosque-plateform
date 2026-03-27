@@ -9,10 +9,7 @@ const categories = Array.from({ length: 10 }, (_, i) => ({
   value: `category-${i + 1}`,
   label: `تفسير ${i + 1}`,
 }))
-const authors = Array.from({ length: 10 }, (_, i) => ({
-  value: `author-${i + 1}`,
-  label: `ابن كثير ${i + 1}`,
-}))
+
 const availability = [
   {
     value: 'available',
@@ -73,7 +70,6 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({ isOpen, set
         <Separator />
         <div className="flex flex-col gap-10">
           <ListingFiltersGroup title="التصنيفات" icon={<Tag />} filters={categories} />
-          <ListingFiltersGroup title="المؤلفون" icon={<User />} filters={authors} />
           <ListingFiltersGroup title="التوفر" icon={<BookOpenCheck />} filters={availability} />
           <ListingFiltersGroup title="اللغة" icon={<Languages />} filters={languages} />
         </div>

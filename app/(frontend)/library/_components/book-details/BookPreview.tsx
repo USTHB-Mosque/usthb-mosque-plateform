@@ -22,20 +22,21 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   isAvailable,
 }) => {
   const media = image as Media
-  console.log(media.url, media.thumbnailURL)
   return (
     <Card className="p-4">
       <div>
         <div className="relative">
-          <Badge
-            className="absolute top-4 left-4 px-4 py-1 rounded-lg 
+          {isAvailable ? (
+            <Badge
+              className="absolute top-4 left-4 px-4 py-1 rounded-lg 
                       bg-[#00FF9180] backdrop-blur-md 
                       border border-background/20 shadow-lg
                       font-bold text-foreground
                       before:content-[''] before:absolute before:inset-0 before:rounded-lg"
-          >
-            متوفر
-          </Badge>
+            >
+              متوفر
+            </Badge>
+          ) : null}
           <Image
             src={media?.url || ''}
             alt={media?.alt || 'Book'}

@@ -1,13 +1,54 @@
-import { BaseSearchParams } from '@/interfaces/apis'
 import { httpClient } from '../http-client'
-import { PaginatedDocs } from 'payload'
+import { PaginatedDocs, Where } from 'payload'
 import { Book } from '@/payload-types'
+import { BookSearchParams } from '@/interfaces/books.interfaces'
+import { stringify } from 'qs-esm'
 
 export const booksRequests = {
-  getAll: async (params?: BaseSearchParams) => {
-    const response = await httpClient.get<PaginatedDocs<Book>>('/books', {
-      params,
-    })
+  getAll: async (params?: BookSearchParams) => {
+    const andFilters: Where[] = []
+
+    if (params?.category) {
+      andFilters.push({ category: { equals: params.category } })
+    }
+
+    if (params?.type) {
+      andFilters.push({ type: { equals: params.type } })
+    }
+
+    if (params?.language) {
+      andFilters.push({ language: { equals: params.language } })
+    }
+
+    if (params?.available === true) {
+      andFilters.push({ availableBooks: { greater_than: 0 } })
+    } else if (params?.available === false) {
+      andFilters.push({ availableBooks: { equals: 0 } })
+    }
+
+    if (params?.search) {
+      andFilters.push({
+        or: [
+          { title: { contains: params.search } },
+          { shortDescription: { contains: params.search } },
+          { author: { contains: params.search } },
+          { publisher: { contains: params.search } },
+        ],
+      })
+    }
+
+    const query: Where = andFilters.length > 0 ? { and: andFilters } : {}
+
+    const queryString = stringify(
+      {
+        where: query,
+        page: params?.page || 1,
+        limit: params?.limit || 10,
+        sort: '-createdAt',
+      },
+      { addQueryPrefix: true, encodeValuesOnly: true },
+    )
+    const response = await httpClient.get<PaginatedDocs<Book>>(`/books${queryString}`)
 
     return response.data
   },

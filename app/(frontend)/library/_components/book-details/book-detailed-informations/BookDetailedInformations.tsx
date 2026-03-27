@@ -19,7 +19,9 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
           <TabsTrigger value="ratings">التقييمات</TabsTrigger>
           <TabsTrigger value="full-description">الوصف الكامل</TabsTrigger>
         </TabsList>
-        <TabsContent value="similar-books">{/* <SimilarBooks /> */}</TabsContent>
+        <TabsContent value="similar-books">
+          <SimilarBooks type={book.type} currentBookId={book.id} />
+        </TabsContent>
         <TabsContent value="ratings">
           <BookRatings />
         </TabsContent>

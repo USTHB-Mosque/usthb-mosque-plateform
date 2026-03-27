@@ -36,7 +36,34 @@ const tags = [
   'دعوة',
 ]
 
-const types: Book['type'][] = ['book', 'manuscript', 'volume']
+const types: Book['type'][] = [
+  'aqidah',
+  'fiqh',
+  'hadith',
+  'tafsir',
+  'sirah',
+  'quranic-sciences',
+  'dawah',
+  'history',
+  'philosophy',
+  'logic',
+  'mathematics',
+  'physics',
+  'chemistry',
+  'biology',
+  'engineering',
+  'medicine',
+  'economics',
+  'politics',
+  'sociology',
+  'psychology',
+  'language',
+  'literature',
+  'arts',
+  'other',
+]
+
+const categories: Book['category'][] = ['religious', 'scientific']
 
 export const createBook = async (mediaIds: number[]) => {
   const payload = await getPayload({ config })
@@ -67,6 +94,7 @@ export const createBook = async (mediaIds: number[]) => {
       publishDate: faker.date.past().toISOString(),
       image: faker.helpers.arrayElement(mediaIds),
       longDescription: generateLexicalRichText() as any,
+      category: faker.helpers.arrayElement(categories),
     },
   })
 

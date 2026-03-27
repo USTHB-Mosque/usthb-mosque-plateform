@@ -1,5 +1,7 @@
 'use client'
+
 import { QueryClient, QueryClientProvider as BaseQueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const client = new QueryClient({
   defaultOptions: {
@@ -14,7 +16,12 @@ interface QueryClientProviderProps {
 }
 
 const QueryClientProvider = ({ children }: QueryClientProviderProps) => {
-  return <BaseQueryClientProvider client={client}>{children}</BaseQueryClientProvider>
+  return (
+    <BaseQueryClientProvider client={client}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </BaseQueryClientProvider>
+  )
 }
 
 export default QueryClientProvider

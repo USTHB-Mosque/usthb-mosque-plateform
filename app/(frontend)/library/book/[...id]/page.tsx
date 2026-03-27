@@ -37,7 +37,7 @@ const BookDetailPage = async ({
           <span className="text-primary text-2xl font-bold">{book.title}</span>
         </div>
         <div className="flex gap-8">
-          <div className="flex flex-col gap-6 flex-1">
+          <div className="flex flex-col gap-6 flex-3">
             <BookPreview
               image={book.image}
               averageRating={book.averageRating}
@@ -51,7 +51,7 @@ const BookDetailPage = async ({
             />
           </div>
 
-          <div className="flex flex-col gap-6 flex-2">
+          <div className="flex flex-col gap-6 flex-7">
             <BookBasicInformations
               title={book.title}
               author={book.author}

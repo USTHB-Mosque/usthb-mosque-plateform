@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import Image from 'next/image'
@@ -18,7 +19,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
   const media = book.image as Media
   const router = useRouter()
   return (
-    <Card className={className}>
+    <Card className={cn(className, 'flex flex-col justify-between')}>
       <CardContent className="p-0">
         <div className="relative">
           {book.availableBooks && book.availableBooks > 0 ? (

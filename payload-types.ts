@@ -225,7 +225,32 @@ export interface Book {
   id: number;
   title: string;
   author: string;
-  type: 'book' | 'manuscript' | 'volume';
+  type:
+    | 'aqidah'
+    | 'fiqh'
+    | 'hadith'
+    | 'tafsir'
+    | 'sirah'
+    | 'quranic-sciences'
+    | 'dawah'
+    | 'history'
+    | 'philosophy'
+    | 'logic'
+    | 'mathematics'
+    | 'physics'
+    | 'chemistry'
+    | 'biology'
+    | 'engineering'
+    | 'medicine'
+    | 'economics'
+    | 'politics'
+    | 'sociology'
+    | 'psychology'
+    | 'language'
+    | 'literature'
+    | 'arts'
+    | 'other';
+  category?: ('scientific' | 'religious') | null;
   tags?:
     | {
         name?: string | null;
@@ -557,6 +582,7 @@ export interface BooksSelect<T extends boolean = true> {
   title?: T;
   author?: T;
   type?: T;
+  category?: T;
   tags?:
     | T
     | {
