@@ -27,11 +27,14 @@ export const ButtonGroup = <T,>({ value, buttons, onSelect, className }: ButtonG
           <Button
             disabled={button.disabled ?? false}
             key={button.value as string}
-            className={`px-6 h-full text-sm whitespace-nowrap flex-1 ${
-              button.value !== value ? 'border-none font-semibold' : ''
+            className={`h-full text-sm whitespace-nowrap flex-1 ${
+              button.value !== value
+                ? 'border-none font-semibold text-muted-foreground'
+                : 'text-foreground'
             }`}
             variant={button.value === value ? 'default' : 'outline'}
             onClick={() => onSelect(button.value)}
+            size="lg"
           >
             {button.label}
           </Button>

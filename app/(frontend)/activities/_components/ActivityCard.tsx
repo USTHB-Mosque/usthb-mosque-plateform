@@ -16,9 +16,8 @@ const ActivityCard: React.FC<ActivityCardProps> = () => {
           width={0}
           height={0}
           className="w-full h-75 object-cover flex-1"
-          style={{
-            width: '100%',
-          }}
+          sizes="100vw"
+          priority
         />
         <div className="flex-2 flex flex-col justify-between p-8">
           <div>

@@ -1,3 +1,8 @@
+import {
+  bookCategoriesConfigArray,
+  bookTypesConfigArray,
+  languagesConfigArray,
+} from '@/utils/constants/data'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -19,20 +24,21 @@ export const Book: CollectionConfig = {
     {
       name: 'type',
       type: 'select',
-      options: [
-        { label: 'Atelier', value: 'workshop' },
-        { label: 'Conférence', value: 'conference' },
-        { label: 'Club de lecture', value: 'reading_club' },
-        { label: 'Autre', value: 'other' },
-      ],
+      options: bookTypesConfigArray,
       required: true,
+    },
+    {
+      name: 'category',
+      type: 'select',
+      options: bookCategoriesConfigArray,
+      defaultValue: 'religious',
     },
     {
       name: 'tags',
       type: 'array',
       fields: [
         {
-          name: 'tag',
+          name: 'name',
           type: 'text',
         },
       ],
@@ -40,16 +46,25 @@ export const Book: CollectionConfig = {
     {
       name: 'shortDescription',
       type: 'textarea',
+      required: true,
     },
     {
       name: 'longDescription',
       type: 'richText',
     },
+
     {
-      name: 'ratings',
+      name: 'ratingCount',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+    },
+    {
+      name: 'averageRating',
       type: 'number',
       min: 0,
       max: 5,
+      defaultValue: 0,
     },
     {
       name: 'publisher',
@@ -58,11 +73,7 @@ export const Book: CollectionConfig = {
     {
       name: 'language',
       type: 'select',
-      options: [
-        { label: 'Français', value: 'fr' },
-        { label: 'Arabe', value: 'ar' },
-        { label: 'Anglais', value: 'en' },
-      ],
+      options: languagesConfigArray,
     },
     {
       name: 'pageCount',
@@ -83,6 +94,11 @@ export const Book: CollectionConfig = {
     },
     {
       name: 'availableBooks',
+      type: 'number',
+      defaultValue: 0,
+    },
+    {
+      name: 'totalBooks',
       type: 'number',
       defaultValue: 0,
     },

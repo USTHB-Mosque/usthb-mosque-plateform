@@ -1,6 +1,5 @@
 'use client'
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import React from 'react'
 import Layout from '@/components/layouts'
 import BookCard from './_components/BookCard'
 import { Pagination } from '@/components/common/Pagination'
@@ -8,10 +7,36 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
+import { useGetBooksQuery } from '@/lib/apis/books/queries'
+import { useSearch } from '@/hooks/use-search'
+import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
+import {
+  bookTypesConfigArray,
+  languagesConfigArray,
+  availabilityConfigArray,
+} from '@/utils/constants/data'
+import BookCardSkeleton from './_components/BookCardSkeleton'
+import EmptyData from '@/components/common/EmptyData'
+import ErrorData from '@/components/common/ErrorData'
 
 const LibraryPage: React.FC = () => {
-  const [page, setPage] = useState(1)
-  const [tab, setTab] = useState('religious-books')
+  const { searchValues, values, setValue } = useSearch<BookSearchParams>({
+    initialValues: {
+      page: 1,
+      limit: 12,
+      search: '',
+      // available: undefined,
+      // language: undefined,
+      // types: [],
+      category: BookCategory.Religious,
+    },
+  })
+  const {
+    data: { docs: books = [], totalPages = 1, totalDocs = 0 } = {},
+    isLoading,
+    isError,
+  } = useGetBooksQuery(searchValues)
+
   return (
     <Layout>
       <div className="flex flex-col space-y-14">
@@ -24,40 +49,77 @@ const LibraryPage: React.FC = () => {
           </div>
 
           <ButtonGroup
-            value={tab}
-            onSelect={(value) => setTab(value)}
+            value={values.category}
+            onSelect={(value) => setValue('category', value as BookCategory)}
             buttons={[
               {
                 label: 'الكتب العلمية',
-                value: 'scientific-books',
+                value: BookCategory.Scientific,
               },
               {
                 label: 'الكتب الدينية',
-                value: 'religious-books',
+                value: BookCategory.Religious,
               },
             ]}
           />
         </div>
         <ListingContent>
-          <ListingToolbar />
+          <ListingToolbar
+            onApplyFilters={() => setValue('page', 1)}
+            searchProps={{
+              enabled: true,
+              value: searchValues.search || '',
+              onChange: (value) => setValue('search', value),
+            }}
+            filtersProps={{
+              enabled: true,
+              values: values.types || [],
+              options: bookTypesConfigArray,
+              onChange: (values) => {
+                setValue('types', values as BookType[])
+              },
+            }}
+            languageProps={{
+              enabled: true,
+              values: values.languages || [],
+              options: languagesConfigArray,
+              onChange: (values) => {
+                setValue('languages', values as string[])
+              },
+            }}
+            availabilityProps={{
+              enabled: true,
+              value: values.availability || 'all',
+              options: availabilityConfigArray,
+              buttonClassName: 'flex-1',
+              onChange: (value) =>
+                setValue('availability', value as 'available' | 'not-available' | 'all'),
+            }}
+          />
 
           <ListingRenderer
-            isEmpty={false}
-            isError={false}
-            isLoading={false}
-            emptyFallback={<div>ok</div>}
+            isEmpty={totalDocs === 0}
+            isError={isError}
+            isLoading={isLoading}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
+            errorFallback={<ErrorData />}
+            loader={
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <BookCardSkeleton key={index} />
+                ))}
+              </div>
+            }
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array(8)
-                .fill(0)
-                .map((_, i) => (
-                  <BookCard key={i} />
-                ))}
+              {books.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
             </div>
             <Pagination
-              totalPages={100}
-              onPageChange={(value) => setPage(value)}
-              page={page}
+              totalPages={totalPages}
+              onPageChange={(value) => setValue('page', value)}
+              page={values.page || 1}
               dir="rtl"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"

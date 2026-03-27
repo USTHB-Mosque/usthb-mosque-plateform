@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { SearchStorageAdapter } from '../interfaces/search.d'
+import type { SearchStorageAdapter } from '../interfaces/search.interfaces'
 import { useDebounce } from './use-debounce'
 import { createSearchParamsAdapter } from '@/lib/adapters/search-params.adapter'
 import { isValid, format, parse } from 'date-fns'

@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
@@ -5,10 +6,19 @@ import { BookSearch, MapPin, Timer } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
+import { Book } from '@/payload-types'
 
-interface BookAvailabilityProps {}
+interface BookAvailabilityProps {
+  totalBooks: Book['totalBooks']
+  availableBooks: Book['availableBooks']
+  location: Book['location']
+}
 
-const BookAvailability: React.FC<BookAvailabilityProps> = () => {
+const BookAvailability: React.FC<BookAvailabilityProps> = ({
+  totalBooks,
+  availableBooks,
+  location,
+}) => {
   const [day, setDay] = useState(1)
   return (
     <Card className="p-4 space-y-4">
@@ -18,14 +28,16 @@ const BookAvailability: React.FC<BookAvailabilityProps> = () => {
           <BookSearch className="size-4 text-primary" />
           <div className="flex flex-col gap-1">
             <p className="text-muted-foreground">النسخ المتوفرة</p>
-            <p className="font-bold">2 من 3</p>
+            <p className="font-bold">
+              {availableBooks} من {totalBooks}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
           <MapPin className="size-4 text-primary" />
           <div className="flex flex-col gap-1">
             <p className="text-muted-foreground">الموقع في المكتبة</p>
-            <p className="font-bold">رف 3، قسم العلوم الشرعية</p>
+            <p className="font-bold">{location}</p>
           </div>
         </div>
         <Separator />
