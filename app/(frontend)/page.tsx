@@ -1,7 +1,11 @@
 import React from 'react'
 
 const LandingPage: React.FC = () => {
-  return <div>LandingPage</div>
+  return (
+    <div>
+      <h1>Landing Page</h1>
+    </div>
+  )
 }
 
 export default LandingPage

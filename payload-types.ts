@@ -180,7 +180,7 @@ export interface User {
   id: number;
   fullName?: string | null;
   sub?: string | null;
-  profilePicture?: string | null;
+  profilePicture?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;

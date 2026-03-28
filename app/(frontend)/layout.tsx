@@ -3,6 +3,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/lib/providers/query-client.provider'
+import { getAuthenticatedUser } from '@/lib/auth'
+import { Toaster } from '@/components/ui/sonner'
 
 const khalidArt = localFont({
   src: '../../public/static/fonts/Khalid-Art-bold-Regular.ttf',
@@ -84,6 +86,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
     >
       <body suppressHydrationWarning>
+        <Toaster />
         <QueryClientProvider>{children}</QueryClientProvider>
       </body>
     </html>

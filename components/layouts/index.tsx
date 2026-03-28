@@ -1,6 +1,6 @@
 import React from 'react'
 import Footer from './Footer'
-import Navbar from './Navbar'
+import Navbar from './navbar/Navbar'
 import { cn } from '@/lib/utils'
 
 const Layout: React.FC<React.PropsWithChildren & { className?: string }> = ({
