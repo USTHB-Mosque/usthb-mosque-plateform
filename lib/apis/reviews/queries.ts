@@ -23,9 +23,5 @@ export const useGetInfiniteReviewsQuery = (
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPage : undefined),
     enabled: !!bookId,
     initialData,
-    // Évite que le focus / refetch remplace tout le cache par la page 1 seule (perte des pages suivantes).
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
   })
 }

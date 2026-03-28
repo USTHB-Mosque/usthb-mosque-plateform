@@ -36,8 +36,6 @@ const Navbar: React.FC = () => {
     })
   }
 
-  console.log(user)
-
   return (
     <nav className="flex items-center justify-end p-4 border-b bg-background/95 backdrop-blur">
       <div className="flex items-center gap-4 px-6">
@@ -61,14 +59,18 @@ const Navbar: React.FC = () => {
                 <DropdownMenuLabel className="font-bold">حسابي</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="cursor-pointer gap-2">
-                  <User className="size-4" />
-                  <span>الملف الشخصي</span>
+                <DropdownMenuItem className="cursor-pointer gap-2" asChild>
+                  <Link href="/profile">
+                    <User className="size-4" />
+                    <span>الملف الشخصي</span>
+                  </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="cursor-pointer gap-2">
-                  <Settings className="size-4" />
-                  <span>الإعدادات</span>
+                <DropdownMenuItem className="cursor-pointer gap-2" asChild>
+                  <Link href="/profile">
+                    <Settings className="size-4" />
+                    <span>الإعدادات</span>
+                  </Link>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />

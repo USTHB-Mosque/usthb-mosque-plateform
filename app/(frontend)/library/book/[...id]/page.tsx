@@ -8,6 +8,8 @@ import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import ReturnToIndex from '@/components/common/ReturnToIndex'
+import { getBookFavoriteState } from '@/actions/profile'
+import BookFavoriteButton from '../../_components/book-details/BookFavoriteButton'
 
 const BookDetailsPage = async ({
   params,
@@ -28,6 +30,8 @@ const BookDetailsPage = async ({
   })
   const book = result.docs[0]
   if (!book) return notFound()
+
+  const { favorited } = await getBookFavoriteState(book.id)
 
   return (
     <Layout>
@@ -55,6 +59,7 @@ const BookDetailsPage = async ({
               author={book.author}
               shortDescription={book.shortDescription}
               tags={book.tags}
+              favoriteAction={<BookFavoriteButton bookId={book.id} initialFavorited={favorited} />}
             />
             <BookDetailedInformation book={book} />
           </div>

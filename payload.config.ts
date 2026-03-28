@@ -17,6 +17,7 @@ import {
   Loan,
   Review,
   ActivityRegistrations,
+  BookFavorite,
 } from './collections'
 
 const filename = fileURLToPath(import.meta.url)
@@ -29,7 +30,18 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Admin, User, Media, Book, Activity, Article, Loan, Review, ActivityRegistrations],
+  collections: [
+    Admin,
+    User,
+    Media,
+    Book,
+    Activity,
+    Article,
+    Loan,
+    Review,
+    ActivityRegistrations,
+    BookFavorite,
+  ],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

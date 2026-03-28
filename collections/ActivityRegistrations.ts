@@ -1,5 +1,7 @@
 import { CollectionConfig } from 'payload'
 
+const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
+
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',
   admin: {
@@ -7,7 +9,22 @@ export const ActivityRegistrations: CollectionConfig = {
     defaultColumns: ['user', 'activity', 'createdAt'],
   },
   access: {
-    read: () => true,
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
+    create: ({ req: { user } }) => Boolean(user?.collection === 'users'),
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
   },
   fields: [
     {

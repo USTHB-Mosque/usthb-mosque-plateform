@@ -77,6 +77,7 @@ export interface Config {
     loans: Loan;
     reviews: Review;
     'activity-registrations': ActivityRegistration;
+    'book-favorites': BookFavorite;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -93,6 +94,7 @@ export interface Config {
     loans: LoansSelect<false> | LoansSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
+    'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -416,6 +418,17 @@ export interface ActivityRegistration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "book-favorites".
+ */
+export interface BookFavorite {
+  id: number;
+  user: number | User;
+  book: number | Book;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -473,6 +486,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'activity-registrations';
         value: number | ActivityRegistration;
+      } | null)
+    | ({
+        relationTo: 'book-favorites';
+        value: number | BookFavorite;
       } | null);
   globalSlug?: string | null;
   user:
@@ -722,6 +739,16 @@ export interface ActivityRegistrationsSelect<T extends boolean = true> {
   user?: T;
   activity?: T;
   attended?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "book-favorites_select".
+ */
+export interface BookFavoritesSelect<T extends boolean = true> {
+  user?: T;
+  book?: T;
   updatedAt?: T;
   createdAt?: T;
 }
