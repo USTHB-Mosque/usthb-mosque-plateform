@@ -44,13 +44,11 @@ export const seedActivityRegistrations = async (n: number = 10) => {
 
   const payload = await getPayload({ config })
 
-  // Get activities
   const activities = await payload.find({
     collection: 'activities',
     limit: 1000,
   })
 
-  // Get users
   const users = await payload.find({
     collection: 'users',
     limit: 1000,

@@ -42,13 +42,11 @@ export const seedBookFavorites = async (n: number = 10) => {
 
   const payload = await getPayload({ config })
 
-  // Get books
   const books = await payload.find({
     collection: 'books',
     limit: 1000,
   })
 
-  // Get users
   const users = await payload.find({
     collection: 'users',
     limit: 1000,
