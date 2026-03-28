@@ -6,6 +6,8 @@ export const Activity: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'type', 'location'],
+  }, access: {
+    read: () => true,
   },
   fields: [
     {

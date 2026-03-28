@@ -6,7 +6,9 @@ export const ActivityRegistrations: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['user', 'activity', 'createdAt'],
   },
-
+  access: {
+    read: () => true,
+  },
   fields: [
     {
       name: 'user',

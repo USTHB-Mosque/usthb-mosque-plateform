@@ -3,6 +3,9 @@ import { CollectionConfig } from 'payload'
 export const Loan: CollectionConfig = {
   slug: 'loans',
   admin: { useAsTitle: 'id' },
+  access: {
+    read: () => true,
+  },
   fields: [
     { name: 'book', type: 'relationship', relationTo: 'books', required: true },
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },

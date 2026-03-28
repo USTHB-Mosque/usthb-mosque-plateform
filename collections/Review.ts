@@ -2,6 +2,9 @@ import { CollectionConfig } from 'payload'
 
 export const Review: CollectionConfig = {
   slug: 'reviews',
+  access: {
+    read: () => true,
+  },
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },
     { name: 'book', type: 'relationship', relationTo: 'books', required: true },
