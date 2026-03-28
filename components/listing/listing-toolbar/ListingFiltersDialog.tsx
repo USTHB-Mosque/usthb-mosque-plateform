@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,68 +9,79 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { BookOpenCheck, Languages, Tag } from 'lucide-react'
-import ListingFiltersGroup, { ListingFilter } from './ListingFiltersGroup'
+import ListingFiltersGroup from './ListingFiltersGroup'
 import { Separator } from '@/components/ui/separator'
-import {
-  ListingAvailabilityProps,
-  ListingFiltersProps,
-  ListingLanguageProps,
-} from './ListingToolbar'
+import type { ListingFilterSection } from './listing-filter.types'
+
+function cloneDraftFromSections(sections: ListingFilterSection[]): Record<string, string | string[]> {
+  const d: Record<string, string | string[]> = {}
+  for (const s of sections) {
+    if (s.multiple) {
+      d[s.id] = Array.isArray(s.value) ? [...s.value] : []
+    } else {
+      d[s.id] = typeof s.value === 'string' ? s.value : ''
+    }
+  }
+  return d
+}
+
+function resetDraftFromSections(sections: ListingFilterSection[]): Record<string, string | string[]> {
+  const d: Record<string, string | string[]> = {}
+  for (const s of sections) {
+    if (s.resetValue !== undefined) {
+      d[s.id] = Array.isArray(s.resetValue) ? [...s.resetValue] : s.resetValue
+      continue
+    }
+    if (s.multiple) {
+      d[s.id] = []
+    } else {
+      const all = s.options.find((o) => o.value === 'all')
+      d[s.id] = all?.value ?? s.options[0]?.value ?? ''
+    }
+  }
+  return d
+}
 
 interface ListingFiltersDialogProps {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
-  filtersProps?: ListingFiltersProps
-  languageProps?: ListingLanguageProps
-  availabilityProps?: ListingAvailabilityProps
-  /** Called after filters are committed (e.g. reset pagination). */
+  sections: ListingFilterSection[]
   onApplyFilters?: () => void
 }
 
 const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
   isOpen,
   setIsOpen,
-  filtersProps,
-  languageProps,
-  availabilityProps,
+  sections,
   onApplyFilters,
 }) => {
-  const [draftTypes, setDraftTypes] = useState<string[]>([])
-  const [draftLanguages, setDraftLanguages] = useState<string[]>([])
-  const [draftAvailability, setDraftAvailability] = useState<string>('all')
+  const [draft, setDraft] = useState<Record<string, string | string[]>>({})
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) return
-    setDraftTypes(filtersProps?.enabled ? (filtersProps.values ?? []) : [])
-    setDraftLanguages(languageProps?.enabled ? (languageProps.values ?? []) : [])
-    setDraftAvailability(availabilityProps?.enabled ? (availabilityProps.value ?? 'all') : 'all')
+    setDraft(cloneDraftFromSections(sections))
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync only when dialog opens
   }, [isOpen])
 
+  const setSectionDraft = (id: string, value: string | string[]) => {
+    setDraft((prev) => ({ ...prev, [id]: value }))
+  }
+
   const handleResetDraft = () => {
-    if (filtersProps?.enabled) setDraftTypes([])
-    if (languageProps?.enabled) setDraftLanguages([])
-    if (availabilityProps?.enabled) setDraftAvailability('all')
+    setDraft(resetDraftFromSections(sections))
   }
 
   const handleApply = () => {
-    if (filtersProps?.enabled) {
-      filtersProps.onChange(draftTypes)
-    }
-    if (languageProps?.enabled) {
-      languageProps.onChange(draftLanguages)
-    }
-    if (availabilityProps?.enabled) {
-      availabilityProps.onChange(draftAvailability)
+    for (const s of sections) {
+      const v = draft[s.id]
+      if (v === undefined) continue
+      s.onChange(v)
     }
     onApplyFilters?.()
     setIsOpen(false)
   }
 
-  const showReset =
-    Boolean(filtersProps?.enabled) ||
-    Boolean(languageProps?.enabled) ||
-    Boolean(availabilityProps?.enabled)
+  const showReset = sections.length > 0
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -92,36 +103,22 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
         </DialogHeader>
         <Separator />
         <div className="flex flex-col gap-10">
-          {filtersProps?.enabled ? (
-            <ListingFiltersGroup
-              title="التصنيفات"
-              icon={<Tag />}
-              options={filtersProps.options}
-              values={draftTypes}
-              onChange={setDraftTypes}
-              multiple
-            />
-          ) : null}
-          {availabilityProps?.enabled ? (
-            <ListingFiltersGroup
-              title="التوفر"
-              icon={<BookOpenCheck />}
-              options={availabilityProps.options}
-              values={draftAvailability}
-              onChange={setDraftAvailability}
-              buttonClassName="flex-1"
-            />
-          ) : null}
-          {languageProps?.enabled ? (
-            <ListingFiltersGroup
-              title="اللغة"
-              icon={<Languages />}
-              options={languageProps.options}
-              values={draftLanguages}
-              onChange={setDraftLanguages}
-              buttonClassName="flex-1"
-            />
-          ) : null}
+          {sections.map((s) => {
+            const value = draft[s.id]
+            if (value === undefined) return null
+            return (
+              <ListingFiltersGroup
+                key={s.id}
+                title={s.title}
+                icon={s.icon}
+                options={s.options}
+                values={value}
+                onChange={(next) => setSectionDraft(s.id, next)}
+                multiple={s.multiple}
+                buttonClassName={s.buttonClassName}
+              />
+            )
+          })}
         </div>
         <Separator />
 

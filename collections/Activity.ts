@@ -76,5 +76,29 @@ export const Activity: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'registration',
+      type: 'group',
+      label: 'إعدادات التسجيل',
+      fields: [
+        {
+          name: 'isOpen',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'فتح باب التسجيل',
+        },
+        {
+          name: 'maxParticipants',
+          type: 'number',
+          label: 'العدد الأقصى للمشاركين',
+        },
+        {
+          name: 'currentParticipants',
+          type: 'number',
+          defaultValue: 0,
+          admin: { readOnly: true },
+        },
+      ],
+    },
   ],
 }

@@ -9,6 +9,5 @@ export enum ArticleType {
 
 export interface ArticleSearchParams extends BaseSearchParams {
   types?: ArticleType[]
-  languages?: string[]
   availability?: 'available' | 'not-available' | 'all'
 }

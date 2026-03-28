@@ -1,13 +1,12 @@
 import Layout from '@/components/layouts'
-import { ChevronLeft } from 'lucide-react'
-import React from 'react'
-import ActivityDetails from '../_components/activity-details/ActivityDetails'
+import ActivityDescription from '../_components/activity-details/activity-description/ActivityDescription'
 import ActivitySchedule from '../_components/activity-details/ActivitySchedule'
 import ActivityHeader from '../_components/activity-details/ActivityHeader'
 import ActivityInformations from '../_components/activity-details/ActivityInformations'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { notFound } from 'next/navigation'
+import ReturnToIndex from '@/components/common/ReturnToIndex'
 
 const ActivityDetailsPage = async ({
   params,
@@ -32,21 +31,17 @@ const ActivityDetailsPage = async ({
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex gap-3 items-center">
-          <span className="text-2xl">فهرس المقالات</span>
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-primary text-2xl font-bold">{article.title}</span>
-        </div>
+        <ReturnToIndex title="فهرس الأنشطة" value={article.title} href="/activities" />
 
         <div className="flex gap-8">
-          <div className="flex-1 flex-col gap-8">
-            <ActivityDetails />
-            <ActivitySchedule />
-          </div>
-
-          <div className="flex-1 flex-col gap-8">
+          <div className="flex-7 flex flex-col gap-8">
             <ActivityHeader />
             <ActivityInformations />
+          </div>
+
+          <div className="flex-3 flex flex-col gap-8">
+            <ActivityDescription />
+            <ActivitySchedule />
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ import BookCardSkeleton from './_components/BookCardSkeleton'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
 import { bookTypesConfigArray } from '@/utils/constants/books'
+import { BookOpenCheck, Languages, Tag } from 'lucide-react'
 
 const LibraryPage: React.FC = () => {
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
@@ -68,30 +69,41 @@ const LibraryPage: React.FC = () => {
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
             }}
-            filtersProps={{
-              enabled: true,
-              values: values.types || [],
-              options: bookTypesConfigArray,
-              onChange: (values) => {
-                setValue('types', values as BookType[])
+            filterSections={[
+              {
+                id: 'types',
+                title: 'التصنيفات',
+                icon: <Tag />,
+                multiple: true,
+                options: bookTypesConfigArray,
+                value: values.types || [],
+                onChange: (v) => setValue('types', v as BookType[]),
+                resetValue: [],
               },
-            }}
-            languageProps={{
-              enabled: true,
-              values: values.languages || [],
-              options: languagesConfigArray,
-              onChange: (values) => {
-                setValue('languages', values as string[])
+              {
+                id: 'availability',
+                title: 'التوفر',
+                icon: <BookOpenCheck />,
+                multiple: false,
+                options: availabilityConfigArray,
+                value: values.availability || 'all',
+                onChange: (v) =>
+                  setValue('availability', v as 'available' | 'not-available' | 'all'),
+                buttonClassName: 'flex-1',
+                resetValue: 'all',
               },
-            }}
-            availabilityProps={{
-              enabled: true,
-              value: values.availability || 'all',
-              options: availabilityConfigArray,
-              buttonClassName: 'flex-1',
-              onChange: (value) =>
-                setValue('availability', value as 'available' | 'not-available' | 'all'),
-            }}
+              {
+                id: 'languages',
+                title: 'اللغة',
+                icon: <Languages />,
+                multiple: true,
+                options: languagesConfigArray,
+                value: values.languages || [],
+                onChange: (v) => setValue('languages', v as string[]),
+                buttonClassName: 'flex-1',
+                resetValue: [],
+              },
+            ]}
           />
 
           <ListingRenderer

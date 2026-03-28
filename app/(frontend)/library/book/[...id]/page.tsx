@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
+import ReturnToIndex from '@/components/common/ReturnToIndex'
 
 const BookDetailsPage = async ({
   params,
@@ -31,11 +32,8 @@ const BookDetailsPage = async ({
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex gap-3 items-center">
-          <span className="text-2xl">فهرس الكتب</span>
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-primary text-2xl font-bold">{book.title}</span>
-        </div>
+        <ReturnToIndex title="فهرس الكتب" value={book.title} href="/library" />
+
         <div className="flex gap-8">
           <div className="flex flex-col gap-6 flex-3">
             <BookPreview

@@ -11,8 +11,10 @@ import { ArticleSearchParams, ArticleType } from '@/interfaces/articles.interfac
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
 import { useGetArticlesQuery } from '@/lib/apis/articles/queries'
-import { availabilityConfigArray, languagesConfigArray } from '@/utils/constants/data'
+import { availabilityConfigArray } from '@/utils/constants/data'
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import ArticleSkeleton from './_components/ArticleSkeleton'
+import { BookOpenCheck, Tag } from 'lucide-react'
 
 const ArticlesPage: React.FC = () => {
   const { searchValues, values, setValue } = useSearch<ArticleSearchParams>({
@@ -21,7 +23,6 @@ const ArticlesPage: React.FC = () => {
       limit: 12,
       search: '',
       availability: undefined,
-      languages: [],
       types: [],
     },
   })
@@ -50,39 +51,35 @@ const ArticlesPage: React.FC = () => {
               enabled: true,
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
+              placeholder: 'عنوان المقال، الكاتب ...',
             }}
-            filtersProps={{
-              enabled: true,
-              values: values.types || [],
-              options: articleTypesConfigArray,
-              onChange: (values) => {
-                setValue('types', values as ArticleType[])
+            filterSections={[
+              {
+                id: 'types',
+                title: 'التصنيفات',
+                icon: <Tag />,
+                multiple: true,
+                options: articleTypesConfigArray,
+                value: values.types || [],
+                onChange: (v) => setValue('types', v as ArticleType[]),
+                resetValue: [],
               },
-            }}
-            languageProps={{
-              enabled: true,
-              values: values.languages || [],
-              options: languagesConfigArray,
-              onChange: (values) => {
-                setValue('languages', values as string[])
-              },
-            }}
-            availabilityProps={{
-              enabled: true,
-              value: values.availability || 'all',
-              options: availabilityConfigArray,
-              buttonClassName: 'flex-1',
-              onChange: (value) =>
-                setValue('availability', value as 'available' | 'not-available' | 'all'),
-            }}
+            ]}
           />
 
           <ListingRenderer
             isEmpty={totalDocs === 0}
             isError={isError}
             isLoading={isLoading}
-            emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي مقالات" />}
             errorFallback={<ErrorData />}
+            loader={
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <ArticleSkeleton key={index} />
+                ))}
+              </div>
+            }
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {articles.map((article) => (

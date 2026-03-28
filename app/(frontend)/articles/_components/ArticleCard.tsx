@@ -17,7 +17,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
   const router = useRouter()
   return (
-    <Card>
+    <Card className="flex flex-col justify-between">
       <CardContent className="p-0">
         <div className="relative">
           {article.publishDate ? (

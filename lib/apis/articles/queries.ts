@@ -5,7 +5,7 @@ import { ArticleSearchParams } from '@/interfaces/articles.interfaces'
 
 export const useGetArticlesQuery = (params?: ArticleSearchParams) => {
   return useQuery({
-    queryKey: articlesKeys.all,
+    queryKey: articlesKeys.list(params),
     queryFn: () => articlesRequests.getAll(params),
   })
 }

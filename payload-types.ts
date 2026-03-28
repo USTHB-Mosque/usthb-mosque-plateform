@@ -76,6 +76,7 @@ export interface Config {
     articles: Article;
     loans: Loan;
     reviews: Review;
+    'activity-registrations': ActivityRegistration;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,6 +92,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     loans: LoansSelect<false> | LoansSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -327,6 +329,11 @@ export interface Activity {
         id?: string | null;
       }[]
     | null;
+  registration?: {
+    isOpen?: boolean | null;
+    maxParticipants?: number | null;
+    currentParticipants?: number | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -396,6 +403,18 @@ export interface Review {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-registrations".
+ */
+export interface ActivityRegistration {
+  id: number;
+  user: number | User;
+  activity: number | Activity;
+  attended?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -449,6 +468,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'activity-registrations';
+        value: number | ActivityRegistration;
       } | null);
   globalSlug?: string | null;
   user:
@@ -630,6 +653,13 @@ export interface ActivitiesSelect<T extends boolean = true> {
         dateAndTime?: T;
         id?: T;
       };
+  registration?:
+    | T
+    | {
+        isOpen?: T;
+        maxParticipants?: T;
+        currentParticipants?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -677,6 +707,17 @@ export interface ReviewsSelect<T extends boolean = true> {
   book?: T;
   rating?: T;
   comment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-registrations_select".
+ */
+export interface ActivityRegistrationsSelect<T extends boolean = true> {
+  user?: T;
+  activity?: T;
+  attended?: T;
   updatedAt?: T;
   createdAt?: T;
 }

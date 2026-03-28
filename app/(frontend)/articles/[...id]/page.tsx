@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 
 import { Media } from '@/payload-types'
 import { RichText } from '@payloadcms/richtext-lexical/react'
+import ReturnToIndex from '@/components/common/ReturnToIndex'
 
 const BookDetailsPage = async ({
   params,
@@ -29,15 +30,10 @@ const BookDetailsPage = async ({
   if (!article) return notFound()
 
   const media = article.image as Media
-  console.log(article.content)
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex gap-3 items-center">
-          <span className="text-2xl">فهرس المقالات</span>
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-primary text-2xl font-bold">{article.title}</span>
-        </div>
+        <ReturnToIndex title="فهرس المقالات" value={article.title} href="/articles" />
         <div className="flex flex-col gap-10 max-w-6xl mx-auto">
           <p className="text-center text-4xl text-secondary font-bold">{article.title}</p>
 
