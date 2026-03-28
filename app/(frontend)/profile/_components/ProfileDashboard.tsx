@@ -27,8 +27,8 @@ const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
   const media = user.profilePicture as Media | undefined
 
   return (
-    <div className="flex flex-col gap-10 max-w-4xl mx-auto pb-16">
-      <div className="space-y-2 text-center sm:text-right">
+    <div className="flex flex-col gap-10 max-w-5xl mx-auto pb-16 px-4 sm:px-6">
+      <div className="space-y-2 text-center sm:text-right py-4">
         <p className="text-secondary text-4xl md:text-5xl font-khalid">الملف الشخصي</p>
         <p className="text-muted-foreground text-base md:text-lg">
           إدارة بياناتك، مفضلتك، تسجيلاتك في الأنشطة وإعارات المكتبة.
@@ -36,8 +36,8 @@ const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
       </div>
 
       <Card className="border-border/80 shadow-sm overflow-hidden">
-        <CardHeader className="flex flex-row flex-wrap items-center gap-6 border-b border-border/60 bg-background-2/80 py-6">
-          <Avatar className="h-20 w-20 border-2 border-primary/20">
+        <CardHeader className="flex flex-row flex-wrap items-center gap-6 border-b border-border/60 bg-background-2/80 py-6 px-6">
+          <Avatar className="h-20 w-20 border-2 border-primary/20 flex-shrink-0">
             <AvatarImage src={media?.url || ''} alt={media?.alt || ''} />
             <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold font-dubai">
               {user.fullName?.substring(0, 2).toUpperCase() ||
@@ -71,20 +71,20 @@ const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="account" className="space-y-6 mt-6">
+        <TabsContent value="account" className="space-y-6 mt-6 px-2 sm:px-4">
           <ProfileAccountForm defaultFullName={user.fullName || ''} />
           <ProfilePasswordForm />
         </TabsContent>
 
-        <TabsContent value="favorites" className="mt-6">
+        <TabsContent value="favorites" className="mt-6 px-2 sm:px-4">
           <ProfileFavoritesGrid favorites={favorites} />
         </TabsContent>
 
-        <TabsContent value="activities" className="mt-6">
+        <TabsContent value="activities" className="mt-6 px-2 sm:px-4">
           <ProfileRegistrationsList registrations={registrations} />
         </TabsContent>
 
-        <TabsContent value="loans" className="mt-6">
+        <TabsContent value="loans" className="mt-6 px-2 sm:px-4">
           <ProfileLoansList loans={loans} />
         </TabsContent>
       </Tabs>

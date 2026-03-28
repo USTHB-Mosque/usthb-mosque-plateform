@@ -12,7 +12,7 @@ const ProfilePasswordForm: React.FC = () => {
   const [pending, startTransition] = useTransition()
 
   return (
-    <Card>
+    <Card className="p-6">
       <CardHeader>
         <CardTitle className="text-xl font-dubai">كلمة المرور</CardTitle>
         <CardDescription>غيّر كلمة المرور مع إدخال كلمة المرور الحالية للتحقق.</CardDescription>
@@ -70,7 +70,7 @@ const ProfilePasswordForm: React.FC = () => {
               className="text-left"
             />
           </div>
-          <Button type="submit" disabled={pending} variant="secondary" className="min-w-[120px]">
+          <Button type="submit" disabled={pending} className="min-w-[120px]">
             {pending ? 'جاري التحديث...' : 'تحديث كلمة المرور'}
           </Button>
         </form>

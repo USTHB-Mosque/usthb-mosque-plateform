@@ -22,7 +22,7 @@ type ProfileLoansListProps = {
 const ProfileLoansList: React.FC<ProfileLoansListProps> = ({ loans }) => {
   if (loans.length === 0) {
     return (
-      <Card>
+      <Card className="p-6">
         <CardContent className="py-12">
           <EmptyData title="لا توجد إعارات مسجّلة" />
           <p className="text-center text-muted-foreground text-sm mt-2">
@@ -43,7 +43,7 @@ const ProfileLoansList: React.FC<ProfileLoansListProps> = ({ loans }) => {
         const dueDate = loan.dueDate ? new Date(loan.dueDate) : null
 
         return (
-          <Card key={loan.id}>
+          <Card key={loan.id} className="p-6">
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0">
@@ -59,13 +59,17 @@ const ProfileLoansList: React.FC<ProfileLoansListProps> = ({ loans }) => {
               {loanDate ? (
                 <p>
                   تاريخ الإعارة:{' '}
-                  <span className="text-foreground">{format(loanDate, 'd MMMM yyyy', { locale: arDZ })}</span>
+                  <span className="text-foreground">
+                    {format(loanDate, 'd MMMM yyyy', { locale: arDZ })}
+                  </span>
                 </p>
               ) : null}
               {dueDate ? (
                 <p>
                   موعد الإرجاع:{' '}
-                  <span className="text-foreground">{format(dueDate, 'd MMMM yyyy', { locale: arDZ })}</span>
+                  <span className="text-foreground">
+                    {format(dueDate, 'd MMMM yyyy', { locale: arDZ })}
+                  </span>
                 </p>
               ) : null}
               <Link

@@ -18,7 +18,7 @@ const ProfileAccountForm: React.FC<ProfileAccountFormProps> = ({ defaultFullName
   const router = useRouter()
 
   return (
-    <Card>
+    <Card className="p-6">
       <CardHeader>
         <CardTitle className="text-xl font-dubai">المعلومات الشخصية</CardTitle>
         <CardDescription>تحديث الاسم الظاهر في المنصة.</CardDescription>

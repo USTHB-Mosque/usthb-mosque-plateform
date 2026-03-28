@@ -15,7 +15,7 @@ type ProfileRegistrationsListProps = {
 const ProfileRegistrationsList: React.FC<ProfileRegistrationsListProps> = ({ registrations }) => {
   if (registrations.length === 0) {
     return (
-      <Card>
+      <Card className="p-6">
         <CardContent className="py-12">
           <EmptyData title="لم تسجّل في أي نشاط بعد" />
           <div className="flex justify-center mt-4">
@@ -40,7 +40,7 @@ const ProfileRegistrationsList: React.FC<ProfileRegistrationsListProps> = ({ reg
         const start = activity.startDate ? new Date(activity.startDate) : null
 
         return (
-          <Card key={reg.id}>
+          <Card key={reg.id} className="p-6">
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <CardTitle className="text-lg font-dubai leading-snug">{activity.title}</CardTitle>
@@ -49,7 +49,9 @@ const ProfileRegistrationsList: React.FC<ProfileRegistrationsListProps> = ({ reg
                     تم الحضور
                   </Badge>
                 ) : (
-                  <Badge variant="secondary">مسجّل</Badge>
+                  <Badge variant="secondary" className="text-background">
+                    مسجّل
+                  </Badge>
                 )}
               </div>
             </CardHeader>

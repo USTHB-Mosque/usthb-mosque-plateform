@@ -3,6 +3,9 @@ import { seedArticles } from '@/utils/seed/articles'
 import { seedBooks } from '@/utils/seed/book'
 import { updateRichText } from '@/utils/seed/helpers'
 import { seedMedias } from '@/utils/seed/media'
+import { seedLoans } from '@/utils/seed/loans'
+import { seedBookFavorites } from '@/utils/seed/book-favorites'
+import { seedActivityRegistrations } from '@/utils/seed/activity-registrations'
 import { Button } from '@/components/ui/button'
 
 const Seeding = async () => {
@@ -51,6 +54,33 @@ const Seeding = async () => {
         }}
       >
         Seed Activities
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          seedLoans(30)
+        }}
+      >
+        Seed Loans
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          seedBookFavorites(30)
+        }}
+      >
+        Seed Book Favorites
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          seedActivityRegistrations(30)
+        }}
+      >
+        Seed Activity Registrations
       </Button>
     </div>
   )
