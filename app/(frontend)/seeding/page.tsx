@@ -1,8 +1,8 @@
-import { seedActivities } from '@/actions/seed/activities'
-import { seedArticles } from '@/actions/seed/articles'
-import { seedBooks } from '@/actions/seed/book'
-import { updateRichText } from '@/actions/seed/helpers'
-import { seedMedias } from '@/actions/seed/media'
+import { seedActivities } from '@/utils/seed/activities'
+import { seedArticles } from '@/utils/seed/articles'
+import { seedBooks } from '@/utils/seed/book'
+import { updateRichText } from '@/utils/seed/helpers'
+import { seedMedias } from '@/utils/seed/media'
 import { Button } from '@/components/ui/button'
 
 const Seeding = async () => {

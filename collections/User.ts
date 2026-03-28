@@ -2,7 +2,12 @@ import { CollectionConfig } from 'payload'
 
 export const User: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    tokenExpiration: 7200,
+    verify: false,
+    maxLoginAttempts: 5,
+    lockTime: 600 * 1000,
+  },
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email'],
@@ -20,7 +25,8 @@ export const User: CollectionConfig = {
     },
     {
       name: 'profilePicture',
-      type: 'text',
+      type: 'upload',
+      relationTo: 'media',
     },
   ],
 }

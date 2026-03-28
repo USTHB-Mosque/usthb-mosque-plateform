@@ -53,6 +53,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.68.0",
+    "react-intersection-observer": "^10.0.3",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "sass-embedded": "^1.97.1",

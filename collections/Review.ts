@@ -4,6 +4,15 @@ export const Review: CollectionConfig = {
   slug: 'reviews',
   access: {
     read: () => true,
+    create: () => true,
+    update: ({ req }) => {
+      if (req.user?.collection === 'admins') return true
+      return false
+    },
+    delete: ({ req }) => {
+      if (req.user?.collection === 'admins') return true
+      return false
+    },
   },
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },

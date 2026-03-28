@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import SimilarBooks from './SimilarBooks'
-import BookRatings from './BookRatings'
+import BookRatings from './book-ratings/BookRatings'
 import FullDescription from './FullDescription'
 import { Book } from '@/payload-types'
 
@@ -23,7 +23,7 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
           <SimilarBooks type={book.type} currentBookId={book.id} />
         </TabsContent>
         <TabsContent value="ratings">
-          <BookRatings />
+          <BookRatings bookId={book.id} />
         </TabsContent>
         <TabsContent value="full-description">
           <FullDescription
