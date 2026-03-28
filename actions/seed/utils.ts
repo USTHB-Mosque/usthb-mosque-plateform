@@ -102,7 +102,7 @@ export const generateLexicalRichText = () => {
       indent: 0,
       version: 1,
       direction: 'rtl',
-      children: nodes,
+      children: [...nodes, ...nodes, ...nodes],
     },
   }
 }

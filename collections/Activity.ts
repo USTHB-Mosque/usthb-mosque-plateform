@@ -1,3 +1,4 @@
+import { activitiesTypesConfigArray } from '@/utils/constants/activities'
 import { CollectionConfig } from 'payload'
 
 export const Activity: CollectionConfig = {
@@ -15,12 +16,7 @@ export const Activity: CollectionConfig = {
     {
       name: 'type',
       type: 'select',
-      options: [
-        { label: 'Atelier', value: 'workshop' },
-        { label: 'Conférence', value: 'conference' },
-        { label: 'Club de lecture', value: 'reading_club' },
-        { label: 'Autre', value: 'other' },
-      ],
+      options: activitiesTypesConfigArray,
       required: true,
     },
     {
@@ -43,16 +39,24 @@ export const Activity: CollectionConfig = {
       name: 'benefits',
       type: 'array',
       label: 'Benefits / What you will gain',
+      required: true,
       fields: [
         {
-          name: 'benefit',
+          name: 'name',
           type: 'text',
         },
       ],
     },
     {
       name: 'targetAudience',
-      type: 'text',
+      type: 'array',
+      required: true,
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+        },
+      ],
     },
     {
       name: 'location',
@@ -70,35 +74,49 @@ export const Activity: CollectionConfig = {
       minRows: 1,
       fields: [
         {
-          type: 'date',
           name: 'dateAndTime',
+          type: 'date',
           required: true,
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+              timeIntervals: 15,
+              displayFormat: 'd MMMM yyyy HH:mm',
+            },
+          },
         },
       ],
     },
     {
-      name: 'registration',
-      type: 'group',
-      label: 'إعدادات التسجيل',
-      fields: [
-        {
-          name: 'isOpen',
-          type: 'checkbox',
-          defaultValue: false,
-          label: 'فتح باب التسجيل',
+      name: 'openForRegistration',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      name: 'registrationDeadline',
+      type: 'date',
+    },
+    {
+      name: 'startDate',
+      type: 'date',
+      required: true,
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+          timeIntervals: 15,
+          displayFormat: 'd MMMM yyyy HH:mm',
         },
-        {
-          name: 'maxParticipants',
-          type: 'number',
-          label: 'العدد الأقصى للمشاركين',
-        },
-        {
-          name: 'currentParticipants',
-          type: 'number',
-          defaultValue: 0,
-          admin: { readOnly: true },
-        },
-      ],
+      },
+    },
+    {
+      name: 'maxParticipants',
+      type: 'number',
+    },
+    {
+      name: 'currentParticipants',
+      type: 'number',
+      defaultValue: 0,
+      admin: { readOnly: true },
     },
   ],
 }

@@ -1,16 +1,35 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import Layout from '@/components/layouts'
 import { Pagination } from '@/components/common/Pagination'
-import { ButtonGroup } from '@/components/ui/button-group'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import ActivityCard from './_components/ActivityCard'
+import { useGetActivitiesQuery } from '@/lib/apis/activities/queries'
+import { ActivitySearchParams, ActivityType } from '@/interfaces/activities.interfaces'
+import { useSearch } from '@/hooks/use-search'
+import { Tag } from 'lucide-react'
+import { activitiesTypesConfigArray } from '@/utils/constants/activities'
+import EmptyData from '@/components/common/EmptyData'
+import ErrorData from '@/components/common/ErrorData'
+import ActivitySkeleton from './_components/ActivitySkeleton'
 
 const ActivitiesPage: React.FC = () => {
-  const [page, setPage] = useState(1)
-  const [tab, setTab] = useState('religious-books')
+  const { searchValues, values, setValue } = useSearch<ActivitySearchParams>({
+    initialValues: {
+      page: 1,
+      limit: 3,
+      search: '',
+      types: [],
+    },
+  })
+
+  const {
+    data: { docs: activities = [], totalPages = 1, totalDocs = 0 } = {},
+    isLoading,
+    isError,
+  } = useGetActivitiesQuery(searchValues)
   return (
     <Layout>
       <div className="flex flex-col space-y-14">
@@ -22,42 +41,52 @@ const ActivitiesPage: React.FC = () => {
               متآلف، يسير على هدي الإسلام.
             </p>
           </div>
-
-          <ButtonGroup
-            value={tab}
-            onSelect={(value) => setTab(value)}
-            buttons={[
+        </div>
+        <ListingContent>
+          <ListingToolbar
+            onApplyFilters={() => setValue('page', 1)}
+            searchProps={{
+              enabled: true,
+              value: searchValues.search || '',
+              onChange: (value) => setValue('search', value),
+              placeholder: 'عنوان المقال، الكاتب ...',
+            }}
+            filterSections={[
               {
-                label: 'الكتب العلمية',
-                value: 'scientific-books',
-              },
-              {
-                label: 'الكتب الدينية',
-                value: 'religious-books',
+                id: 'types',
+                title: 'التصنيفات',
+                icon: <Tag />,
+                multiple: true,
+                options: activitiesTypesConfigArray,
+                value: values.types || [],
+                onChange: (v) => setValue('types', v as ActivityType[]),
+                resetValue: [],
               },
             ]}
           />
-        </div>
-        <ListingContent>
-          <ListingToolbar />
-
           <ListingRenderer
-            isEmpty={false}
-            isError={false}
-            isLoading={false}
-            emptyFallback={<div>ok</div>}
+            isEmpty={totalDocs === 0}
+            isError={isError}
+            isLoading={isLoading}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي أنشطة" />}
+            errorFallback={<ErrorData />}
+            loader={
+              <div className="flex flex-col space-y-12">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <ActivitySkeleton key={index} />
+                ))}
+              </div>
+            }
           >
             <div className="flex flex-col space-y-12">
-              {Array(3)
-                .fill(0)
-                .map((_, i) => (
-                  <ActivityCard key={i} />
-                ))}
+              {activities.map((activity) => (
+                <ActivityCard key={activity.id} activity={activity} />
+              ))}
             </div>
             <Pagination
-              totalPages={100}
-              onPageChange={(value) => setPage(value)}
-              page={page}
+              totalPages={totalPages}
+              onPageChange={(value) => setValue('page', value)}
+              page={values.page || 1}
               dir="rtl"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"

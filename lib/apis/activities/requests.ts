@@ -1,11 +1,11 @@
 import { httpClient } from '../http-client'
 import { PaginatedDocs, Where } from 'payload'
-import { Article } from '@/payload-types'
-import { ArticleSearchParams } from '@/interfaces/articles.interfaces'
+import { Activity } from '@/payload-types'
+import { ActivitySearchParams } from '@/interfaces/activities.interfaces'
 import { stringify } from 'qs-esm'
 
-export const articlesRequests = {
-  getAll: async (params?: ArticleSearchParams) => {
+export const activitiesRequests = {
+  getAll: async (params?: ActivitySearchParams) => {
     const andFilters: Where[] = []
 
     if (params?.types) {
@@ -16,8 +16,8 @@ export const articlesRequests = {
       andFilters.push({
         or: [
           { title: { contains: params.search } },
-          { description: { contains: params.search } },
-          { author: { contains: params.search } },
+          { shortDescription: { contains: params.search } },
+          { supervisor: { contains: params.search } },
         ],
       })
     }
@@ -33,12 +33,12 @@ export const articlesRequests = {
       },
       { addQueryPrefix: true, encodeValuesOnly: true },
     )
-    const response = await httpClient.get<PaginatedDocs<Article>>(`/articles${queryString}`)
+    const response = await httpClient.get<PaginatedDocs<Activity>>(`/activities${queryString}`)
 
     return response.data
   },
   getById: async (id: string) => {
-    const response = await httpClient.get<Article>(`/articles/${id}`)
+    const response = await httpClient.get<Activity>(`/activities/${id}`)
     return response.data
   },
 }

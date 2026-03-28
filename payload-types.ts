@@ -296,7 +296,7 @@ export interface Book {
 export interface Activity {
   id: number;
   title: string;
-  type: 'workshop' | 'conference' | 'reading_club' | 'other';
+  type: 'aqidah' | 'fiqh' | 'hadith' | 'tafsir' | 'sirah' | 'language' | 'other';
   image: number | Media;
   shortDescription: string;
   longDescription: {
@@ -314,13 +314,14 @@ export interface Activity {
     };
     [k: string]: unknown;
   };
-  benefits?:
-    | {
-        benefit?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  targetAudience?: string | null;
+  benefits: {
+    name?: string | null;
+    id?: string | null;
+  }[];
+  targetAudience: {
+    name?: string | null;
+    id?: string | null;
+  }[];
   location?: string | null;
   supervisor?: string | null;
   schedules?:
@@ -329,11 +330,11 @@ export interface Activity {
         id?: string | null;
       }[]
     | null;
-  registration?: {
-    isOpen?: boolean | null;
-    maxParticipants?: number | null;
-    currentParticipants?: number | null;
-  };
+  openForRegistration?: boolean | null;
+  registrationDeadline?: string | null;
+  startDate: string;
+  maxParticipants?: number | null;
+  currentParticipants?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -641,10 +642,15 @@ export interface ActivitiesSelect<T extends boolean = true> {
   benefits?:
     | T
     | {
-        benefit?: T;
+        name?: T;
         id?: T;
       };
-  targetAudience?: T;
+  targetAudience?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
   location?: T;
   supervisor?: T;
   schedules?:
@@ -653,13 +659,11 @@ export interface ActivitiesSelect<T extends boolean = true> {
         dateAndTime?: T;
         id?: T;
       };
-  registration?:
-    | T
-    | {
-        isOpen?: T;
-        maxParticipants?: T;
-        currentParticipants?: T;
-      };
+  openForRegistration?: T;
+  registrationDeadline?: T;
+  startDate?: T;
+  maxParticipants?: T;
+  currentParticipants?: T;
   updatedAt?: T;
   createdAt?: T;
 }

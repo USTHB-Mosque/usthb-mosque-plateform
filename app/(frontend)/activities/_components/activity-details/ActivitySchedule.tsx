@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Activity } from '@/payload-types'
 
-type Props = {}
+interface ActivityScheduleProps {
+  schedules: Activity['schedules']
+}
 
-const ActivitySchedule = (props: Props) => {
+const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
+  console.log({ schedules })
   return (
     <Card className="p-6 space-y-6">
       <CardHeader>

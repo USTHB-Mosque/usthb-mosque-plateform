@@ -1,4 +1,3 @@
-import { User } from 'lucide-react'
 import React from 'react'
 
 interface ActivityDescriptionLineProps {
@@ -13,7 +12,7 @@ const ActivityDescriptionLine: React.FC<ActivityDescriptionLineProps> = ({
   description,
 }) => {
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center gap-4">
       <div className="bg-primary/10 size-14 rounded-xl flex items-center justify-center">
         <div className="[&>svg]:size-8 [&>svg]:text-primary">{icon}</div>
       </div>

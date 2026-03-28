@@ -11,10 +11,9 @@ import { ArticleSearchParams, ArticleType } from '@/interfaces/articles.interfac
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
 import { useGetArticlesQuery } from '@/lib/apis/articles/queries'
-import { availabilityConfigArray } from '@/utils/constants/data'
 import { articleTypesConfigArray } from '@/utils/constants/articles'
 import ArticleSkeleton from './_components/ArticleSkeleton'
-import { BookOpenCheck, Tag } from 'lucide-react'
+import { Tag } from 'lucide-react'
 
 const ArticlesPage: React.FC = () => {
   const { searchValues, values, setValue } = useSearch<ArticleSearchParams>({
@@ -22,7 +21,6 @@ const ArticlesPage: React.FC = () => {
       page: 1,
       limit: 12,
       search: '',
-      availability: undefined,
       types: [],
     },
   })

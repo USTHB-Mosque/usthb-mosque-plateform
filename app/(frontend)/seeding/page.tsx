@@ -1,3 +1,4 @@
+import { seedActivities } from '@/actions/seed/activities'
 import { seedArticles } from '@/actions/seed/articles'
 import { seedBooks } from '@/actions/seed/book'
 import { updateRichText } from '@/actions/seed/helpers'
@@ -41,6 +42,15 @@ const Seeding = async () => {
         }}
       >
         Update Rich Texts
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          seedActivities(50)
+        }}
+      >
+        Seed Activities
       </Button>
     </div>
   )
