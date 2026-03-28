@@ -1,16 +1,36 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import Layout from '@/components/layouts'
 import { Pagination } from '@/components/common/Pagination'
-import { ButtonGroup } from '@/components/ui/button-group'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import ArticleCard from './_components/ArticleCard'
+import { useSearch } from '@/hooks/use-search'
+import { ArticleSearchParams, ArticleType } from '@/interfaces/articles.interfaces'
+import EmptyData from '@/components/common/EmptyData'
+import ErrorData from '@/components/common/ErrorData'
+import { useGetArticlesQuery } from '@/lib/apis/articles/queries'
+import { availabilityConfigArray, languagesConfigArray } from '@/utils/constants/data'
+import { articleTypesConfigArray } from '@/utils/constants/articles'
 
 const ArticlesPage: React.FC = () => {
-  const [page, setPage] = useState(1)
-  const [tab, setTab] = useState('religious-books')
+  const { searchValues, values, setValue } = useSearch<ArticleSearchParams>({
+    initialValues: {
+      page: 1,
+      limit: 12,
+      search: '',
+      availability: undefined,
+      languages: [],
+      types: [],
+    },
+  })
+
+  const {
+    data: { docs: articles = [], totalPages = 1, totalDocs = 0 } = {},
+    isLoading,
+    isError,
+  } = useGetArticlesQuery(searchValues)
   return (
     <Layout>
       <div className="flex flex-col space-y-14">
@@ -22,42 +42,57 @@ const ArticlesPage: React.FC = () => {
               وجمال الكلمة الهادفة.
             </p>
           </div>
-
-          <ButtonGroup
-            value={tab}
-            onSelect={(value) => setTab(value)}
-            buttons={[
-              {
-                label: 'الكتب العلمية',
-                value: 'scientific-books',
-              },
-              {
-                label: 'الكتب الدينية',
-                value: 'religious-books',
-              },
-            ]}
-          />
         </div>
         <ListingContent>
-          <ListingToolbar />
+          <ListingToolbar
+            onApplyFilters={() => setValue('page', 1)}
+            searchProps={{
+              enabled: true,
+              value: searchValues.search || '',
+              onChange: (value) => setValue('search', value),
+            }}
+            filtersProps={{
+              enabled: true,
+              values: values.types || [],
+              options: articleTypesConfigArray,
+              onChange: (values) => {
+                setValue('types', values as ArticleType[])
+              },
+            }}
+            languageProps={{
+              enabled: true,
+              values: values.languages || [],
+              options: languagesConfigArray,
+              onChange: (values) => {
+                setValue('languages', values as string[])
+              },
+            }}
+            availabilityProps={{
+              enabled: true,
+              value: values.availability || 'all',
+              options: availabilityConfigArray,
+              buttonClassName: 'flex-1',
+              onChange: (value) =>
+                setValue('availability', value as 'available' | 'not-available' | 'all'),
+            }}
+          />
 
           <ListingRenderer
-            isEmpty={false}
-            isError={false}
-            isLoading={false}
-            emptyFallback={<div>ok</div>}
+            isEmpty={totalDocs === 0}
+            isError={isError}
+            isLoading={isLoading}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
+            errorFallback={<ErrorData />}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array(8)
-                .fill(0)
-                .map((_, i) => (
-                  <ArticleCard key={i} />
-                ))}
+              {articles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
             </div>
             <Pagination
-              totalPages={100}
-              onPageChange={(value) => setPage(value)}
-              page={page}
+              totalPages={totalPages}
+              onPageChange={(value) => setValue('page', value)}
+              page={values.page || 1}
               dir="rtl"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"

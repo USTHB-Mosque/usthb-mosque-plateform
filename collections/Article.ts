@@ -1,3 +1,4 @@
+import { articleTypesConfigArray } from '@/utils/constants/articles'
 import { CollectionConfig } from 'payload'
 
 export const Article: CollectionConfig = {
@@ -6,9 +7,7 @@ export const Article: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', 'publishDate'],
   },
-  access: {
-    read: () => true,
-  },
+
   fields: [
     {
       name: 'title',
@@ -26,12 +25,7 @@ export const Article: CollectionConfig = {
     {
       name: 'type',
       type: 'select',
-      options: [
-        { label: 'Atelier', value: 'workshop' },
-        { label: 'Conférence', value: 'conference' },
-        { label: 'Club de lecture', value: 'reading_club' },
-        { label: 'Autre', value: 'other' },
-      ],
+      options: articleTypesConfigArray,
       required: true,
     },
     {
@@ -47,7 +41,7 @@ export const Article: CollectionConfig = {
       },
       fields: [
         {
-          name: 'tag',
+          name: 'name',
           type: 'text',
         },
       ],
@@ -68,7 +62,6 @@ export const Article: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      required: true,
     },
   ],
 }

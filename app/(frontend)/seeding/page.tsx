@@ -1,4 +1,6 @@
+import { seedArticles } from '@/actions/seed/articles'
 import { seedBooks } from '@/actions/seed/book'
+import { updateRichText } from '@/actions/seed/helpers'
 import { seedMedias } from '@/actions/seed/media'
 import { Button } from '@/components/ui/button'
 
@@ -21,6 +23,24 @@ const Seeding = async () => {
         }}
       >
         Seed Medias
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          seedArticles(50)
+        }}
+      >
+        Seed Articles
+      </Button>
+
+      <Button
+        onClick={async function () {
+          'use server'
+          updateRichText()
+        }}
+      >
+        Update Rich Texts
       </Button>
     </div>
   )

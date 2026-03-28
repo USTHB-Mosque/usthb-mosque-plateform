@@ -8,7 +8,7 @@ import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 
-const BookDetailPage = async ({
+const BookDetailsPage = async ({
   params,
 }: {
   params: Promise<{
@@ -66,4 +66,4 @@ const BookDetailPage = async ({
   )
 }
 
-export default BookDetailPage
+export default BookDetailsPage

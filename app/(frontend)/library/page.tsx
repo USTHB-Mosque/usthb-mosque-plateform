@@ -10,14 +10,11 @@ import ListingRenderer from '@/components/listing/ListingRenderer'
 import { useGetBooksQuery } from '@/lib/apis/books/queries'
 import { useSearch } from '@/hooks/use-search'
 import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
-import {
-  bookTypesConfigArray,
-  languagesConfigArray,
-  availabilityConfigArray,
-} from '@/utils/constants/data'
+import { languagesConfigArray, availabilityConfigArray } from '@/utils/constants/data'
 import BookCardSkeleton from './_components/BookCardSkeleton'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
+import { bookTypesConfigArray } from '@/utils/constants/books'
 
 const LibraryPage: React.FC = () => {
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
@@ -25,9 +22,9 @@ const LibraryPage: React.FC = () => {
       page: 1,
       limit: 12,
       search: '',
-      // available: undefined,
-      // language: undefined,
-      // types: [],
+      availability: undefined,
+      languages: [],
+      types: [],
       category: BookCategory.Religious,
     },
   })

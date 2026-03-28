@@ -338,17 +338,17 @@ export interface Article {
   id: number;
   title: string;
   publishDate?: string | null;
-  type: 'workshop' | 'conference' | 'reading_club' | 'other';
+  type: 'aqidah' | 'fiqh' | 'hadith' | 'other';
   author: string;
   tags?:
     | {
-        tag?: string | null;
+        name?: string | null;
         id?: string | null;
       }[]
     | null;
   image: number | Media;
   description: string;
-  content: {
+  content?: {
     root: {
       type: string;
       children: {
@@ -362,7 +362,7 @@ export interface Article {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -645,7 +645,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   tags?:
     | T
     | {
-        tag?: T;
+        name?: T;
         id?: T;
       };
   image?: T;
