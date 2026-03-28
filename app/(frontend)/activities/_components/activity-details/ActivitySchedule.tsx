@@ -22,18 +22,21 @@ const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
           <Separator />
         </div>
         <div className="flex flex-col gap-6">
-          <div className="flex">
-            <p className="flex-1 font-bold">الإثنين</p>
-            <div className="flex-1 text-primary">22:00 - 20:00</div>
-          </div>
-          <div className="flex">
-            <p className="flex-1 font-bold">الإثنين</p>
-            <div className="flex-1 text-primary">22:00 - 20:00</div>
-          </div>
-          <div className="flex">
-            <p className="flex-1 font-bold">الإثنين</p>
-            <div className="flex-1 text-primary">22:00 - 20:00</div>
-          </div>
+          {schedules?.map((schedule) => {
+            const date = new Date(schedule.dateAndTime)
+            const day = date.toLocaleDateString('ar-DZ', { weekday: 'long' })
+            const time = date.toLocaleTimeString('ar-DZ', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })
+            return (
+              <div className="flex">
+                <p className="flex-1 font-bold">{day}</p>
+                <div className="flex-1 text-primary">{time}</div>
+              </div>
+            )
+          })}
         </div>
       </CardContent>
     </Card>
