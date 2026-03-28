@@ -1,62 +1,45 @@
-'use client'
-
-import React from 'react'
 import Layout from '@/components/layouts'
 import { ChevronLeft } from 'lucide-react'
 import Image from 'next/image'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import config from '@/payload.config'
+import { getPayload } from 'payload'
+import { notFound } from 'next/navigation'
 
-const articleContent = `
-# أهمية المكتبة في المسجد: منارة العلم والعبادة
+import { Media } from '@/payload-types'
+import { RichText } from '@payloadcms/richtext-lexical/react'
+import ReturnToIndex from '@/components/common/ReturnToIndex'
 
-المكتبة ليست مجرد رفوف للكتب، بل هي **قلب المسجد النابض** الذي يغذي العقول كما تغذي الصلاة الأرواح.
+const BookDetailsPage = async ({
+  params,
+}: {
+  params: Promise<{
+    id: string[]
+  }>
+}) => {
+  const { id } = await params
 
----
+  const payload = await getPayload({ config })
 
-### 1. الأهداف الرئيسية للمكتبة
-تساهم المكتبة في تحقيق عدة أهداف استراتيجية داخل المجتمع المسجدي:
-* **نشر الوعي الشرعي:** توفير المصادر الموثوقة للتفقه في الدين.
-* **دعم الطلبة:** مكان هادئ للمطالعة والبحث العلمي.
-* **حماية الفكر:** توجيه الشباب نحو القراءة النافعة.
+  const result = await payload.find({
+    collection: 'articles',
+    where: {
+      id: { equals: id[0] },
+    },
+  })
+  const article = result.docs[0]
+  if (!article) return notFound()
 
-### 2. إحصائيات تقريبية (مثال لجدول)
-| نوع الكتاب | عدد المجلدات | القسم |
-| :--- | :---: | :--- |
-| علوم القرآن | 150 | القسم أ |
-| الفقه المالكي | 300 | القسم ب |
-| التاريخ الإسلامي | 200 | القسم ج |
-
-> "العلم صيد والكتابة قيده، قيد صيودك بالحبال الواثقة" - الشافعي
-
----
-
-### 3. نصائح لترتيب المكتبة
-1. استخدام تصنيف **ديوي العشرِي** المعدل.
-2. توفير إضاءة مريحة للعين (Warm Light).
-3. تخصيص ركن للأطفال لزرع حب القراءة مبكراً.
-
----
-
-*تم كتابة هذا المقال لدعم مشروع مكتبة مسجد جامعة باب الزوار (USTHB).*
-`
-
-const BookDetailPage: React.FC = () => {
-  const name = 'أهمية المكتبة في المسجد'
+  const media = article.image as Media
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex gap-3 items-center">
-          <span className="text-2xl">فهرس المقالات</span>
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-primary text-2xl font-bold">{name}</span>
-        </div>
+        <ReturnToIndex title="فهرس المقالات" value={article.title} href="/articles" />
         <div className="flex flex-col gap-10 max-w-6xl mx-auto">
-          <p className="text-center text-4xl text-secondary font-bold">أهمية المكتبة في المسجد</p>
+          <p className="text-center text-4xl text-secondary font-bold">{article.title}</p>
 
           <Image
-            src="/static/images/usthb-mosque.jpg"
-            alt="Book"
+            src={media?.url || ''}
+            alt={media?.alt || 'Article'}
             width={0}
             height={0}
             className="w-full object-cover h-100 rounded-xl"
@@ -69,7 +52,7 @@ const BookDetailPage: React.FC = () => {
                 prose-strong:text-primary prose-blockquote:border-r-4 
                 prose-blockquote:border-primary prose-blockquote:pr-4"
           >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{articleContent}</ReactMarkdown>
+            {article.content ? <RichText data={article.content} /> : null}
           </div>
         </div>
       </div>
@@ -77,4 +60,4 @@ const BookDetailPage: React.FC = () => {
   )
 }
 
-export default BookDetailPage
+export default BookDetailsPage

@@ -1,8 +1,5 @@
-import {
-  bookCategoriesConfigArray,
-  bookTypesConfigArray,
-  languagesConfigArray,
-} from '@/utils/constants/data'
+import { bookCategoriesConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
+import { languagesConfigArray } from '@/utils/constants/data'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {

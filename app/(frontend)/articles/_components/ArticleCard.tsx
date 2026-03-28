@@ -5,24 +5,33 @@ import { Badge } from '@/components/ui/badge'
 import { User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+import { Article, Media } from '@/payload-types'
+import { useRouter } from 'next/navigation'
 
-type ArticleCardProps = {}
+interface ArticleCardProps {
+  article: Article
+}
 
-const ArticleCard: React.FC<ArticleCardProps> = () => {
+const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
+  const media = article.image as Media
+
+  const router = useRouter()
   return (
-    <Card>
+    <Card className="flex flex-col justify-between">
       <CardContent className="p-0">
         <div className="relative">
-          <Badge
-            variant="secondary"
-            className="absolute top-4 right-4 rounded-md text-background font-dubai font-bold border border-background bg-secondary/70"
-          >
-            {format(new Date(), 'dd/MM/yyyy')}
-          </Badge>
+          {article.publishDate ? (
+            <Badge
+              variant="secondary"
+              className="absolute top-4 right-4 rounded-md text-background font-dubai font-bold border border-background bg-secondary/70"
+            >
+              {format(article.publishDate, 'dd/MM/yyyy')}
+            </Badge>
+          ) : null}
 
           <Image
-            src="/static/images/quran.png"
-            alt="Article"
+            src={media?.url || ''}
+            alt={media?.alt || 'Article'}
             width={0}
             height={0}
             className="w-full object-cover h-50"
@@ -36,23 +45,30 @@ const ArticleCard: React.FC<ArticleCardProps> = () => {
             backgroundImage: 'url(/static/images/book-pattern.png)',
           }}
         >
-          <div className="flex gap-2.5">
-            <Badge className="bg-primary/15 text-primary">تفسير</Badge>
-            <Badge className="bg-primary/15 text-primary">قرآن</Badge>
+          <div className="flex flex-wrap gap-2.5">
+            {article.tags?.map((tag) => (
+              <Badge key={tag.id} className="bg-primary/15 text-primary">
+                {tag.name}
+              </Badge>
+            ))}
           </div>
           <div className="flex flex-col gap-0.5">
-            <p className="text-xl text-foreground font-bold">مختصر تفسير ابن كثير</p>
+            <p className="text-xl text-foreground font-bold">{article.title}</p>
             <div className="flex items-center gap-2">
-              <p className="font-medium text-foreground text-base">
-                يُعَدّ مصلى الجامعة أكثر من مجرد مكانٍ للصلاة، فهو منارةٌ للعلم والتزكية والتواصل
-                بين طلاب الجامعة وأساتذتها.
-              </p>
+              <p className="font-medium text-foreground text-base">{article.description}</p>
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="text-foreground w-full">سجل الآن</Button>
+        <Button
+          className="text-foreground w-full"
+          onClick={() => {
+            router.push(`/articles/${article.id}`)
+          }}
+        >
+          سجل الآن
+        </Button>
       </CardFooter>
     </Card>
   )

@@ -76,6 +76,7 @@ export interface Config {
     articles: Article;
     loans: Loan;
     reviews: Review;
+    'activity-registrations': ActivityRegistration;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,6 +92,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     loans: LoansSelect<false> | LoansSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -294,7 +296,7 @@ export interface Book {
 export interface Activity {
   id: number;
   title: string;
-  type: 'workshop' | 'conference' | 'reading_club' | 'other';
+  type: 'aqidah' | 'fiqh' | 'hadith' | 'tafsir' | 'sirah' | 'language' | 'other';
   image: number | Media;
   shortDescription: string;
   longDescription: {
@@ -312,13 +314,14 @@ export interface Activity {
     };
     [k: string]: unknown;
   };
-  benefits?:
-    | {
-        benefit?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  targetAudience?: string | null;
+  benefits: {
+    name?: string | null;
+    id?: string | null;
+  }[];
+  targetAudience: {
+    name?: string | null;
+    id?: string | null;
+  }[];
   location?: string | null;
   supervisor?: string | null;
   schedules?:
@@ -327,6 +330,11 @@ export interface Activity {
         id?: string | null;
       }[]
     | null;
+  openForRegistration?: boolean | null;
+  registrationDeadline?: string | null;
+  startDate: string;
+  maxParticipants?: number | null;
+  currentParticipants?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -338,17 +346,17 @@ export interface Article {
   id: number;
   title: string;
   publishDate?: string | null;
-  type: 'workshop' | 'conference' | 'reading_club' | 'other';
+  type: 'aqidah' | 'fiqh' | 'hadith' | 'other';
   author: string;
   tags?:
     | {
-        tag?: string | null;
+        name?: string | null;
         id?: string | null;
       }[]
     | null;
   image: number | Media;
   description: string;
-  content: {
+  content?: {
     root: {
       type: string;
       children: {
@@ -362,7 +370,7 @@ export interface Article {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -391,6 +399,18 @@ export interface Review {
   book: number | Book;
   rating: number;
   comment?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-registrations".
+ */
+export interface ActivityRegistration {
+  id: number;
+  user: number | User;
+  activity: number | Activity;
+  attended?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -449,6 +469,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'activity-registrations';
+        value: number | ActivityRegistration;
       } | null);
   globalSlug?: string | null;
   user:
@@ -618,10 +642,15 @@ export interface ActivitiesSelect<T extends boolean = true> {
   benefits?:
     | T
     | {
-        benefit?: T;
+        name?: T;
         id?: T;
       };
-  targetAudience?: T;
+  targetAudience?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
   location?: T;
   supervisor?: T;
   schedules?:
@@ -630,6 +659,11 @@ export interface ActivitiesSelect<T extends boolean = true> {
         dateAndTime?: T;
         id?: T;
       };
+  openForRegistration?: T;
+  registrationDeadline?: T;
+  startDate?: T;
+  maxParticipants?: T;
+  currentParticipants?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -645,7 +679,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   tags?:
     | T
     | {
-        tag?: T;
+        name?: T;
         id?: T;
       };
   image?: T;
@@ -677,6 +711,17 @@ export interface ReviewsSelect<T extends boolean = true> {
   book?: T;
   rating?: T;
   comment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-registrations_select".
+ */
+export interface ActivityRegistrationsSelect<T extends boolean = true> {
+  user?: T;
+  activity?: T;
+  attended?: T;
   updatedAt?: T;
   createdAt?: T;
 }

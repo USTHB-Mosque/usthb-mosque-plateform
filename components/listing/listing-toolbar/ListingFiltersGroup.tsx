@@ -8,8 +8,8 @@ export interface ListingFilter {
 }
 
 interface ListingFiltersGroupProps {
-  title: string
-  icon: React.ReactNode
+  title?: string
+  icon?: React.ReactNode
   options?: ListingFilter[]
   values: string[] | string
   onChange: (values: any) => void
@@ -48,10 +48,12 @@ const ListingFiltersGroup: React.FC<ListingFiltersGroupProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2.5">
-        <div className="[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-primary">{icon}</div>
-        <p className="text-xl font-bold">{title}</p>
-      </div>
+      {title || icon ? (
+        <div className="flex items-center gap-2.5">
+          {icon ? <div className="[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-primary">{icon}</div> : null}
+          {title ? <p className="text-xl font-bold">{title}</p> : null}
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-4">
         {options?.map((option) => {
           const active = isSelected(option.value)

@@ -7,7 +7,17 @@ import { fileURLToPath } from 'url'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
-import { Admin, User, Media, Book, Activity, Article, Loan, Review } from './collections'
+import {
+  Admin,
+  User,
+  Media,
+  Book,
+  Activity,
+  Article,
+  Loan,
+  Review,
+  ActivityRegistrations,
+} from './collections'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,7 +29,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Admin, User, Media, Book, Activity, Article, Loan, Review],
+  collections: [Admin, User, Media, Book, Activity, Article, Loan, Review, ActivityRegistrations],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

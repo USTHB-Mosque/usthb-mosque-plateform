@@ -1,16 +1,35 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import Layout from '@/components/layouts'
 import { Pagination } from '@/components/common/Pagination'
-import { ButtonGroup } from '@/components/ui/button-group'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import ArticleCard from './_components/ArticleCard'
+import { useSearch } from '@/hooks/use-search'
+import { ArticleSearchParams, ArticleType } from '@/interfaces/articles.interfaces'
+import EmptyData from '@/components/common/EmptyData'
+import ErrorData from '@/components/common/ErrorData'
+import { useGetArticlesQuery } from '@/lib/apis/articles/queries'
+import { articleTypesConfigArray } from '@/utils/constants/articles'
+import ArticleSkeleton from './_components/ArticleSkeleton'
+import { Tag } from 'lucide-react'
 
 const ArticlesPage: React.FC = () => {
-  const [page, setPage] = useState(1)
-  const [tab, setTab] = useState('religious-books')
+  const { searchValues, values, setValue } = useSearch<ArticleSearchParams>({
+    initialValues: {
+      page: 1,
+      limit: 12,
+      search: '',
+      types: [],
+    },
+  })
+
+  const {
+    data: { docs: articles = [], totalPages = 1, totalDocs = 0 } = {},
+    isLoading,
+    isError,
+  } = useGetArticlesQuery(searchValues)
   return (
     <Layout>
       <div className="flex flex-col space-y-14">
@@ -22,42 +41,53 @@ const ArticlesPage: React.FC = () => {
               وجمال الكلمة الهادفة.
             </p>
           </div>
-
-          <ButtonGroup
-            value={tab}
-            onSelect={(value) => setTab(value)}
-            buttons={[
+        </div>
+        <ListingContent>
+          <ListingToolbar
+            onApplyFilters={() => setValue('page', 1)}
+            searchProps={{
+              enabled: true,
+              value: searchValues.search || '',
+              onChange: (value) => setValue('search', value),
+              placeholder: 'عنوان المقال، الكاتب ...',
+            }}
+            filterSections={[
               {
-                label: 'الكتب العلمية',
-                value: 'scientific-books',
-              },
-              {
-                label: 'الكتب الدينية',
-                value: 'religious-books',
+                id: 'types',
+                title: 'التصنيفات',
+                icon: <Tag />,
+                multiple: true,
+                options: articleTypesConfigArray,
+                value: values.types || [],
+                onChange: (v) => setValue('types', v as ArticleType[]),
+                resetValue: [],
               },
             ]}
           />
-        </div>
-        <ListingContent>
-          <ListingToolbar />
 
           <ListingRenderer
-            isEmpty={false}
-            isError={false}
-            isLoading={false}
-            emptyFallback={<div>ok</div>}
+            isEmpty={totalDocs === 0}
+            isError={isError}
+            isLoading={isLoading}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي مقالات" />}
+            errorFallback={<ErrorData />}
+            loader={
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <ArticleSkeleton key={index} />
+                ))}
+              </div>
+            }
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array(8)
-                .fill(0)
-                .map((_, i) => (
-                  <ArticleCard key={i} />
-                ))}
+              {articles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
             </div>
             <Pagination
-              totalPages={100}
-              onPageChange={(value) => setPage(value)}
-              page={page}
+              totalPages={totalPages}
+              onPageChange={(value) => setValue('page', value)}
+              page={values.page || 1}
               dir="rtl"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"
