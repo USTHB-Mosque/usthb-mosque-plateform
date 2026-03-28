@@ -86,7 +86,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
     >
       <body suppressHydrationWarning>
-        <Toaster />
+        <Toaster richColors position="top-center" />
         <QueryClientProvider>{children}</QueryClientProvider>
       </body>
     </html>
