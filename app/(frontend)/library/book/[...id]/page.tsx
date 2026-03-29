@@ -45,6 +45,8 @@ const BookDetailsPage = async ({
               averageRating={book.averageRating}
               ratingCount={book.ratingCount}
               isAvailable={book.availableBooks && book.availableBooks > 0 ? true : false}
+              bookId={book.id}
+              initialFavorited={favorited}
             />
             <BookAvailability
               totalBooks={book.totalBooks}
@@ -59,7 +61,6 @@ const BookDetailsPage = async ({
               author={book.author}
               shortDescription={book.shortDescription}
               tags={book.tags}
-              favoriteAction={<BookFavoriteButton bookId={book.id} initialFavorited={favorited} />}
             />
             <BookDetailedInformation book={book} />
           </div>
