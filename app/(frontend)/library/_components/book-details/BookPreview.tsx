@@ -7,12 +7,16 @@ import Ratings from '@/components/common/Ratings'
 import { Button } from '@/components/ui/button'
 import { BookmarkPlus, Share } from 'lucide-react'
 import { Book, Media } from '@/payload-types'
+import { toast } from 'sonner'
+import BookFavoriteButton from './BookFavoriteButton'
 
 interface BookPreviewProps {
   image: Book['image']
   averageRating: Book['averageRating']
   ratingCount: Book['ratingCount']
   isAvailable: boolean
+  bookId: Book['id']
+  initialFavorited: boolean
 }
 
 const BookPreview: React.FC<BookPreviewProps> = ({
@@ -20,8 +24,16 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   averageRating,
   ratingCount,
   isAvailable,
+  bookId,
+  initialFavorited,
 }) => {
   const media = image as Media
+
+  const onCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    toast.success('تم نسخ الرابط')
+  }
+
   return (
     <Card className="p-4">
       <div>
@@ -55,11 +67,8 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             سجل الآن
           </Button>
           <div className="flex gap-4">
-            <Button variant="outline" className="flex-1 ">
-              <span className="font-bold text-secondary">حفظ</span>
-              <BookmarkPlus />
-            </Button>
-            <Button variant="outline">
+            <BookFavoriteButton bookId={bookId} initialFavorited={initialFavorited} />
+            <Button variant="outline" onClick={onCopyLink}>
               <Share />
             </Button>
           </div>

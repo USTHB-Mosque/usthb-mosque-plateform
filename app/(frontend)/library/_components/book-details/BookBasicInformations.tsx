@@ -9,7 +9,6 @@ interface BookBasicInformationsProps {
   author: Book['author']
   shortDescription?: Book['shortDescription']
   tags: Book['tags']
-  favoriteAction?: React.ReactNode
 }
 
 const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
@@ -17,7 +16,6 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
   author,
   shortDescription,
   tags,
-  favoriteAction,
 }) => {
   return (
     <Card className="p-6">
@@ -34,7 +32,6 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
             </div>
           ) : null}
         </div>
-        {favoriteAction ? <div className="shrink-0 pt-1">{favoriteAction}</div> : null}
       </CardHeader>
       <div className="space-y-4">
         <div className="flex items-center gap-2.5">
