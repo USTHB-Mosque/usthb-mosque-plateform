@@ -1,88 +1,214 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# USThB Mosque Platform
+
+A full-stack web application for managing a mosque community platform, featuring a library system, event management, articles/news, and user authentication.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Next.js 16 (App Router) |
+| **CMS** | Payload CMS 3 |
+| **Database** | Vercel Postgres |
+| **File Storage** | Vercel Blob |
+| **UI Components** | shadcn/ui |
+| **Styling** | Tailwind CSS 4 |
+| **State Management** | Zustand |
+| **Server State** | React Query |
+| **Authentication** | Payload Auth (JWT) |
+| **Payments** | PayPal |
+| **Email** | Nodemailer (Gmail SMTP) |
+
+## Features
+
+### Community Features
+- **Activities/Events** - Browse and register for mosque events
+- **Articles/News** - Islamic articles and community news
+- **User Authentication** - Register, login, profile management
+
+### Library System
+- **Book Catalog** - Browse available books
+- **Book Loans** - Borrow and return books
+- **Reviews & Ratings** - Rate and review books
+- **Favorites** - Save favorite books
+
+### Admin Panel
+- Full CMS powered by Payload
+- Manage all content (books, events, articles, users)
+- Media uploads via Vercel Blob
+
+## Project Structure
+
+```
+├── app/                    # Next.js App Router
+│   ├── (frontend)/        # Public-facing pages
+│   │   ├── activities/    # Events page
+│   │   ├── articles/     # Articles/news page
+│   │   ├── library/       # Book library
+│   │   ├── auth/          # Login/register
+│   │   ├── profile/       # User profile
+│   │   └── ...
+│   └── (payload)/         # Payload admin panel
+│       └── admin/         # /admin routes
+├── collections/           # Payload collection configs
+│   ├── Admin.ts           # Admin users
+│   ├── User.ts            # Community members
+│   ├── Book.ts            # Library books
+│   ├── Activity.ts        # Events
+│   ├── Article.ts         # News/articles
+│   ├── Loan.ts            # Book loans
+│   ├── Media.ts           # File uploads
+│   └── ...
+├── components/            # React components
+│   └── ui/                # shadcn/ui components
+├── actions/               # Server Actions
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utilities and helpers
+├── interfaces/            # TypeScript interfaces
+├── utils/                 # Utility functions
+├── payload.config.ts     # Payload CMS configuration
+└── next.config.ts         # Next.js configuration
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+
+- pnpm (recommended)
+- Vercel account (for deployment)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## PayPal Configuration
-
-### Development (Sandbox)
-
-The project is currently configured for PayPal sandbox testing. The sandbox credentials are already set in `.env`.
-
-### Production Setup
-
-For production deployment, follow these steps:
-
-1. **Create PayPal Live App:**
-   - Go to [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/applications)
-   - Create a new Live App (not sandbox)
-   - Copy the Client ID and Client Secret
-
-2. **Update Environment Variables:**
-
-   ```env
-   # Production PayPal Credentials
-   PAYPAL_CLIENT_ID=your_live_client_id_here
-   PAYPAL_CLIENT_SECRET=your_live_client_secret_here
-   NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_live_client_id_here
-
-   # Production Webhook
-   PAYPAL_WEBHOOK_ID=your_live_webhook_id_here
-
-   # Production URLs
-   NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
-   NEXT_PUBLIC_GRAPHQL_URL=https://yourdomain.com/api/graphql
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd usthb-mosque-plateform
    ```
 
-3. **Setup Webhooks:**
-   - In PayPal Developer Dashboard, go to your Live App
-   - Add webhook URL: `https://yourdomain.com/api/paypal/webhook`
-   - Subscribe to events:
-     - `PAYMENT.CAPTURE.COMPLETED`
-     - `CHECKOUT.ORDER.APPROVED`
-     - `PAYMENT.CAPTURE.DENIED`
-     - `PAYMENT.CAPTURE.REFUNDED`
-   - Copy the Webhook ID to `PAYPAL_WEBHOOK_ID`
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-4. **Deploy:**
-   - Set `NODE_ENV=production` in your deployment environment
-   - The app will automatically use production PayPal APIs
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
 
-### Security Notes
+   Required variables:
+   ```env
+   NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+   NEXT_PUBLIC_API_URL=http://localhost:3000/api
+   PAYLOAD_SECRET=your_random_secret_string
+   POSTGRES_URL=your_postgres_connection_string
+   BLOB_READ_WRITE_TOKEN=your_blob_token
+   BLOB_STORE_ID=your_blob_store_id
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASSWORD=your_app_password
+   ```
 
-- Webhook signature verification is **mandatory** in production
-- Never commit real PayPal credentials to version control
-- Use environment variables for all sensitive data
-- Test thoroughly in sandbox before going live
+4. **Run the development server**
+   ```bash
+   pnpm dev
+   ```
 
-## Learn More
+5. **Open the application**
+   - Frontend: http://localhost:3000
+   - Admin Panel: http://localhost:3000/admin
 
-To learn more about Next.js, take a look at the following resources:
+### Generating Types
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+After modifying Payload collections, regenerate TypeScript types:
+```bash
+pnpm payload:importmap
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Running Migrations
 
-## Deploy on Vercel
+When database schema changes:
+```bash
+pnpm payload:migrate
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm payload:importmap` | Regenerate import map |
+| `pnpm payload:migrate` | Run database migrations |
+
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+### Getting Started
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/your-feature`
+3. **Make** your changes
+4. **Test** your changes locally
+5. **Commit** with clear messages: `git commit -m "Add feature description"`
+6. **Push** to your fork: `git push origin feature/your-feature`
+7. **Create** a Pull Request
+
+### Code Standards
+
+- **TypeScript** - Use TypeScript for all new code
+- **Naming** - Use descriptive names (camelCase for variables, PascalCase for components)
+- **Components** - Use functional components with hooks
+- **Styling** - Use Tailwind CSS classes; follow shadcn/ui patterns
+- **Payload** - Follow Payload best practices (see AGENTS.md)
+
+### Before Submitting
+
+1. Run `pnpm lint` to check for issues
+2. Test your changes thoroughly
+3. Update documentation if needed
+4. Ensure your branch is up to date with main
+
+### Pull Request Guidelines
+
+- Title: Clear, concise description
+- Description: Explain what/why/how
+- Link related issues
+- Request review from maintainers
+
+### Reporting Issues
+
+- Use GitHub Issues
+- Provide clear reproduction steps
+- Include environment details
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Connect repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy automatically on push to main
+
+### Required Environment Variables (Production)
+
+```env
+NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
+PAYLOAD_SECRET=<random-64-chars>
+POSTGRES_URL=<vercel-postgres-connection-string>
+BLOB_READ_WRITE_TOKEN=<vercel-blob-token>
+BLOB_STORE_ID=<vercel-blob-store-id>
+EMAIL_USER=<production-email>
+EMAIL_PASSWORD=<app-password>
+NODE_ENV=production
+```
+
+## License
+
+This project is for educational purposes.
+
+## Support
+
+- Open an issue for bugs or feature requests
+- Contact maintainers for questions
