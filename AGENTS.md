@@ -16,6 +16,60 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 - To validate typescript correctness after modifying code run `tsc --noEmit`
 - Generate import maps after creating or modifying components.
 
+## Environment-Specific Configuration
+
+This project uses Supabase for both database and storage (S3-compatible):
+
+### Development Environment (`.env.local`)
+- **Database**: Local Supabase via CLI (`pnpx supabase start`)
+- **Storage**: Local Supabase S3 via `@payloadcms/storage-s3`
+- **NODE_ENV**: `development`
+- **Connection**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+
+### Preview/Production Environment (`.env`)
+- **Database**: Remote Supabase via `@payloadcms/db-postgres`
+- **Storage**: Remote Supabase S3 via `@payloadcms/storage-s3`
+- **NODE_ENV**: `preview` or `production`
+
+### How It Works
+The `payload.config.ts` uses `@payloadcms/db-postgres` and `@payloadcms/storage-s3` for all environments:
+```typescript
+db: postgresAdapter({
+  pool: { connectionString: process.env.DATABASE_URL || '' },
+  migrationDir: path.resolve(dirname, 'migrations'),
+}),
+
+plugins: [
+  s3Storage({
+    collections: {
+      [Media.slug]: true,
+    },
+    bucket: process.env.S3_BUCKET || 'media',
+    config: {
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+      },
+      region: process.env.S3_REGION || 'local',
+      endpoint: process.env.S3_ENDPOINT || '',
+      forcePathStyle: true,
+    },
+  }),
+],
+```
+
+### Local Development Setup
+1. Start Supabase: `pnpx supabase start` (or `pnpm supabase:start`)
+2. Create storage bucket: `pnpx supabase storage create-bucket media --public`
+3. Start Next.js: `pnpm dev`
+4. Or combine: `pnpm dev` (starts Supabase then Next.js)
+
+### Supabase CLI Commands
+- `pnpm supabase:start` - Start local Supabase stack
+- `pnpm supabase:stop` - Stop local Supabase stack
+- `pnpm supabase:status` - View local Supabase status
+- `pnpm dev:stop` - Stop Supabase (alias for stop)
+
 ## Project Structure
 
 ```
