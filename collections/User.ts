@@ -3,6 +3,9 @@ import { CollectionConfig } from 'payload'
 export const User: CollectionConfig = {
   slug: 'users',
   access: {
+    admin: ({ req: { user } }) => {
+      return user?.role === 'admin'
+    },
     create: () => true,
     read: ({ req: { user } }) => {
       if (!user) return false
