@@ -3,7 +3,6 @@ import React from 'react'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/lib/providers/query-client.provider'
-import { getAuthenticatedUser } from '@/lib/auth'
 import { Toaster } from '@/components/ui/sonner'
 
 const khalidArt = localFont({
