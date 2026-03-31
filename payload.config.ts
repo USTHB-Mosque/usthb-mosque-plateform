@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { s3Storage } from '@payloadcms/storage-s3'
 import {
-  Admin,
   User,
   Media,
   Book,
@@ -24,13 +23,12 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: Admin.slug,
+    user: 'users',
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
   collections: [
-    Admin,
     User,
     Media,
     Book,

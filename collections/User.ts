@@ -1,19 +1,17 @@
 import { CollectionConfig } from 'payload'
 
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
-
 export const User: CollectionConfig = {
   slug: 'users',
   access: {
     create: () => true,
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { id: { equals: user.id } }
     },
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { id: { equals: user.id } }
     },
   },
@@ -25,7 +23,7 @@ export const User: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email'],
+    defaultColumns: ['email', 'role'],
   },
   fields: [
     {
@@ -37,6 +35,17 @@ export const User: CollectionConfig = {
       type: 'text',
       admin: { readOnly: true, position: 'sidebar' },
       index: true,
+    },
+    {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'user',
+      options: ['admin', 'user'],
+      saveToJWT: true,
+      access: {
+        update: ({ req: { user } }) => Boolean(user?.role === 'admin'),
+      },
     },
     {
       name: 'profilePicture',

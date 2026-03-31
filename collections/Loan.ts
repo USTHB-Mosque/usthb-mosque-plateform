@@ -1,25 +1,23 @@
 import { CollectionConfig } from 'payload'
 
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
-
 export const Loan: CollectionConfig = {
   slug: 'loans',
   admin: { useAsTitle: 'id' },
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => Boolean(user?.collection === 'users' || isAdmin(user)),
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { user: { equals: user.id } }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { user: { equals: user.id } }
     },
   },
