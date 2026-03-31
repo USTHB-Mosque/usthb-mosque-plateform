@@ -63,12 +63,10 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    admins: AdminAuthOperations;
     users: UserAuthOperations;
   };
   blocks: {};
   collections: {
-    admins: Admin;
     users: User;
     media: Media;
     books: Book;
@@ -85,7 +83,6 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    admins: AdminsSelect<false> | AdminsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     books: BooksSelect<false> | BooksSelect<true>;
@@ -107,28 +104,10 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user: Admin | User;
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
-  };
-}
-export interface AdminAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
   };
 }
 export interface UserAuthOperations {
@@ -151,37 +130,13 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins".
- */
-export interface Admin {
-  id: number;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'admins';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
   fullName?: string | null;
   sub?: string | null;
+  role: 'admin' | 'user';
   profilePicture?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
@@ -209,6 +164,7 @@ export interface User {
 export interface Media {
   id: number;
   alt?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -452,10 +408,6 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'admins';
-        value: number | Admin;
-      } | null)
-    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
@@ -492,15 +444,10 @@ export interface PayloadLockedDocument {
         value: number | BookFavorite;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'admins';
-        value: number | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: number | User;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -510,15 +457,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user:
-    | {
-        relationTo: 'admins';
-        value: number | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: number | User;
-      };
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -545,33 +487,12 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins_select".
- */
-export interface AdminsSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
   fullName?: T;
   sub?: T;
+  role?: T;
   profilePicture?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -596,6 +517,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

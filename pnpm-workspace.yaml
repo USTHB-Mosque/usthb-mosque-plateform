@@ -7,4 +7,5 @@ ignoredBuiltDependencies:
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - node-sass
+  - supabase
   - utf-8-validate

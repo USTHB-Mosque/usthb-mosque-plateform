@@ -5,7 +5,7 @@ import ProfileDashboard from './_components/ProfileDashboard'
 
 export default async function ProfilePage() {
   const data = await getProfileDashboardData()
-  if (!data) redirect('/auth/login')
+  if (!data) redirect('/auth')
 
   return (
     <Layout>

@@ -2,8 +2,14 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { cookies as nextCookies } from 'next/headers'
+import { User } from '@/payload-types'
 
-export const login = async (email: string, password: string) => {
+interface LoginResult {
+  user: User | undefined
+  token?: string
+}
+
+export const login = async (email: string, password: string): Promise<LoginResult> => {
   const payload = await getPayload({ config })
   const cookies = await nextCookies()
   try {
@@ -23,9 +29,9 @@ export const login = async (email: string, password: string) => {
         maxAge: 60 * 60 * 24 * 7,
       })
     }
-    return user
+    return { user: user as User, token }
   } catch (error) {
     console.log(error)
-    return undefined
+    return { user: undefined }
   }
 }

@@ -90,7 +90,7 @@ httpClient.interceptors.response.use(
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
           // Optional: redirect to login
-          window.location.href = '/login'
+          window.location.href = '/auth/login'
         }
         return Promise.reject(refreshError)
       } finally {

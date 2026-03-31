@@ -6,11 +6,11 @@ export const Review: CollectionConfig = {
     read: () => true,
     create: () => true,
     update: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (req.user?.role === 'admin') return true
       return false
     },
     delete: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (req.user?.role === 'admin') return true
       return false
     },
   },

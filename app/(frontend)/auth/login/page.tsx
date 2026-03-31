@@ -18,9 +18,10 @@ import {
 } from '@/components/ui/form'
 import { login } from '@/actions/auth/login'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const loginSchema = z.object({
-  email: z.email({ message: 'البريد الإلكتروني غير صحيح' }),
+  email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
   password: z.string().min(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }),
 })
 
@@ -39,22 +40,33 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = (values: LoginFormValues) => {
     startTransition(async () => {
-      const user = await login(values.email, values.password)
-      if (!user) {
+      const result = await login(values.email, values.password)
+      if (!result?.user) {
         toast.error('فشل تسجيل الدخول')
       } else {
+        if (result.token) {
+          localStorage.setItem('access_token', result.token)
+        }
         toast.success('تم تسجيل الدخول بنجاح')
-        router.push('/library')
+        router.push(result.user.role === 'admin' ? '/admin' : '/')
       }
     })
   }
 
   return (
-    <div>
-      <p className="">تسجيل الدخول</p>
+    <div className="w-full max-w-md mx-auto p-6 space-y-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">تسجيل الدخول</h1>
+        <p className="text-muted-foreground text-sm mt-2">
+          لديك حساب بالفعل؟{' '}
+          <Link href="/auth/register" className="text-primary hover:underline">
+            إنشاء حساب
+          </Link>
+        </p>
+      </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -76,7 +88,7 @@ const LoginPage: React.FC = () => {
               <FormItem>
                 <FormLabel>كلمة المرور</FormLabel>
                 <FormControl>
-                  <Input type="text" {...field} disabled={isPending} />
+                  <Input type="password" {...field} disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

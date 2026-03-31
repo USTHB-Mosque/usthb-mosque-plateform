@@ -1,14 +1,12 @@
 import path from 'path'
-import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
-import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
+import { s3Storage } from '@payloadcms/storage-s3'
 import {
-  Admin,
   User,
   Media,
   Book,
@@ -25,13 +23,24 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: Admin.slug,
+    user: 'users',
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    routes: {
+      login: '/login',
+      createFirstUser: '/first-user',
+      account: '/account',
+    },
+    components: {
+      views: {
+        login: { Component: '@/components/admin-views/login/Login' },
+        firstUser: { Component: '@/components/admin-views/first-user/FirstUser' },
+        account: { Component: '@/components/admin-views/account/Account' },
+      },
+    },
   },
   collections: [
-    Admin,
     User,
     Media,
     Book,
@@ -51,24 +60,31 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 
-  db: vercelPostgresAdapter({
-    pool: { connectionString: process.env.POSTGRES_URL || '' },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URL || '' },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
+
   plugins: [
-    cloudStoragePlugin({
+    s3Storage({
       collections: {
         [Media.slug]: {
-          adapter: vercelBlobAdapter({
-            token: process.env.BLOB_READ_WRITE_TOKEN || '',
-            storeId: process.env.BLOB_STORE_ID || '',
-          }),
-          disableLocalStorage: true,
-          disablePayloadAccessControl: true,
+          prefix: 'media',
         },
+      },
+      bucket: process.env.S3_BUCKET || 'media',
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        },
+        region: process.env.S3_REGION || 'local',
+        endpoint: process.env.S3_ENDPOINT || '',
+        forcePathStyle: true,
       },
     }),
   ],
+
   email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_USER || '',
     defaultFromName: process.env.EMAIL_USER || '',
