@@ -4,7 +4,12 @@ import { getPayload } from 'payload'
 import { cookies as nextCookies } from 'next/headers'
 import { User } from '@/payload-types'
 
-export const register = async (email: string, password: string, fullName: string): Promise<User | undefined> => {
+interface RegisterResult {
+  user: User | undefined
+  token?: string
+}
+
+export const register = async (email: string, password: string, fullName: string): Promise<RegisterResult> => {
   const payload = await getPayload({ config })
   const cookies = await nextCookies()
   try {
@@ -35,9 +40,9 @@ export const register = async (email: string, password: string, fullName: string
         maxAge: 60 * 60 * 24 * 7,
       })
     }
-    return user as User
+    return { user: user as User, token }
   } catch (error) {
     console.log(error)
-    return undefined
+    return { user: undefined }
   }
 }

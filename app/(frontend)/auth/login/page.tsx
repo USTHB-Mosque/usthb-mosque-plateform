@@ -40,12 +40,15 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = (values: LoginFormValues) => {
     startTransition(async () => {
-      const user = await login(values.email, values.password)
-      if (!user) {
+      const result = await login(values.email, values.password)
+      if (!result?.user) {
         toast.error('فشل تسجيل الدخول')
       } else {
+        if (result.token) {
+          localStorage.setItem('access_token', result.token)
+        }
         toast.success('تم تسجيل الدخول بنجاح')
-        router.push(user.role === 'admin' ? '/admin' : '/')
+        router.push(result.user.role === 'admin' ? '/admin' : '/')
       }
     })
   }

@@ -47,10 +47,13 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit = (values: RegisterFormValues) => {
     startTransition(async () => {
-      const user = await register(values.email, values.password, values.fullName)
-      if (!user) {
+      const result = await register(values.email, values.password, values.fullName)
+      if (!result?.user) {
         toast.error('فشل إنشاء الحساب')
       } else {
+        if (result.token) {
+          localStorage.setItem('access_token', result.token)
+        }
         toast.success('تم إنشاء الحساب بنجاح')
         router.push('/')
       }

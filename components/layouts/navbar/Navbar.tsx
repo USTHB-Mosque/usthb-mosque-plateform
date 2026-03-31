@@ -12,28 +12,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogOut, User, Settings } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { Button } from '@/components/ui/button'
-import { useGetProfileQuery, useLogoutMutation } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth/queries'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { logout } from '@/actions/auth/logout'
+import { toast } from 'sonner'
 
 const Navbar: React.FC = () => {
   const { data: { user } = { user: undefined } } = useGetProfileQuery()
-
-  const { mutate: logout, isPending } = useLogoutMutation()
-
   const router = useRouter()
 
   const media = user?.profilePicture as Media
 
-  const onLogout = () => {
-    logout(undefined, {
-      onSuccess: () => {
-        router.push('/auth')
-      },
-      onError: (error) => {
-        console.log(error)
-      },
-    })
+  const onLogout = async () => {
+    await logout()
+    localStorage.removeItem('access_token')
+    toast.success('تم تسجيل الخروج بنجاح')
+    router.push('/auth/login')
   }
 
   return (
