@@ -27,6 +27,18 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    routes: {
+      login: '/login',
+      createFirstUser: '/first-user',
+      account: '/account',
+    },
+    components: {
+      views: {
+        login: { Component: '@/components/admin-views/login/Login' },
+        firstUser: { Component: '@/components/admin-views/first-user/FirstUser' },
+        account: { Component: '@/components/admin-views/account/Account' },
+      },
+    },
   },
   collections: [
     User,
