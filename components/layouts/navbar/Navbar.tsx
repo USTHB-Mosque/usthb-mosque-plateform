@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
   const onLogout = () => {
     logout(undefined, {
       onSuccess: () => {
-        router.push('/auth/login')
+        router.push('/auth')
       },
       onError: (error) => {
         console.log(error)
