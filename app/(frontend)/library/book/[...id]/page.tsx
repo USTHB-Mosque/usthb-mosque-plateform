@@ -31,6 +31,18 @@ const BookDetailsPage = async ({
   const book = result.docs[0]
   if (!book) return notFound()
 
+  const similarBooksResult = await payload.find({
+    collection: 'books',
+    where: {
+      and: [
+        { type: { equals: book.type } },
+        { id: { not_equals: book.id } },
+      ],
+    },
+    limit: 4,
+    sort: '-publishDate',
+  })
+
   const { favorited } = await getBookFavoriteState(book.id)
 
   return (
@@ -62,7 +74,7 @@ const BookDetailsPage = async ({
               shortDescription={book.shortDescription}
               tags={book.tags}
             />
-            <BookDetailedInformation book={book} />
+            <BookDetailedInformation book={book} similarBooks={similarBooksResult.docs} />
           </div>
         </div>
       </div>

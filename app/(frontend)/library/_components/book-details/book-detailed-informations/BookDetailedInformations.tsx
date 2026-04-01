@@ -10,9 +10,10 @@ import { Book } from '@/payload-types'
 
 interface BookDetailedInformationsProps {
   book: Book
+  similarBooks: Book[]
 }
 
-const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ book }) => {
+const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ book, similarBooks }) => {
   return (
     <Card>
       <Tabs defaultValue="similar-books">
@@ -22,7 +23,7 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
           <TabsTrigger value="full-description">الوصف الكامل</TabsTrigger>
         </TabsList>
         <TabsContent value="similar-books">
-          <SimilarBooks type={book.type} currentBookId={book.id} />
+          <SimilarBooks books={similarBooks} />
         </TabsContent>
         <TabsContent value="ratings">
           <BookRatings bookId={book.id} />
