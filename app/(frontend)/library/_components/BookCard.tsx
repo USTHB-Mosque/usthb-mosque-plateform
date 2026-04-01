@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Book, Media } from '@/payload-types'
+import { getImageUrl } from '@/utils/image-utils'
 
 type BookCardProps = {
   book: Book
@@ -17,6 +18,7 @@ type BookCardProps = {
 
 const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) => {
   const media = book.image as Media
+  const imageUrl = getImageUrl(media?.url)
   const router = useRouter()
   return (
     <Card className={cn(className, 'flex flex-col justify-between h-full')}>
@@ -33,8 +35,8 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
             </Badge>
           ) : null}
           <Image
-            src={media.url || ''}
-            alt={media.alt || 'Book'}
+            src={imageUrl}
+            alt={media?.alt || 'Book'}
             fill
             className={cn('object-cover rounded-t-xl', imageClassName)}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 100vw, (max-width: 1024px) 33vw, 25vw"

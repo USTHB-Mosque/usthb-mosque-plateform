@@ -42,7 +42,7 @@ const ProfilePasswordForm: React.FC = () => {
               type="password"
               autoComplete="current-password"
               disabled={pending}
-              dir="ltr"
+              dir="rtl"
               className="text-left"
             />
           </div>
@@ -54,7 +54,7 @@ const ProfilePasswordForm: React.FC = () => {
               type="password"
               autoComplete="new-password"
               disabled={pending}
-              dir="ltr"
+              dir="rtl"
               className="text-left"
             />
           </div>
@@ -66,7 +66,7 @@ const ProfilePasswordForm: React.FC = () => {
               type="password"
               autoComplete="new-password"
               disabled={pending}
-              dir="ltr"
+              dir="rtl"
               className="text-left"
             />
           </div>

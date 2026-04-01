@@ -48,7 +48,7 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
           </div>
           <div className="flex gap-4">
             <Slider
-              dir="ltr"
+              dir="rtl"
               min={1}
               max={30}
               value={[day]}

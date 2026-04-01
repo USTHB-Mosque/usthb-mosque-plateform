@@ -86,7 +86,7 @@ const ActivitiesPage: React.FC = () => {
               totalPages={totalPages}
               onPageChange={(value) => setValue('page', value)}
               page={values.page || 1}
-              dir="ltr"
+              dir="rtl"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"
             />

@@ -4,6 +4,7 @@ import { User } from 'lucide-react'
 import Image from 'next/image'
 import { Activity, Media } from '@/payload-types'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
+import { getImageUrl } from '@/utils/image-utils'
 
 interface ActivityHeaderProps {
   title: Activity['title']
@@ -14,11 +15,12 @@ interface ActivityHeaderProps {
 
 const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps) => {
   const media = image as Media
+  const imageUrl = getImageUrl(media?.url)
   return (
     <div className="flex flex-col h-75 p-8 relative">
       <Image
-        src={media.url || ''}
-        alt={media.alt || 'Activity'}
+        src={imageUrl}
+        alt={media?.alt || 'Activity'}
         className="rounded-xl object-cover absolute top-0 left-0 h-full w-full z-0"
         width={1200}
         height={300}

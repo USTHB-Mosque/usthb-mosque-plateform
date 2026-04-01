@@ -41,14 +41,16 @@ const step2Schema = z.object({
   schoolCertificate: z.any().optional(),
 })
 
-const step3Schema = z.object({
-  email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
-  password: z.string().min(8, { message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'كلمات المرور غير متطابقة',
-  path: ['confirmPassword'],
-})
+const step3Schema = z
+  .object({
+    email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
+    password: z.string().min(8, { message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'كلمات المرور غير متطابقة',
+    path: ['confirmPassword'],
+  })
 
 type Step1Values = z.infer<typeof step1Schema>
 type Step2Values = z.infer<typeof step2Schema>
@@ -105,8 +107,12 @@ export default function RegisterPage() {
 
     startTransition(async () => {
       const store = useAuthFormStore.getState()
-      const result = await register(store.email, store.password, `${store.firstName} ${store.lastName}`)
-      
+      const result = await register(
+        store.email,
+        store.password,
+        `${store.firstName} ${store.lastName}`,
+      )
+
       if (!result?.user) {
         toast.error('فشل إنشاء الحساب')
       } else {
@@ -127,8 +133,21 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen">
-      {/* Form Section - Left */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-[140px] py-6 sm:py-8 lg:py-[48px] order-2 lg:order-1">
+      {/* Image Section - Left */}
+      <div className="w-full lg:w-1/2 p-3 sm:p-4 order-2">
+        <div className="w-full h-[30vh] sm:h-[40vh] lg:h-full rounded-2xl sm:rounded-3xl overflow-hidden relative">
+          <Image
+            src={stepImages[step as 1]}
+            alt="تسجيل"
+            fill
+            className="object-cover scale-x-[-1]"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+        </div>
+      </div>
+
+      {/* Form Section - Right */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-[140px] py-6 sm:py-8 lg:py-[48px] order-1">
         {/* Logo */}
         <div className="flex justify-center mb-4 sm:mb-5 lg:mb-6">
           <Image
@@ -142,19 +161,27 @@ export default function RegisterPage() {
 
         {/* Title & Description */}
         <div className="text-center mb-4 sm:mb-5 lg:mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-bold text-gray-900 mb-1 sm:mb-2">{titles[step as 1].title}</h1>
-          <p className="text-xs sm:text-sm md:text-base lg:text-base text-gray-500">{titles[step as 1].desc}</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-bold text-gray-900 mb-1 sm:mb-2">
+            {titles[step as 1].title}
+          </h1>
+          <p className="text-xs sm:text-sm md:text-base lg:text-base text-gray-500">
+            {titles[step as 1].desc}
+          </p>
         </div>
 
         {/* Stepper - Left to Right */}
         <div className="flex items-center justify-center mb-4 sm:mb-5 lg:mb-8">
           {[1, 2, 3].map((s, idx) => (
             <React.Fragment key={s}>
-              <div className={`w-7 sm:w-8 md:w-9 lg:w-10 h-7 sm:h-8 md:h-9 lg:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${step >= s ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'}`}>
+              <div
+                className={`w-7 sm:w-8 md:w-9 lg:w-10 h-7 sm:h-8 md:h-9 lg:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${step >= s ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'}`}
+              >
                 {s}
               </div>
               {idx < 2 && (
-                <div className={`w-8 sm:w-10 md:w-12 lg:w-16 h-0.5 sm:h-1 mx-1 sm:mx-2 ${step > s ? 'bg-primary' : 'bg-gray-200'}`} />
+                <div
+                  className={`w-8 sm:w-10 md:w-12 lg:w-16 h-0.5 sm:h-1 mx-1 sm:mx-2 ${step > s ? 'bg-primary' : 'bg-gray-200'}`}
+                />
               )}
             </React.Fragment>
           ))}
@@ -162,40 +189,73 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <Form {...formStep1}>
-            <form onSubmit={formStep1.handleSubmit(handleNextStep1)} className="space-y-3 sm:space-y-4">
-              <FormField control={formStep1.control} name="firstName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">الاسم الأول</FormLabel>
-                  <FormControl>
-                    <Input placeholder="الاسم الأول" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep1.control} name="lastName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">اسم العائلة</FormLabel>
-                  <FormControl>
-                    <Input placeholder="اسم العائلة" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep1.control} name="phoneNumber" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">رقم الهاتف</FormLabel>
-                  <FormControl>
-                    <Input placeholder="05xxxxxxxx" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <Button type="submit" className="w-full h-10 sm:h-11 lg:h-12 text-sm sm:text-base font-bold mt-2">
+            <form
+              onSubmit={formStep1.handleSubmit(handleNextStep1)}
+              className="space-y-3 sm:space-y-4"
+            >
+              <FormField
+                control={formStep1.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">الاسم الأول</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="الاسم الأول"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep1.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">اسم العائلة</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="اسم العائلة"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep1.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">رقم الهاتف</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="05xxxxxxxx"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full h-10 sm:h-11 lg:h-12 text-sm sm:text-base font-bold mt-2"
+              >
                 التالي
               </Button>
               <p className="text-center text-gray-600 text-xs sm:text-sm mt-3">
                 لديك حساب؟
-                <Link href="/auth/login" className="text-primary font-semibold hover:underline mr-1">
+                <Link
+                  href="/auth/login"
+                  className="text-primary font-semibold hover:underline mr-1"
+                >
                   تسجيل الدخول الآن
                 </Link>
               </p>
@@ -205,45 +265,75 @@ export default function RegisterPage() {
 
         {step === 2 && (
           <Form {...formStep2}>
-            <form onSubmit={formStep2.handleSubmit(handleNextStep2)} className="space-y-3 sm:space-y-4">
-              <FormField control={formStep2.control} name="state" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">الولاية</FormLabel>
-                  <FormControl>
-                    <Input placeholder="أدخل الولاية" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep2.control} name="speciality" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">التخصص</FormLabel>
-                  <FormControl>
-                    <Input placeholder="أدخل التخصص" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep2.control} name="schoolCertificate" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">شهادة المدرسة</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null
-                        useAuthFormStore.getState().setField('schoolCertificate', file)
-                        field.onChange(file)
-                      }}
-                      className="h-10 sm:h-11 text-xs sm:text-sm file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white file:cursor-pointer"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+            <form
+              onSubmit={formStep2.handleSubmit(handleNextStep2)}
+              className="space-y-3 sm:space-y-4"
+            >
+              <FormField
+                control={formStep2.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">الولاية</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="أدخل الولاية"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep2.control}
+                name="speciality"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">التخصص</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="أدخل التخصص"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep2.control}
+                name="schoolCertificate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">
+                      شهادة المدرسة
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          useAuthFormStore.getState().setField('schoolCertificate', file)
+                          field.onChange(file)
+                        }}
+                        className="h-10 sm:h-11 text-xs sm:text-sm file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white file:cursor-pointer"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex gap-2 sm:gap-3 mt-2">
-                <Button type="button" variant="outline" className="flex-1 h-10 sm:h-11 text-sm font-bold" onClick={() => setStep(1)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-10 sm:h-11 text-sm font-bold"
+                  onClick={() => setStep(1)}
+                >
                   السابق
                 </Button>
                 <Button type="submit" className="flex-1 h-10 sm:h-11 text-sm font-bold">
@@ -252,7 +342,10 @@ export default function RegisterPage() {
               </div>
               <p className="text-center text-gray-600 text-xs sm:text-sm mt-3">
                 لديك حساب؟
-                <Link href="/auth/login" className="text-primary font-semibold hover:underline mr-1">
+                <Link
+                  href="/auth/login"
+                  className="text-primary font-semibold hover:underline mr-1"
+                >
                   تسجيل الدخول الآن
                 </Link>
               </p>
@@ -262,45 +355,90 @@ export default function RegisterPage() {
 
         {step === 3 && (
           <Form {...formStep3}>
-            <form onSubmit={formStep3.handleSubmit(handleSubmit)} className="space-y-3 sm:space-y-4">
-              <FormField control={formStep3.control} name="email" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">البريد الإلكتروني</FormLabel>
-                  <FormControl>
-                    <Input placeholder="example@mail.com" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep3.control} name="password" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">كلمة المرور</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={formStep3.control} name="confirmPassword" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 text-xs sm:text-sm">تأكيد كلمة المرور</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+            <form
+              onSubmit={formStep3.handleSubmit(handleSubmit)}
+              className="space-y-3 sm:space-y-4"
+            >
+              <FormField
+                control={formStep3.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">
+                      البريد الإلكتروني
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="example@mail.com"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep3.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">كلمة المرور</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep3.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">
+                      تأكيد كلمة المرور
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex gap-2 sm:gap-3 mt-2">
-                <Button type="button" variant="outline" className="flex-1 h-10 sm:h-11 text-sm font-bold" onClick={() => setStep(2)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-10 sm:h-11 text-sm font-bold"
+                  onClick={() => setStep(2)}
+                >
                   السابق
                 </Button>
-                <Button type="submit" className="flex-1 h-10 sm:h-11 text-sm font-bold" disabled={isPending}>
+                <Button
+                  type="submit"
+                  className="flex-1 h-10 sm:h-11 text-sm font-bold"
+                  disabled={isPending}
+                >
                   {isPending ? 'جاري...' : 'إنشاء حساب'}
                 </Button>
               </div>
               <p className="text-center text-gray-600 text-xs sm:text-sm mt-3">
                 لديك حساب؟
-                <Link href="/auth/login" className="text-primary font-semibold hover:underline mr-1">
+                <Link
+                  href="/auth/login"
+                  className="text-primary font-semibold hover:underline mr-1"
+                >
                   تسجيل الدخول الآن
                 </Link>
               </p>
@@ -308,18 +446,7 @@ export default function RegisterPage() {
           </Form>
         )}
       </div>
-
-      {/* Image Section - Right - Changes based on step */}
-      <div className="w-full lg:w-1/2 p-3 sm:p-4 order-1 lg:order-2">
-        <div className="w-full h-[30vh] sm:h-[40vh] lg:h-full rounded-2xl sm:rounded-3xl overflow-hidden relative">
-          <Image 
-            src={stepImages[step as 1]} 
-            alt={`إنشاء حساب - الخطوة ${step}`} 
-            fill 
-            className="object-cover scale-x-[-1]" 
-          />
-        </div>
-      </div>
     </div>
   )
 }
+

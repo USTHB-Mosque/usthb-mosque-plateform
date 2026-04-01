@@ -9,6 +9,7 @@ import { BookmarkPlus, Share } from 'lucide-react'
 import { Book, Media } from '@/payload-types'
 import { toast } from 'sonner'
 import BookFavoriteButton from './BookFavoriteButton'
+import { getImageUrl } from '@/utils/image-utils'
 
 interface BookPreviewProps {
   image: Book['image']
@@ -28,6 +29,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   initialFavorited,
 }) => {
   const media = image as Media
+  const imageUrl = getImageUrl(media?.url)
 
   const onCopyLink = () => {
     navigator.clipboard.writeText(window.location.href)
@@ -50,7 +52,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             </Badge>
           ) : null}
           <Image
-            src={media?.url || ''}
+            src={imageUrl}
             alt={media?.alt || 'Book'}
             width={400}
             height={500}

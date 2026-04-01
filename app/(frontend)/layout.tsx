@@ -97,7 +97,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <html
       lang="ar"
-      dir="ltr"
+      dir="rtl"
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
     >
       <body suppressHydrationWarning>

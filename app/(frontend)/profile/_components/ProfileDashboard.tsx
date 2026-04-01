@@ -10,6 +10,7 @@ import ProfilePasswordForm from './ProfilePasswordForm'
 import ProfileFavoritesGrid from './ProfileFavoritesGrid'
 import ProfileLoansList from './ProfileLoansList'
 import ProfileRegistrationsList from './ProfileRegistrationsList'
+import { getImageUrl } from '@/utils/image-utils'
 
 export type ProfileDashboardData = {
   user: User
@@ -25,6 +26,7 @@ type ProfileDashboardProps = {
 const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
   const { user, favorites, registrations, loans } = data
   const media = user.profilePicture as Media | undefined
+  const avatarUrl = getImageUrl(media?.url)
 
   return (
     <div className="flex flex-col gap-10 max-w-5xl mx-auto pb-16 px-4 sm:px-6">
@@ -37,8 +39,8 @@ const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
 
       <Card className="border-border/80 shadow-sm overflow-hidden">
         <CardHeader className="flex flex-row flex-wrap items-center gap-6 border-b border-border/60 bg-background-2/80 py-6 px-6">
-          <Avatar className="h-20 w-20 border-2 border-primary/20 flex-shrink-0">
-            <AvatarImage src={media?.url || ''} alt={media?.alt || ''} />
+            <Avatar className="h-20 w-20 border-2 border-primary/20 flex-shrink-0">
+            <AvatarImage src={avatarUrl} alt={media?.alt || ''} />
             <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold font-dubai">
               {user.fullName?.substring(0, 2).toUpperCase() ||
                 user.email?.substring(0, 2).toUpperCase()}

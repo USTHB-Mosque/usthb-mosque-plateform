@@ -7,6 +7,7 @@ import { Activity, Media } from '@/payload-types'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
+import { getImageUrl } from '@/utils/image-utils'
 
 interface ActivityCardProps {
   activity: Activity
@@ -14,12 +15,13 @@ interface ActivityCardProps {
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const media = activity.image as Media
+  const imageUrl = getImageUrl(media?.url)
   return (
     <Card className="flex flex-col md:flex-row">
       <div className="relative w-full md:w-[400px] h-48 md:h-75 flex-shrink-0">
         <Image
-          src={media.url || ''}
-          alt={media.alt || ''}
+          src={imageUrl}
+          alt={media?.alt || ''}
           fill
           className="object-cover rounded-t-xl md:rounded-l-xl md:rounded-tr-none"
           sizes="(max-width: 768px) 100vw, 50vw"

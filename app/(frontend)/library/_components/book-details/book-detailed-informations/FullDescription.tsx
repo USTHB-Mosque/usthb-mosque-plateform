@@ -31,8 +31,8 @@ const FullDescription: React.FC<FullDescriptionProps> = ({
     <Card className="p-6 border-none shadow-none bg-transparent">
       <CardContent className="space-y-6">
         <div
-          dir="ltr"
-          className="prose prose-lg max-w-none font-yamama text-left 
+          dir="rtl"
+          className="prose prose-lg max-w-none font-yamama text-right 
                      prose-headings:font-khalid prose-headings:text-secondary 
                      prose-strong:text-primary prose-p:leading-relaxed"
         >

@@ -63,7 +63,7 @@ function PaginationPrevious({
       className={cn('rounded-[4px] border border-border h-10', className)}
       {...props}
     >
-      <ChevronLeft />
+      <ChevronRight />
       <span className="hidden md:inline-block">{children}</span>
     </Button>
   )
@@ -82,7 +82,7 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden md:inline-block">{children}</span>
-      <ChevronRight />
+      <ChevronLeft />
     </Button>
   )
 }
