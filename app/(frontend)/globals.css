@@ -15,6 +15,7 @@
   --primary-700: oklch(0.442 0.185 235.463);
   --primary-800: oklch(0.224 0.075 231.902);
   --primary-900: oklch(0.224 0.075 231.902);
+  --primary-1000: #0AAF92;
   --primary: var(--primary-600);
   --primary-foreground: var(--color-white);
 
@@ -253,4 +254,15 @@ body {
 .custom-scrollbar {
   scrollbar-color: #4b5563 #f1f1f1;
   scrollbar-width: thin;
+}
+
+
+.no-scrollbar {
+  height: 100vh;
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }

@@ -70,6 +70,15 @@ const dubai = localFont({
   variable: '--font-dubai',
 })
 
+const Uthmanic = localFont({
+  src: [
+    {
+      path: '../../public/static/fonts/KFGQPC_Uthmanic_Script_HAFS.otf',
+    }
+  ],
+  variable: '--font-uthmanic',
+})
+
 export const metadata: Metadata = {
   description: 'A project using Payload and Next.js with Arabic Typography',
   title: 'Payload Arabic Project',
@@ -80,7 +89,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
     <html
       lang="ar"
       dir="rtl"
-      className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
+      className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${Uthmanic.variable} `}
     >
       <body suppressHydrationWarning>
         <main>{children}</main>
