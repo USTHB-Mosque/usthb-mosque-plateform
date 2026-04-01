@@ -1,10 +1,10 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Layout from '@/components/layouts'
 import BookCard from './_components/BookCard'
 import { Pagination } from '@/components/common/Pagination'
-import { ButtonGroup } from '@/components/ui/button-group'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
@@ -19,6 +19,8 @@ import { bookTypesConfigArray } from '@/utils/constants/books'
 import { BookOpenCheck, Languages, Tag } from 'lucide-react'
 
 const LibraryPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<BookCategory>(BookCategory.Religious)
+  
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
     initialValues: {
       page: 1,
@@ -30,6 +32,11 @@ const LibraryPage: React.FC = () => {
       category: BookCategory.Religious,
     },
   })
+
+  useEffect(() => {
+    setActiveTab(values.category)
+  }, [values.category])
+
   const {
     data: { docs: books = [], totalPages = 1, totalDocs = 0 } = {},
     isLoading,
@@ -47,29 +54,16 @@ const LibraryPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="w-full px-4">
-            <ButtonGroup className="flex flex-wrap justify-center gap-2 sm:gap-3">
-              {[
-                {
-                  label: 'الكتب العلمية',
-                  value: BookCategory.Scientific,
-                },
-                {
-                  label: 'الكتب الدينية',
-                  value: BookCategory.Religious,
-                },
-              ].map((btn) => (
-                <Button
-                  key={btn.value}
-                  variant={values.category === btn.value ? 'default' : 'outline'}
-                  onClick={() => setValue('category', btn.value)}
-                  className="text-xs sm:text-sm px-3 sm:px-4"
-                >
-                  {btn.label}
-                </Button>
-              ))}
-            </ButtonGroup>
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => {
+            const val = v as BookCategory
+            setActiveTab(val)
+            setValue('category', val)
+          }}>
+            <TabsList>
+              <TabsTrigger value={BookCategory.Religious}>الكتب الدينية</TabsTrigger>
+              <TabsTrigger value={BookCategory.Scientific}>الكتب العلمية</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         <ListingContent>
           <ListingToolbar
@@ -78,6 +72,7 @@ const LibraryPage: React.FC = () => {
               enabled: true,
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
+              placeholder: 'اسم الكتاب، المؤلف ...',
             }}
             filterSections={[
               {
