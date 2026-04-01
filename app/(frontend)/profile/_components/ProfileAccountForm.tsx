@@ -48,7 +48,7 @@ const ProfileAccountForm: React.FC<ProfileAccountFormProps> = ({ defaultFullName
               defaultValue={defaultFullName}
               disabled={pending}
               placeholder="اسمك"
-              dir="rtl"
+              dir="ltr"
             />
           </div>
           <Button type="submit" disabled={pending} className="min-w-[120px]">

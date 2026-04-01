@@ -139,7 +139,7 @@ const LibraryPage: React.FC = () => {
               totalPages={totalPages}
               onPageChange={(value) => setValue('page', value)}
               page={values.page || 1}
-              dir="rtl"
+              dir="ltr"
               nextButtonLabel="التالي"
               previousButtonLabel="السابق"
             />
