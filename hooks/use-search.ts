@@ -1,9 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SearchStorageAdapter } from '../interfaces/search.interfaces'
-import { useDebounce } from './use-debounce'
 import { createSearchParamsAdapter } from '@/lib/adapters/search-params.adapter'
 import { isValid, format, parse } from 'date-fns'
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+  return debounced
+}
 
 export type PrimitiveType = 'string' | 'number' | 'boolean' | 'date' | 'enum' | 'array'
 
@@ -208,14 +216,6 @@ export const useSearch = <T extends object>({
 
     storage.write(serialized)
   }, [searchValues])
-
-  //   useEffect(() => {
-  //     if (!storage.subscribe) return;
-
-  //     return storage.subscribe(() => {
-  //       setInternalValues(parseStored());
-  //     });
-  //   }, [storage, parseStored]);
 
   return {
     values,

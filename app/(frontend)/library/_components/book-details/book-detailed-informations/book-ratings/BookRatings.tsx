@@ -1,29 +1,57 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import CreateRating from './CreateRating'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import ReviewList from './ReviewList'
+import { reviewsRequests } from '@/lib/apis/reviews/requests'
+import type { Review } from '@/payload-types'
 
-const BookRatings = async ({ bookId }: { bookId: number }) => {
-  const payload = await getPayload({ config })
+const BookRatings = ({ bookId }: { bookId: number }) => {
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const reviews = await payload.find({
-    collection: 'reviews',
-    where: {
-      book: {
-        equals: bookId,
-      },
-    },
-    limit: 40,
-    sort: '-createdAt',
-    depth: 1,
-  })
+  const fetchReviews = async () => {
+    try {
+      const result = await reviewsRequests.getByBookId(bookId, 1)
+      setReviews(result.docs)
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchReviews()
+  }, [bookId])
 
   return (
-    <Card className="p-4 space-y-4 border-none rounded-none">
-      <CardContent className="space-y-4">
-        <CreateRating bookId={bookId} />
-        <ReviewList key={bookId} initialPage={reviews} bookId={bookId} />
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-6">
+          <CreateRating bookId={bookId} />
+          
+          {loading ? (
+            <div className="text-center text-muted-foreground">جاري التحميل...</div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center text-muted-foreground">لا توجد تقييمات بعد</div>
+          ) : (
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              {reviews.map((review) => (
+                <div key={review.id} className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span key={star} className={star <= (review.rating || 0) ? 'text-primary' : 'text-gray-300'}>
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm">{review.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

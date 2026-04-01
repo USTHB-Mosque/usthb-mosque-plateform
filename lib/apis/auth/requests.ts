@@ -3,12 +3,10 @@ import { httpClient } from '../http-client'
 
 export const authRequests = {
   logout: async () => {
-    const response = await httpClient.post('/users/logout')
-    return response.data
+    return httpClient.post('/users/logout')
   },
 
   getProfile: async () => {
-    const response = await httpClient.get<AuthResponse>('/users/me')
-    return response.data
+    return httpClient.get<AuthResponse>('/users/me')
   },
 }

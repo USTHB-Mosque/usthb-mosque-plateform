@@ -12,7 +12,8 @@ export const getAuthenticatedUser = async () => {
     return undefined
   }
 
-  if (response.user.collection === 'admins') return undefined
+  const user = response.user as User
+  if (user.role === 'admin') return undefined
 
-  if (response.user.collection === 'users') return response.user as User
+  return user
 }

@@ -22,7 +22,6 @@ export const reviewsRequests = {
       { addQueryPrefix: true, encodeValuesOnly: true },
     )
 
-    const response = await httpClient.get<PaginatedDocs<Review>>(`/reviews${queryString}`)
-    return response.data
+    return httpClient.get<PaginatedDocs<Review>>(`/reviews${queryString}`)
   },
 }

@@ -38,8 +38,7 @@ const CreateRating = ({ bookId }: { bookId: number }) => {
         await reviewBook(bookId, values.rating, values.comment)
 
         toast.success('تم إضافة مراجعتك بنجاح')
-      } catch (error) {
-        console.log(error)
+      } catch {
         toast.error('حدث خطأ أثناء تقييم الكتاب')
       }
     })
@@ -59,7 +58,6 @@ const CreateRating = ({ bookId }: { bookId: number }) => {
             render={({ field }) => (
               <FormItem>
                 <Select
-                  dir="rtl"
                   disabled={isPending}
                   onValueChange={(value) => field.onChange(Number(value))}
                   value={field.value.toString()}

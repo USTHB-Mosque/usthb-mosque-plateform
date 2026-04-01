@@ -8,8 +8,8 @@ A full-stack web application for managing a mosque community platform, featuring
 |-------|------------|
 | **Framework** | Next.js 16 (App Router) |
 | **CMS** | Payload CMS 3 |
-| **Database** | Vercel Postgres |
-| **File Storage** | Vercel Blob |
+| **Database** | PostgreSQL (Local Supabase) / Remote Supabase |
+| **File Storage** | Supabase S3 (Local & Remote) |
 | **UI Components** | shadcn/ui |
 | **Styling** | Tailwind CSS 4 |
 | **State Management** | Zustand |
@@ -34,7 +34,7 @@ A full-stack web application for managing a mosque community platform, featuring
 ### Admin Panel
 - Full CMS powered by Payload
 - Manage all content (books, events, articles, users)
-- Media uploads via Vercel Blob
+- Media uploads via Supabase S3
 
 ## Project Structure
 
@@ -71,11 +71,23 @@ A full-stack web application for managing a mosque community platform, featuring
 
 ## Getting Started
 
+### Environment Setup
+
+This project uses Supabase for both database and storage:
+
+| Environment | Database | File Storage | Config File |
+|-------------|----------|--------------|-------------|
+| **Development** | Local Supabase (via CLI) | Local Supabase S3 | `.env.local` |
+| **Preview/Production** | Remote Supabase | Remote Supabase S3 | `.env` |
+
+The configuration uses `@payloadcms/db-postgres` and `@payloadcms/storage-s3` for all environments.
+
 ### Prerequisites
 
 - Node.js 18+
 - pnpm (recommended)
-- Vercel account (for deployment)
+- Docker (required for Supabase CLI)
+- Remote Supabase account (for preview/production)
 
 ### Installation
 
@@ -90,31 +102,95 @@ A full-stack web application for managing a mosque community platform, featuring
    pnpm install
    ```
 
-3. **Set up environment variables**
+3. **Start local Supabase**
    ```bash
-   cp .env.example .env
+   pnpm supabase:start
    ```
 
-   Required variables:
-   ```env
-   NEXT_PUBLIC_SERVER_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:3000/api
-   PAYLOAD_SECRET=your_random_secret_string
-   POSTGRES_URL=your_postgres_connection_string
-   BLOB_READ_WRITE_TOKEN=your_blob_token
-   BLOB_STORE_ID=your_blob_store_id
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASSWORD=your_app_password
+4. **Create storage bucket** (first time only)
+   ```bash
+   pnpm supabase:bucket
    ```
 
-4. **Run the development server**
+5. **Start development server**
    ```bash
    pnpm dev
    ```
 
-5. **Open the application**
+   This will start:
+   - Local Supabase stack (PostgreSQL, Storage, etc.)
+   - Next.js development server
+   
+   The app will be available at http://localhost:3000
+
+### Environment Variables
+
+#### Development (`.env.local`)
+```env
+NODE_ENV=development
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+S3_ENDPOINT=http://127.0.0.1:54321/storage/v1/s3
+S3_ACCESS_KEY_ID=625729a08b95bf1b7ff351a663f3a23c
+S3_SECRET_ACCESS_KEY=850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907
+S3_BUCKET=media
+S3_REGION=local
+```
+
+#### Preview/Production (`.env`)
+```env
+NODE_ENV=preview
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:6543/postgres
+S3_ENDPOINT=https://[PROJECT-REF].supabase.co/storage/v1/s3
+S3_ACCESS_KEY_ID=[YOUR-ACCESS-KEY-ID]
+S3_SECRET_ACCESS_KEY=[YOUR-SECRET-ACCESS-KEY]
+S3_BUCKET=media
+S3_REGION=[YOUR-REGION]
+```
+
+   For **preview/production** (`.env`):
+   ```env
+   NODE_ENV=preview
+   POSTGRES_URL=your_vercel_postgres_connection_string
+   BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+   BLOB_STORE_ID=your_vercel_blob_store_id
+   ```
+
+4. **Start local PostgreSQL**
+   ```bash
+   # Using Docker (single container)
+   docker run -d \
+     --name postgres \
+     -p 5432:5432 \
+     -e POSTGRES_DB=usthb_mosque \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     postgres:16-alpine
+   
+   # Or using system PostgreSQL service
+   sudo service postgresql start
+   ```
+
+5. **Run the development server**
+   ```bash
+   pnpm dev
+   ```
+
+6. **Open the application**
    - Frontend: http://localhost:3000
    - Admin Panel: http://localhost:3000/admin
+
+### Running with Preview Environment
+
+To test the preview/production setup locally:
+
+1. **Ensure you have the `.env` file configured** with remote Supabase credentials
+2. **Run the build and start commands**
+   ```bash
+   pnpm build
+   pnpm start
+   ```
+
+This will use remote Supabase for database and storage.
 
 ### Generating Types
 
@@ -134,12 +210,17 @@ pnpm payload:migrate
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start development server |
+| `pnpm dev` | Start local Supabase + Next.js dev server |
+| `pnpm dev:stop` | Stop local Supabase |
+| `pnpm dev:preview` | Start dev server with preview config (uses `.env`) |
 | `pnpm build` | Build for production |
 | `pnpm start` | Start production server |
 | `pnpm lint` | Run ESLint |
 | `pnpm payload:importmap` | Regenerate import map |
 | `pnpm payload:migrate` | Run database migrations |
+| `pnpm supabase:start` | Start local Supabase stack |
+| `pnpm supabase:stop` | Stop local Supabase stack |
+| `pnpm supabase:status` | View local Supabase status |
 
 ## Contributing
 
@@ -188,21 +269,34 @@ We welcome contributions! Please follow these guidelines:
 ### Vercel (Recommended)
 
 1. Connect repository to Vercel
-2. Configure environment variables in Vercel dashboard
+2. Configure environment variables in Vercel dashboard (use `.env` format)
 3. Deploy automatically on push to main
 
-### Required Environment Variables (Production)
+### Required Environment Variables (Preview/Production)
 
 ```env
 NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
 PAYLOAD_SECRET=<random-64-chars>
-POSTGRES_URL=<vercel-postgres-connection-string>
-BLOB_READ_WRITE_TOKEN=<vercel-blob-token>
-BLOB_STORE_ID=<vercel-blob-store-id>
+DATABASE_URL=<supabase-postgres-connection-string>
+S3_ENDPOINT=<supabase-s3-endpoint>
+S3_ACCESS_KEY_ID=<supabase-s3-access-key>
+S3_SECRET_ACCESS_KEY=<supabase-s3-secret-key>
+S3_BUCKET=media
+S3_REGION=<supabase-region>
 EMAIL_USER=<production-email>
 EMAIL_PASSWORD=<app-password>
-NODE_ENV=production
+NODE_ENV=preview  # or 'production'
 ```
+
+### Environment Configuration Summary
+
+| Environment | NODE_ENV | Database | Storage | Config File |
+|-------------|----------|----------|---------|-------------|
+| **Local Dev** | `development` | Local Supabase | Local Supabase S3 | `.env.local` |
+| **Vercel Preview** | `preview` | Remote Supabase | Remote Supabase S3 | `.env` |
+| **Vercel Production** | `production` | Remote Supabase | Remote Supabase S3 | `.env` |
+
+The app uses `@payloadcms/db-postgres` and `@payloadcms/storage-s3` for all environments.
 
 ## License
 

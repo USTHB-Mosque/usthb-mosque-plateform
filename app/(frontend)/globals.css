@@ -1,138 +1,189 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary-50: oklch(0.993 0.0075 228.783);
-  --primary-100: oklch(0.926 0.0575 229.091);
-  --primary-200: oklch(0.8507 0.0456 231.73);
-  --primary-300: oklch(0.777 0.175 232.281);
-  --primary-400: oklch(0.7034 0.0916 234.18);
-  --primary-500: oklch(0.5387 0.0928 236.29);
+  /* ============================================
+     PRIMARY - Main Brand Color (#0DE9C3)
+     ============================================ */
+  --primary-50: #93ffed;
+  --primary-100: #7af5e3;
+  --primary-200: #0de9c3;
+  --primary-300: #0aaf92;
+  --primary-400: #0c8e78;
+  --primary-500: #03372e;
   --primary-600: #0de9c3;
-  --primary-700: oklch(0.442 0.185 235.463);
-  --primary-800: oklch(0.224 0.075 231.902);
-  --primary-900: oklch(0.224 0.075 231.902);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary-700: #0aaf92;
+  --primary-800: #0c8e78;
+  --primary-900: #03372e;
+  --primary: #0de9c3;
+  --primary-foreground: #243245;
+  --primary-main-10: #0de9c31a;
+  --primary-main-15: #0de9c326;
+  --primary-main-30: #0de9c34d;
+  --primary-main-60: #0de9c399;
 
-  --secondary-50: oklch(0.9885 0.0291 104.46);
-  --secondary-100: oklch(0.9761 0.0566 104.02);
-  --secondary-200: oklch(0.9573 0.1109 104.77);
-  --secondary-300: oklch(0.9381 0.1531 105.18);
-  --secondary-400: oklch(0.9253 0.1826 105.14);
+  /* ============================================
+     SECONDARY / FOREGROUND (#243245)
+     ============================================ */
+  --secondary-50: #eff4f9;
+  --secondary-100: #dce9f3;
+  --secondary-200: #b9d3e7;
+  --secondary-300: #96bddb;
+  --secondary-400: #7390c7;
   --secondary-500: #243245;
-  --secondary-600: oklch(0.8086 0.1617 96.04);
-  --secondary-700: oklch(0.6226 0.1306 104.66);
-  --secondary-800: oklch(0.468 0.098 104.83);
-  --secondary-900: oklch(0.2946 0.0605 105.32);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary-600: #1e293b;
+  --secondary-700: #1a2535;
+  --secondary-800: #151d2a;
+  --secondary-900: #111621;
+  --secondary: #243245;
+  --secondary-foreground: #ffffff;
 
-  --gray-50: var(--color-gray-50);
-  --gray-100: var(--color-gray-100);
-  --gray-200: var(--color-gray-200);
-  --gray-300: var(--color-gray-300);
-  --gray-400: var(--color-gray-400);
-  --gray-500: var(--color-gray-500);
-  --gray-600: var(--color-gray-600);
-  --gray-700: var(--color-gray-700);
-  --gray-800: var(--color-gray-800);
-  --gray-900: var(--color-gray-900);
-
-  --success-50: oklch(0.9637 0.021 159.73);
-  --success-500: oklch(0.5985 0.1271 150.14);
-
-  --success: var(--success-500);
-  --success-foreground: var(--color-white);
-
-  --destructive-50: oklch(0.9887 0.0054 17.25);
-  --destructive-100: oklch(0.933 0.0339 17.77);
-  --destructive-500: oklch(0.5367 0.2162 27.85);
-
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: var(--color-white);
-
-  --warning-50: oklch(0.9913 0.01 87.47);
-  --warning-500: oklch(0.7464 0.1707 61.8);
-
-  --warning: var(--warning-500);
-  --warning-foreground: var(--color-white);
-
-  /*  */
-  --radius: 0.625rem;
+  /* ============================================
+     BACKGROUND (#F2F8FC)
+     ============================================ */
+  --background: #f2f8fc;
   --background-2: #f2f8fc;
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: #243245;
+
+  /* ============================================
+     TEXT BLUE - Semantic text colors
+     ============================================ */
+  --blue-50: #77b1ff;
+  --blue-100: #4e719f;
+  --blue-200: #24324599;
+  --blue-300: #243245cc;
+  --blue-400: #243245;
+  --blue-500: #192331;
+
+  /* ============================================
+     TEXT GREY - Grey scale for text
+     ============================================ */
+  --grey-50: #ffffff;
+  --grey-100: #ffffffcc;
+  --grey-200: #a2a2a2bf;
+  --grey-300: #a2a2a2;
+  --grey-400: #808080;
+  --grey-500: #616062;
+
+  /* ============================================
+     FILL - Background fill colors
+     ============================================ */
+  --fill-contrast: #e8f2f8;
+  --fill-main: #f2f8fc;
+  --fill-white: #ffffff;
+
+  /* ============================================
+     STROKE - Border colors
+     ============================================ */
+  --stroke-blue: #243245;
+  --stroke-grey: #d9d9d9;
+  --stroke-white: #ffffff;
+
+  /* ============================================
+     FEEDBACK - Status colors
+     ============================================ */
+  --danger: #bd1904;
+  --danger-15: #ff3d2426;
+  --danger-50: #ff3d2480;
+  --success: #00ff91;
+  --success-15: #00ff9126;
+  --success-50: #00ff9180;
+  --warning: #cc9706;
+  --warning-15: #ffbb0026;
+  --warning-50: #ffbb0080;
+
+  /* ============================================
+     SHADCN UI VARIABLES
+     ============================================ */
+  --card: #ffffff;
+  --card-foreground: #243245;
+  --popover: #ffffff;
+  --popover-foreground: #243245;
+  --muted: #e8f2f8;
+  --muted-foreground: #616062;
+  --accent: #0de9c3;
+  --accent-foreground: #243245;
+  --destructive: #bd1904;
+  --destructive-foreground: #ffffff;
+  --border: #d9d9d9;
+  --input: #d9d9d9;
+  --ring: #0de9c3;
+
+  /* Chart colors */
+  --chart-1: #0de9c3;
+  --chart-2: #243245;
+  --chart-3: #00ff91;
+  --chart-4: #cc9706;
+  --chart-5: #a2a2a2;
+
+  /* Sidebar */
+  --sidebar: #f2f8fc;
+  --sidebar-foreground: #243245;
+  --sidebar-primary: #0de9c3;
+  --sidebar-primary-foreground: #243245;
+  --sidebar-accent: #e8f2f8;
+  --sidebar-accent-foreground: #243245;
+  --sidebar-border: #d9d9d9;
+  --sidebar-ring: #0de9c3;
+
+  /* Radius */
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --background-2: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* ============================================
+     DARK MODE OVERRIDES
+     ============================================ */
+  --background: #243245;
+  --background-2: #1a2a3a;
+  --foreground: #f2f8fc;
+
+  --card: #2d3d50;
+  --card-foreground: #f2f8fc;
+  --popover: #2d3d50;
+  --popover-foreground: #f2f8fc;
+  --secondary: #3d4f60;
+  --secondary-foreground: #f2f8fc;
+  --muted: #3d4f60;
+  --muted-foreground: #a2a2a2;
+  --accent: #0de9c3;
+  --accent-foreground: #243245;
+  --destructive: #ff3d24;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #0de9c3;
+
+  --chart-1: #0de9c3;
+  --chart-2: #93ffed;
+  --chart-3: #00ff91;
+  --chart-4: #cc9706;
+  --chart-5: #a2a2a2;
+
+  --sidebar: #243245;
+  --sidebar-foreground: #f2f8fc;
+  --sidebar-primary: #0de9c3;
+  --sidebar-primary-foreground: #243245;
+  --sidebar-accent: #3d4f60;
+  --sidebar-accent-foreground: #f2f8fc;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #93ffed;
+
+  /* Dark mode text greys */
+  --grey-100: #ffffffcc;
+  --grey-200: #a2a2a2bf;
+  --grey-300: #a2a2a2;
+  --grey-400: #808080;
+  --grey-500: #616062;
 }
 
 @theme inline {
-  /* Custom color */
+  /* ============================================
+     PRIMARY - Tailwind: text-primary, bg-primary, etc.
+     ============================================ */
   --color-primary: var(--primary);
   --color-primary-50: var(--primary-50);
   --color-primary-100: var(--primary-100);
@@ -145,11 +196,14 @@
   --color-primary-800: var(--primary-800);
   --color-primary-900: var(--primary-900);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-main-10: var(--primary-main-10);
+  --color-primary-main-15: var(--primary-main-15);
+  --color-primary-main-30: var(--primary-main-30);
+  --color-primary-main-60: var(--primary-main-60);
 
-  --color-background: var(--background);
-  --color-background-2: var(--background-2);
-  --color-foreground: var(--foreground);
-
+  /* ============================================
+     SECONDARY - Tailwind: text-secondary, bg-secondary
+     ============================================ */
   --color-secondary: var(--secondary);
   --color-secondary-50: var(--secondary-50);
   --color-secondary-100: var(--secondary-100);
@@ -163,35 +217,67 @@
   --color-secondary-900: var(--secondary-900);
   --color-secondary-foreground: var(--secondary-foreground);
 
-  --color-success: var(--success);
-  --color-success-50: var(--success-50);
-  --color-success-500: var(--success-500);
-  --color-success-foreground: var(--success-foreground);
-
-  --color-destructive: var(--destructive);
-  --color-destructive-50: var(--destructive-50);
-  --color-destructive-100: var(--destructive-100);
-  --color-destructive-500: var(--destructive-500);
-  --color-destructive-foreground: var(--destructive-foreground);
-
-  --color-warning: var(--warning);
-  --color-warning-50: var(--warning-50);
-  --color-warning-500: var(--warning-500);
-  --color-warning-foreground: var(--warning-foreground);
-
-  /* Shadcn Colors */
-
+  /* ============================================
+     BACKGROUND/FOREGROUND - Tailwind: bg-background, text-foreground
+     ============================================ */
   --color-background: var(--background);
   --color-background-2: var(--background-2);
   --color-foreground: var(--foreground);
+
+  /* ============================================
+     BLUE - Tailwind: text-blue-400, bg-blue-200, etc.
+     ============================================ */
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-200: var(--blue-200);
+  --color-blue-300: var(--blue-300);
+  --color-blue-400: var(--blue-400);
+  --color-blue-500: var(--blue-500);
+
+  /* ============================================
+     GREY - Tailwind: text-grey-400, bg-grey-100, etc.
+     ============================================ */
+  --color-grey-50: var(--grey-50);
+  --color-grey-100: var(--grey-100);
+  --color-grey-200: var(--grey-200);
+  --color-grey-300: var(--grey-300);
+  --color-grey-400: var(--grey-400);
+  --color-grey-500: var(--grey-500);
+
+  /* ============================================
+     FILL - Tailwind: bg-fill-main, etc.
+     ============================================ */
+  --color-fill-contrast: var(--fill-contrast);
+  --color-fill-main: var(--fill-main);
+  --color-fill-white: var(--fill-white);
+
+  /* ============================================
+     STROKE - Tailwind: border-stroke-grey, etc.
+     ============================================ */
+  --color-stroke-blue: var(--stroke-blue);
+  --color-stroke-grey: var(--stroke-grey);
+  --color-stroke-white: var(--stroke-white);
+
+  /* ============================================
+     DANGER/SUCCESS/WARNING - Tailwind: text-danger, bg-success-15, etc.
+     ============================================ */
+  --color-danger: var(--danger);
+  --color-danger-15: var(--danger-15);
+  --color-danger-50: var(--danger-50);
+  --color-success: var(--success);
+  --color-success-15: var(--success-15);
+  --color-success-50: var(--success-50);
+  --color-warning: var(--warning);
+  --color-warning-15: var(--warning-15);
+  --color-warning-50: var(--warning-50);
+
+  /* ============================================
+     SHADCN UI - Standard shadcn classes
+     ============================================ */
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -207,12 +293,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  --radius-xs: calc(var(--radius) - 6px); /* 4px */
-  --radius-sm: calc(var(--radius) - 4px); /* 6px */
-  --radius-md: calc(var(--radius) - 2px); /* 8px */
-  --radius-lg: var(--radius); /* 10px */
-  --radius-xl: calc(var(--radius) + 2px); /* 12px */
-
+  /* ============================================
+     SIDEBAR
+     ============================================ */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -222,14 +305,26 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* ============================================
+     RADIUS
+     ============================================ */
+  --radius-xs: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ============================================
+     FONTS
+     ============================================ */
   --font-khalid: var(--font-khalid);
   --font-yamama: var(--font-alyamama);
   --font-dubai: var(--font-dubai);
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -247,6 +342,7 @@
 body {
   font-family: var(--font-alyamama);
 }
+
 [data-scroll-locked][data-scroll-locked] {
   overflow-y: scroll !important;
   margin-right: 0 !important;

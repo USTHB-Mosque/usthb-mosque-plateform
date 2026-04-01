@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { Article, Media } from '@/payload-types'
 import { useRouter } from 'next/navigation'
+import { getImageUrl } from '@/utils/image-utils'
 
 interface ArticleCardProps {
   article: Article
@@ -14,6 +15,7 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const media = article.image as Media
+  const imageUrl = getImageUrl(media?.url)
 
   const router = useRouter()
   return (
@@ -30,13 +32,12 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           ) : null}
 
           <Image
-            src={media?.url || ''}
+            src={imageUrl}
             alt={media?.alt || 'Article'}
-            width={0}
-            height={0}
+            width={400}
+            height={300}
             className="w-full object-cover h-50"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           />
         </div>
         <div

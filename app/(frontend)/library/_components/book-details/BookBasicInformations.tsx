@@ -18,27 +18,35 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
   tags,
 }) => {
   return (
-    <Card className="p-6">
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 p-0 space-y-0">
-        <div className="flex flex-1 flex-col gap-4 min-w-0">
-          <p className="text-foreground text-4xl">{title}</p>
-          {tags ? (
-            <div className="flex flex-wrap gap-4">
-              {tags.map((tag) => (
-                <Badge key={tag.id} className="bg-primary/15 text-primary text-base">
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
+    <Card className="p-4 lg:p-6">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground leading-tight">
+          {title}
+        </h1>
+        
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Badge 
+                key={tag.id} 
+                className="bg-primary/15 text-primary text-xs lg:text-sm px-3 py-1"
+              >
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+        )}
+        
+        <div className="flex items-center gap-2 text-sm lg:text-base">
+          <User className="text-primary size-4 lg:size-5" />
+          <span className="font-bold">{author}</span>
         </div>
-      </CardHeader>
-      <div className="space-y-4">
-        <div className="flex items-center gap-2.5">
-          <User className="text-primary size-4" />
-          <p className="font-bold">{author}</p>
-        </div>
-        <p>{shortDescription}</p>
+        
+        {shortDescription && (
+          <p className="text-muted-foreground text-sm lg:text-base leading-relaxed">
+            {shortDescription}
+          </p>
+        )}
       </div>
     </Card>
   )

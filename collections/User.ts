@@ -1,19 +1,20 @@
 import { CollectionConfig } from 'payload'
 
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
-
 export const User: CollectionConfig = {
   slug: 'users',
   access: {
+    admin: ({ req: { user } }) => {
+      return user?.role === 'admin'
+    },
     create: () => true,
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { id: { equals: user.id } }
     },
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdmin(user)) return true
+      if (user.role === 'admin') return true
       return { id: { equals: user.id } }
     },
   },
@@ -22,12 +23,20 @@ export const User: CollectionConfig = {
     verify: false,
     maxLoginAttempts: 5,
     lockTime: 600 * 1000,
+    disableLocalStrategy: true,
   },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email'],
+    defaultColumns: ['email', 'role'],
   },
   fields: [
+    {
+      name: 'email',
+      type: 'email',
+      required: true,
+      unique: true,
+      index: true,
+    },
     {
       name: 'fullName',
       type: 'text',
@@ -39,9 +48,25 @@ export const User: CollectionConfig = {
       index: true,
     },
     {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'user',
+      options: ['admin', 'user'],
+      saveToJWT: true,
+      access: {
+        update: ({ req: { user } }) => Boolean(user?.role === 'admin'),
+      },
+    },
+    {
       name: 'profilePicture',
       type: 'upload',
       relationTo: 'media',
+    },
+    {
+      name: 'password',
+      type: 'text',
+      required: false,
     },
   ],
 }

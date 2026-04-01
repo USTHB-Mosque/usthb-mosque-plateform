@@ -32,13 +32,12 @@ const ActivitiesPage: React.FC = () => {
   } = useGetActivitiesQuery(searchValues)
   return (
     <Layout>
-      <div className="flex flex-col space-y-14">
-        <div className="flex flex-col items-center justify-center gap-12">
-          <div className="space-y-4">
-            <p className="text-secondary text-5xl text-center font-khalid">أنشطة المسجد</p>
-            <p className="text-foreground text-xl text-center">
-              مجموعة من النشاطات الدعوية والتعليمية والاجتماعية التي تهدف إلى بناء مجتمع واعٍ،
-              متآلف، يسير على هدي الإسلام.
+      <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
+        <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
+          <div className="space-y-3 sm:space-y-4 text-center">
+            <p className="text-secondary text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-center font-khalid">أنشطة المسجد</p>
+            <p className="text-foreground text-sm sm:text-base md:text-xl text-center max-w-2xl">
+              مجموعة من النشاطات الدعوية والتعليمية والاجتماعية التي تهدف إلى بناء مجتمع واعٍ، متآلف، يسير على هدي الإسلام.
             </p>
           </div>
         </div>

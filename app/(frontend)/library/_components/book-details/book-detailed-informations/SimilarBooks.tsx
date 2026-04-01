@@ -1,40 +1,23 @@
+'use client'
+
 import React from 'react'
 import BookCard from '../../BookCard'
 import { Book } from '@/payload-types'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
 
 interface SimilarBooksProps {
-  type: Book['type']
-  currentBookId: Book['id']
+  books: Book[]
 }
 
-const SimilarBooks = async ({ type, currentBookId }: SimilarBooksProps) => {
-  const payload = await getPayload({ config })
-
-  const books = await payload.find({
-    collection: 'books',
-    where: {
-      and: [
-        {
-          type: { equals: type },
-        },
-        {
-          id: { not_equals: currentBookId },
-        },
-      ],
-    },
-    limit: 4,
-    sort: '-publishDate',
-  })
+const SimilarBooks: React.FC<SimilarBooksProps> = ({ books }) => {
+  if (books.length === 0) return null
 
   return (
-    <div className="flex justify-center p-6">
-      <div className="flex gap-6">
-        {books.docs.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
+    <div className="flex gap-4 pr-4">
+      {books.map((book) => (
+        <div key={book.id} className="w-[180px] lg:w-[200px] flex-shrink-0">
+          <BookCard book={book} />
+        </div>
+      ))}
     </div>
   )
 }
