@@ -38,14 +38,14 @@ const BookPreview: React.FC<BookPreviewProps> = ({
 
   return (
     <Card className="p-4">
-      <div>
-        <div className="relative">
+      <div className="flex flex-col gap-4">
+        <div className="relative w-full aspect-[3/4] max-w-[280px] mx-auto">
           {isAvailable ? (
             <Badge
-              className="absolute top-4 left-4 px-4 py-1 rounded-lg 
+              className="absolute top-3 start-3 px-3 py-1 rounded-lg 
                       bg-[#00FF9180] backdrop-blur-md 
                       border border-background/20 shadow-lg
-                      font-bold text-foreground
+                      font-bold text-foreground text-xs
                       before:content-[''] before:absolute before:inset-0 before:rounded-lg"
             >
               متوفر
@@ -54,23 +54,25 @@ const BookPreview: React.FC<BookPreviewProps> = ({
           <Image
             src={imageUrl}
             alt={media?.alt || 'Book'}
-            width={400}
-            height={500}
-            className="w-full h-full object-cover rounded-xl"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            fill
+            className="object-contain rounded-xl"
+            sizes="(max-width: 1024px) 100vw, 300px"
           />
         </div>
-        <div className="flex items-center justify-center py-6">
-          <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
-        </div>
+        
         <div className="flex flex-col gap-4">
-          <Button className="w-full text-xl text-secondary" size="lg">
+          <div className="flex items-center justify-center">
+            <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
+          </div>
+          
+          <Button className="w-full text-lg text-secondary h-12">
             سجل الآن
           </Button>
-          <div className="flex gap-4">
-            <BookFavoriteButton bookId={bookId} initialFavorited={initialFavorited} />
-            <Button variant="outline" onClick={onCopyLink}>
-              <Share />
+          
+          <div className="flex gap-3">
+            <BookFavoriteButton bookId={bookId} initialFavorited={initialFavorited} className="flex-1 h-12" />
+            <Button variant="outline" size="icon" onClick={onCopyLink} className="h-12 w-12">
+              <Share className="size-5" />
             </Button>
           </div>
         </div>

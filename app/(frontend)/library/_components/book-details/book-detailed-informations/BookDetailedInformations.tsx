@@ -59,7 +59,7 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
         </div>
       </div>
       
-      <div className="mt-4">
+      <div className="overflow-x-auto px-4 pb-4">
         {activeTab === 'similar-books' && <SimilarBooks books={similarBooks} />}
         {activeTab === 'ratings' && <BookRatings bookId={book.id} />}
         {activeTab === 'full-description' && (

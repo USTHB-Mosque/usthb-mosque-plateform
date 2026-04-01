@@ -12,12 +12,12 @@ const SimilarBooks: React.FC<SimilarBooksProps> = ({ books }) => {
   if (books.length === 0) return null
 
   return (
-    <div className="flex justify-center p-6">
-      <div className="flex gap-6">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
+    <div className="flex gap-4 pr-4">
+      {books.map((book) => (
+        <div key={book.id} className="w-[180px] lg:w-[200px] flex-shrink-0">
+          <BookCard book={book} />
+        </div>
+      ))}
     </div>
   )
 }

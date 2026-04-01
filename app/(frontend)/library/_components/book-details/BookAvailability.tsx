@@ -63,40 +63,43 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
 }) => {
   const [day, setDay] = useState(1)
   return (
-    <Card className="p-4 space-y-4">
-      <CardHeader className="text-base">معلومات التوفر</CardHeader>
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <BookSearch className="size-4 text-primary" />
+    <Card className="p-4">
+      <div className="flex flex-col gap-4">
+        <CardHeader className="text-lg font-semibold p-0">معلومات التوفر</CardHeader>
+        
+        <div className="flex items-start gap-3">
+          <BookSearch className="text-primary size-5 mt-0.5" />
           <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground">النسخ المتوفرة</p>
-            <p className="font-bold">
-              {availableBooks} من {totalBooks}
-            </p>
+            <span className="text-sm text-muted-foreground">النسخ المتوفرة</span>
+            <span className="font-bold">{availableBooks} من {totalBooks}</span>
           </div>
         </div>
-        <div className="flex gap-2">
-          <MapPin className="size-4 text-primary" />
+        
+        <div className="flex items-start gap-3">
+          <MapPin className="text-primary size-5 mt-0.5" />
           <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground">الموقع في المكتبة</p>
-            <p className="font-bold">{location}</p>
+            <span className="text-sm text-muted-foreground">الموقع في المكتبة</span>
+            <span className="font-bold">{location}</span>
           </div>
         </div>
+        
         <Separator />
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            <Timer className="size-4 text-primary" />
-            <p className="text-muted-foreground">مدة الاستعارة</p>
+        
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <Timer className="text-primary size-5" />
+            <span className="text-sm text-muted-foreground">مدة الاستعارة</span>
           </div>
-          <div className="flex gap-4">
+          
+          <div className="flex items-center gap-4">
             <RangeSlider
               min={1}
               max={30}
               value={day}
               onValueChange={setDay}
-              className="w-full cursor-pointer"
+              className="flex-1"
             />
-            <span className="whitespace-nowrap">{day} يوم</span>
+            <span className="text-sm font-bold min-w-[50px] text-end">{day} يوم</span>
           </div>
         </div>
       </div>
