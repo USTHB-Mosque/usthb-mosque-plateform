@@ -1,7 +1,12 @@
 import React from 'react'
+import Layout from '@/components/layouts'
 
 const ContactUsPage: React.FC = () => {
-  return <div>ContactUsPage</div>
+  return (
+    <Layout>
+      <div>ContactUsPage</div>
+    </Layout>
+  )
 }
 
 export default ContactUsPage
