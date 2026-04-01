@@ -37,11 +37,10 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
           <Image
             src={media.url || ''}
             alt={media.alt || 'Book'}
-            width={0}
-            height={0}
+            width={400}
+            height={300}
             className={cn('w-full object-cover h-50 rounded-b-xl', imageClassName)}
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           />
         </div>
         <div

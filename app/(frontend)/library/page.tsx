@@ -4,6 +4,7 @@ import Layout from '@/components/layouts'
 import BookCard from './_components/BookCard'
 import { Pagination } from '@/components/common/Pagination'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { Button } from '@/components/ui/button'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
@@ -46,10 +47,8 @@ const LibraryPage: React.FC = () => {
             </p>
           </div>
 
-          <ButtonGroup
-            value={values.category}
-            onSelect={(value) => setValue('category', value as BookCategory)}
-            buttons={[
+          <ButtonGroup>
+            {[
               {
                 label: 'الكتب العلمية',
                 value: BookCategory.Scientific,
@@ -58,8 +57,16 @@ const LibraryPage: React.FC = () => {
                 label: 'الكتب الدينية',
                 value: BookCategory.Religious,
               },
-            ]}
-          />
+            ].map((btn) => (
+              <Button
+                key={btn.value}
+                variant={values.category === btn.value ? 'default' : 'outline'}
+                onClick={() => setValue('category', btn.value)}
+              >
+                {btn.label}
+              </Button>
+            ))}
+          </ButtonGroup>
         </div>
         <ListingContent>
           <ListingToolbar

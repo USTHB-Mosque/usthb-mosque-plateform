@@ -52,11 +52,10 @@ const BookPreview: React.FC<BookPreviewProps> = ({
           <Image
             src={media?.url || ''}
             alt={media?.alt || 'Book'}
-            width={0}
-            height={0}
+            width={400}
+            height={500}
             className="w-full h-full object-cover rounded-xl"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
         <div className="flex items-center justify-center py-6">

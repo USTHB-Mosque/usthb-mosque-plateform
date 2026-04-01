@@ -59,6 +59,7 @@ const useMediaQuery = () => {
     return () => {
       window.removeEventListener("resize", updateBreakpoints);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onBreakpoint = (

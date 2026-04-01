@@ -21,11 +21,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
         <Image
           src={media.url || ''}
           alt={media.alt || ''}
-          width={0}
-          height={0}
+          width={400}
+          height={300}
           className="w-full h-75 object-cover flex-1"
-          sizes="100vw"
-          priority
+          sizes="(max-width: 768px) 100vw, 50vw"
         />
         <div className="flex-2 flex flex-col justify-between p-8">
           <div>
@@ -43,12 +42,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
             <p className="text-muted-foreground">{activity.shortDescription}</p>
           </div>
           <div>
-            <Button variant="link" asChild>
-              <Link href={`/activities/${activity.id}`}>
+            <Link href={`/activities/${activity.id}`}>
+              <Button variant="link">
                 <span className="text-xl font-bold pt-1">اقرأ المزيد</span>
                 <ArrowLeft className="text-primary size-6" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

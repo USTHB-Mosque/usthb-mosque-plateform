@@ -73,8 +73,24 @@ const dubai = localFont({
 })
 
 export const metadata: Metadata = {
-  description: 'A project using Payload and Next.js with Arabic Typography',
-  title: 'Payload Arabic Project',
+  title: 'مسجد USTHB - المنصة الرقمية',
+  description: 'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين - مكتبة، أنشطة، مقالات وإدارة الاستعارة',
+  openGraph: {
+    type: 'website',
+    locale: 'ar_DZ',
+    siteName: 'مسجد USTHB',
+    title: 'مسجد USTHB - المنصة الرقمية',
+    description: 'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'مسجد USTHB - المنصة الرقمية',
+    description: 'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {

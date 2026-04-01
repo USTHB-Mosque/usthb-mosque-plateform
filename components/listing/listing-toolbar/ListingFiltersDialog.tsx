@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import ListingFiltersGroup from './ListingFiltersGroup'
@@ -123,11 +122,9 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
         <Separator />
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" className="border border-primary text-primary" type="button">
-              إلغاء
-            </Button>
-          </DialogClose>
+          <Button variant="outline" className="border border-primary text-primary" type="button" onClick={() => setIsOpen(false)}>
+            إلغاء
+          </Button>
           <Button type="button" className="text-foreground" onClick={handleApply}>
             تطبيق التصفية
           </Button>

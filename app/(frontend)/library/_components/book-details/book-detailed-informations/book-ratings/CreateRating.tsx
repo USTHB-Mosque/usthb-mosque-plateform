@@ -59,7 +59,6 @@ const CreateRating = ({ bookId }: { bookId: number }) => {
             render={({ field }) => (
               <FormItem>
                 <Select
-                  dir="rtl"
                   disabled={isPending}
                   onValueChange={(value) => field.onChange(Number(value))}
                   value={field.value.toString()}

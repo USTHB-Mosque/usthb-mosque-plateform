@@ -20,10 +20,9 @@ const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps)
         src={media.url || ''}
         alt={media.alt || 'Activity'}
         className="rounded-xl object-cover absolute top-0 left-0 h-full w-full z-0"
-        width={0}
-        height={0}
-        sizes="100vw"
-        priority
+        width={1200}
+        height={300}
+        sizes="(max-width: 768px) 100vw, 80vw"
       />
       <div className="flex-1" />
       <div className="flex-1 flex flex-col gap-4 z-10">

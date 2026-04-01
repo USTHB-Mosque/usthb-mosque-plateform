@@ -1,11 +1,4 @@
-ignoredBuiltDependencies:
-  - bufferutil
-  - esbuild
-  - sharp
-  - unrs-resolver
-
 onlyBuiltDependencies:
   - '@parcel/watcher'
-  - node-sass
+  - sharp
   - supabase
-  - utf-8-validate

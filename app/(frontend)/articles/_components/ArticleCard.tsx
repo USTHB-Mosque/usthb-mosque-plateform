@@ -32,11 +32,10 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           <Image
             src={media?.url || ''}
             alt={media?.alt || 'Article'}
-            width={0}
-            height={0}
+            width={400}
+            height={300}
             className="w-full object-cover h-50"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           />
         </div>
         <div

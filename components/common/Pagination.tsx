@@ -54,19 +54,16 @@ function PaginationLink({ className, isActive, ...props }: PaginationLinkProps) 
 function PaginationPrevious({
   className,
   children,
-  dir,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <Button
       data-slot="pagination-previous"
       aria-label="Go to previous page"
-      color="default"
       className={cn('rounded-[4px] border border-border h-10', className)}
-      dir={dir}
       {...props}
     >
-      {dir === 'ltr' ? <ChevronLeft /> : <ChevronRight />}
+      <ChevronLeft />
       <span className="hidden md:inline-block">{children}</span>
     </Button>
   )
@@ -75,20 +72,17 @@ function PaginationPrevious({
 function PaginationNext({
   className,
   children,
-  dir,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <Button
       data-slot="pagination-next"
       aria-label="Go to next page"
-      color="default"
       className={cn('rounded-[4px] border border-border h-10', className)}
-      dir={dir}
       {...props}
     >
       <span className="hidden md:inline-block">{children}</span>
-      {dir === 'ltr' ? <ChevronRight /> : <ChevronLeft />}
+      <ChevronRight />
     </Button>
   )
 }

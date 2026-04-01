@@ -40,11 +40,10 @@ const BookDetailsPage = async ({
           <Image
             src={media?.url || ''}
             alt={media?.alt || 'Article'}
-            width={0}
-            height={0}
+            width={1200}
+            height={400}
             className="w-full object-cover h-100 rounded-xl"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, 80vw"
           />
           <div
             className="prose prose-lg max-w-none font-yamama text-right leading-relaxed 

@@ -52,7 +52,7 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
               min={1}
               max={30}
               value={[day]}
-              onValueChange={(value) => setDay(value[0])}
+              onValueChange={(value) => setDay(Array.isArray(value) ? value[0] : value)}
               className={cn(
                 'w-full cursor-pointer',
                 '**:data-[orientation=horizontal]:h-3',

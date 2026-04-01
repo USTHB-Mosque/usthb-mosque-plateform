@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
   },
   headers: async () => {
     const isDevelopment = process.env.NODE_ENV === 'development'
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
     return [
       {
@@ -46,9 +47,7 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           {
             key: 'Access-Control-Allow-Origin',
-            value: isDevelopment
-              ? 'http://localhost:3000'
-              : process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
+            value: isDevelopment ? 'http://localhost:3000' : serverUrl,
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -57,7 +56,7 @@ const nextConfig: NextConfig = {
           {
             key: 'Access-Control-Allow-Headers',
             value:
-              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-apollo-operation-name',
+              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
           },
           ...(!isDevelopment
             ? [
@@ -68,10 +67,38 @@ const nextConfig: NextConfig = {
                   key: 'Referrer-Policy',
                   value: 'strict-origin-when-cross-origin',
                 },
+                {
+                  key: 'Permissions-Policy',
+                  value: 'camera=(), microphone=(), geolocation=()',
+                },
               ]
             : []),
         ],
       },
+      ...(!isDevelopment
+        ? [
+            {
+              source: '/(.*)',
+              headers: [
+                {
+                  key: 'Content-Security-Policy',
+                  value: [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                    "style-src 'self' 'unsafe-inline'",
+                    "img-src 'self' data: blob: http://127.0.0.1:* https://*.supabase.co",
+                    "font-src 'self' data:",
+                    "connect-src 'self' http://127.0.0.1:* https://*.supabase.co",
+                    "frame-ancestors 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "object-src 'none'",
+                  ].join('; '),
+                },
+              ],
+            },
+          ]
+        : []),
     ]
   },
 

@@ -33,9 +33,9 @@ const NotFoundPage: React.FC = () => {
           </p>
         </div>
 
-        <Button asChild size="lg" className="rounded-full px-8">
-          <Link href="/">العودة إلى الرئيسية</Link>
-        </Button>
+        <Link href="/">
+          <Button size="lg" className="rounded-full px-8">العودة إلى الرئيسية</Button>
+        </Link>
       </div>
     </Layout>
   )
