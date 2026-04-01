@@ -163,26 +163,24 @@ export default function RegisterPage() {
         {step === 1 && (
           <Form {...formStep1}>
             <form onSubmit={formStep1.handleSubmit(handleNextStep1)} className="space-y-3 sm:space-y-4">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <FormField control={formStep1.control} name="firstName" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 text-xs sm:text-sm">الاسم الأول</FormLabel>
-                    <FormControl>
-                      <Input placeholder="الاسم الأول" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={formStep1.control} name="lastName" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 text-xs sm:text-sm">اسم العائلة</FormLabel>
-                    <FormControl>
-                      <Input placeholder="اسم العائلة" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
+              <FormField control={formStep1.control} name="firstName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 text-xs sm:text-sm">الاسم الأول</FormLabel>
+                  <FormControl>
+                    <Input placeholder="الاسم الأول" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={formStep1.control} name="lastName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 text-xs sm:text-sm">اسم العائلة</FormLabel>
+                  <FormControl>
+                    <Input placeholder="اسم العائلة" {...field} className="h-10 sm:h-11 text-xs sm:text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={formStep1.control} name="phoneNumber" render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700 text-xs sm:text-sm">رقم الهاتف</FormLabel>
