@@ -7,7 +7,6 @@ interface ActivityScheduleProps {
 }
 
 const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
-  console.log({ schedules })
   return (
     <Card className="p-6 space-y-6">
       <CardHeader>

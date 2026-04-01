@@ -2,7 +2,6 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { cookies as nextCookies } from 'next/headers'
-import { headers as nextHeaders } from 'next/headers'
 import { User } from '@/payload-types'
 
 interface AdminUser {
@@ -15,27 +14,30 @@ interface AdminUser {
 
 export async function getAdminUser(): Promise<AdminUser | null> {
   try {
-    const payload = await getPayload({ config })
-    const headers = await nextHeaders()
     const cookies = await nextCookies()
-
     const token = cookies.get('payload-token')
-    if (token) {
-      headers.set('Cookie', `payload-token=${token.value}`)
-    }
+    if (!token) return null
 
-    const auth = await payload.auth({ headers })
-    if (!auth.user || (auth.user as User).role !== 'admin') {
+    const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+    const response = await fetch(`${serverURL}/api/users/me`, {
+      headers: {
+        Cookie: `payload-token=${token.value}`,
+      },
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
       return null
     }
 
-    const fullUser = await payload.findByID({
-      collection: 'users',
-      id: (auth.user as User).id,
-      overrideAccess: true,
-    })
+    const data = await response.json()
+    const user = data.user as User
 
-    return fullUser as AdminUser
+    if (!user || user.role !== 'admin') {
+      return null
+    }
+
+    return user as unknown as AdminUser
   } catch {
     return null
   }

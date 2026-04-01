@@ -14,7 +14,6 @@ interface ActivityCardProps {
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const media = activity.image as Media
-  console.log(activity.startDate)
   return (
     <Card className="">
       <CardContent className="p-0 flex">

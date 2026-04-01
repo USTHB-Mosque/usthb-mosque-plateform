@@ -33,12 +33,9 @@ export const activitiesRequests = {
       },
       { addQueryPrefix: true, encodeValuesOnly: true },
     )
-    const response = await httpClient.get<PaginatedDocs<Activity>>(`/activities${queryString}`)
-
-    return response.data
+    return httpClient.get<PaginatedDocs<Activity>>(`/activities${queryString}`)
   },
   getById: async (id: string) => {
-    const response = await httpClient.get<Activity>(`/activities/${id}`)
-    return response.data
+    return httpClient.get<Activity>(`/activities/${id}`)
   },
 }
