@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react"
 
 const navLinks = [
   { label: "الرئيسية", href: "/" },
-  { label: "من نحن", href: "/about" },
+  { label: "من نحن", href: "/about-us" },
   { label: "المكتبة", href: "/library" },
   { label: "الأنشطة", href: "/activities" },
   { label: "المقالات", href: "/articles" },
@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
             onClick={() => setMenuOpen((prev) => !prev)}
             className="rounded-md p-2 text-white transition-colors hover:bg-white/10 md:hidden"
           >
-            {menuOpen ? <X size={22}  color="var(--secondary-500)" /> : <Menu size={22} color="var(--secondary-500)" />}
+            {menuOpen ? <X size={22} color="var(--secondary-500)" /> : <Menu size={22} color="var(--secondary-500)" />}
           </button>
         </div>
       </div>
