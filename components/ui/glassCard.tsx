@@ -8,44 +8,21 @@ interface GlassCardProps {
 }
 
 const GlassCard: React.FC<GlassCardProps> = ({ title, body, side = 'left', style }) => {
-  const positionStyle: React.CSSProperties =
-    side === 'left'
-      ? { bottom: -40, left: -43 }
-      : { bottom: -40, right: -43 };
-
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        position: 'absolute',
-        width: 300,
-        height: 150,
-        padding: '16px',
-        borderRadius: 8,
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        background: 'rgba(255, 255, 255, 0.49)',
-        border: '1px solid #fff',
-        boxShadow: '0 0 10px #00000027',
-        willChange: 'transform',
-        isolation: 'isolate',
-        ...positionStyle,
-        ...style,
-      }}
+      style={style}
+      className={`
+        absolute z-10 flex flex-col gap-2 p-4 rounded-lg
+        w-[240px] md:w-[280px] lg:w-[300px]
+        backdrop-blur-md bg-white/50 border border-white shadow-[0_0_10px_#00000027]
+        ${side === 'left' ? 'left-0 md:-left-8 lg:-left-11' : 'right-0 md:-right-8 lg:-right-11'}
+        -bottom-8 md:-bottom-10
+      `}
     >
-      <h3
-        style={{
-          fontWeight: 700,
-          color: 'var(--secondary-500)',
-          fontSize: 24,
-          lineHeight: '200%',
-        }}
-      >
+      <h3 className="text-lg md:text-2xl font-bold leading-loose text-[var(--secondary-500)]">
         {title}
       </h3>
-      <p style={{ lineHeight: '150%' }}>{body}</p>
+      <p className="text-sm md:text-base leading-relaxed">{body}</p>
     </div>
   );
 };

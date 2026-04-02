@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
@@ -17,15 +17,33 @@ const navLinks = [
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
+  const lastScrollY = useRef(0)
 
-  // Add shadow + stronger backdrop when user scrolls
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    const el = document.getElementById("scroll-root")
+    if (!el) return
+
+    const handleScroll = () => {
+      const currentY = el.scrollTop
+
+      // Show/hide on scroll direction
+      if (currentY > lastScrollY.current && currentY > 80) {
+        setHidden(true)
+      } else {
+        setHidden(false)
+      }
+
+      // Background blur trigger
+      setScrolled(currentY > 50)
+
+      lastScrollY.current = currentY
+    }
+
+    el.addEventListener("scroll", handleScroll, { passive: true })
+    return () => el.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Close menu on route change / resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) setMenuOpen(false)
@@ -37,11 +55,15 @@ const Navbar: React.FC = () => {
   return (
     <header
       dir="rtl"
-      className={[
-        "fixed top-0 right-0 left-0 z-50 w-full transition-all duration-300",
-        "backdrop-blur-md bg-white/10",
-        scrolled ? "shadow-md bg-white/20" : "",
-      ].join(" ")}
+      style={{
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
+        transition: "transform 0.3s ease-in-out",
+      }}
+      className={`
+        fixed top-0 right-0 left-0 z-50 w-full
+        backdrop-blur-md
+        ${scrolled ? "bg-white/20 shadow-md" : "bg-white/10"}
+      `}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         {/* Logo */}
@@ -69,24 +91,23 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-3">
           <Button className="hidden md:inline-flex">سجل الآن</Button>
 
-          {/* Mobile toggle */}
           <button
             aria-label={menuOpen ? "إغلاق القائمة" : "فتح القائمة"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
             className="rounded-md p-2 text-white transition-colors hover:bg-white/10 md:hidden"
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={22}  color="var(--secondary-500)" /> : <Menu size={22} color="var(--secondary-500)" />}
           </button>
         </div>
       </div>
 
       {/* Mobile drawer */}
       <div
-        className={[
-          "overflow-hidden transition-all duration-300 md:hidden",
-          menuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0",
-        ].join(" ")}
+        className={`
+          overflow-hidden transition-all duration-300 md:hidden
+          ${menuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"}
+        `}
       >
         <nav className="border-t border-white/10 bg-black/40 px-6 pb-6 pt-4 backdrop-blur-md">
           <ul className="flex flex-col gap-4">

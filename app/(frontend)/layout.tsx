@@ -2,6 +2,7 @@ import './globals.css'
 import React from 'react'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
+import Navbar from '@/components/layouts/Navbar'
 
 const khalidArt = localFont({
   src: '../../public/static/fonts/Khalid-Art-bold-Regular.ttf',
@@ -92,7 +93,10 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${Uthmanic.variable} `}
     >
       <body suppressHydrationWarning>
-        <main>{children}</main>
+        
+        <main >
+          {children}
+          </main>
       </body>
     </html>
   )

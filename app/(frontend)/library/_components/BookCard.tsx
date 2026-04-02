@@ -19,26 +19,22 @@ const BookCard: React.FC<BookCardProps> = ({ className, imageClassName }) => {
   return (
     <Card className={className}>
       <CardContent className="p-0">
-        <div className="relative">
+        <div className="relative h-48 lg:h-36">
           <Badge
-            className="absolute top-4 right-4 px-4 py-2 rounded-lg 
-             bg-[#00FF9180] backdrop-blur-md 
-             border border-background/20 shadow-lg
-             font-bold
-             before:content-[''] before:absolute before:inset-0 before:rounded-lg 
-             before:bg-linear-to-br before:from-background/20 before:to-transparent"
+            className="absolute top-4 right-4 z-10 px-4 py-2 rounded-lg 
+     bg-[#00FF9180] backdrop-blur-md 
+     border border-background/20 shadow-lg
+     font-bold
+     before:content-[''] before:absolute before:inset-0 before:rounded-lg 
+     before:bg-linear-to-br before:from-background/20 before:to-transparent"
           >
             متوفر
           </Badge>
           <Image
             src="/static/images/quran.png"
             alt="Book"
-            width={0}
-            height={0}
-            className={cn('w-full h-98 object-cover rounded-b-xl', imageClassName)}
-            style={{
-              width: '100%',
-            }}
+            fill
+            className={cn('object-cover rounded-t-xl', imageClassName)}
           />
         </div>
         <div

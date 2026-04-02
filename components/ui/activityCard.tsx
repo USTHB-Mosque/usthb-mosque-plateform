@@ -15,8 +15,7 @@ interface ActivityCardProps {
   hadith?: React.ReactNode;
   badge?: string;
   actions?: ActivityCardAction[];
-  gridColumn?: string;
-  gridRow?: string;
+  className?: string; // ← replaces gridColumn/gridRow props
   showArrow?: boolean;
 }
 
@@ -30,39 +29,15 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   hadith,
   badge,
   actions,
-  gridColumn,
-  gridRow,
+  className = '',
   showArrow = false,
 }) => {
   return (
-    <div
-      style={{
-        gridRow,
-        gridColumn,
-        borderRadius: 12,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={`relative overflow-hidden rounded-xl min-h-[220px] ${className}`}>
+
       {/* Arrow button */}
       {showArrow && (
-        <button
-          style={{
-            position: 'absolute',
-            top: 24,
-            right: 24,
-            backgroundColor: '#243245',
-            height: 30,
-            width: 30,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 15,
-            cursor: 'pointer',
-            zIndex: 10,
-            border: 'none',
-          }}
-        >
+        <button className="absolute top-5 right-5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#243245] border-none cursor-pointer">
           <ArrowUpRight color="var(--primary-1000)" size={18} />
         </button>
       )}
@@ -71,88 +46,36 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
       <img
         src={imageSrc}
         alt={imageAlt}
-        style={{
-          borderRadius: 12,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          display: 'block',
-        }}
+        className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Dark gradient overlay + content */}
+      {/* Gradient overlay + content */}
       <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100%',
-          width: '100%',
-          background: gradientOverlay,
-          zIndex: 3,
-          borderRadius: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
-          padding: 24,
-          gap: 24,
-        }}
+        className="absolute inset-0 z-[3] flex flex-col justify-end gap-5 p-5 rounded-xl"
+        style={{ background: gradientOverlay }}
       >
-        {/* Badge */}
         {badge && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              height: 24,
-              backgroundColor: 'var(--primary-600)',
-              padding: '4px 8px',
-              paddingTop: 7,
-              borderRadius: 8,
-              fontSize: 14,
-              alignSelf: 'flex-start',
-              color: '#fff',
-            }}
-          >
+          <div className="self-start rounded-lg bg-[var(--primary-600)] px-2 pt-[7px] pb-1 text-sm text-white">
             {badge}
           </div>
         )}
 
-        {/* Text */}
-        <div style={{ color: '#ffffffd6' }}>
-          <h2
-            style={{
-              fontSize: 24,
-              color: '#ffffff',
-              fontWeight: 700,
-              fontFamily: 'var(--font-khalid)',
-            }}
-          >
+        <div className="text-white/85">
+          <h2 className="text-xl font-bold text-white font-[var(--font-khalid)] md:text-2xl">
             {title}
           </h2>
-          {description && <p style={{ fontSize: 14 }}>{description}</p>}
-          {hadith && <p style={{ fontSize: 14 }}>{hadith}</p>}
+          {description && <p className="mt-1 text-sm">{description}</p>}
+          {hadith && <p className="mt-1 text-sm">{hadith}</p>}
         </div>
 
-        {/* Action buttons */}
         {actions && actions.length > 0 && (
-          <div style={{ display: 'flex', width: '100%', gap: 16 }}>
+          <div className="flex w-full gap-3">
             {actions.map((action, i) =>
               action.variant === 'primary' ? (
                 <button
                   key={i}
                   onClick={action.onClick}
-                  style={{
-                    flex: 1,
-                    color: '#ffffff',
-                    fontSize: 18,
-                    border: '1px solid #1fc7abb2',
-                    borderRadius: 8,
-                    backgroundColor: '#1fc7ab7e',
-                    padding: '8px 0',
-                    cursor: 'pointer',
-                    boxShadow: 'inset 0 4px 8px #ffffff2b',
-                  }}
+                  className="flex-1 rounded-lg border border-[#1fc7abb2] bg-[#1fc7ab7e] py-2 text-base text-white cursor-pointer shadow-[inset_0_4px_8px_#ffffff2b] md:text-lg"
                 >
                   {action.label}
                 </button>
@@ -160,17 +83,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                 <button
                   key={i}
                   onClick={action.onClick}
-                  style={{
-                    flex: 1,
-                    color: '#fff',
-                    fontSize: 18,
-                    border: '1px solid #ffffff89',
-                    borderRadius: 8,
-                    backgroundColor: '#ffffff22',
-                    padding: '8px 0',
-                    cursor: 'pointer',
-                    boxShadow: 'inset 0 4px 8px #00000039',
-                  }}
+                  className="flex-1 rounded-lg border border-white/50 bg-white/15 py-2 text-base text-white cursor-pointer shadow-[inset_0_4px_8px_#00000039] md:text-lg"
                 >
                   {action.label}
                 </button>

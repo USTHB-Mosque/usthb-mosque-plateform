@@ -20,7 +20,6 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
