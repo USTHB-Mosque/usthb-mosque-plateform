@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
 import { BookSearch, MapPin, Timer } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 import { Book } from '@/payload-types'
 
@@ -14,6 +13,49 @@ interface BookAvailabilityProps {
   location: Book['location']
 }
 
+const RangeSlider = ({
+  min = 1,
+  max = 30,
+  value,
+  onValueChange,
+  className,
+}: {
+  min?: number
+  max?: number
+  value: number
+  onValueChange: (value: number) => void
+  className?: string
+}) => {
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      value={value}
+      onChange={(e) => onValueChange(Number(e.target.value))}
+      className={cn(
+        'w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer',
+        '[&::-webkit-slider-thumb]:appearance-none',
+        '[&::-webkit-slider-thumb]:w-4',
+        '[&::-webkit-slider-thumb]:h-4',
+        '[&::-webkit-slider-thumb]:rounded-full',
+        '[&::-webkit-slider-thumb]:bg-primary',
+        '[&::-webkit-slider-thumb]:border',
+        '[&::-webkit-slider-thumb]:border-primary',
+        '[&::-webkit-slider-thumb]:cursor-pointer',
+        '[&::-moz-range-thumb]:w-4',
+        '[&::-moz-range-thumb]:h-4',
+        '[&::-moz-range-thumb]:rounded-full',
+        '[&::-moz-range-thumb]:bg-primary',
+        '[&::-moz-range-thumb]:border',
+        '[&::-moz-range-thumb]:border-primary',
+        '[&::-moz-range-thumb]:cursor-pointer',
+        className
+      )}
+    />
+  )
+}
+
 const BookAvailability: React.FC<BookAvailabilityProps> = ({
   totalBooks,
   availableBooks,
@@ -21,46 +63,43 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
 }) => {
   const [day, setDay] = useState(1)
   return (
-    <Card className="p-4 space-y-4">
-      <CardHeader className="text-base">معلومات التوفر</CardHeader>
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <BookSearch className="size-4 text-primary" />
+    <Card className="p-4">
+      <div className="flex flex-col gap-4">
+        <CardHeader className="text-lg font-semibold p-0">معلومات التوفر</CardHeader>
+        
+        <div className="flex items-start gap-3">
+          <BookSearch className="text-primary size-5 mt-0.5" />
           <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground">النسخ المتوفرة</p>
-            <p className="font-bold">
-              {availableBooks} من {totalBooks}
-            </p>
+            <span className="text-sm text-muted-foreground">النسخ المتوفرة</span>
+            <span className="font-bold">{availableBooks} من {totalBooks}</span>
           </div>
         </div>
-        <div className="flex gap-2">
-          <MapPin className="size-4 text-primary" />
+        
+        <div className="flex items-start gap-3">
+          <MapPin className="text-primary size-5 mt-0.5" />
           <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground">الموقع في المكتبة</p>
-            <p className="font-bold">{location}</p>
+            <span className="text-sm text-muted-foreground">الموقع في المكتبة</span>
+            <span className="font-bold">{location}</span>
           </div>
         </div>
+        
         <Separator />
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            <Timer className="size-4 text-primary" />
-            <p className="text-muted-foreground">النسخ المتوفرة</p>
+        
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <Timer className="text-primary size-5" />
+            <span className="text-sm text-muted-foreground">مدة الاستعارة</span>
           </div>
-          <div className="flex gap-4">
-            <Slider
-              dir="rtl"
+          
+          <div className="flex items-center gap-4">
+            <RangeSlider
               min={1}
               max={30}
-              value={[day]}
-              onValueChange={(value) => setDay(value[0])}
-              className={cn(
-                'w-full cursor-pointer',
-                '**:data-[orientation=horizontal]:h-3',
-                '[&_.bg-primary]:bg-primary',
-                '**:[[role=slider]]:size-4 **:[[role=slider]]:bg-primary **:[[role=slider]]:border-primary',
-              )}
+              value={day}
+              onValueChange={setDay}
+              className="flex-1"
             />
-            <span className="whitespace-nowrap">{day} يوم</span>
+            <span className="text-sm font-bold min-w-[50px] text-end">{day} يوم</span>
           </div>
         </div>
       </div>

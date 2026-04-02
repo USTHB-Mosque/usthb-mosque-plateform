@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation'
 import { Media } from '@/payload-types'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import ReturnToIndex from '@/components/common/ReturnToIndex'
+import { getImageUrl } from '@/utils/image-utils'
 
 const BookDetailsPage = async ({
   params,
@@ -30,6 +31,7 @@ const BookDetailsPage = async ({
   if (!article) return notFound()
 
   const media = article.image as Media
+  const imageUrl = getImageUrl(media?.url)
   return (
     <Layout>
       <div className="space-y-6">
@@ -38,13 +40,12 @@ const BookDetailsPage = async ({
           <p className="text-center text-4xl text-secondary font-bold">{article.title}</p>
 
           <Image
-            src={media?.url || ''}
+            src={imageUrl}
             alt={media?.alt || 'Article'}
-            width={0}
-            height={0}
+            width={1200}
+            height={400}
             className="w-full object-cover h-100 rounded-xl"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, 80vw"
           />
           <div
             className="prose prose-lg max-w-none font-yamama text-right leading-relaxed 

@@ -11,9 +11,10 @@ import { cn } from '@/lib/utils'
 type BookFavoriteButtonProps = {
   bookId: number
   initialFavorited: boolean
+  className?: string
 }
 
-const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initialFavorited }) => {
+const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initialFavorited, className }) => {
   const [favorited, setFavorited] = useState(initialFavorited)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -26,6 +27,7 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initial
       className={cn(
         'shrink-0 rounded-xl border-2 transition-colors flex-1',
         favorited && 'border-primary/50 bg-primary/5 text-primary',
+        className
       )}
       disabled={pending}
       onClick={() => {

@@ -27,9 +27,9 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
         <CardContent className="py-12">
           <EmptyData title="لا توجد كتب في المفضلة بعد" />
           <div className="flex justify-center mt-4">
-            <Button asChild variant="outline">
-              <Link href="/library">تصفح المكتبة</Link>
-            </Button>
+            <Link href="/library">
+              <Button variant="outline">تصفح المكتبة</Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -73,9 +73,9 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
                 )}
               </div>
               <div className="flex gap-2 pt-1">
-                <Button asChild size="sm" className="flex-1">
-                  <Link href={`/library/book/${book.id}`}>عرض الكتاب</Link>
-                </Button>
+                <Link href={`/library/book/${book.id}`}>
+                  <Button size="sm" className="flex-1">عرض الكتاب</Button>
+                </Link>
                 <Button
                   size="sm"
                   variant="outline"

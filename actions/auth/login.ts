@@ -30,8 +30,7 @@ export const login = async (email: string, password: string): Promise<LoginResul
       })
     }
     return { user: user as User, token }
-  } catch (error) {
-    console.log(error)
+  } catch {
     return { user: undefined }
   }
 }

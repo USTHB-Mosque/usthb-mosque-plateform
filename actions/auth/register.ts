@@ -41,8 +41,7 @@ export const register = async (email: string, password: string, fullName: string
       })
     }
     return { user: user as User, token }
-  } catch (error) {
-    console.log(error)
+  } catch {
     return { user: undefined }
   }
 }

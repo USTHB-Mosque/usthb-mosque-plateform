@@ -1,9 +1,10 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Layout from '@/components/layouts'
 import BookCard from './_components/BookCard'
 import { Pagination } from '@/components/common/Pagination'
-import { ButtonGroup } from '@/components/ui/button-group'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ListingContent from '@/components/listing/ListingContent'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
 import ListingRenderer from '@/components/listing/ListingRenderer'
@@ -18,6 +19,8 @@ import { bookTypesConfigArray } from '@/utils/constants/books'
 import { BookOpenCheck, Languages, Tag } from 'lucide-react'
 
 const LibraryPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<BookCategory>(BookCategory.Religious)
+  
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
     initialValues: {
       page: 1,
@@ -29,6 +32,11 @@ const LibraryPage: React.FC = () => {
       category: BookCategory.Religious,
     },
   })
+
+  useEffect(() => {
+    setActiveTab(values.category)
+  }, [values.category])
+
   const {
     data: { docs: books = [], totalPages = 1, totalDocs = 0 } = {},
     isLoading,
@@ -37,29 +45,25 @@ const LibraryPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col space-y-14">
-        <div className="flex flex-col items-center justify-center gap-12">
-          <div className="space-y-4">
-            <p className="text-secondary text-5xl text-center font-khalid">مكتبة المسجد</p>
-            <p className="text-foreground text-xl text-center">
+      <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
+        <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
+          <div className="space-y-3 sm:space-y-4 text-center">
+            <p className="text-secondary text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-center font-khalid">مكتبة المسجد</p>
+            <p className="text-foreground text-sm sm:text-base md:text-xl text-center max-w-2xl">
               استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد, متاحة للمطالعة والإستعارة.
             </p>
           </div>
 
-          <ButtonGroup
-            value={values.category}
-            onSelect={(value) => setValue('category', value as BookCategory)}
-            buttons={[
-              {
-                label: 'الكتب العلمية',
-                value: BookCategory.Scientific,
-              },
-              {
-                label: 'الكتب الدينية',
-                value: BookCategory.Religious,
-              },
-            ]}
-          />
+          <Tabs value={activeTab} onValueChange={(v) => {
+            const val = v as BookCategory
+            setActiveTab(val)
+            setValue('category', val)
+          }}>
+            <TabsList>
+              <TabsTrigger value={BookCategory.Religious}>الكتب الدينية</TabsTrigger>
+              <TabsTrigger value={BookCategory.Scientific}>الكتب العلمية</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         <ListingContent>
           <ListingToolbar
@@ -68,6 +72,7 @@ const LibraryPage: React.FC = () => {
               enabled: true,
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
+              placeholder: 'اسم الكتاب، المؤلف ...',
             }}
             filterSections={[
               {
@@ -113,14 +118,14 @@ const LibraryPage: React.FC = () => {
             emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
             errorFallback={<ErrorData />}
             loader={
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4">
                 {Array.from({ length: 12 }).map((_, index) => (
                   <BookCardSkeleton key={index} />
                 ))}
               </div>
             }
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}

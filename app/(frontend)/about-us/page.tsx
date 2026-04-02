@@ -1,7 +1,12 @@
 import React from 'react'
+import Layout from '@/components/layouts'
 
 const AboutUsPage: React.FC = () => {
-  return <div>AboutUsPage</div>
+  return (
+    <Layout>
+      <div>AboutUsPage</div>
+    </Layout>
+  )
 }
 
 export default AboutUsPage

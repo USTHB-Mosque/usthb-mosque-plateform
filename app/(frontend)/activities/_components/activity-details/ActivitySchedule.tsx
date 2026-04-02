@@ -7,7 +7,6 @@ interface ActivityScheduleProps {
 }
 
 const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
-  console.log({ schedules })
   return (
     <Card className="p-6 space-y-6">
       <CardHeader>
@@ -31,7 +30,7 @@ const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
               hour12: false,
             })
             return (
-              <div className="flex">
+              <div key={schedule.dateAndTime} className="flex">
                 <p className="flex-1 font-bold">{day}</p>
                 <div className="flex-1 text-primary">{time}</div>
               </div>

@@ -33,12 +33,9 @@ export const articlesRequests = {
       },
       { addQueryPrefix: true, encodeValuesOnly: true },
     )
-    const response = await httpClient.get<PaginatedDocs<Article>>(`/articles${queryString}`)
-
-    return response.data
+    return httpClient.get<PaginatedDocs<Article>>(`/articles${queryString}`)
   },
   getById: async (id: string) => {
-    const response = await httpClient.get<Article>(`/articles/${id}`)
-    return response.data
+    return httpClient.get<Article>(`/articles/${id}`)
   },
 }

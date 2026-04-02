@@ -48,12 +48,9 @@ export const booksRequests = {
       },
       { addQueryPrefix: true, encodeValuesOnly: true },
     )
-    const response = await httpClient.get<PaginatedDocs<Book>>(`/books${queryString}`)
-
-    return response.data
+    return httpClient.get<PaginatedDocs<Book>>(`/books${queryString}`)
   },
   getById: async (id: string) => {
-    const response = await httpClient.get<Book>(`/books/${id}`)
-    return response.data
+    return httpClient.get<Book>(`/books/${id}`)
   },
 }
