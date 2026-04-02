@@ -4,6 +4,8 @@ import * as React from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
+import { motion } from 'motion/react'
+
 const images = [
   { src: '/static/images/ramadan.jpg', alt: 'Ramadan event', className: 'lg:col-span-2 lg:row-span-2 h-[516px] hidden lg:block' },
   { src: '/static/images/quaran.jpg', alt: 'Quran study', className: 'h-[250px]' },
@@ -19,7 +21,13 @@ const Gallery: React.FC = () => {
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null)
 
   return (
-    <section className="w-full bg-[#E8F2F8] py-20 px-6 md:px-16 lg:px-24 flex flex-col items-center">
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="w-full bg-[#E8F2F8] py-20 px-6 md:px-16 lg:px-24 flex flex-col items-center"
+    >
       <h2 className="text-3xl md:text-4xl font-bold text-[var(--secondary-500)] mb-2" style={{ fontFamily: 'var(--font-khalid)' }}>معرض الصور</h2>
       <p className="text-lg text-[var(--muted-foreground)] mb-12">لحظات توثق أنشطة المسجد وفعالياته المختلفة.</p>
 
@@ -70,7 +78,7 @@ const Gallery: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-    </section>
+    </motion.section>
   )
 }
 
