@@ -11,7 +11,7 @@ const navLinks = [
   { label: "المكتبة", href: "/library" },
   { label: "الأنشطة", href: "/activities" },
   { label: "المقالات", href: "/articles" },
-  { label: "تواصل معنا", href: "/contact" },
+  { label: "تواصل معنا", href: "/contact-us" },
 ]
 
 const Navbar: React.FC = () => {
