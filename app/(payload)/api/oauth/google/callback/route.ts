@@ -5,7 +5,7 @@ import { User } from '@/payload-types'
 import { cookies as nextCookies } from 'next/headers'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
+const GOOGLE_USERINFO_URL = 'https://openidconnect.googleapis.com/v1/userinfo'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -49,6 +49,10 @@ export async function GET(request: NextRequest) {
 
     const googleUser = await userInfoResponse.json()
 
+    console.log('=== Google OAuth User Info ===')
+    console.log(JSON.stringify(googleUser, null, 2))
+    console.log('================================')
+
     const user = await findOrCreateUser(payload, googleUser)
 
     const { token } = await payload.login({
@@ -79,9 +83,15 @@ export async function GET(request: NextRequest) {
 }
 
 async function findOrCreateUser(payload: any, googleUser: any): Promise<User & { _oauthPassword?: string }> {
+  const sub = googleUser.sub || googleUser.id
+
+  if (!sub) {
+    throw new Error('No sub or id found in Google user info')
+  }
+
   const existingBySub = await payload.find({
     collection: 'users',
-    where: { sub: { equals: googleUser.sub } },
+    where: { sub: { equals: sub } },
     limit: 1,
   })
 
@@ -103,12 +113,13 @@ async function findOrCreateUser(payload: any, googleUser: any): Promise<User & {
       collection: 'users',
       id: user.id,
       data: {
-        sub: googleUser.sub,
+        sub,
         fullName: user.fullName || googleUser.name,
         password,
       },
+      overrideAccess: true,
     })
-    return { ...user, sub: googleUser.sub, _oauthPassword: password }
+    return { ...user, sub, _oauthPassword: password }
   }
 
   const password = generatePassword()
@@ -118,7 +129,7 @@ async function findOrCreateUser(payload: any, googleUser: any): Promise<User & {
     data: {
       email: googleUser.email,
       fullName: googleUser.name,
-      sub: googleUser.sub,
+      sub,
       role: 'user',
       password,
     },

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     client_id: process.env.GOOGLE_CLIENT_ID || '',
     redirect_uri: `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/api/oauth/google/callback`,
     response_type: 'code',
-    scope: 'email profile',
+    scope: 'openid email profile',
     access_type: 'offline',
     prompt: 'consent',
     state: redirectTo,
