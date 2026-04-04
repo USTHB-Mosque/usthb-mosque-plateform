@@ -1,10 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import type { Payload } from 'payload'
 import { fakerAR as faker } from '@faker-js/faker'
+import type { SeedOptions, SeedResult } from '../seed-config'
+import { withTransaction } from './with-transaction'
 
-export const createLoan = async (bookIds: number[], userIds: number[]) => {
-  const payload = await getPayload({ config })
-
+export const createLoan = async (payload: Payload, bookIds: number[], userIds: number[]) => {
   const statuses = ['pending', 'approved', 'returned', 'overdue'] as const
   const status = faker.helpers.arrayElement(statuses)
 
@@ -28,49 +27,60 @@ export const createLoan = async (bookIds: number[], userIds: number[]) => {
   return loan
 }
 
-export const seedLoans = async (n: number = 10) => {
-  console.log(`\n📚 Start Seeding: ${n} loans...`)
+export const seedLoans = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
+  const count = options.count ?? 30
+  const force = options.force ?? false
   const startTime = Date.now()
 
-  const payload = await getPayload({ config })
+  console.log(`\n📚 Start Seeding: ${count} loans...`)
 
-  const books = await payload.find({
-    collection: 'books',
-    limit: 1000,
-  })
+  if (!force) {
+    const existing = await payload.find({ collection: 'loans', limit: 1 })
+    if (existing.docs.length > 0) {
+      console.log('⚠️  Loans already exist. Use --force to reseed.')
+      return { collection: 'loans', seeded: 0, skipped: existing.totalDocs, failed: 0, duration: 0 }
+    }
+  }
 
-  const users = await payload.find({
-    collection: 'users',
-    limit: 1000,
-  })
+  if (options.dryRun) {
+    console.log(`[DRY RUN] Would seed ${count} loans`)
+    return { collection: 'loans', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const books = await payload.find({ collection: 'books', limit: 1000 })
+  const users = await payload.find({ collection: 'users', limit: 1000 })
 
   const bookIds = books.docs.map((book) => book.id)
   const userIds = users.docs.map((user) => user.id)
 
   if (bookIds.length === 0 || userIds.length === 0) {
     console.warn('⚠️  No books or users found. Skipping loan seeding.')
-    return
+    return { collection: 'loans', seeded: 0, skipped: 0, failed: 0, duration: 0 }
   }
 
-  for (let i = 0; i < n; i++) {
-    const loanNumber = i + 1
+  const { success, error } = await withTransaction(
+    payload,
+    async () => {
+      for (let i = 0; i < count; i++) {
+        const loanNumber = i + 1
+        const loan = await createLoan(payload, bookIds, userIds)
 
-    try {
-      const loan = await createLoan(bookIds, userIds)
-
-      if (loan) {
-        console.log(`🔄 [${loanNumber}/${n}] Created loan: #${loan.id}`)
-      } else {
-        console.warn(`⚠️  [${loanNumber}/${n}] Loan creation returned null.`)
+        if (loan) {
+          console.log(`🔄 [${loanNumber}/${count}] Created loan: #${loan.id}`)
+        } else {
+          console.warn(`⚠️  [${loanNumber}/${count}] Loan creation returned null.`)
+        }
       }
-    } catch (error) {
-      console.error(
-        `❌ [${loanNumber}/${n}] Error creating loan:`,
-        error instanceof Error ? error.message : error,
-      )
-    }
+    },
+    'loans',
+  )
+
+  const duration = (Date.now() - startTime) / 1000
+
+  if (success) {
+    console.log(`\n✨ Finished seeding ${count} loans in ${duration.toFixed(2)}s\n`)
+    return { collection: 'loans', seeded: count, skipped: 0, failed: 0, duration }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-  console.log(`\n✨ Finished seeding ${n} loans in ${duration}s\n`)
+  return { collection: 'loans', seeded: 0, skipped: 0, failed: count, duration, error }
 }

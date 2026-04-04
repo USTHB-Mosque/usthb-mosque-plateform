@@ -1,10 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import type { Payload } from 'payload'
 import { fakerAR as faker } from '@faker-js/faker'
+import type { SeedOptions, SeedResult } from '../seed-config'
+import { withTransaction } from './with-transaction'
 
-export const createBookFavorite = async (bookIds: number[], userIds: number[]) => {
-  const payload = await getPayload({ config })
-
+export const createBookFavorite = async (payload: Payload, bookIds: number[], userIds: number[]) => {
   let attempts = 0
   while (attempts < 10) {
     const userId = faker.helpers.arrayElement(userIds)
@@ -36,49 +35,60 @@ export const createBookFavorite = async (bookIds: number[], userIds: number[]) =
   throw new Error('Could not create unique book favorite after 10 attempts')
 }
 
-export const seedBookFavorites = async (n: number = 10) => {
-  console.log(`\n⭐ Start Seeding: ${n} book favorites...`)
+export const seedBookFavorites = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
+  const count = options.count ?? 30
+  const force = options.force ?? false
   const startTime = Date.now()
 
-  const payload = await getPayload({ config })
+  console.log(`\n⭐ Start Seeding: ${count} book favorites...`)
 
-  const books = await payload.find({
-    collection: 'books',
-    limit: 1000,
-  })
+  if (!force) {
+    const existing = await payload.find({ collection: 'book-favorites', limit: 1 })
+    if (existing.docs.length > 0) {
+      console.log('⚠️  Book favorites already exist. Use --force to reseed.')
+      return { collection: 'book-favorites', seeded: 0, skipped: existing.totalDocs, failed: 0, duration: 0 }
+    }
+  }
 
-  const users = await payload.find({
-    collection: 'users',
-    limit: 1000,
-  })
+  if (options.dryRun) {
+    console.log(`[DRY RUN] Would seed ${count} book favorites`)
+    return { collection: 'book-favorites', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const books = await payload.find({ collection: 'books', limit: 1000 })
+  const users = await payload.find({ collection: 'users', limit: 1000 })
 
   const bookIds = books.docs.map((book) => book.id)
   const userIds = users.docs.map((user) => user.id)
 
   if (bookIds.length === 0 || userIds.length === 0) {
     console.warn('⚠️  No books or users found. Skipping book favorite seeding.')
-    return
+    return { collection: 'book-favorites', seeded: 0, skipped: 0, failed: 0, duration: 0 }
   }
 
-  for (let i = 0; i < n; i++) {
-    const favNumber = i + 1
+  const { success, error } = await withTransaction(
+    payload,
+    async () => {
+      for (let i = 0; i < count; i++) {
+        const favNumber = i + 1
+        const favorite = await createBookFavorite(payload, bookIds, userIds)
 
-    try {
-      const favorite = await createBookFavorite(bookIds, userIds)
-
-      if (favorite) {
-        console.log(`⭐ [${favNumber}/${n}] Created favorite: #${favorite.id}`)
-      } else {
-        console.warn(`⚠️  [${favNumber}/${n}] Favorite creation returned null.`)
+        if (favorite) {
+          console.log(`⭐ [${favNumber}/${count}] Created favorite: #${favorite.id}`)
+        } else {
+          console.warn(`⚠️  [${favNumber}/${count}] Favorite creation returned null.`)
+        }
       }
-    } catch (error) {
-      console.error(
-        `❌ [${favNumber}/${n}] Error creating favorite:`,
-        error instanceof Error ? error.message : error,
-      )
-    }
+    },
+    'book-favorites',
+  )
+
+  const duration = (Date.now() - startTime) / 1000
+
+  if (success) {
+    console.log(`\n✨ Finished seeding ${count} book favorites in ${duration.toFixed(2)}s\n`)
+    return { collection: 'book-favorites', seeded: count, skipped: 0, failed: 0, duration }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-  console.log(`\n✨ Finished seeding ${n} book favorites in ${duration}s\n`)
+  return { collection: 'book-favorites', seeded: 0, skipped: 0, failed: count, duration, error }
 }

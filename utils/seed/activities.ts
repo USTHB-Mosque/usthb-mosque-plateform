@@ -1,8 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import type { Payload } from 'payload'
 import { fakerAR as faker } from '@faker-js/faker'
 import { Activity } from '@/payload-types'
 import { generateLexicalRichText } from './utils'
+import type { SeedOptions, SeedResult } from '../seed-config'
+import { withTransaction } from './with-transaction'
 
 const authors = [
   'الشيخ محمد بن صالح العثيمين',
@@ -46,9 +47,7 @@ const types: Activity['type'][] = [
   'other',
 ]
 
-export const createActivity = async (mediaIds: number[]) => {
-  const payload = await getPayload({ config })
-
+export const createActivity = async (payload: Payload, mediaIds: number[]) => {
   const maxParticipants = faker.number.int({ min: 10, max: 100 })
   const currentParticipants = faker.number.int({ min: 0, max: maxParticipants })
 
@@ -81,39 +80,59 @@ export const createActivity = async (mediaIds: number[]) => {
   return activity
 }
 
-export const seedActivities = async (n: number = 10) => {
-  console.log(`\n🚀 Start Seeding: ${n} activities...`)
+export const seedActivities = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
+  const count = options.count ?? 50
+  const force = options.force ?? false
   const startTime = Date.now()
 
-  const payload = await getPayload({ config })
+  console.log(`\n🚀 Start Seeding: ${count} activities...`)
 
-  const medias = await payload.find({
-    collection: 'media',
-  })
-
-  const mediaIds = medias.docs.map((media) => media.id)
-
-  for (let i = 0; i < n; i++) {
-    const activityNumber = i + 1
-
-    try {
-      const activity = await createActivity(mediaIds)
-
-      if (activity) {
-        console.log(
-          `📖 [${activityNumber}/${n}] Created: "${activity.title.substring(0, 30)}${activity.title.length > 30 ? '...' : ''}"`,
-        )
-      } else {
-        console.warn(`⚠️  [${activityNumber}/${n}] activity creation returned null.`)
-      }
-    } catch (error) {
-      console.error(
-        `❌ [${activityNumber}/${n}] Error creating activity:`,
-        error instanceof Error ? error.message : error,
-      )
+  if (!force) {
+    const existing = await payload.find({ collection: 'activities', limit: 1 })
+    if (existing.docs.length > 0) {
+      console.log('⚠️  Activities already exist. Use --force to reseed.')
+      return { collection: 'activities', seeded: 0, skipped: existing.totalDocs, failed: 0, duration: 0 }
     }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-  console.log(`\n✨ Finished seeding ${n} articles in ${duration}s\n`)
+  if (options.dryRun) {
+    console.log(`[DRY RUN] Would seed ${count} activities`)
+    return { collection: 'activities', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const medias = await payload.find({ collection: 'media' })
+  const mediaIds = medias.docs.map((media) => media.id)
+
+  if (mediaIds.length === 0) {
+    console.warn('⚠️  No media found. Please seed media first.')
+    return { collection: 'activities', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const { success, error } = await withTransaction(
+    payload,
+    async () => {
+      for (let i = 0; i < count; i++) {
+        const activityNumber = i + 1
+        const activity = await createActivity(payload, mediaIds)
+
+        if (activity) {
+          console.log(
+            `📖 [${activityNumber}/${count}] Created: "${activity.title.substring(0, 30)}${activity.title.length > 30 ? '...' : ''}"`,
+          )
+        } else {
+          console.warn(`⚠️  [${activityNumber}/${count}] activity creation returned null.`)
+        }
+      }
+    },
+    'activities',
+  )
+
+  const duration = (Date.now() - startTime) / 1000
+
+  if (success) {
+    console.log(`\n✨ Finished seeding ${count} activities in ${duration.toFixed(2)}s\n`)
+    return { collection: 'activities', seeded: count, skipped: 0, failed: 0, duration }
+  }
+
+  return { collection: 'activities', seeded: 0, skipped: 0, failed: count, duration, error }
 }

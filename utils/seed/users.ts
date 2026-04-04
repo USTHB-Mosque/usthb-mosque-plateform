@@ -1,10 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import type { Payload } from 'payload'
 import { fakerAR as faker } from '@faker-js/faker'
+import type { SeedOptions, SeedResult } from '../seed-config'
+import { withTransaction } from './with-transaction'
 
-export const createUser = async () => {
-  const payload = await getPayload({ config })
-
+export const createUser = async (payload: Payload) => {
   const firstName = faker.person.firstName('male')
   const lastName = faker.person.lastName('male')
   const fullName = `${firstName} ${lastName}`
@@ -24,9 +23,7 @@ export const createUser = async () => {
   return user
 }
 
-export const createAdminUser = async () => {
-  const payload = await getPayload({ config })
-
+export const createAdminUser = async (payload: Payload) => {
   const adminEmail = 'admin@mosque.dz'
   const adminPassword = 'Admin@123456'
 
@@ -54,39 +51,56 @@ export const createAdminUser = async () => {
   return admin
 }
 
-export const seedUsers = async (n: number = 10) => {
-  console.log(`\n👤 Start Seeding: ${n} users...`)
+export const seedUsers = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
+  const count = options.count ?? 20
+  const force = options.force ?? false
   const startTime = Date.now()
 
-  const payload = await getPayload({ config })
+  console.log(`\n👤 Start Seeding: ${count} users...`)
 
-  const existingUsers = await payload.find({
-    collection: 'users',
-    limit: 1,
-  })
+  if (!force) {
+    const existingUsers = await payload.find({
+      collection: 'users',
+      limit: 1,
+    })
 
-  if (existingUsers.docs.length > 0) {
-    console.log('⚠️  Users already exist. Skipping user seeding.')
-    return
-  }
-
-  for (let i = 0; i < n; i++) {
-    const userNumber = i + 1
-
-    try {
-      const user = await createUser()
-
-      if (user) {
-        console.log(`👤 [${userNumber}/${n}] Created user: ${user.email}`)
-      }
-    } catch (error) {
-      console.error(
-        `❌ [${userNumber}/${n}] Error creating user:`,
-        error instanceof Error ? error.message : error,
-      )
+    if (existingUsers.docs.length > 0) {
+      console.log('⚠️  Users already exist. Use --force to reseed.')
+      return { collection: 'users', seeded: 0, skipped: existingUsers.totalDocs, failed: 0, duration: 0 }
     }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-  console.log(`\n✨ Finished seeding ${n} users in ${duration}s\n`)
+  if (options.dryRun) {
+    console.log(`[DRY RUN] Would seed ${count} users`)
+    return { collection: 'users', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const { success, error } = await withTransaction(
+    payload,
+    async () => {
+      let seeded = 0
+
+      for (let i = 0; i < count; i++) {
+        const userNumber = i + 1
+        const user = await createUser(payload)
+
+        if (user) {
+          console.log(`👤 [${userNumber}/${count}] Created user: ${user.email}`)
+          seeded++
+        }
+      }
+
+      return seeded
+    },
+    'users',
+  )
+
+  const duration = (Date.now() - startTime) / 1000
+
+  if (success && typeof error === 'undefined') {
+    console.log(`\n✨ Finished seeding ${count} users in ${duration.toFixed(2)}s\n`)
+    return { collection: 'users', seeded: count, skipped: 0, failed: 0, duration }
+  }
+
+  return { collection: 'users', seeded: 0, skipped: 0, failed: count, duration, error }
 }

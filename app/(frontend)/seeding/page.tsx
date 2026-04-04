@@ -1,86 +1,58 @@
-import { seedActivities } from '@/utils/seed/activities'
-import { seedArticles } from '@/utils/seed/articles'
-import { seedBooks } from '@/utils/seed/book'
-import { updateRichText } from '@/utils/seed/helpers'
-import { seedMedias } from '@/utils/seed/media'
-import { seedLoans } from '@/utils/seed/loans'
-import { seedBookFavorites } from '@/utils/seed/book-favorites'
-import { seedActivityRegistrations } from '@/utils/seed/activity-registrations'
-import { Button } from '@/components/ui/button'
+'use client'
 
-const Seeding = async () => {
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+
+const Seeding = () => {
+  const [loading, setLoading] = useState<string | null>(null)
+
+  const runSeed = async (action: string, count: number) => {
+    setLoading(action)
+    try {
+      const res = await fetch(`/api/seed/${action}?count=${count}`, { method: 'POST' })
+      const data = await res.json()
+      console.log(data)
+      alert(`Seeded ${data.seeded} ${action}`)
+    } catch (err) {
+      console.error(err)
+      alert(`Failed to seed ${action}`)
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
     <div className="p-8 flex flex-wrap gap-8">
-      <Button
-        onClick={async function () {
-          'use server'
-          seedBooks(50)
-        }}
-      >
-        Seed Books
+      <Button onClick={() => runSeed('books', 50)} disabled={loading !== null}>
+        {loading === 'books' ? 'Seeding...' : 'Seed Books'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedMedias(50)
-        }}
-      >
-        Seed Medias
+      <Button onClick={() => runSeed('media', 50)} disabled={loading !== null}>
+        {loading === 'media' ? 'Seeding...' : 'Seed Medias'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedArticles(50)
-        }}
-      >
-        Seed Articles
+      <Button onClick={() => runSeed('articles', 50)} disabled={loading !== null}>
+        {loading === 'articles' ? 'Seeding...' : 'Seed Articles'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          updateRichText()
-        }}
-      >
-        Update Rich Texts
+      <Button onClick={() => runSeed('activities', 50)} disabled={loading !== null}>
+        {loading === 'activities' ? 'Seeding...' : 'Seed Activities'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedActivities(50)
-        }}
-      >
-        Seed Activities
+      <Button onClick={() => runSeed('loans', 30)} disabled={loading !== null}>
+        {loading === 'loans' ? 'Seeding...' : 'Seed Loans'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedLoans(30)
-        }}
-      >
-        Seed Loans
+      <Button onClick={() => runSeed('favorites', 30)} disabled={loading !== null}>
+        {loading === 'favorites' ? 'Seeding...' : 'Seed Book Favorites'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedBookFavorites(30)
-        }}
-      >
-        Seed Book Favorites
+      <Button onClick={() => runSeed('registrations', 30)} disabled={loading !== null}>
+        {loading === 'registrations' ? 'Seeding...' : 'Seed Activity Registrations'}
       </Button>
 
-      <Button
-        onClick={async function () {
-          'use server'
-          seedActivityRegistrations(30)
-        }}
-      >
-        Seed Activity Registrations
+      <Button onClick={() => runSeed('all', 50)} disabled={loading !== null}>
+        {loading === 'all' ? 'Seeding...' : 'Seed All'}
       </Button>
     </div>
   )

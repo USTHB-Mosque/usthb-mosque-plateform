@@ -1,10 +1,7 @@
-import config from '@/payload.config'
-import { getPayload } from 'payload'
+import type { Payload } from 'payload'
 import { generateLexicalRichText } from './utils'
 
-export async function updateRichText() {
-  const payload = await getPayload({ config })
-
+export async function updateRichText(payload: Payload) {
   console.log('Start updating')
   await payload.update({
     collection: 'books',

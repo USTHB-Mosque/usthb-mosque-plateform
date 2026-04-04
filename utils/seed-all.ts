@@ -1,4 +1,6 @@
 import 'dotenv/config'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 import { seedUsers, createAdminUser } from './seed/users'
 import { seedMedias } from './seed/media'
 import { seedBooks } from './seed/book'
@@ -7,46 +9,105 @@ import { seedArticles } from './seed/articles'
 import { seedLoans } from './seed/loans'
 import { seedBookFavorites } from './seed/book-favorites'
 import { seedActivityRegistrations } from './seed/activity-registrations'
+import { COLLECTIONS, CollectionName, SeedOptions, SeedResult, getSeedOrder } from './seed-config'
+
+const seeders: Record<CollectionName, typeof seedUsers> = {
+  users: seedUsers,
+  media: seedMedias,
+  books: seedBooks,
+  activities: seedActivities,
+  articles: seedArticles,
+  loans: seedLoans,
+  'book-favorites': seedBookFavorites,
+  'activity-registrations': seedActivityRegistrations,
+}
+
+function parseArgs(): SeedOptions & { collections?: CollectionName[] } {
+  const args = process.argv.slice(2)
+  const options: SeedOptions & { collections?: CollectionName[] } = {}
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg === '--force') {
+      options.force = true
+    } else if (arg === '--dry-run') {
+      options.dryRun = true
+    } else if (arg === '--count' && args[i + 1]) {
+      options.count = parseInt(args[++i], 10)
+    } else if (arg.startsWith('--collections=')) {
+      options.collections = arg.split('=')[1].split(',') as CollectionName[]
+    }
+  }
+
+  return options
+}
 
 async function seedAll() {
+  const options = parseArgs()
+  const payload = await getPayload({ config })
+
   console.log('🌱 Starting seeding process...\n')
+
+  if (options.force) {
+    console.log('⚠️  FORCE mode: Will reseed even if data exists\n')
+  }
+
+  if (options.dryRun) {
+    console.log('🔍 DRY RUN mode: Will not create any data\n')
+  }
+
+  let order = getSeedOrder()
+
+  if (options.collections) {
+    const selected = new Set(options.collections)
+    order = order.filter(c => selected.has(c))
+  }
+
+  const results: SeedResult[] = []
 
   try {
     console.log('👤 Creating admin user...')
-    await createAdminUser()
+    await createAdminUser(payload)
     console.log('✅ Admin user created!\n')
 
-    console.log('👤 Seeding Users (20 items)...')
-    await seedUsers(20)
-    console.log('✅ Users seeded!\n')
+    for (const collection of order) {
+      const seeder = seeders[collection]
+      const colConfig = COLLECTIONS.find(c => c.name === collection)
+      const count = options.count ?? colConfig?.count ?? 10
 
-    console.log('📷 Seeding Medias (50 items)...')
-    await seedMedias(50)
-    console.log('✅ Medias seeded!\n')
+      const result = await seeder(payload, {
+        count,
+        force: options.force,
+        dryRun: options.dryRun,
+      })
 
-    console.log('📚 Seeding Books (50 items)...')
-    await seedBooks(50)
-    console.log('✅ Books seeded!\n')
+      results.push(result)
+    }
 
-    console.log('🎉 Seeding Activities (50 items)...')
-    await seedActivities(50)
-    console.log('✅ Activities seeded!\n')
+    console.log('\n========================================')
+    console.log('📊 Seeding Summary')
+    console.log('========================================')
 
-    console.log('📰 Seeding Articles (50 items)...')
-    await seedArticles(50)
-    console.log('✅ Articles seeded!\n')
+    let totalSeeded = 0
+    let totalSkipped = 0
+    let totalFailed = 0
 
-    console.log('📋 Seeding Loans (30 items)...')
-    await seedLoans(30)
-    console.log('✅ Loans seeded!\n')
+    for (const result of results) {
+      totalSeeded += result.seeded
+      totalSkipped += result.skipped
+      totalFailed += result.failed
+      const icon = result.failed > 0 ? '⚠️' : '✅'
+      console.log(`${icon} ${result.collection.padEnd(28)} seeded: ${result.seeded}, skipped: ${result.skipped}, failed: ${result.failed}`)
+    }
 
-    console.log('❤️ Seeding Book Favorites (30 items)...')
-    await seedBookFavorites(30)
-    console.log('✅ Book Favorites seeded!\n')
+    console.log('----------------------------------------')
+    console.log(`Total: seeded: ${totalSeeded}, skipped: ${totalSkipped}, failed: ${totalFailed}`)
+    console.log('========================================\n')
 
-    console.log('🙋 Seeding Activity Registrations (30 items)...')
-    await seedActivityRegistrations(30)
-    console.log('✅ Activity Registrations seeded!\n')
+    if (totalFailed > 0) {
+      console.warn('⚠️  Some seed operations failed. Check the logs above.')
+      process.exit(1)
+    }
 
     console.log('🎉 All seeding completed successfully!')
   } catch (error) {

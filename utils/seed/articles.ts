@@ -1,8 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import type { Payload } from 'payload'
 import { fakerAR as faker } from '@faker-js/faker'
 import { Article } from '@/payload-types'
 import { generateLexicalRichText } from './utils'
+import type { SeedOptions, SeedResult } from '../seed-config'
+import { withTransaction } from './with-transaction'
 
 const authors = [
   'الشيخ محمد بن صالح العثيمين',
@@ -38,9 +39,7 @@ const tags = [
 
 const types: Article['type'][] = ['aqidah', 'fiqh', 'hadith', 'other']
 
-export const createArticle = async (mediaIds: number[]) => {
-  const payload = await getPayload({ config })
-
+export const createArticle = async (payload: Payload, mediaIds: number[]) => {
   const article = await payload.create({
     collection: 'articles',
     data: {
@@ -60,39 +59,59 @@ export const createArticle = async (mediaIds: number[]) => {
   return article
 }
 
-export const seedArticles = async (n: number = 10) => {
-  console.log(`\n🚀 Start Seeding: ${n} articles...`)
+export const seedArticles = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
+  const count = options.count ?? 50
+  const force = options.force ?? false
   const startTime = Date.now()
 
-  const payload = await getPayload({ config })
+  console.log(`\n🚀 Start Seeding: ${count} articles...`)
 
-  const medias = await payload.find({
-    collection: 'media',
-  })
-
-  const mediaIds = medias.docs.map((media) => media.id)
-
-  for (let i = 0; i < n; i++) {
-    const articleNumber = i + 1
-
-    try {
-      const article = await createArticle(mediaIds)
-
-      if (article) {
-        console.log(
-          `📖 [${articleNumber}/${n}] Created: "${article.title.substring(0, 30)}${article.title.length > 30 ? '...' : ''}"`,
-        )
-      } else {
-        console.warn(`⚠️  [${articleNumber}/${n}] article creation returned null.`)
-      }
-    } catch (error) {
-      console.error(
-        `❌ [${articleNumber}/${n}] Error creating article:`,
-        error instanceof Error ? error.message : error,
-      )
+  if (!force) {
+    const existing = await payload.find({ collection: 'articles', limit: 1 })
+    if (existing.docs.length > 0) {
+      console.log('⚠️  Articles already exist. Use --force to reseed.')
+      return { collection: 'articles', seeded: 0, skipped: existing.totalDocs, failed: 0, duration: 0 }
     }
   }
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-  console.log(`\n✨ Finished seeding ${n} articles in ${duration}s\n`)
+  if (options.dryRun) {
+    console.log(`[DRY RUN] Would seed ${count} articles`)
+    return { collection: 'articles', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const medias = await payload.find({ collection: 'media' })
+  const mediaIds = medias.docs.map((media) => media.id)
+
+  if (mediaIds.length === 0) {
+    console.warn('⚠️  No media found. Please seed media first.')
+    return { collection: 'articles', seeded: 0, skipped: 0, failed: 0, duration: 0 }
+  }
+
+  const { success, error } = await withTransaction(
+    payload,
+    async () => {
+      for (let i = 0; i < count; i++) {
+        const articleNumber = i + 1
+        const article = await createArticle(payload, mediaIds)
+
+        if (article) {
+          console.log(
+            `📖 [${articleNumber}/${count}] Created: "${article.title.substring(0, 30)}${article.title.length > 30 ? '...' : ''}"`,
+          )
+        } else {
+          console.warn(`⚠️  [${articleNumber}/${count}] article creation returned null.`)
+        }
+      }
+    },
+    'articles',
+  )
+
+  const duration = (Date.now() - startTime) / 1000
+
+  if (success) {
+    console.log(`\n✨ Finished seeding ${count} articles in ${duration.toFixed(2)}s\n`)
+    return { collection: 'articles', seeded: count, skipped: 0, failed: 0, duration }
+  }
+
+  return { collection: 'articles', seeded: 0, skipped: 0, failed: count, duration, error }
 }
