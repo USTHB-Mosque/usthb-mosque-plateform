@@ -26,7 +26,7 @@ export const login = async (email: string, password: string): Promise<LoginResul
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: 60 * 60 * 24,
       })
     }
     return { user: user as User, token }

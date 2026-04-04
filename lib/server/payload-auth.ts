@@ -15,7 +15,6 @@ export async function getPayloadWithUser(): Promise<{
   const auth = await payload.auth({ headers })
   if (!auth.user) return null
   const user = auth.user as User
-  if (user.role === 'admin') return null
   const req = await createLocalReq({ user }, payload)
   return { payload, user, req }
 }
