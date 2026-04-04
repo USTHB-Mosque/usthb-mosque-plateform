@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 const navLinks = [
   { label: "الرئيسية", href: "/" },
@@ -13,6 +14,54 @@ const navLinks = [
   { label: "المقالات", href: "/articles" },
   { label: "تواصل معنا", href: "/contact" },
 ]
+
+const NavLink: React.FC<{ label: string; href: string; onClick?: () => void; mobile?: boolean }> = ({
+  label,
+  href,
+  onClick,
+  mobile = false,
+}) => {
+  const pathname = usePathname()
+  const isActive = pathname === href
+
+  if (mobile) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        style={{ color: isActive ? 'var(--primary-1000)' : undefined }}
+        className="block text-base font-medium text-white/90 transition-colors hover:text-white"
+      >
+        {label}
+      </Link>
+    )
+  }
+
+  return (
+    <Link
+      href={href}
+      className="group relative text-sm font-medium transition-colors duration-200"
+      style={{ color: isActive ? 'var(--primary-1000)' : undefined }}
+    >
+      {label}
+
+      {/* Underline — stretches from right to left (RTL) */}
+      <span
+        className="absolute bottom-[-3px] right-0 h-[1.5px] transition-all duration-300 ease-out"
+        style={{
+          backgroundColor: 'var(--primary-1000)',
+          width: isActive ? '100%' : '0%',
+        }}
+      />
+
+      {/* Hover color via CSS — only when not active */}
+      <style>{`
+        a:not([data-active]):hover { color: var(--primary-1000); }
+        a:hover span { width: 100% !important; }
+      `}</style>
+    </Link>
+  )
+}
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -26,17 +75,12 @@ const Navbar: React.FC = () => {
 
     const handleScroll = () => {
       const currentY = el.scrollTop
-
-      // Show/hide on scroll direction
       if (currentY > lastScrollY.current && currentY > 80) {
         setHidden(true)
       } else {
         setHidden(false)
       }
-
-      // Background blur trigger
       setScrolled(currentY > 50)
-
       lastScrollY.current = currentY
     }
 
@@ -76,12 +120,7 @@ const Navbar: React.FC = () => {
           <ul className="flex items-center gap-8">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-sm font-medium transition-colors hover:text-white"
-                >
-                  {link.label}
-                </Link>
+                <NavLink label={link.label} href={link.href} />
               </li>
             ))}
           </ul>
@@ -89,8 +128,7 @@ const Navbar: React.FC = () => {
 
         {/* CTA + Hamburger */}
         <div className="flex items-center gap-3">
-          <Button className="hidden md:inline-flex">سجل الآن</Button>
-
+          <Button className="text-foreground w-full hidden md:inline-flex">سجل الآن</Button>
           <button
             aria-label={menuOpen ? "إغلاق القائمة" : "فتح القائمة"}
             aria-expanded={menuOpen}
@@ -113,13 +151,7 @@ const Navbar: React.FC = () => {
           <ul className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="block text-base font-medium text-white/90 transition-colors hover:text-white"
-                >
-                  {link.label}
-                </Link>
+                <NavLink label={link.label} href={link.href} onClick={() => setMenuOpen(false)} mobile />
               </li>
             ))}
           </ul>

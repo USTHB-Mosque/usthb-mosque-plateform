@@ -58,7 +58,7 @@ const BookCard: React.FC<BookCardProps> = ({ className, imageClassName }) => {
       </CardContent>
       <CardFooter>
         <Button
-          className="text-foreground w-full"
+          className="text-foreground w-full font-bold"
           onClick={() => {
             router.push(`/library/book/${1}`)
           }}
