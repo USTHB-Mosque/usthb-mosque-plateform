@@ -1,41 +1,6 @@
 import type { Payload } from 'payload'
-import { fakerAR as faker } from '@faker-js/faker'
-import type { SeedOptions, SeedResult } from '../seed-config'
-import { withTransaction } from './with-transaction'
-
-export const createActivityRegistration = async (payload: Payload, activityIds: number[], userIds: number[]) => {
-  let attempts = 0
-  while (attempts < 10) {
-    const userId = faker.helpers.arrayElement(userIds)
-    const activityId = faker.helpers.arrayElement(activityIds)
-    const attended = faker.datatype.boolean(0.7)
-
-    const existingReg = await payload.find({
-      collection: 'activity-registrations',
-      where: {
-        and: [{ user: { equals: userId } }, { activity: { equals: activityId } }],
-      },
-      limit: 1,
-    })
-
-    if (existingReg.totalDocs === 0) {
-      const registration = await payload.create({
-        collection: 'activity-registrations',
-        data: {
-          user: userId,
-          activity: activityId,
-          attended,
-        },
-      })
-
-      return registration
-    }
-
-    attempts++
-  }
-
-  throw new Error('Could not create unique activity registration after 10 attempts')
-}
+import { createActivityRegistration } from '../factories/activity-registration'
+import { withTransaction, type SeedOptions, type SeedResult } from '../shared/types'
 
 export const seedActivityRegistrations = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
   const count = options.count ?? 30

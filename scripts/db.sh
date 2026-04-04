@@ -15,7 +15,7 @@ echo ""
 
 # Function to show usage
 usage() {
-  echo "Usage: ./db-scripts.sh [command]"
+  echo "Usage: ./scripts/db.sh [command]"
   echo ""
   echo "Database:"
   echo "  status     - Show Supabase status"
@@ -68,7 +68,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedUsers, createAdminUser } from './utils/seed/users'
+        import { seedUsers, createAdminUser } from './scripts/db/seed/collections/users'
         
         const payload = await getPayload({ config })
         await createAdminUser(payload)
@@ -80,10 +80,10 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedMedias } from './utils/seed/media'
+        import { seedMedia } from './scripts/db/seed/collections/media'
         
         const payload = await getPayload({ config })
-        await seedMedias(payload, { count: $count, force: true })
+        await seedMedia(payload, { count: $count, force: true })
       "
       ;;
     books)
@@ -91,7 +91,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedBooks } from './utils/seed/book'
+        import { seedBooks } from './scripts/db/seed/collections/books'
         
         const payload = await getPayload({ config })
         await seedBooks(payload, { count: $count, force: true })
@@ -102,7 +102,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedActivities } from './utils/seed/activities'
+        import { seedActivities } from './scripts/db/seed/collections/activities'
         
         const payload = await getPayload({ config })
         await seedActivities(payload, { count: $count, force: true })
@@ -113,7 +113,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedArticles } from './utils/seed/articles'
+        import { seedArticles } from './scripts/db/seed/collections/articles'
         
         const payload = await getPayload({ config })
         await seedArticles(payload, { count: $count, force: true })
@@ -124,7 +124,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedLoans } from './utils/seed/loans'
+        import { seedLoans } from './scripts/db/seed/collections/loans'
         
         const payload = await getPayload({ config })
         await seedLoans(payload, { count: $count, force: true })
@@ -135,7 +135,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedBookFavorites } from './utils/seed/book-favorites'
+        import { seedBookFavorites } from './scripts/db/seed/collections/book-favorites'
         
         const payload = await getPayload({ config })
         await seedBookFavorites(payload, { count: $count, force: true })
@@ -146,7 +146,7 @@ seed_collection() {
         import 'dotenv/config'
         import { getPayload } from 'payload'
         import config from '@/payload.config'
-        import { seedActivityRegistrations } from './utils/seed/activity-registrations'
+        import { seedActivityRegistrations } from './scripts/db/seed/collections/activity-registrations'
         
         const payload = await getPayload({ config })
         await seedActivityRegistrations(payload, { count: $count, force: true })
@@ -165,13 +165,13 @@ reset_collection() {
   
   case $collection in
     users|media|books|activities|articles|loans|favorites|registrations)
-      pnpm tsx utils/reset-collection.ts "$collection"
+      pnpm tsx scripts/db/reset.ts "$collection"
       ;;
     book-favorites)
-      pnpm tsx utils/reset-collection.ts "book-favorites"
+      pnpm tsx scripts/db/reset.ts "book-favorites"
       ;;
     activity-registrations)
-      pnpm tsx utils/reset-collection.ts "activity-registrations"
+      pnpm tsx scripts/db/reset.ts "activity-registrations"
       ;;
     *)
       echo -e "${RED}Unknown collection: $collection${NC}"
@@ -205,11 +205,11 @@ case $COMMAND in
     ;;
   counts)
     echo -e "${YELLOW}Getting collection counts...${NC}"
-    pnpm tsx utils/db-counts.ts
+    pnpm tsx scripts/db/count.ts
     ;;
   seed|seed:all)
     echo -e "${YELLOW}Running full seed...${NC}"
-    pnpm tsx utils/seed-all.ts "$@"
+    pnpm tsx scripts/db/seed/index.ts "$@"
     ;;
   seed:users|seed:media|seed:books|seed:activities|seed:articles|seed:loans|seed:favorites|seed:registrations)
     COLLECTION=${COMMAND#seed:}
@@ -221,12 +221,8 @@ case $COMMAND in
     read -p "Type 'yes' to confirm: " -r
     echo
     if [[ $REPLY == "yes" ]]; then
-      echo -e "${YELLOW}Stopping Supabase...${NC}"
-      pnpm supabase:stop
-      echo -e "${YELLOW}Starting Supabase...${NC}"
-      pnpm supabase:start
-      echo -e "${YELLOW}Running migrations...${NC}"
-      pnpm payload:migrate
+      echo -e "${YELLOW}Resetting database...${NC}"
+      pnpm supabase db reset
       echo -e "${GREEN}Database reset complete!${NC}"
     else
       echo "Cancelled."
@@ -259,7 +255,7 @@ case $COMMAND in
           echo ""
           read -p "Count per collection [50]: " COUNT
           COUNT=${COUNT:-50}
-          pnpm tsx utils/seed-all.ts --count "$COUNT" --force
+          pnpm tsx scripts/db/seed/index.ts --count "$COUNT" --force
         else
           echo ""
           read -p "Count per collection [50]: " COUNT
@@ -284,9 +280,7 @@ case $COMMAND in
           read -p "Type 'yes' to confirm: " -r
           echo
           if [[ $REPLY == "yes" ]]; then
-            pnpm supabase:stop
-            pnpm supabase:start
-            pnpm payload:migrate
+            pnpm supabase db reset
             echo -e "${GREEN}Database reset complete!${NC}"
           else
             echo "Cancelled."
@@ -300,7 +294,7 @@ case $COMMAND in
         fi
         ;;
       3)
-        pnpm tsx utils/db-counts.ts
+        pnpm tsx scripts/db/count.ts
         ;;
       *)
         echo "Invalid choice."

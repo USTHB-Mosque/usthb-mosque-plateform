@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { COLLECTIONS } from './seed-config'
+import { COLLECTIONS } from './seed/shared'
 
 async function main() {
   const payload = await getPayload({ config })

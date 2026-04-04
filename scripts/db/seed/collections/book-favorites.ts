@@ -1,39 +1,6 @@
 import type { Payload } from 'payload'
-import { fakerAR as faker } from '@faker-js/faker'
-import type { SeedOptions, SeedResult } from '../seed-config'
-import { withTransaction } from './with-transaction'
-
-export const createBookFavorite = async (payload: Payload, bookIds: number[], userIds: number[]) => {
-  let attempts = 0
-  while (attempts < 10) {
-    const userId = faker.helpers.arrayElement(userIds)
-    const bookId = faker.helpers.arrayElement(bookIds)
-
-    const existingFav = await payload.find({
-      collection: 'book-favorites',
-      where: {
-        and: [{ user: { equals: userId } }, { book: { equals: bookId } }],
-      },
-      limit: 1,
-    })
-
-    if (existingFav.totalDocs === 0) {
-      const favorite = await payload.create({
-        collection: 'book-favorites',
-        data: {
-          user: userId,
-          book: bookId,
-        },
-      })
-
-      return favorite
-    }
-
-    attempts++
-  }
-
-  throw new Error('Could not create unique book favorite after 10 attempts')
-}
+import { createBookFavorite } from '../factories/book-favorite'
+import { withTransaction, type SeedOptions, type SeedResult } from '../shared/types'
 
 export const seedBookFavorites = async (payload: Payload, options: SeedOptions = {}): Promise<SeedResult> => {
   const count = options.count ?? 30

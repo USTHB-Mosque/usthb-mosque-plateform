@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { generateLexicalRichText } from '@/utils/seed/utils'
+import { generateLexicalRichText } from '@/scripts/db/seed/shared/rich-text'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { Timer } from 'lucide-react'
 import { Activity } from '@/payload-types'

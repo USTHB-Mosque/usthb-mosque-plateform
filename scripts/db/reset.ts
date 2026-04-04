@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { COLLECTIONS, CollectionName, validateCollectionName } from './seed-config'
+import { COLLECTIONS, CollectionName, validateCollectionName } from './seed/shared'
 
 async function resetCollection(name: CollectionName) {
   const payload = await getPayload({ config })
@@ -28,7 +28,7 @@ const collectionName = process.argv[2]
 
 if (!collectionName) {
   console.error('❌ Please provide a collection name')
-  console.log(`Usage: tsx utils/reset-collection.ts <collection>`)
+  console.log(`Usage: tsx scripts/db/reset.ts <collection>`)
   console.log(`Valid: ${COLLECTIONS.map(c => c.name).join(', ')}`)
   process.exit(1)
 }

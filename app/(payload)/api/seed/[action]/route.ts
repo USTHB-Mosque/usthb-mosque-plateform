@@ -1,19 +1,19 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { NextRequest } from 'next/server'
-import { seedBooks } from '@/utils/seed/book'
-import { seedMedias } from '@/utils/seed/media'
-import { seedArticles } from '@/utils/seed/articles'
-import { seedActivities } from '@/utils/seed/activities'
-import { seedLoans } from '@/utils/seed/loans'
-import { seedBookFavorites } from '@/utils/seed/book-favorites'
-import { seedActivityRegistrations } from '@/utils/seed/activity-registrations'
-import { seedUsers, createAdminUser } from '@/utils/seed/users'
-import { COLLECTIONS, CollectionName, SeedResult } from '@/utils/seed-config'
+import { seedBooks } from '@/scripts/db/seed/collections/books'
+import { seedMedia } from '@/scripts/db/seed/collections/media'
+import { seedArticles } from '@/scripts/db/seed/collections/articles'
+import { seedActivities } from '@/scripts/db/seed/collections/activities'
+import { seedLoans } from '@/scripts/db/seed/collections/loans'
+import { seedBookFavorites } from '@/scripts/db/seed/collections/book-favorites'
+import { seedActivityRegistrations } from '@/scripts/db/seed/collections/activity-registrations'
+import { seedUsers, createAdminUser } from '@/scripts/db/seed/collections/users'
+import { COLLECTIONS, CollectionName, SeedResult } from '@/scripts/db/seed/shared'
 
 const seeders: Record<string, (payload: any, options: any) => Promise<SeedResult>> = {
   books: seedBooks,
-  media: seedMedias,
+  media: seedMedia,
   articles: seedArticles,
   activities: seedActivities,
   loans: seedLoans,

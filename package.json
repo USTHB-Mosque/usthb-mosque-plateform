@@ -20,7 +20,7 @@
     "supabase:status": "pnpx supabase status",
     "supabase:studio": "pnpx supabase studio",
     "supabase:psql": "pnpx supabase psql",
-    "seed": "tsx -r dotenv/config utils/seed-all.ts",
+    "seed": "tsx -r dotenv/config scripts/db/seed/index.ts",
     "db:status": "./db-scripts.sh status",
     "db:studio": "./db-scripts.sh studio",
     "db:tables": "./db-scripts.sh tables",

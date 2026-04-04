@@ -4,7 +4,8 @@ export const User: CollectionConfig = {
   slug: 'users',
   access: {
     admin: ({ req: { user } }) => {
-      return user?.role === 'admin'
+      if (!user) return true
+      return user.role === 'admin'
     },
     create: () => true,
     read: ({ req: { user } }) => {

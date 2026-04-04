@@ -1,19 +1,22 @@
 import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { seedUsers, createAdminUser } from './seed/users'
-import { seedMedias } from './seed/media'
-import { seedBooks } from './seed/book'
-import { seedActivities } from './seed/activities'
-import { seedArticles } from './seed/articles'
-import { seedLoans } from './seed/loans'
-import { seedBookFavorites } from './seed/book-favorites'
-import { seedActivityRegistrations } from './seed/activity-registrations'
-import { COLLECTIONS, CollectionName, SeedOptions, SeedResult, getSeedOrder } from './seed-config'
+import {
+  seedUsers,
+  createAdminUser,
+  seedMedia,
+  seedBooks,
+  seedActivities,
+  seedArticles,
+  seedLoans,
+  seedBookFavorites,
+  seedActivityRegistrations,
+} from './collections'
+import { COLLECTIONS, CollectionName, SeedOptions, SeedResult, getSeedOrder } from './shared'
 
 const seeders: Record<CollectionName, typeof seedUsers> = {
   users: seedUsers,
-  media: seedMedias,
+  media: seedMedia,
   books: seedBooks,
   activities: seedActivities,
   articles: seedArticles,
