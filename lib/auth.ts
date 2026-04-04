@@ -12,8 +12,5 @@ export const getAuthenticatedUser = async () => {
     return undefined
   }
 
-  const user = response.user as User
-  if (user.role === 'admin') return undefined
-
-  return user
+  return response.user as User
 }

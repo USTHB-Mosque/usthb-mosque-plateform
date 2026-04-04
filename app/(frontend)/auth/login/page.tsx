@@ -47,9 +47,6 @@ export default function LoginPage() {
       if (!result?.user) {
         toast.error('فشل تسجيل الدخول')
       } else {
-        if (result.token) {
-          localStorage.setItem('access_token', result.token)
-        }
         toast.success('تم تسجيل الدخول بنجاح')
         router.push(result.user.role === 'admin' ? '/admin' : '/')
       }
@@ -205,4 +202,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

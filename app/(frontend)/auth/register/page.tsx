@@ -116,9 +116,6 @@ export default function RegisterPage() {
       if (!result?.user) {
         toast.error('فشل إنشاء الحساب')
       } else {
-        if (result.token) {
-          localStorage.setItem('access_token', result.token)
-        }
         toast.success('تم إنشاء الحساب بنجاح')
         router.push('/')
       }
