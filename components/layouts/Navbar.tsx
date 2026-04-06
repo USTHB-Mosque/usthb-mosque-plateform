@@ -12,7 +12,7 @@ const navLinks = [
   { label: "المكتبة", href: "/library" },
   { label: "الأنشطة", href: "/activities" },
   { label: "المقالات", href: "/articles" },
-  { label: "تواصل معنا", href: "/contact" },
+  { label: "تواصل معنا", href: "/contact-us" },
 ]
 
 const NavLink: React.FC<{ label: string; href: string; onClick?: () => void; mobile?: boolean }> = ({

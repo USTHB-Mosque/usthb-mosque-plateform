@@ -5,23 +5,22 @@ import Navbar from "@/components/layouts/Navbar"
 import Footer from "@/components/layouts/Footer"
 import CTASection from "@/components/ui/CTASection."
 
-interface AboutUsClientProps {
+interface ContactUsClientProps {
   children: React.ReactNode
 }
 
-const AboutUsClient: React.FC<AboutUsClientProps> = ({ children }) => {
+const ContactUsClient: React.FC<ContactUsClientProps> = ({ children }) => {
   return (
     <>
       <Navbar />
-      <div id="scroll-root" className="no-scrollbar w-full">
-        <main className="w-full">
+      <div id="scroll-root" className="no-scrollbar w-full min-h-screen flex flex-col">
+        <main className="w-full flex-grow">
           {children}
         </main>
-        <CTASection />
         <Footer />
       </div>
     </>
   )
 }
 
-export default AboutUsClient
+export default ContactUsClient
