@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import Image from 'next/image'
@@ -8,6 +9,7 @@ import { format } from 'date-fns'
 import { Article, Media } from '@/payload-types'
 import { useRouter } from 'next/navigation'
 import { getImageUrl } from '@/utils/image-utils'
+import { useGetProfileQuery } from '@/lib/apis/auth/queries'
 
 interface ArticleCardProps {
   article: Article
@@ -16,8 +18,9 @@ interface ArticleCardProps {
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const media = article.image as Media
   const imageUrl = getImageUrl(media?.url)
-
   const router = useRouter()
+  const { data: { user } = { user: undefined } } = useGetProfileQuery()
+
   return (
     <Card className="flex flex-col justify-between">
       <CardContent className="p-0">
@@ -68,7 +71,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             router.push(`/articles/${article.id}`)
           }}
         >
-          سجل الآن
+          {user ? 'اقرأ الآن' : 'سجل الآن'}
         </Button>
       </CardFooter>
     </Card>

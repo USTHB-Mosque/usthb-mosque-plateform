@@ -8,7 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useTransition } from 'react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,9 @@ type Step3Values = z.infer<typeof step3Schema>
 export default function RegisterPage() {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+  const redirect = searchParams.get('redirect') || '/'
   const { step, setStep, ...formData } = useAuthFormStore()
 
   const formStep1 = useForm<Step1Values>({
@@ -114,13 +118,14 @@ export default function RegisterPage() {
       )
 
       if (!result?.user) {
-        toast.error('فشل إنشاء الحساب')
+        toast.error(result?.error || 'فشل إنشاء الحساب')
       } else {
         if (result.token) {
           localStorage.setItem('access_token', result.token)
         }
+        await queryClient.invalidateQueries({ queryKey: ['profile'] })
         toast.success('تم إنشاء الحساب بنجاح')
-        router.push('/')
+        router.push(redirect)
       }
     })
   }

@@ -1,19 +1,60 @@
+'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, User } from 'lucide-react'
+import { Calendar, MapPin, User, Loader2 } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
 import { Button } from '@/components/ui/button'
 import { Activity } from '@/payload-types'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { registerActivity } from '@/actions/activities'
+import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { toast } from 'sonner'
 
 interface ActivityDescriptionProps {
+  activityId: string
   supervisor: Activity['supervisor']
   location: Activity['location']
   startDate: Activity['startDate']
+  openForRegistration: boolean
 }
 
-const ActivityDescription = ({ supervisor, location, startDate }: ActivityDescriptionProps) => {
+const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
+  activityId,
+  supervisor,
+  location,
+  startDate,
+  openForRegistration,
+}) => {
+  const router = useRouter()
+  const [isRegistering, setIsRegistering] = useState(false)
+  const { data: { user } = { user: undefined } } = useGetProfileQuery()
+
+  const handleRegister = async () => {
+    if (!user) {
+      router.push('/auth/login?redirect=/activities/' + activityId)
+      return
+    }
+
+    if (!openForRegistration) {
+      toast.error('عذراً، التسجيل مغلق لهذا النشاط')
+      return
+    }
+
+    setIsRegistering(true)
+    const result = await registerActivity(activityId)
+    setIsRegistering(false)
+
+    if (result.success) {
+      toast.success(result.message)
+      router.push('/profile?tab=registrations')
+    } else {
+      toast.error(result.message)
+    }
+  }
+
   return (
     <Card className="p-6 space-y-6">
       <CardHeader>
@@ -41,8 +82,19 @@ const ActivityDescription = ({ supervisor, location, startDate }: ActivityDescri
         </div>
         <Separator />
         <div>
-          <Button className="w-full text-xl text-foreground" size="lg">
-            سجل الآن
+          <Button 
+            className="w-full text-xl text-foreground" 
+            size="lg"
+            onClick={handleRegister}
+            disabled={isRegistering}
+          >
+            {isRegistering ? (
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            ) : user ? (
+              openForRegistration ? 'سجل الآن' : 'التسغل مغلق'
+            ) : (
+              'سجل الآن'
+            )}
           </Button>
         </div>
       </CardContent>

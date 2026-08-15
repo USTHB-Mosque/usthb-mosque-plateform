@@ -1,15 +1,18 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
 import Image from 'next/image'
 import Ratings from '@/components/common/Ratings'
 import { Button } from '@/components/ui/button'
-import { BookmarkPlus, Share } from 'lucide-react'
+import { BookmarkPlus, Share, Loader2 } from 'lucide-react'
 import { Book, Media } from '@/payload-types'
 import { toast } from 'sonner'
 import BookFavoriteButton from './BookFavoriteButton'
 import { getImageUrl } from '@/utils/image-utils'
+import { borrowBook } from '@/actions/loans'
+import { useGetProfileQuery } from '@/lib/apis/auth/queries'
 
 interface BookPreviewProps {
   image: Book['image']
@@ -30,10 +33,36 @@ const BookPreview: React.FC<BookPreviewProps> = ({
 }) => {
   const media = image as Media
   const imageUrl = getImageUrl(media?.url)
+  const router = useRouter()
+  const [isBorrowing, setIsBorrowing] = useState(false)
+  const { data: { user } = { user: undefined } } = useGetProfileQuery()
 
   const onCopyLink = () => {
     navigator.clipboard.writeText(window.location.href)
     toast.success('تم نسخ الرابط')
+  }
+
+  const handleBorrow = async () => {
+    if (!user) {
+      router.push('/auth/login?redirect=/library/book/' + bookId)
+      return
+    }
+
+    if (!isAvailable) {
+      toast.error('عذراً، الكتاب غير متوفر حالياً')
+      return
+    }
+
+    setIsBorrowing(true)
+    const result = await borrowBook(bookId.toString())
+    setIsBorrowing(false)
+
+    if (result.success) {
+      toast.success(result.message)
+      router.push('/profile?tab=loans')
+    } else {
+      toast.error(result.message)
+    }
   }
 
   return (
@@ -65,8 +94,18 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
           </div>
           
-          <Button className="w-full text-lg text-secondary h-12">
-            سجل الآن
+          <Button 
+            className="w-full text-lg text-secondary h-12" 
+            onClick={handleBorrow}
+            disabled={isBorrowing}
+          >
+            {isBorrowing ? (
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            ) : user ? (
+              'احجز الآن'
+            ) : (
+              'سجل الآن'
+            )}
           </Button>
           
           <div className="flex gap-3">

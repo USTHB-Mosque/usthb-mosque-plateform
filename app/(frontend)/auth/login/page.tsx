@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useTransition } from 'react'
 import { toast } from 'sonner'
+import { useSearchParams } from 'next/navigation'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/form'
 import { login } from '@/actions/auth/login'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
@@ -32,6 +34,9 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+  const redirect = searchParams.get('redirect') || '/'
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -50,8 +55,9 @@ export default function LoginPage() {
         if (result.token) {
           localStorage.setItem('access_token', result.token)
         }
+        await queryClient.invalidateQueries({ queryKey: ['profile'] })
         toast.success('تم تسجيل الدخول بنجاح')
-        router.push(result.user.role === 'admin' ? '/admin' : '/')
+        router.push(result.user.role === 'admin' ? '/admin' : redirect)
       }
     })
   }

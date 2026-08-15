@@ -60,21 +60,25 @@ export const seedUsers = async (n: number = 10) => {
 
   const payload = await getPayload({ config })
 
-  const existingUsers = await payload.find({
-    collection: 'users',
-    limit: 1,
-  })
-
-  if (existingUsers.docs.length > 0) {
-    console.log('⚠️  Users already exist. Skipping user seeding.')
-    return
-  }
-
   for (let i = 0; i < n; i++) {
     const userNumber = i + 1
 
     try {
-      const user = await createUser()
+      const firstName = faker.person.firstName('male')
+      const lastName = faker.person.lastName('male')
+      const fullName = `${firstName} ${lastName}`
+      const email = faker.internet.email({ firstName, lastName }).toLowerCase()
+      const password = 'Test@123456'
+
+      const user = await payload.create({
+        collection: 'users',
+        data: {
+          email,
+          fullName,
+          role: 'user',
+          password,
+        },
+      })
 
       if (user) {
         console.log(`👤 [${userNumber}/${n}] Created user: ${user.email}`)

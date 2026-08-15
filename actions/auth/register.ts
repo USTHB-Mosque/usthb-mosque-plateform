@@ -7,12 +7,25 @@ import { User } from '@/payload-types'
 interface RegisterResult {
   user: User | undefined
   token?: string
+  error?: string
 }
 
 export const register = async (email: string, password: string, fullName: string): Promise<RegisterResult> => {
   const payload = await getPayload({ config })
   const cookies = await nextCookies()
+  
   try {
+    const existingUsers = await payload.find({
+      collection: 'users',
+      where: {
+        email: { equals: email },
+      },
+    })
+
+    if (existingUsers.docs.length > 0) {
+      return { user: undefined, error: 'البريد الإلكتروني مستخدم بالفعل' }
+    }
+
     const user = await payload.create({
       collection: 'users',
       data: {
@@ -41,7 +54,8 @@ export const register = async (email: string, password: string, fullName: string
       })
     }
     return { user: user as User, token }
-  } catch {
-    return { user: undefined }
+  } catch (error) {
+    console.error('Registration error:', error)
+    return { user: undefined, error: 'حدث خطأ أثناء إنشاء الحساب' }
   }
 }

@@ -23,7 +23,6 @@ export const User: CollectionConfig = {
     verify: false,
     maxLoginAttempts: 5,
     lockTime: 600 * 1000,
-    disableLocalStrategy: true,
   },
   admin: {
     useAsTitle: 'email',
@@ -62,11 +61,6 @@ export const User: CollectionConfig = {
       name: 'profilePicture',
       type: 'upload',
       relationTo: 'media',
-    },
-    {
-      name: 'password',
-      type: 'text',
-      required: false,
     },
   ],
 }

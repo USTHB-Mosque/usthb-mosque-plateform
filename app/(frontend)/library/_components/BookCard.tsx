@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Book, Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
+import { useGetProfileQuery } from '@/lib/apis/auth/queries'
 
 type BookCardProps = {
   book: Book
@@ -20,11 +21,19 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
   const media = book.image as Media
   const imageUrl = getImageUrl(media?.url)
   const router = useRouter()
+  const { data: { user } = { user: undefined } } = useGetProfileQuery()
+
+  const isAvailable = book.availableBooks && book.availableBooks > 0
+
+  const handleClick = () => {
+    router.push(`/library/book/${book.id}`)
+  }
+
   return (
     <Card className={cn(className, 'flex flex-col justify-between h-full')}>
       <CardContent className="p-0 flex flex-col h-full">
         <div className="relative w-full aspect-[4/3] sm:aspect-[4/3]">
-          {book.availableBooks && book.availableBooks > 0 ? (
+          {isAvailable ? (
             <Badge
               className="absolute top-2 sm:top-4 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-2 rounded-lg 
              bg-[#00FF9180] backdrop-blur-md 
@@ -67,11 +76,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
       <CardFooter className="p-2 sm:p-3">
         <Button
           className="text-foreground w-full text-xs sm:text-sm"
-          onClick={() => {
-            router.push(`/library/book/${book.id}`)
-          }}
+          onClick={handleClick}
         >
-          سجل الآن
+          {user ? 'احجز الآن' : 'سجل الآن'}
         </Button>
       </CardFooter>
     </Card>

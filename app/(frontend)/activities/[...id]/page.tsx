@@ -51,9 +51,11 @@ const ActivityDetailsPage = async ({
 
           <div className="flex-1 flex flex-col gap-8">
             <ActivityDescription
+              activityId={String(activity.id)}
               supervisor={activity.supervisor}
               location={activity.location}
               startDate={activity.startDate}
+              openForRegistration={activity.openForRegistration || false}
             />
             <ActivitySchedule schedules={activity.schedules} />
           </div>
