@@ -18,6 +18,15 @@ import { Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
 import Link from 'next/link'
+import ListingRenderer from '@/components/listing/ListingRenderer'
+import EmptyData from '@/components/common/EmptyData'
+import ErrorData from '@/components/common/ErrorData'
+import BookCardSkeleton from './library/_components/BookCardSkeleton'
+import ArticleSkeleton from './articles/_components/ArticleSkeleton'
+import ActivityCardSkeleton from '@/components/ui/activityCardSkeleton'
+import { staticBooks } from '@/static-content/books'
+import { staticActivities } from '@/static-content/activities'
+import { staticArticles } from '@/static-content/articles'
 
 const LandingPage: React.FC = () => {
   const { data: booksData, isLoading: booksLoading, isError: booksError } = useGetBooksQuery({
@@ -167,11 +176,35 @@ const LandingPage: React.FC = () => {
               أحدث إصدارات المكتبة
             </motion.p>
 
-            {booksLoading ? (
-              <p className="text-muted-foreground">جارٍ التحميل...</p>
-            ) : booksError ? (
-              <div className="py-10 text-center text-muted-foreground">حدث خطأ أثناء تحميل الكتب</div>
-            ) : (
+            <ListingRenderer
+              isLoading={booksLoading}
+              isError={!!booksError}
+              isEmpty={books.length === 0}
+              loader={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <BookCardSkeleton key={index} />
+                  ))}
+                </div>
+              }
+              errorFallback={<ErrorData />}
+              emptyFallback={<EmptyData title="لا توجد كتب بعد" />}
+              staticFallback={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {staticBooks.map((book, idx) => (
+                    <motion.div
+                      key={book.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    >
+                      <BookCard book={book} />
+                    </motion.div>
+                  ))}
+                </div>
+              }
+            >
               <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {books.map((book, idx) => (
                   <motion.div
@@ -185,7 +218,7 @@ const LandingPage: React.FC = () => {
                   </motion.div>
                 ))}
               </div>
-            )}
+            </ListingRenderer>
 
             <Link
               href="/library"
@@ -225,11 +258,48 @@ const LandingPage: React.FC = () => {
               نشاطات دعوية وتعليمية واجتماعية
             </motion.p>
 
-            {activitiesLoading ? (
-              <p className="text-muted-foreground">جارٍ التحميل...</p>
-            ) : activitiesError ? (
-              <div className="py-10 text-center text-muted-foreground">حدث خطأ أثناء تحميل الأنشطة</div>
-            ) : (
+            <ListingRenderer
+              isLoading={activitiesLoading}
+              isError={!!activitiesError}
+              isEmpty={activities.length === 0}
+              loader={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <ActivityCardSkeleton large className="md:col-span-2 lg:col-span-2" />
+                  <ActivityCardSkeleton />
+                  <ActivityCardSkeleton />
+                  <ActivityCardSkeleton />
+                </div>
+              }
+              errorFallback={<ErrorData />}
+              emptyFallback={<EmptyData title="لا توجد أنشطة حالياً" />}
+              staticFallback={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {staticActivities.map((activity, idx) => {
+                    const media = activity.image as Media
+                    const imageUrl = getImageUrl(media?.url)
+                    return (
+                      <motion.div
+                        key={activity.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: idx * 0.1 }}
+                        className={idx === 0 ? 'md:col-span-2 lg:col-span-2' : ''}
+                      >
+                        <ActivityCard
+                          title={activity.title}
+                          imageSrc={imageUrl}
+                          imageAlt={activity.title}
+                          description={activity.shortDescription}
+                          badge={activitiesTypesConfig[activity.type]}
+                          className="h-full min-h-[200px]"
+                        />
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              }
+            >
               <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {activities.map((activity, idx) => {
                   const media = activity.image as Media
@@ -255,7 +325,7 @@ const LandingPage: React.FC = () => {
                   )
                 })}
               </div>
-            )}
+            </ListingRenderer>
 
             <Link
               href="/activities"
@@ -295,11 +365,35 @@ const LandingPage: React.FC = () => {
               أحدث المقالات
             </motion.p>
 
-            {articlesLoading ? (
-              <p className="text-muted-foreground">جارٍ التحميل...</p>
-            ) : articlesError ? (
-              <div className="py-10 text-center text-muted-foreground">حدث خطأ أثناء تحميل المقالات</div>
-            ) : (
+            <ListingRenderer
+              isLoading={articlesLoading}
+              isError={!!articlesError}
+              isEmpty={articles.length === 0}
+              loader={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <ArticleSkeleton key={index} />
+                  ))}
+                </div>
+              }
+              errorFallback={<ErrorData />}
+              emptyFallback={<EmptyData title="لا توجد مقالات بعد" />}
+              staticFallback={
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
+                  {staticArticles.map((article, idx) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    >
+                      <ArticleCard article={article} />
+                    </motion.div>
+                  ))}
+                </div>
+              }
+            >
               <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
                 {articles.map((article, idx) => (
                   <motion.div
@@ -313,7 +407,7 @@ const LandingPage: React.FC = () => {
                   </motion.div>
                 ))}
               </div>
-            )}
+            </ListingRenderer>
 
             <Link
               href="/articles"

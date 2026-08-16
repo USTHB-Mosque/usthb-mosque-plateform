@@ -6,7 +6,10 @@ interface ListingRendererProps {
   emptyFallback?: React.ReactNode
   errorFallback?: React.ReactNode
   loader?: React.ReactNode
+  staticFallback?: React.ReactNode
 }
+
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 const ListingRenderer: React.FC<ListingRendererProps> = ({
   children,
@@ -16,15 +19,22 @@ const ListingRenderer: React.FC<ListingRendererProps> = ({
   errorFallback = null,
   emptyFallback = null,
   loader,
+  staticFallback,
 }) => {
   if (isLoading) {
     return loader
   }
   if (isError) {
+    if (isDevelopment && staticFallback) {
+      return staticFallback
+    }
     return errorFallback
   }
 
   if (isEmpty) {
+    if (isDevelopment && staticFallback) {
+      return staticFallback
+    }
     return emptyFallback
   }
 
