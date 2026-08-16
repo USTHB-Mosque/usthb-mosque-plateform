@@ -72,6 +72,11 @@ const dubai = localFont({
   variable: '--font-dubai',
 })
 
+const uthmanic = localFont({
+  src: '../../public/static/fonts/KFGQPC_Uthmanic_Script_HAFS.otf',
+  variable: '--font-uthmanic',
+})
+
 export const metadata: Metadata = {
   title: 'مسجد USTHB - المنصة الرقمية',
   description: 'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين - مكتبة، أنشطة، مقالات وإدارة الاستعارة',
@@ -98,7 +103,7 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
     <html
       lang="ar"
       dir="rtl"
-      className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable}`}
+      className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${uthmanic.variable}`}
     >
       <body suppressHydrationWarning>
         <Toaster richColors position="top-center" />

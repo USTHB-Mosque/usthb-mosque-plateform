@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, User, Settings } from 'lucide-react'
+import { LogOut, User, Settings, Menu, X } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { Button } from '@/components/ui/button'
 import { useGetProfileQuery } from '@/lib/apis/auth/queries'
@@ -19,10 +19,24 @@ import Link from 'next/link'
 import { logout } from '@/actions/auth/logout'
 import { toast } from 'sonner'
 import { getImageUrl } from '@/utils/image-utils'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import Image from 'next/image'
+
+const navLinks = [
+  { label: 'الرئيسية', href: '/' },
+  { label: 'من نحن', href: '/about-us' },
+  { label: 'المكتبة', href: '/library' },
+  { label: 'الأنشطة', href: '/activities' },
+  { label: 'المقالات', href: '/articles' },
+  { label: 'تواصل معنا', href: '/contact-us' },
+]
 
 const Navbar: React.FC = () => {
   const { data: { user } = { user: undefined } } = useGetProfileQuery()
   const router = useRouter()
+  const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const media = user?.profilePicture as Media
   const avatarUrl = getImageUrl(media?.url)
@@ -34,64 +48,150 @@ const Navbar: React.FC = () => {
     router.push('/auth/login')
   }
 
-  return (
-    <nav className="flex items-center justify-end p-4 border-b bg-background/95 backdrop-blur">
-      <div className="flex items-center gap-4 px-6">
-        {user ? (
-          <>
-            <div className="hidden md:flex flex-col items-end">
-              <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="outline-none">
-                <Avatar className="h-9 w-9 border-2 border-primary/10 hover:border-primary/30 transition-all">
-                  <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                    {user?.fullName?.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end" className="w-56 mt-2">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="font-bold">حسابي</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem className="cursor-pointer gap-2">
-                    <Link href="/profile" className="flex items-center gap-2 w-full">
-                      <User className="size-4" />
-                      <span>الملف الشخصي</span>
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem className="cursor-pointer gap-2">
-                    <Link href="/profile" className="flex items-center gap-2 w-full">
-                      <Settings className="size-4" />
-                      <span>الإعدادات</span>
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem
-                    className="cursor-pointer gap-2 text-destructive focus:text-destructive"
-                    onClick={onLogout}
-                  >
-                    <LogOut className="size-4" />
-                    <span>تسجيل الخروج</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        ) : (
-          <Link href="/auth/login">
-            <Button>تسجيل الدخول</Button>
-          </Link>
+  const NavLink: React.FC<{ label: string; href: string; mobile?: boolean }> = ({
+    label,
+    href,
+    mobile = false,
+  }) => {
+    const isActive = pathname === href
+    return (
+      <Link
+        href={href}
+        onClick={() => setMenuOpen(false)}
+        className={
+          mobile
+            ? cn('block text-base font-medium transition-colors', isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300')
+            : cn(
+                'relative text-sm font-medium transition-colors duration-200',
+                isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
+              )
+        }
+      >
+        {label}
+        {!mobile && (
+          <span
+            className="absolute bottom-[-3px] right-0 h-[1.5px] bg-primary-300 transition-all duration-300 ease-out"
+            style={{ width: isActive ? '100%' : '0%' }}
+          />
         )}
+      </Link>
+    )
+  }
+
+  return (
+    <header
+      dir="rtl"
+      className="sticky top-0 right-0 left-0 z-50 w-full border-b bg-background/95 backdrop-blur"
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/static/images/logo-icon.svg"
+            alt="الشعار"
+            width={23}
+            height={40}
+            className="h-10 w-auto"
+          />
+        </Link>
+
+        <nav className="hidden md:block">
+          <ul className="flex items-center gap-8">
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <NavLink label={link.label} href={link.href} />
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              <div className="hidden md:flex flex-col items-end">
+                <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none">
+                  <Avatar className="h-9 w-9 border-2 border-primary/10 hover:border-primary/30 transition-all">
+                    <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                      {user?.fullName?.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="font-bold">حسابي</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem className="cursor-pointer gap-2">
+                      <Link href="/profile" className="flex items-center gap-2 w-full">
+                        <User className="size-4" />
+                        <span>الملف الشخصي</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem className="cursor-pointer gap-2">
+                      <Link href="/profile" className="flex items-center gap-2 w-full">
+                        <Settings className="size-4" />
+                        <span>الإعدادات</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                      onClick={onLogout}
+                    >
+                      <LogOut className="size-4" />
+                      <span>تسجيل الخروج</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Link href="/auth/login">
+              <Button>تسجيل الدخول</Button>
+            </Link>
+          )}
+
+          <button
+            aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted md:hidden"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
-    </nav>
+
+      <div
+        className={cn(
+          'overflow-hidden transition-all duration-300 md:hidden',
+          menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0',
+        )}
+      >
+        <nav className="border-t px-6 pb-6 pt-4">
+          <ul className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <NavLink label={link.label} href={link.href} mobile />
+              </li>
+            ))}
+          </ul>
+          {!user && (
+            <Link href="/auth/login" className="mt-6 block">
+              <Button className="w-full">تسجيل الدخول</Button>
+            </Link>
+          )}
+        </nav>
+      </div>
+    </header>
   )
 }
 
