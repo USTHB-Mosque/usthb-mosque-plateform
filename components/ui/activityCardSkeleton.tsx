@@ -14,7 +14,7 @@ const ActivityCardSkeleton: React.FC<ActivityCardSkeletonProps> = ({ className, 
     <div
       className={cn(
         'relative overflow-hidden rounded-xl min-h-[220px]',
-        large && 'md:min-h-[320px]',
+        large && 'md:min-h-[440px]',
         className,
       )}
     >

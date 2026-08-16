@@ -3,8 +3,6 @@
 import React from 'react'
 import Navbar from '@/components/layouts/navbar/Navbar'
 import Footer from '@/components/layouts/Footer'
-import BookCard from './library/_components/BookCard'
-import ArticleCard from './articles/_components/ArticleCard'
 import SectionBlock from '@/components/ui/sectionBlock'
 import ActivityCard from '@/components/ui/activityCard'
 import CTASection from '@/components/ui/CTASection'
@@ -16,14 +14,15 @@ import { useGetActivitiesQuery } from '@/lib/apis/activities/queries'
 import { BookCategory } from '@/interfaces/books.interfaces'
 import { Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
-import { activitiesTypesConfig } from '@/utils/constants/activities'
 import Link from 'next/link'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
-import BookCardSkeleton from './library/_components/BookCardSkeleton'
-import ArticleSkeleton from './articles/_components/ArticleSkeleton'
 import ActivityCardSkeleton from '@/components/ui/activityCardSkeleton'
+import BookCard from '@/components/ui/landing/BookCard'
+import ArticleCard from '@/components/ui/landing/ArticleCard'
+import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
+import ArticleCardSkeleton from '@/components/ui/landing/ArticleCardSkeleton'
 import { staticBooks } from '@/static-content/books'
 import { staticActivities } from '@/static-content/activities'
 import { staticArticles } from '@/static-content/articles'
@@ -48,6 +47,99 @@ const LandingPage: React.FC = () => {
   const books = booksData?.docs || []
   const articles = articlesData?.docs || []
   const activities = activitiesData?.docs || []
+
+  const activityHadith = (
+    <>
+      قال رسول <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> صلى{' '}
+      <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> عليه وسلم :{' '}
+      &quot;خيركم من تعلم القرآن وعلمه&quot;
+    </>
+  )
+
+  const renderActivityBento = (items: typeof activities, withHadith: boolean) => (
+    <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {items[0] && (
+        <motion.div
+          key={items[0].id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0 }}
+          className="md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2"
+        >
+          <ActivityCard
+            title={items[0].title}
+            imageSrc={getImageUrl((items[0].image as Media)?.url)}
+            imageAlt={items[0].title}
+            className="h-full min-h-[320px]"
+            badge="الأكثر إقبالا"
+            description={items[0].shortDescription}
+            hadith={withHadith ? activityHadith : undefined}
+            actions={[
+              { label: 'سجل الآن', variant: 'primary' },
+              { label: 'التفاصيل', variant: 'secondary' },
+            ]}
+          />
+        </motion.div>
+      )}
+      {items[1] && (
+        <motion.div
+          key={items[1].id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="md:col-span-2 lg:col-span-2"
+        >
+          <ActivityCard
+            title={items[1].title}
+            imageSrc={getImageUrl((items[1].image as Media)?.url)}
+            imageAlt={items[1].title}
+            className="h-full min-h-[200px]"
+            showArrow
+            description={items[1].shortDescription}
+            hadith={withHadith ? activityHadith : undefined}
+          />
+        </motion.div>
+      )}
+      {items[2] && (
+        <motion.div
+          key={items[2].id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <ActivityCard
+            title={items[2].title}
+            imageSrc={getImageUrl((items[2].image as Media)?.url)}
+            imageAlt={items[2].title}
+            className="h-full min-h-[200px]"
+            showArrow
+            description={items[2].shortDescription}
+          />
+        </motion.div>
+      )}
+      {items[3] && (
+        <motion.div
+          key={items[3].id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <ActivityCard
+            title={items[3].title}
+            imageSrc={getImageUrl((items[3].image as Media)?.url)}
+            imageAlt={items[3].title}
+            className="h-full min-h-[200px]"
+            showArrow
+            description={items[3].shortDescription}
+          />
+        </motion.div>
+      )}
+    </div>
+  )
 
   return (
     <>
@@ -264,67 +356,17 @@ const LandingPage: React.FC = () => {
               isEmpty={activities.length === 0}
               loader={
                 <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <ActivityCardSkeleton large className="md:col-span-2 lg:col-span-2" />
-                  <ActivityCardSkeleton />
+                  <ActivityCardSkeleton large className="md:col-span-2 lg:col-span-2 lg:row-span-2" />
+                  <ActivityCardSkeleton className="md:col-span-2 lg:col-span-2" />
                   <ActivityCardSkeleton />
                   <ActivityCardSkeleton />
                 </div>
               }
               errorFallback={<ErrorData />}
               emptyFallback={<EmptyData title="لا توجد أنشطة حالياً" />}
-              staticFallback={
-                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {staticActivities.map((activity, idx) => {
-                    const media = activity.image as Media
-                    const imageUrl = getImageUrl(media?.url)
-                    return (
-                      <motion.div
-                        key={activity.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: idx * 0.1 }}
-                        className={idx === 0 ? 'md:col-span-2 lg:col-span-2' : ''}
-                      >
-                        <ActivityCard
-                          title={activity.title}
-                          imageSrc={imageUrl}
-                          imageAlt={activity.title}
-                          description={activity.shortDescription}
-                          badge={activitiesTypesConfig[activity.type]}
-                          className="h-full min-h-[200px]"
-                        />
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              }
+              staticFallback={renderActivityBento(staticActivities, true)}
             >
-              <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {activities.map((activity, idx) => {
-                  const media = activity.image as Media
-                  const imageUrl = getImageUrl(media?.url)
-                  return (
-                    <motion.div
-                      key={activity.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className={idx === 0 ? 'md:col-span-2 lg:col-span-2' : ''}
-                    >
-                      <ActivityCard
-                        title={activity.title}
-                        imageSrc={imageUrl}
-                        imageAlt={activity.title}
-                        description={activity.shortDescription}
-                        badge={activitiesTypesConfig[activity.type]}
-                        className="h-full min-h-[200px]"
-                      />
-                    </motion.div>
-                  )
-                })}
-              </div>
+              {renderActivityBento(activities, false)}
             </ListingRenderer>
 
             <Link
@@ -372,7 +414,7 @@ const LandingPage: React.FC = () => {
               loader={
                 <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <ArticleSkeleton key={index} />
+                    <ArticleCardSkeleton key={index} />
                   ))}
                 </div>
               }
