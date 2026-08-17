@@ -20,7 +20,7 @@ import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
 import ActivityCardSkeleton from '@/components/ui/activityCardSkeleton'
 import BookCard from '@/components/ui/landing/BookCard'
-import ArticleCard from '@/components/ui/landing/ArticleCard'
+import BlogArticleCard from '@/components/ui/landing/BlogArticleCard'
 import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
 import ArticleCardSkeleton from '@/components/ui/landing/ArticleCardSkeleton'
 import { staticBooks } from '@/static-content/books'
@@ -61,8 +61,8 @@ const LandingPage: React.FC = () => {
       {items[0] && (
         <motion.div
           key={items[0].id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ scale: 0.98 }}
+          whileInView={{ scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0 }}
           className="md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2"
@@ -85,8 +85,8 @@ const LandingPage: React.FC = () => {
       {items[1] && (
         <motion.div
           key={items[1].id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ scale: 0.98 }}
+          whileInView={{ scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="md:col-span-2 lg:col-span-2"
@@ -105,8 +105,8 @@ const LandingPage: React.FC = () => {
       {items[2] && (
         <motion.div
           key={items[2].id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ scale: 0.98 }}
+          whileInView={{ scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
@@ -123,8 +123,8 @@ const LandingPage: React.FC = () => {
       {items[3] && (
         <motion.div
           key={items[3].id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ scale: 0.98 }}
+          whileInView={{ scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
@@ -147,7 +147,7 @@ const LandingPage: React.FC = () => {
       <div className="w-full min-h-screen">
 
         {/* ── Hero Video Section ── */}
-        <section className="relative w-full overflow-hidden h-screen">
+        <section className="relative w-full overflow-hidden h-[calc(100svh-73px)]">
           <video
             src="/static/images/hero-section-animation.mp4"
             style={{
@@ -169,13 +169,13 @@ const LandingPage: React.FC = () => {
           <div className="absolute inset-0 z-[2] pointer-events-none" style={{ background: 'rgba(220, 235, 255, 0.15)' }} />
 
           <div
-            className="absolute top-0 left-0 z-[3] w-full h-[65%] md:h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8"
+            className="absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16"
             style={{
               background:
                 'linear-gradient(to bottom, var(--background-2) 0%, var(--background-2) 60%, color-mix(in srgb, var(--background-2) 85%, transparent) 72%, color-mix(in srgb, var(--background-2) 60%, transparent) 82%, color-mix(in srgb, var(--background-2) 30%, transparent) 91%, transparent 100%)',
             }}
           >
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <motion.div initial={{ y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <Image
                 src="/static/images/bismilah.svg"
                 alt="بسم الله"
@@ -187,7 +187,7 @@ const LandingPage: React.FC = () => {
             </motion.div>
             <motion.p
               dir="rtl"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               style={{ fontFamily: 'var(--font-uthmanic)' }}
@@ -202,7 +202,7 @@ const LandingPage: React.FC = () => {
 
         {/* ── Section 1: لبنة المجتمع ── */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -219,7 +219,7 @@ const LandingPage: React.FC = () => {
 
         {/* ── Section 2: رسالة علمية وإيمانية ── */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -241,7 +241,7 @@ const LandingPage: React.FC = () => {
 
         {/* ── Books Section ── */}
         <motion.section
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -250,7 +250,7 @@ const LandingPage: React.FC = () => {
         >
           <div className="flex w-full flex-col items-center">
             <motion.h3
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
@@ -259,7 +259,7 @@ const LandingPage: React.FC = () => {
               مجموعة مختارة
             </motion.h3>
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -286,10 +286,11 @@ const LandingPage: React.FC = () => {
                   {staticBooks.map((book, idx) => (
                     <motion.div
                       key={book.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
+                      initial={{ scale: 0.98 }}
+                      whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: idx * 0.1 }}
+                      className="h-full"
                     >
                       <BookCard book={book} />
                     </motion.div>
@@ -301,10 +302,11 @@ const LandingPage: React.FC = () => {
                 {books.map((book, idx) => (
                   <motion.div
                     key={book.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                    initial={{ scale: 0.98 }}
+                    whileInView={{ scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className="h-full"
                   >
                     <BookCard book={book} />
                   </motion.div>
@@ -323,7 +325,7 @@ const LandingPage: React.FC = () => {
 
         {/* ── Activities Section ── */}
         <motion.section
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -332,7 +334,7 @@ const LandingPage: React.FC = () => {
         >
           <div className="flex w-full flex-col items-center">
             <motion.h3
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
@@ -341,7 +343,7 @@ const LandingPage: React.FC = () => {
               نشاطاتنا
             </motion.h3>
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -380,7 +382,7 @@ const LandingPage: React.FC = () => {
 
         {/* ── Articles Section ── */}
         <motion.section
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -389,7 +391,7 @@ const LandingPage: React.FC = () => {
         >
           <div className="flex w-full flex-col items-center">
             <motion.h3
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
@@ -398,7 +400,7 @@ const LandingPage: React.FC = () => {
               فكر ومعرفة
             </motion.h3>
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -412,7 +414,7 @@ const LandingPage: React.FC = () => {
               isError={!!articlesError}
               isEmpty={articles.length === 0}
               loader={
-                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {Array.from({ length: 3 }).map((_, index) => (
                     <ArticleCardSkeleton key={index} />
                   ))}
@@ -421,31 +423,33 @@ const LandingPage: React.FC = () => {
               errorFallback={<ErrorData />}
               emptyFallback={<EmptyData title="لا توجد مقالات بعد" />}
               staticFallback={
-                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {staticArticles.map((article, idx) => (
                     <motion.div
                       key={article.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
+                      initial={{ scale: 0.98 }}
+                      whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: idx * 0.1 }}
+                      className="h-full"
                     >
-                      <ArticleCard article={article} />
+                      <BlogArticleCard article={article} />
                     </motion.div>
                   ))}
                 </div>
               }
             >
-              <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {articles.map((article, idx) => (
                   <motion.div
                     key={article.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                    initial={{ scale: 0.98 }}
+                    whileInView={{ scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className="h-full"
                   >
-                    <ArticleCard article={article} />
+                    <BlogArticleCard article={article} />
                   </motion.div>
                 ))}
               </div>

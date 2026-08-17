@@ -1,21 +1,21 @@
 'use client'
 
 import React from 'react'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
-import { User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { BookOpen } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Book, Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
+import LandingCtaButton from './LandingCtaButton'
 
 type LandingBookCardProps = {
   book?: Book
   className?: string
   imageClassName?: string
 }
+
+const defaultTags = ['قرآن', 'تفسير']
 
 const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName }) => {
   const router = useRouter()
@@ -24,66 +24,84 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const title = book?.title ?? 'مختصر تفسير ابن كثير'
   const author = book?.author ?? 'محمد بن جرير الطبري'
-  const tags = book?.tags?.map((tag) => tag.name) ?? ['تفسير', 'قرآن']
+  const tags = book?.tags?.map((tag) => tag.name).filter(Boolean) ?? defaultTags
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
+  const handleRegister = (): void => {
+    router.push(`/library/book/${book?.id ?? 1}`)
+  }
+
   return (
-    <Card className={cn('flex flex-col justify-between', className)}>
-      <CardContent className="p-0">
-        <div className="relative h-48 lg:h-36">
-          {isAvailable && (
-            <Badge
-              className="absolute top-4 right-4 z-10 px-4 py-2 rounded-lg 
-             bg-[#00FF9180] backdrop-blur-md 
-             border border-background/20 shadow-lg
-             font-bold
-             before:content-[''] before:absolute before:inset-0 before:rounded-lg 
-             before:bg-linear-to-br before:from-background/20 before:to-transparent"
-            >
+    <article
+      dir="rtl"
+      className={cn(
+        'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
+        className,
+      )}
+    >
+      <header className="relative flex h-48 w-full flex-none self-stretch overflow-hidden rounded-xl bg-cover bg-[50%_50%]">
+        <Image
+          src={imageUrl}
+          alt={media?.alt || title}
+          fill
+          className={cn('object-cover transition-transform duration-500 group-hover/card:scale-105', imageClassName)}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        />
+        {isAvailable && (
+          <div className="absolute top-4 right-4 z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 bg-success-50 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px]">
+            <span className="relative flex w-fit items-center justify-center text-center font-alyamama text-sm font-normal leading-[normal] text-fill-white">
               متوفر
-            </Badge>
-          )}
-          <Image
-            src={imageUrl}
-            alt={media?.alt || title}
-            fill
-            className={cn('object-cover rounded-t-xl', imageClassName)}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            </span>
+          </div>
+        )}
+      </header>
+
+      <div
+        className="relative flex w-full flex-1 flex-col items-start gap-4 self-stretch p-4"
+        style={{
+          backgroundImage: 'url(/static/images/book-pattern.png)',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <div
+          className="relative flex w-full flex-none items-center justify-start gap-2.5 self-stretch"
+          aria-label="تصنيفات الكتاب"
+        >
+          {tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1"
+            >
+              <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
+                {tag}
+              </span>
+            </span>
+          ))}
+        </div>
+
+        <div className="relative flex w-full flex-none flex-col items-start gap-0.5 self-stretch">
+          <h2 className="relative mt-[-1.00px] flex w-fit items-center justify-center font-alyamama text-base font-bold leading-[normal] tracking-[0.16px] text-blue-400 line-clamp-1">
+            {title}
+          </h2>
+          <div className="relative flex w-full flex-none items-center justify-start gap-2 self-stretch">
+            <BookOpen className="relative h-4 w-4 flex-none text-blue-200" aria-hidden="true" />
+            <span className="relative flex flex-1 items-center justify-start whitespace-nowrap font-alyamama text-sm leading-[normal] tracking-[0.14px] text-blue-200 line-clamp-1">
+              {author}
+            </span>
+          </div>
+        </div>
+
+        <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
+          <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
+          <LandingCtaButton
+            label="سجل الآن"
+            onClick={handleRegister}
+            ariaLabel={`سجل الآن في ${title}`}
           />
         </div>
-        <div
-          className="flex flex-col gap-4 p-4"
-          style={{
-            backgroundImage: 'url(/static/images/book-pattern.png)',
-          }}
-        >
-          <div className="flex gap-2.5 flex-wrap">
-            {tags.slice(0, 2).map((tag) => (
-              <Badge key={tag} className="bg-primary/15 text-primary text-base">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <p className="text-sm line-clamp-1">{title}</p>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground line-clamp-1">{author}</p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          className="text-foreground w-full font-bold"
-          onClick={() => {
-            router.push(`/library/book/${book?.id ?? 1}`)
-          }}
-        >
-          سجل الآن
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </article>
   )
 }
 

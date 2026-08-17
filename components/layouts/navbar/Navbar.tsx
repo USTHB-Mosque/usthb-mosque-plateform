@@ -12,8 +12,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogOut, User, Settings, Menu, X } from 'lucide-react'
 import { Media } from '@/payload-types'
-import { Button } from '@/components/ui/button'
 import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { logout } from '@/actions/auth/logout'
@@ -94,8 +94,8 @@ const Navbar: React.FC = () => {
           />
         </Link>
 
-        <nav className="hidden md:block">
-          <ul className="flex items-center gap-8">
+        <nav className="hidden lg:block">
+          <ul className="flex items-center gap-6 xl:gap-8">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <NavLink label={link.label} href={link.href} />
@@ -107,7 +107,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <div className="hidden md:flex flex-col items-end">
+              <div className="hidden lg:flex flex-col items-end">
                 <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
@@ -154,16 +154,20 @@ const Navbar: React.FC = () => {
               </DropdownMenu>
             </>
           ) : (
-            <Link href="/auth/login">
-              <Button>تسجيل الدخول</Button>
-            </Link>
+            <div className="hidden lg:block">
+              <LandingCtaButton
+                label="تسجيل الدخول"
+                onClick={() => router.push('/auth/login')}
+                className="[&_span]:text-base"
+              />
+            </div>
           )}
 
           <button
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted md:hidden"
+            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted lg:hidden"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -172,7 +176,7 @@ const Navbar: React.FC = () => {
 
       <div
         className={cn(
-          'overflow-hidden transition-all duration-300 md:hidden',
+          'overflow-hidden transition-all duration-300 lg:hidden',
           menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0',
         )}
       >
@@ -185,9 +189,12 @@ const Navbar: React.FC = () => {
             ))}
           </ul>
           {!user && (
-            <Link href="/auth/login" className="mt-6 block">
-              <Button className="w-full">تسجيل الدخول</Button>
-            </Link>
+            <div className="mt-6">
+              <LandingCtaButton
+                label="تسجيل الدخول"
+                onClick={() => router.push('/auth/login')}
+              />
+            </div>
           )}
         </nav>
       </div>

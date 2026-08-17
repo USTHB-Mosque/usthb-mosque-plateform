@@ -1,34 +1,51 @@
 import React from 'react'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const ArticleCardSkeleton: React.FC = () => {
   return (
-    <Card className="overflow-hidden w-full">
-      <CardContent className="p-0">
-        <div className="relative h-55 overflow-hidden">
-          <Skeleton className="absolute top-3 right-3 z-10 w-24 h-6 rounded-md" />
-          <Skeleton className="w-full h-full rounded-none" />
-        </div>
-        <div
-          className="flex flex-col gap-2 p-3"
-          style={{
-            backgroundImage: 'url(/static/images/book-pattern.png)',
-          }}
+    <article
+      dir="rtl"
+      className="flex h-full w-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white px-0 pt-0 pb-4"
+    >
+      <header className="relative flex h-[200px] w-full items-start justify-start gap-2.5 self-stretch overflow-hidden rounded-xl p-4">
+        <Skeleton className="absolute inset-0 rounded-none" />
+        <Skeleton className="relative z-10 h-8 w-28 flex-none rounded-lg bg-[#2a3a4cb2]" />
+      </header>
+
+      <div
+        className="relative flex w-full flex-1 flex-col items-start gap-6 self-stretch px-4 py-0"
+        style={{
+          backgroundImage: 'url(/static/images/book-pattern.png)',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <section
+          className="relative flex w-full flex-1 flex-col items-start gap-2 self-stretch"
+          aria-label="معلومات المقال"
         >
-          <div className="flex gap-1.5">
-            <Skeleton className="h-4 w-12 rounded-full bg-primary/15" />
-            <Skeleton className="h-4 w-12 rounded-full bg-primary/15" />
+          <div className="relative flex w-full flex-none items-center justify-start gap-2.5 self-stretch px-4 py-0">
+            <Skeleton className="h-7 w-16 flex-none rounded-lg bg-primary/15" />
+            <Skeleton className="h-7 w-16 flex-none rounded-lg bg-primary/15" />
           </div>
-          <Skeleton className="h-5 w-[80%]" />
-          <Skeleton className="h-3 w-full" />
-          <Skeleton className="h-3 w-[70%]" />
-        </div>
-      </CardContent>
-      <CardFooter className="pt-5 px-3 pb-3">
-        <Skeleton className="h-8 w-full rounded-md" />
-      </CardFooter>
-    </Card>
+          <div className="relative flex w-full flex-none flex-col items-start gap-2 self-stretch">
+            <div className="relative flex w-full flex-none items-center justify-center gap-2.5 self-stretch px-4 py-0">
+              <Skeleton className="h-6 w-[75%]" />
+            </div>
+            <div className="relative flex w-full flex-none flex-col items-start justify-center gap-2 self-stretch px-4 py-0">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-[60%]" />
+            </div>
+          </div>
+        </section>
+
+        <footer className="relative flex w-full flex-none flex-col items-start gap-6 self-stretch">
+          <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
+          <Skeleton className="h-11 w-full rounded-lg" />
+        </footer>
+      </div>
+    </article>
   )
 }
 

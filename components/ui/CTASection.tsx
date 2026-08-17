@@ -29,21 +29,22 @@ const CTASection: React.FC = () => {
 
           <Link
             href="/auth/register"
-            className="relative overflow-hidden px-8 py-4 md:px-10 md:py-[18px] text-lg md:text-2xl font-bold text-white bg-primary-200 border-2 border-white rounded-xl cursor-pointer shadow-[inset_0_0px_15px_#ffffff,0_0_10px_#0aaf91ac] transition-all duration-300 ease-out hover:shadow-[inset_0_0px_20px_#ffffff,0_0_20px_#0aaf91e0] hover:-translate-y-0.5"
+            className="relative whitespace-nowrap px-6 py-4 text-xl sm:px-8 sm:text-2xl md:px-10 md:py-[18px] font-bold text-white bg-primary-200 border-2 border-white rounded-xl cursor-pointer shadow-[0_0_10px_#0aaf91ac] md:shadow-[inset_0_0px_15px_#ffffff,0_0_10px_#0aaf91ac] transition-all duration-300 ease-out hover:shadow-[inset_0_0px_20px_#ffffff,0_0_20px_#0aaf91e0] hover:-translate-y-0.5"
           >
-            <span className="relative z-10">سجل الآن</span>
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 bg-white/10 opacity-0 transition-opacity duration-300 hover:opacity-100"
-            />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-11 left-1/2 -translate-x-1/2 w-4/5 h-24 blur-xl"
-              style={{
-                background:
-                  'radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 40%, transparent 80%)',
-              }}
-            />
+              className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-xl"
+            >
+              <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300 hover:opacity-100" />
+              <span
+                className="absolute -bottom-11 left-1/2 -translate-x-1/2 h-24 w-4/5 blur-xl"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 40%, transparent 80%)',
+                }}
+              />
+            </span>
+            <span className="relative z-10 block leading-none">سجل الآن</span>
           </Link>
         </div>
       </div>

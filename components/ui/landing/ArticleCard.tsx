@@ -58,7 +58,7 @@ const LandingArticleCard: React.FC<LandingArticleCardProps> = ({ article }) => {
 
         <motion.div
           className="flex flex-col gap-2 p-3"
-          animate={{ backgroundColor: hovered ? '#ffffff' : 'transparent' }}
+          animate={{ backgroundColor: hovered ? '#ffffff' : 'rgba(255, 255, 255, 0)' }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           style={{
             backgroundImage: hovered ? 'none' : 'url(/static/images/book-pattern.png)',

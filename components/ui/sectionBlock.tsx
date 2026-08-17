@@ -80,19 +80,21 @@ const SectionBlock: React.FC<SectionBlockProps> = ({
   return (
     <section
       style={{ backgroundColor }}
-      className="w-full flex flex-col items-center gap-10 px-6 py-16 md:px-16 md:py-20 lg:flex-row lg:items-center lg:gap-12 lg:px-24 lg:py-0 lg:min-h-screen"
+      className="w-full flex justify-center items-center px-6 py-16 md:px-16 md:py-20 lg:px-24"
     >
-      {imagePosition === 'left' ? (
-        <>
-          {imageColumn}
-          {textColumn}
-        </>
-      ) : (
-        <>
-          {textColumn}
-          {imageColumn}
-        </>
-      )}
+      <div className="flex w-full max-w-[1200px] flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-12">
+        {imagePosition === 'left' ? (
+          <>
+            {imageColumn}
+            {textColumn}
+          </>
+        ) : (
+          <>
+            {textColumn}
+            {imageColumn}
+          </>
+        )}
+      </div>
     </section>
   )
 }
