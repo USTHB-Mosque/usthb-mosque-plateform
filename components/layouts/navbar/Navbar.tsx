@@ -86,9 +86,9 @@ const Navbar: React.FC = () => {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         <Link href="/" className="shrink-0">
           <Image
-            src="/static/images/logo-icon.svg"
+            src="/static/images/logo-horizontal.svg"
             alt="الشعار"
-            width={23}
+            width={90}
             height={40}
             className="h-10 w-auto"
           />

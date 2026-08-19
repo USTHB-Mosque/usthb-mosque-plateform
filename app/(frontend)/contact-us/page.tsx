@@ -3,24 +3,19 @@
 import React from 'react'
 import Navbar from '@/components/layouts/navbar/Navbar'
 import Footer from '@/components/layouts/Footer'
-import { motion } from 'motion/react'
 import { MapPin, Mail, MessageCircle, MessagesSquare, Instagram, Facebook } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 const ContactUsPage: React.FC = () => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <div className="w-full min-h-screen">
-        <section className="w-full px-6 py-12 md:px-16 lg:px-24 pt-32 max-w-[1400px] mx-auto mb-8">
+      <div className="w-full flex-1">
+        <section className="w-full px-6 pt-8 md:px-16 lg:px-24 max-w-7xl mx-auto mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-8">
             {/* Right Column: Direct Messaging */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+            <div
               className="bg-white rounded-[20px] p-12 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-8"
             >
               <div className="w-20 h-20 rounded-full bg-primary-main-10 flex items-center justify-center text-primary-300 mb-4">
@@ -67,15 +62,11 @@ const ContactUsPage: React.FC = () => {
                   </a>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Left Column: Contact Info & Map */}
             <div className="flex flex-col gap-8">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
+              <div
                 dir="rtl"
                 className="bg-white rounded-[20px] p-10 shadow-sm border border-gray-100 flex flex-col gap-8 h-full"
               >
@@ -102,13 +93,9 @@ const ContactUsPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+              <div
                 className="relative w-full h-full rounded-[20px] overflow-hidden shadow-sm border border-gray-100 bg-fill-contrast group"
               >
                 <Link
@@ -129,13 +116,13 @@ const ContactUsPage: React.FC = () => {
                     </span>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
       </div>
       <Footer />
-    </>
+    </div>
   )
 }
 
