@@ -35,8 +35,8 @@ const ActivitiesPage: React.FC = () => {
       <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
         <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
           <div className="space-y-3 sm:space-y-4 text-center">
-            <p className="text-secondary text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-center font-khalid">أنشطة المسجد</p>
-            <p className="text-foreground text-sm sm:text-base md:text-xl text-center max-w-2xl">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">أنشطة المسجد</h1>
+            <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
               مجموعة من النشاطات الدعوية والتعليمية والاجتماعية التي تهدف إلى بناء مجتمع واعٍ، متآلف، يسير على هدي الإسلام.
             </p>
           </div>
