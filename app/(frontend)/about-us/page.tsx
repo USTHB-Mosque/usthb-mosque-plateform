@@ -12,27 +12,17 @@ import { motion } from 'motion/react'
 
 const AboutUsPage: React.FC = () => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <div className="w-full min-h-screen">
+      <div className="flex-1">
         {/* ── Hero Section ── */}
-        <section className="flex flex-col items-center justify-center pt-24 pb-8 px-6 md:pt-32 md:pb-12 lg:px-24">
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid"
-          >
+        <section className="flex flex-col items-center justify-center pt-8 pb-6 px-6 md:pt-8 md:pb-8 lg:px-24">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">
             مسجد جامعة باب الزوار
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground"
-          >
+          </h1>
+          <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
             منارة للعلم والإيمان داخل الحرم الجامعي، تجمع بين رسالة المسجد وخدمة الطلاب والباحثين.
-          </motion.p>
+          </p>
         </section>
 
         {/* ── History & Mission Section ── */}
@@ -41,7 +31,7 @@ const AboutUsPage: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="w-full flex flex-col lg:flex-row items-center gap-10 px-6 py-12 md:px-16 lg:px-24 max-w-[1440px] mx-auto"
+          className="w-full flex flex-col lg:flex-row items-center gap-10 px-6 py-12 md:px-16 lg:px-24 max-w-7xl mx-auto"
         >
           <div dir="rtl" className="w-full lg:w-1/2 flex flex-col items-start gap-6 text-right">
             <h2 className="text-3xl font-bold text-secondary-500 md:text-4xl font-khalid">تاريخنا ورسالتنا</h2>
@@ -161,7 +151,7 @@ const AboutUsPage: React.FC = () => {
         <CTASection />
       </div>
       <Footer />
-    </>
+    </div>
   )
 }
 

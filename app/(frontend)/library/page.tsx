@@ -1,7 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/layouts'
-import BookCard from './_components/BookCard'
 import { Pagination } from '@/components/common/Pagination'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,7 +11,8 @@ import { useGetBooksQuery } from '@/lib/apis/books/queries'
 import { useSearch } from '@/hooks/use-search'
 import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
 import { languagesConfigArray, availabilityConfigArray } from '@/utils/constants/data'
-import BookCardSkeleton from './_components/BookCardSkeleton'
+import BookCard from '@/components/ui/landing/BookCard'
+import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
 import { bookTypesConfigArray } from '@/utils/constants/books'
@@ -48,8 +48,8 @@ const LibraryPage: React.FC = () => {
       <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
         <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
           <div className="space-y-3 sm:space-y-4 text-center">
-            <p className="text-secondary text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-center font-khalid">مكتبة المسجد</p>
-            <p className="text-foreground text-sm sm:text-base md:text-xl text-center max-w-2xl">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">مكتبة المسجد</h1>
+            <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
               استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد, متاحة للمطالعة والإستعارة.
             </p>
           </div>
@@ -118,14 +118,14 @@ const LibraryPage: React.FC = () => {
             emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
             errorFallback={<ErrorData />}
             loader={
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4">
+              <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 12 }).map((_, index) => (
                   <BookCardSkeleton key={index} />
                 ))}
               </div>
             }
           >
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4">
+            <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
