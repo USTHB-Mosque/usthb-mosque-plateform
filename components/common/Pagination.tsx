@@ -44,7 +44,7 @@ function PaginationLink({ className, isActive, ...props }: PaginationLinkProps) 
       data-slot="pagination-link"
       size="icon-lg"
       data-active={isActive}
-      variant={isActive ? 'outline' : 'default'}
+      variant={isActive ? 'default' : 'ghost'}
       className={cn('rounded-[4px] border border-border', className)}
       {...props}
     />
@@ -60,6 +60,7 @@ function PaginationPrevious({
     <Button
       data-slot="pagination-previous"
       aria-label="Go to previous page"
+      variant="ghost"
       className={cn('rounded-[4px] border border-border h-10', className)}
       {...props}
     >
@@ -78,6 +79,7 @@ function PaginationNext({
     <Button
       data-slot="pagination-next"
       aria-label="Go to next page"
+      variant="ghost"
       className={cn('rounded-[4px] border border-border h-10', className)}
       {...props}
     >

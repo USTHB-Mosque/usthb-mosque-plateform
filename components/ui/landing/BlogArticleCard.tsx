@@ -22,7 +22,7 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className })
   const media = article?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const publishDate = article?.publishDate ?? new Date().toISOString()
-  const tags = article?.tags?.map((tag) => tag.name).filter(Boolean) ?? defaultTags
+  const tags = article?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
   const title = article?.title ?? 'منارة العلم والإيمان في حياة الجامعة'
   const description =
     article?.description ??
@@ -73,13 +73,13 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className })
           aria-label="معلومات المقال"
         >
           <div className="relative flex w-full flex-none items-center justify-start gap-2.5 self-stretch px-4 py-0">
-            {tags.slice(0, 2).map((tag) => (
+            {tags.slice(0, 2).map((tag, index) => (
               <span
-                key={tag}
+                key={tag.id ?? index}
                 className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1"
               >
                 <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
-                  {tag}
+                  {tag.name}
                 </span>
               </span>
             ))}

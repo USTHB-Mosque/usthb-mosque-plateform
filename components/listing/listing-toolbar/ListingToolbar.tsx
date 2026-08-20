@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -20,17 +22,29 @@ export interface ListingToolbarProps {
   searchProps?: ListingSearchProps
   filterSections?: ListingFilterSection[]
   onApplyFilters?: () => void
+  quickFilterIds?: string[]
+  quickFilterSections?: ListingFilterSection[]
 }
 
 const ListingToolbar: React.FC<ListingToolbarProps> = ({
   searchProps,
   filterSections = [],
   onApplyFilters,
+  quickFilterIds = [],
+  quickFilterSections = [],
 }) => {
   const openFiltersDisclosure = useDisclosure()
   const visible = listingFilterSectionsVisible(filterSections)
-  const useDialog = visible.length > 1
-  const inlineSection = visible.length === 1 ? visible[0] : undefined
+
+  const hasQuickFilters = quickFilterIds.length > 0 || quickFilterSections.length > 0
+
+  const dialogSections = hasQuickFilters
+    ? visible.filter((s) => !quickFilterIds.includes(s.id))
+    : visible.length > 1
+      ? visible
+      : []
+
+  const useDialog = dialogSections.length > 0
 
   const searchPlaceholder = searchProps?.placeholder ?? 'اسم الكتاب / المؤلف ...'
 
@@ -39,7 +53,13 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex flex-wrap gap-3 items-center min-w-0 flex-1">
           {useDialog ? (
-            <Button type="button" onClick={openFiltersDisclosure.onOpen} aria-label="تصفية">
+            <Button
+              type="button"
+              size="icon-lg"
+              onClick={openFiltersDisclosure.onOpen}
+              aria-label="تصفية"
+              className="h-10 w-10 rounded-lg"
+            >
               <Funnel />
             </Button>
           ) : null}
@@ -48,7 +68,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pr-10 bg-background w-full rounded-xl"
+                className="h-10 pr-10 bg-background w-full rounded-xl"
                 value={searchProps.value}
                 onChange={(e) => searchProps.onChange(e.target.value)}
               />
@@ -56,17 +76,33 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
           ) : null}
         </div>
 
-        {inlineSection ? (
+        {quickFilterSections.length > 0 ? (
+          <div className="flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl">
+            {quickFilterSections.map((section) => (
+              <ListingFiltersGroup
+                key={section.id}
+                options={section.options}
+                values={section.value}
+                onChange={(v) => {
+                  section.onChange(v)
+                  onApplyFilters?.()
+                }}
+                multiple={section.multiple}
+                buttonClassName={section.buttonClassName}
+              />
+            ))}
+          </div>
+        ) : !useDialog && !hasQuickFilters && visible.length === 1 ? (
           <div className="flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl">
             <ListingFiltersGroup
-              options={inlineSection.options}
-              values={inlineSection.value}
+              options={visible[0].options}
+              values={visible[0].value}
               onChange={(v) => {
-                inlineSection.onChange(v)
+                visible[0].onChange(v)
                 onApplyFilters?.()
               }}
-              multiple={inlineSection.multiple}
-              buttonClassName={inlineSection.buttonClassName}
+              multiple={visible[0].multiple}
+              buttonClassName={visible[0].buttonClassName}
             />
           </div>
         ) : null}
@@ -76,7 +112,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
         <ListingFiltersDialog
           isOpen={openFiltersDisclosure.isOpen}
           setIsOpen={openFiltersDisclosure.setIsOpen}
-          sections={visible}
+          sections={dialogSections}
           onApplyFilters={onApplyFilters}
         />
       ) : null}

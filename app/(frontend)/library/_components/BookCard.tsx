@@ -78,7 +78,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
           className="text-foreground w-full text-xs sm:text-sm"
           onClick={handleClick}
         >
-          {user ? 'احجز الآن' : 'سجل الآن'}
+          {user ? 'احجز الآن' : 'تصفح الكتاب'}
         </Button>
       </CardFooter>
     </Card>

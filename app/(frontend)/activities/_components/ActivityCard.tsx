@@ -5,10 +5,11 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { MapPin, Calendar, Clock, Users, Heart, MessageCircle, Share2, Bookmark } from 'lucide-react'
+import { MapPin, Calendar, Clock, Users, Heart, MessageCircle, Share2, Bookmark, ArrowLeft } from 'lucide-react'
 import { Activity, Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
+import { Button } from '@/components/ui/button'
 
 interface ActivityCardProps {
   activity: Activity
@@ -69,7 +70,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex h-[390px] w-full items-start justify-end overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
+      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
     >
       <button
@@ -95,13 +96,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
         </span>
       </button>
 
-      <div className="relative flex flex-1 grow flex-col items-end justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">
+      <div className="relative flex flex-1 grow flex-col items-start justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">
         <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
           <section
             className="relative flex w-full flex-col items-start gap-3 self-stretch"
             aria-label="معلومات النشاط"
           >
-            <div className="flex flex-wrap items-start justify-end gap-2 self-stretch" aria-label="تصنيفات النشاط">
+            <div className="flex flex-wrap items-start justify-start gap-2 self-stretch" aria-label="تصنيفات النشاط">
               <span className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1">
                 <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
                   {typeLabel}
@@ -114,22 +115,22 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
             >
               {activity.title}
             </h2>
-            <p className="relative flex w-full items-start justify-end self-stretch font-alyamama text-sm leading-[20.3px] text-blue-300 line-clamp-2">
+            <p className="relative flex w-full items-start justify-start self-stretch font-alyamama text-sm leading-[20.3px] text-blue-300 line-clamp-2">
               {activity.shortDescription}
             </p>
-            <dl className="grid h-fit grid-cols-2 grid-flow-row gap-[10px_16px] p-3 rounded-[10px] border border-solid border-stroke-grey bg-fill-contrast">
+            <dl className="grid h-fit w-full grid-cols-2 grid-flow-row gap-[10px_16px] p-3 rounded-[10px] border border-solid border-stroke-grey bg-fill-contrast">
               {details.map((detail) => {
                 const Icon = detail.icon
                 return (
                   <div
                     key={detail.label}
-                    className="flex h-full w-full items-center justify-end gap-1.5"
+                    className="flex h-full w-full min-w-0 items-center justify-start gap-1.5"
                   >
                     <dt className="sr-only">{detail.label}</dt>
-                    <dd className="flex w-fit items-center justify-end whitespace-nowrap font-alyamama text-xs leading-3 text-blue-300">
+                    <Icon className="h-5 w-5 flex-none text-blue-200" aria-hidden="true" />
+                    <dd className="flex flex-1 min-w-0 items-center justify-start overflow-hidden whitespace-nowrap text-ellipsis font-alyamama text-xs leading-3 text-blue-300">
                       {detail.text}
                     </dd>
-                    <Icon className="h-5 w-5 flex-none text-blue-200" aria-hidden="true" />
                   </div>
                 )
               })}
@@ -141,16 +142,23 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
           <div className="inline-flex items-center gap-5">
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 cursor-pointer"
-              aria-label={isLiked ? 'إزالة الإعجاب' : 'الإعجاب بالنشاط'}
-              aria-pressed={isLiked}
-              onClick={() => setIsLiked((current) => !current)}
+              className="cursor-pointer"
+              aria-label={isBookmarked ? 'إزالة النشاط من المحفوظات' : 'حفظ النشاط'}
+              aria-pressed={isBookmarked}
+              onClick={() => setIsBookmarked((current) => !current)}
             >
-              <Heart
-                className={`h-[18px] w-[18px] transition-colors ${isLiked ? 'text-danger fill-danger' : 'text-blue-200'}`}
+              <Bookmark
+                className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isBookmarked ? 'text-primary-300 fill-primary-300' : 'text-blue-200'}`}
                 aria-hidden="true"
               />
-              <span className="font-alyamama text-xs leading-3 text-blue-300">{isLiked ? 195 : 194}</span>
+            </button>
+            <button
+              type="button"
+              className="cursor-pointer"
+              aria-label={isShared ? 'تمت مشاركة النشاط' : 'مشاركة النشاط'}
+              onClick={handleShare}
+            >
+              <Share2 className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isShared ? 'text-primary-300' : 'text-blue-200'}`} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -158,32 +166,32 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
               aria-label="عرض التعليقات"
               onClick={handleOpen}
             >
-              <MessageCircle className="h-[18px] w-[18px] text-blue-200" aria-hidden="true" />
-              <span className="font-alyamama text-xs leading-3 text-blue-300">13</span>
-            </button>
-          </div>
-          <div className="inline-flex items-center gap-5">
-            <button
-              type="button"
-              className="cursor-pointer"
-              aria-label={isShared ? 'تمت مشاركة النشاط' : 'مشاركة النشاط'}
-              onClick={handleShare}
-            >
-              <Share2 className={`h-[18px] w-[18px] ${isShared ? 'text-primary-300' : 'text-blue-200'}`} aria-hidden="true" />
+              <span className="font-alyamama text-xs leading-3 text-blue-300 transition-colors hover:text-primary-300">13</span>
+              <MessageCircle className="h-[18px] w-[18px] text-blue-200 transition-colors hover:text-primary-300" aria-hidden="true" />
             </button>
             <button
               type="button"
-              className="cursor-pointer"
-              aria-label={isBookmarked ? 'إزالة النشاط من المحفوظات' : 'حفظ النشاط'}
-              aria-pressed={isBookmarked}
-              onClick={() => setIsBookmarked((current) => !current)}
+              className="inline-flex items-center gap-1.5 cursor-pointer"
+              aria-label={isLiked ? 'إزالة الإعجاب' : 'الإعجاب بالنشاط'}
+              aria-pressed={isLiked}
+              onClick={() => setIsLiked((current) => !current)}
             >
-              <Bookmark
-                className={`h-[18px] w-[18px] ${isBookmarked ? 'text-primary-300 fill-primary-300' : 'text-blue-200'}`}
+              <span className="font-alyamama text-xs leading-3 text-blue-300 transition-colors hover:text-primary-300">{isLiked ? 195 : 194}</span>
+              <Heart
+                className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isLiked ? 'text-danger fill-danger' : 'text-blue-200'}`}
                 aria-hidden="true"
               />
             </button>
           </div>
+          <Button
+            variant="ghost"
+            className="cursor-pointer gap-1.5 font-alyamama text-sm text-primary-300 hover:bg-transparent hover:text-primary px-2"
+            aria-label={`عرض تفاصيل النشاط: ${activity.title}`}
+            onClick={handleOpen}
+          >
+            التفاصيل
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          </Button>
         </footer>
       </div>
     </article>

@@ -12,7 +12,7 @@ export interface ListingFilterOption {
  */
 export interface ListingFilterSection {
   id: string
-  title: string
+  title?: string
   icon?: ReactNode
   options: ListingFilterOption[]
   multiple: boolean
