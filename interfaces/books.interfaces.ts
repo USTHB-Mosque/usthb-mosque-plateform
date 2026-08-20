@@ -27,6 +27,7 @@ export enum BookType {
 
 export interface BookSearchParams extends BaseSearchParams {
   types?: BookType[]
+  authors?: string[]
   languages?: string[]
   availability?: 'available' | 'not-available' | 'all'
   category: BookCategory

@@ -22,7 +22,7 @@ const LandingArticleCard: React.FC<LandingArticleCardProps> = ({ article }) => {
   const media = article?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const publishDate = article?.publishDate ?? new Date().toISOString()
-  const tags = article?.tags?.map((tag) => tag.name) ?? ['تفسير', 'قرآن']
+  const tags = article?.tags?.filter((tag) => tag.name) ?? ['تفسير', 'قرآن'].map((name) => ({ name, id: name }))
   const title = article?.title ?? 'مختصر تفسير ابن كثير'
   const description =
     article?.description ?? 'يُعَدّ مصلى الجامعة أكثر من مجرد مكانٍ للصلاة، فهو منارةٌ للعلم والتزكية.'
@@ -65,9 +65,9 @@ const LandingArticleCard: React.FC<LandingArticleCardProps> = ({ article }) => {
           }}
         >
           <div className="flex gap-1.5 flex-wrap">
-            {tags.slice(0, 2).map((tag) => (
-              <Badge key={tag} className="bg-primary/15 text-primary text-xs px-2 py-0">
-                {tag}
+            {tags.slice(0, 2).map((tag, index) => (
+              <Badge key={tag.id ?? index} className="bg-primary/15 text-primary text-xs px-2 py-0">
+                {tag.name}
               </Badge>
             ))}
           </div>

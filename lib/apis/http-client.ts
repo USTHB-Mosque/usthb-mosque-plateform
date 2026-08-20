@@ -8,7 +8,7 @@ interface RequestConfig {
 
 async function fetchWithAuth(url: string, method: HttpMethod = 'GET', config?: RequestConfig): Promise<Response> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}/api${url.startsWith('/') ? url : `/${url}`}`
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ async function fetchWithAuth(url: string, method: HttpMethod = 'GET', config?: R
 
   const response = await fetch(fullUrl, fetchConfig)
 
-  if (response.status === 401 && config?.useAuth !== false) {
+  if (response.status === 401 && config?.useAuth === true) {
     const currentUrl = window.location.pathname
     if (!currentUrl.startsWith('/auth')) {
       window.location.href = '/auth/login?redirect=' + encodeURIComponent(currentUrl)

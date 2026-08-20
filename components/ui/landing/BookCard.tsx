@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { BookOpen } from 'lucide-react'
+import { User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Book, Media } from '@/payload-types'
@@ -24,7 +24,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const title = book?.title ?? 'مختصر تفسير ابن كثير'
   const author = book?.author ?? 'محمد بن جرير الطبري'
-  const tags = book?.tags?.map((tag) => tag.name).filter(Boolean) ?? defaultTags
+  const tags = book?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
   const handleRegister = (): void => {
@@ -68,13 +68,13 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
           className="relative flex w-full flex-none items-center justify-start gap-2.5 self-stretch"
           aria-label="تصنيفات الكتاب"
         >
-          {tags.slice(0, 2).map((tag) => (
+          {tags.slice(0, 2).map((tag, index) => (
             <span
-              key={tag}
+              key={tag.id ?? index}
               className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1"
             >
               <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
-                {tag}
+                {tag.name}
               </span>
             </span>
           ))}
@@ -85,7 +85,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
             {title}
           </h2>
           <div className="relative flex w-full flex-none items-center justify-start gap-2 self-stretch">
-            <BookOpen className="relative h-4 w-4 flex-none text-blue-200" aria-hidden="true" />
+            <User className="relative h-4 w-4 flex-none text-blue-200" aria-hidden="true" />
             <span className="relative flex flex-1 items-center justify-start whitespace-nowrap font-alyamama text-sm leading-[normal] tracking-[0.14px] text-blue-200 line-clamp-1">
               {author}
             </span>
@@ -95,9 +95,9 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
         <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
           <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
           <LandingCtaButton
-            label="سجل الآن"
+            label="تصفح الكتاب"
             onClick={handleRegister}
-            ariaLabel={`سجل الآن في ${title}`}
+            ariaLabel={`تصفح الكتاب: ${title}`}
           />
         </div>
       </div>

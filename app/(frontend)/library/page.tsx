@@ -10,13 +10,13 @@ import ListingRenderer from '@/components/listing/ListingRenderer'
 import { useGetBooksQuery } from '@/lib/apis/books/queries'
 import { useSearch } from '@/hooks/use-search'
 import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
-import { languagesConfigArray, availabilityConfigArray } from '@/utils/constants/data'
+import { languagesConfigArray } from '@/utils/constants/data'
 import BookCard from '@/components/ui/landing/BookCard'
 import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
-import { bookTypesConfigArray } from '@/utils/constants/books'
-import { BookOpenCheck, Languages, Tag } from 'lucide-react'
+import { bookQuickTypesConfigArray, bookAuthorsConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
+import { Languages, Tag, User } from 'lucide-react'
 
 const LibraryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<BookCategory>(BookCategory.Religious)
@@ -31,6 +31,7 @@ const LibraryPage: React.FC = () => {
       types: [],
       category: BookCategory.Religious,
     },
+    scope: 'library',
   })
 
   useEffect(() => {
@@ -57,6 +58,7 @@ const LibraryPage: React.FC = () => {
           <Tabs value={activeTab} onValueChange={(v) => {
             const val = v as BookCategory
             setActiveTab(val)
+            setValue('types', [])
             setValue('category', val)
           }}>
             <TabsList>
@@ -68,6 +70,15 @@ const LibraryPage: React.FC = () => {
         <ListingContent>
           <ListingToolbar
             onApplyFilters={() => setValue('page', 1)}
+            quickFilterSections={[
+              {
+                id: 'types-quick',
+                multiple: true,
+                options: bookQuickTypesConfigArray[activeTab],
+                value: values.types || [],
+                onChange: (v) => setValue('types', v as BookType[]),
+              },
+            ]}
             searchProps={{
               enabled: true,
               value: searchValues.search || '',
@@ -86,16 +97,15 @@ const LibraryPage: React.FC = () => {
                 resetValue: [],
               },
               {
-                id: 'availability',
-                title: 'التوفر',
-                icon: <BookOpenCheck />,
-                multiple: false,
-                options: availabilityConfigArray,
-                value: values.availability || 'all',
-                onChange: (v) =>
-                  setValue('availability', v as 'available' | 'not-available' | 'all'),
+                id: 'authors',
+                title: 'المؤلفون',
+                icon: <User />,
+                multiple: true,
+                options: bookAuthorsConfigArray,
+                value: values.authors || [],
+                onChange: (v) => setValue('authors', v as string[]),
                 buttonClassName: 'flex-1',
-                resetValue: 'all',
+                resetValue: [],
               },
               {
                 id: 'languages',

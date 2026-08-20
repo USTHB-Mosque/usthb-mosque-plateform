@@ -12,8 +12,12 @@ export const booksRequests = {
       andFilters.push({ category: { equals: params.category } })
     }
 
-    if (params?.types) {
+    if (params?.types?.length) {
       andFilters.push({ type: { in: params.types } })
+    }
+
+    if (params?.authors?.length) {
+      andFilters.push({ author: { in: params.authors } })
     }
 
     if (params?.languages) {

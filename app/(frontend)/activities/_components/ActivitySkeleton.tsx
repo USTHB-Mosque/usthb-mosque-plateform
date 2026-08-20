@@ -5,17 +5,17 @@ const ActivitySkeleton: React.FC = () => {
   return (
     <article
       dir="rtl"
-      className="relative flex h-[390px] w-full items-start justify-end overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white"
+      className="relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white"
     >
       <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 self-stretch border-l border-l-stroke-grey sm:w-[40%]">
         <Skeleton className="absolute inset-0 rounded-none" />
         <Skeleton className="absolute top-[18px] right-[18px] z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
       </div>
 
-      <div className="relative flex flex-1 grow flex-col items-end justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">
+      <div className="relative flex flex-1 grow flex-col items-start justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">
         <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
           <section className="relative flex w-full flex-col items-start gap-3 self-stretch">
-            <div className="flex flex-wrap items-start justify-end gap-2 self-stretch">
+            <div className="flex flex-wrap items-start justify-start gap-2 self-stretch">
               <Skeleton className="h-7 w-16 flex-none rounded-lg bg-primary/15" />
             </div>
             <Skeleton className="h-7 w-[70%] self-start rounded-md" />
@@ -23,7 +23,7 @@ const ActivitySkeleton: React.FC = () => {
             <Skeleton className="h-4 w-3/4 self-start" />
             <div className="grid h-fit w-full grid-cols-2 gap-[10px_16px] rounded-[10px] border border-solid border-stroke-grey bg-fill-contrast p-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="flex h-full w-full items-center justify-end gap-1.5">
+                <div key={index} className="flex h-full w-full items-center justify-start gap-1.5">
                   <Skeleton className="h-4 w-20" />
                   <Skeleton className="h-5 w-5 flex-none rounded-full" />
                 </div>

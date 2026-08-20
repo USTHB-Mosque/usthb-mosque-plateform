@@ -104,7 +104,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             ) : user ? (
               'احجز الآن'
             ) : (
-              'سجل الآن'
+              'تصفح الكتاب'
             )}
           </Button>
           

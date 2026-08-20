@@ -23,6 +23,7 @@ const ArticlesPage: React.FC = () => {
       search: '',
       types: [],
     },
+    scope: 'articles',
   })
 
   const {

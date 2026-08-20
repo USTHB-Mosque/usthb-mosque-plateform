@@ -7,6 +7,6 @@ export const authRequests = {
   },
 
   getProfile: async () => {
-    return httpClient.get<AuthResponse>('/users/me', { useAuth: true })
+    return httpClient.get<AuthResponse>('/users/me', { useAuth: false })
   },
 }

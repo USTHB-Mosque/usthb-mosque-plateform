@@ -23,6 +23,7 @@ const ActivitiesPage: React.FC = () => {
       search: '',
       types: [],
     },
+    scope: 'activities',
   })
 
   const {

@@ -8,6 +8,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { RotateCcw } from 'lucide-react'
+import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import ListingFiltersGroup from './ListingFiltersGroup'
 import { Separator } from '@/components/ui/separator'
 import type { ListingFilterSection } from './listing-filter.types'
@@ -84,24 +86,26 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent showCloseButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex justify-between">
+      <DialogContent showCloseButton={false} className="max-w-5xl sm:max-w-5xl flex max-h-[85vh] flex-col gap-4">
+        <DialogHeader className="shrink-0">
+          <div className="flex items-center justify-between">
             <p className="text-2xl font-bold">خيارات التصفية</p>
             {showReset ? (
               <Button
                 variant="outline"
-                className="border border-primary text-primary"
+                size="icon-lg"
+                className="h-10 w-10 rounded-lg border border-primary text-primary"
                 type="button"
+                aria-label="إعادة تعيين التصفية"
                 onClick={handleResetDraft}
               >
-                إعادة تعيين
+                <RotateCcw />
               </Button>
             ) : null}
           </div>
         </DialogHeader>
-        <Separator />
-        <div className="flex flex-col gap-10">
+        <Separator className="shrink-0" />
+        <div className="flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto py-1 pr-1">
           {sections.map((s) => {
             const value = draft[s.id]
             if (value === undefined) return null
@@ -119,15 +123,19 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
             )
           })}
         </div>
-        <Separator />
+        <Separator className="shrink-0" />
 
-        <DialogFooter>
-          <Button variant="outline" className="border border-primary text-primary" type="button" onClick={() => setIsOpen(false)}>
+        <DialogFooter className="shrink-0">
+          <Button
+            variant="outline"
+            size="lg"
+            className="border border-primary px-6 text-primary"
+            type="button"
+            onClick={() => setIsOpen(false)}
+          >
             إلغاء
           </Button>
-          <Button type="button" className="text-foreground" onClick={handleApply}>
-            تطبيق التصفية
-          </Button>
+          <LandingCtaButton label="تطبيق التصفية" onClick={handleApply} ariaLabel="تطبيق التصفية" className="w-auto px-6" />
         </DialogFooter>
       </DialogContent>
     </Dialog>

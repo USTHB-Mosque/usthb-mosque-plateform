@@ -35,6 +35,7 @@ export type UseSearchArgs<T extends object> = {
   delayValue?: number
   resetMap?: Partial<Record<keyof T, (keyof T)[]>>
   storage?: SearchStorageAdapter
+  scope?: string
 }
 
 export type SetValue<T> = <K extends keyof T>(
@@ -89,10 +90,16 @@ export const useSearch = <T extends object>({
   delayValue = 300,
   resetMap = {},
   storage = createSearchParamsAdapter(),
+  scope,
 }: UseSearchArgs<T>) => {
   const delay = useRef(delayValue)
 
   const keys = useMemo(() => Object.keys(initialValues) as (keyof T)[], [initialValues])
+
+  const keyName = useCallback((key: keyof T): string => {
+    const name = String(key)
+    return scope ? `${scope}_${name}` : name
+  }, [scope])
 
   const parseStored = useCallback((): T => {
     const stored = storage.read()
@@ -100,7 +107,7 @@ export const useSearch = <T extends object>({
     const parsed: Partial<T> = {}
 
     for (const key of keys) {
-      const raw = stored[key as string]
+      const raw = stored[keyName(key)]
       const defaultValue = initialValues[key]
 
       if (!raw) {
@@ -119,7 +126,7 @@ export const useSearch = <T extends object>({
     }
 
     return { ...initialValues, ...parsed }
-  }, [initialValues, fieldsConfig, storage])
+  }, [initialValues, fieldsConfig, storage, keyName])
 
   const [values, setInternalValues] = useState<T>(() => parseStored())
 
@@ -211,11 +218,11 @@ export const useSearch = <T extends object>({
 
       const serializer = cfg?.serialize ?? defaultSerializers[type]
 
-      serialized[key as string] = serializer(val)
+      serialized[keyName(key)] = serializer(val)
     }
 
     storage.write(serialized)
-  }, [searchValues])
+  }, [searchValues, keyName])
 
   return {
     values,
