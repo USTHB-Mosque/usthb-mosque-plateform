@@ -11,7 +11,9 @@ import { toast } from 'sonner'
 import { useSearchParams } from 'next/navigation'
 
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
+import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import {
   Form,
   FormControl,
@@ -109,7 +111,7 @@ export default function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full h-10 sm:h-11 lg:h-14 text-xs sm:text-sm md:text-lg font-medium mb-3 sm:mb-4 lg:mb-6"
+          className="w-full h-10 sm:h-11 lg:h-12 text-xs sm:text-sm md:text-lg font-medium mb-3 sm:mb-4 lg:mb-6"
           onClick={handleGoogleLogin}
         >
           <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" viewBox="0 0 24 24">
@@ -177,8 +179,7 @@ export default function LoginPage() {
                     كلمة المرور
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       {...field}
                       disabled={isPending}
@@ -190,13 +191,13 @@ export default function LoginPage() {
               )}
             />
 
-            <Button
+            <LandingCtaButton
               type="submit"
-              className="w-full h-10 sm:h-11 lg:h-12 text-sm sm:text-base md:text-lg font-bold"
+              label="تسجيل الدخول"
+              loading={isPending}
               disabled={isPending}
-            >
-              {isPending ? 'جاري...' : 'تسجيل الدخول'}
-            </Button>
+              className="h-10 sm:h-11 lg:h-12"
+            />
           </form>
         </Form>
 
