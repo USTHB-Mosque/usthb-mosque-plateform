@@ -1,121 +1,134 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import Layout from '@/components/layouts'
-import { Pagination } from '@/components/common/Pagination'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import ListingContent from '@/components/listing/ListingContent'
-import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
-import ListingRenderer from '@/components/listing/ListingRenderer'
-import { useGetBooksQuery } from '@/lib/apis/books/queries'
-import { useSearch } from '@/hooks/use-search'
-import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
-import { languagesConfigArray } from '@/utils/constants/data'
-import BookCard from '@/components/ui/landing/BookCard'
-import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
-import EmptyData from '@/components/common/EmptyData'
-import ErrorData from '@/components/common/ErrorData'
-import { bookQuickTypesConfigArray, bookAuthorsConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
-import { Languages, Tag, User } from 'lucide-react'
+"use client";
+import React from "react";
+import Layout from "@/components/layouts";
+import { Pagination } from "@/components/common/Pagination";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ListingContent from "@/components/listing/ListingContent";
+import ListingToolbar from "@/components/listing/listing-toolbar/ListingToolbar";
+import ListingRenderer from "@/components/listing/ListingRenderer";
+import { useGetBooksQuery } from "@/lib/apis/books/queries";
+import { useSearch } from "@/hooks/use-search";
+import {
+  BookSearchParams,
+  BookCategory,
+  BookType,
+} from "@/interfaces/books.interfaces";
+import { languagesConfigArray } from "@/utils/constants/data";
+import BookCard from "@/components/ui/landing/BookCard";
+import BookCardSkeleton from "@/components/ui/landing/BookCardSkeleton";
+import EmptyData from "@/components/common/EmptyData";
+import ErrorData from "@/components/common/ErrorData";
+import {
+  bookQuickTypesConfigArray,
+  bookAuthorsConfigArray,
+  bookTypesConfigArray,
+} from "@/utils/constants/books";
+import { Languages, Tag, User } from "lucide-react";
 
 const LibraryPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<BookCategory>(BookCategory.Religious)
-  
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
     initialValues: {
       page: 1,
       limit: 12,
-      search: '',
+      search: "",
       availability: undefined,
       languages: [],
       types: [],
       category: BookCategory.Religious,
     },
-    scope: 'library',
-  })
+    scope: "library",
+  });
 
-  useEffect(() => {
-    setActiveTab(values.category)
-  }, [values.category])
+  const activeTab = values.category;
 
   const {
     data: { docs: books = [], totalPages = 1, totalDocs = 0 } = {},
     isLoading,
     isError,
-  } = useGetBooksQuery(searchValues)
+  } = useGetBooksQuery(searchValues);
 
   return (
     <Layout>
       <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
         <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
           <div className="space-y-3 sm:space-y-4 text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">مكتبة المسجد</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">
+              مكتبة المسجد
+            </h1>
             <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
-              استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد, متاحة للمطالعة والإستعارة.
+              استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد, متاحة
+              للمطالعة والإستعارة.
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(v) => {
-            const val = v as BookCategory
-            setActiveTab(val)
-            setValue('types', [])
-            setValue('category', val)
-          }}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => {
+              const val = v as BookCategory;
+              setValue("types", []);
+              setValue("category", val);
+            }}
+          >
             <TabsList>
-              <TabsTrigger value={BookCategory.Religious}>الكتب الدينية</TabsTrigger>
-              <TabsTrigger value={BookCategory.Scientific}>الكتب العلمية</TabsTrigger>
+              <TabsTrigger value={BookCategory.Religious}>
+                الكتب الدينية
+              </TabsTrigger>
+              <TabsTrigger value={BookCategory.Scientific}>
+                الكتب العلمية
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
         <ListingContent>
           <ListingToolbar
-            onApplyFilters={() => setValue('page', 1)}
+            onApplyFilters={() => setValue("page", 1)}
             quickFilterSections={[
               {
-                id: 'types-quick',
+                id: "types-quick",
                 multiple: true,
                 options: bookQuickTypesConfigArray[activeTab],
                 value: values.types || [],
-                onChange: (v) => setValue('types', v as BookType[]),
+                onChange: (v) => setValue("types", v as BookType[]),
               },
             ]}
             searchProps={{
               enabled: true,
-              value: searchValues.search || '',
-              onChange: (value) => setValue('search', value),
-              placeholder: 'اسم الكتاب، المؤلف ...',
+              value: searchValues.search || "",
+              onChange: (value) => setValue("search", value),
+              placeholder: "اسم الكتاب، المؤلف ...",
             }}
             filterSections={[
               {
-                id: 'types',
-                title: 'التصنيفات',
+                id: "types",
+                title: "التصنيفات",
                 icon: <Tag />,
                 multiple: true,
                 options: bookTypesConfigArray,
                 value: values.types || [],
-                onChange: (v) => setValue('types', v as BookType[]),
+                onChange: (v) => setValue("types", v as BookType[]),
                 resetValue: [],
               },
               {
-                id: 'authors',
-                title: 'المؤلفون',
+                id: "authors",
+                title: "المؤلفون",
                 icon: <User />,
                 multiple: true,
                 options: bookAuthorsConfigArray,
                 value: values.authors || [],
-                onChange: (v) => setValue('authors', v as string[]),
-                buttonClassName: 'flex-1',
+                onChange: (v) => setValue("authors", v as string[]),
+                buttonClassName: "flex-1",
                 resetValue: [],
               },
               {
-                id: 'languages',
-                title: 'اللغة',
+                id: "languages",
+                title: "اللغة",
                 icon: <Languages />,
                 multiple: true,
                 options: languagesConfigArray,
                 value: values.languages || [],
-                onChange: (v) => setValue('languages', v as string[]),
-                buttonClassName: 'flex-1',
+                onChange: (v) => setValue("languages", v as string[]),
+                buttonClassName: "flex-1",
                 resetValue: [],
               },
             ]}
@@ -142,7 +155,7 @@ const LibraryPage: React.FC = () => {
             </div>
             <Pagination
               totalPages={totalPages}
-              onPageChange={(value) => setValue('page', value)}
+              onPageChange={(value) => setValue("page", value)}
               page={values.page || 1}
               dir="rtl"
               nextButtonLabel="التالي"
@@ -152,7 +165,7 @@ const LibraryPage: React.FC = () => {
         </ListingContent>
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default LibraryPage
+export default LibraryPage;
