@@ -6,9 +6,9 @@ import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 // import { s3Storage } from '@payloadcms/storage-s3'
-import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+// import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
-import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
+// import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
 import {
   User,
   Media,

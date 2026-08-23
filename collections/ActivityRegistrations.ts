@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',
@@ -9,18 +10,18 @@ export const ActivityRegistrations: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
   },
