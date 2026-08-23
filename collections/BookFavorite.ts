@@ -1,5 +1,9 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
+<<<<<<< HEAD
+=======
+import { isAdmin } from '@/lib/isAdmin'
+>>>>>>> 4e986c9 (cleanin codebase)
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
@@ -54,7 +58,7 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
-          overrideAccess: true,
+          overrideAccess: false,
         })
         if (dup.totalDocs > 0) {
           throw new APIError('هذا الكتاب موجود بالفعل في المفضلة', 400)

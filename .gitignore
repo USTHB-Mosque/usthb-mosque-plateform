@@ -5,11 +5,6 @@
 /.pnp
 .pnp.*
 /.pnpm-store
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # testing
 /coverage
@@ -43,3 +38,7 @@ next-env.d.ts
 
 # local agent process & context notes
 .context/
+# supabase
+supabase/.branches/
+supabase/.temp/
+supabase/snippets/

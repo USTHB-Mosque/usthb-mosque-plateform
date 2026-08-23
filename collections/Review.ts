@@ -4,7 +4,7 @@ export const Review: CollectionConfig = {
   slug: 'reviews',
   access: {
     read: () => true,
-    create: () => true,
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req }) => {
       if (req.user?.role === 'admin') return true
       return false

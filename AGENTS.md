@@ -417,7 +417,7 @@ export const Posts: CollectionConfig = {
       async ({ doc, req, operation, previousDoc, context }) => {
         // Check context to prevent loops
         if (context.skipNotification) return
-
+matt-pocock-skills
         if (operation === 'create') {
           await sendNotification(doc)
         }
@@ -1178,3 +1178,17 @@ For deeper exploration of specific topics, refer to the context files located in
 - GitHub: https://github.com/payloadcms/payload
 - Examples: https://github.com/payloadcms/payload/tree/main/examples
 - Templates: https://github.com/payloadcms/payload/tree/main/templates
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical labels (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context. See `docs/agents/domain.md`.

@@ -1,4 +1,8 @@
 import { CollectionConfig } from 'payload'
+<<<<<<< HEAD
+=======
+import { isAdmin } from '@/lib/isAdmin'
+>>>>>>> 4e986c9 (cleanin codebase)
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',

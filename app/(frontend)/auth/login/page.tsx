@@ -84,6 +84,7 @@ export default function LoginPage() {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Form Section - Left */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-[140px] py-6 sm:py-8 lg:py-[48px] order-2">
         {/* Logo */}
@@ -94,6 +95,20 @@ export default function LoginPage() {
             width={40}
             height={40}
             className="sm:w-[50px] sm:h-[50px] lg:w-[60px] lg:h-[60px]"
+=======
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>كلمة المرور</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+>>>>>>> 4e986c9 (cleanin codebase)
           />
         </div>
 
