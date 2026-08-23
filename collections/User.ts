@@ -1,20 +1,21 @@
 import { CollectionConfig } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const User: CollectionConfig = {
   slug: 'users',
   access: {
     admin: ({ req: { user } }) => {
-      return user?.role === 'admin'
+      return isAdmin(user)
     },
     create: () => true,
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { id: { equals: user.id } }
     },
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { id: { equals: user.id } }
     },
   },
@@ -54,7 +55,7 @@ export const User: CollectionConfig = {
       options: ['admin', 'user'],
       saveToJWT: true,
       access: {
-        update: ({ req: { user } }) => Boolean(user?.role === 'admin'),
+        update: ({ req: { user } }) => isAdmin(user),
       },
     },
     {

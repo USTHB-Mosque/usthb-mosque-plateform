@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
@@ -10,18 +11,18 @@ export const BookFavorite: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
   },
@@ -54,7 +55,7 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
-          overrideAccess: true,
+          overrideAccess: false,
         })
         if (dup.totalDocs > 0) {
           throw new APIError('هذا الكتاب موجود بالفعل في المفضلة', 400)

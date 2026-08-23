@@ -28,6 +28,8 @@ export const reviewBook = async (bookId: number, rating: number, comment: string
       rating: Number(rating),
       comment,
     },
+    req: { payload, user },
+    overrideAccess: false,
   })
   revalidatePath(`/library/book/${bookId}`)
   return review
