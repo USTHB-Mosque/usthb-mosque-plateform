@@ -1,9 +1,5 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
-<<<<<<< HEAD
-=======
-import { isAdmin } from '@/lib/isAdmin'
->>>>>>> 4e986c9 (cleanin codebase)
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
