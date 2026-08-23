@@ -3,7 +3,6 @@ import type { NextConfig } from 'next'
 import path from 'path'
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
