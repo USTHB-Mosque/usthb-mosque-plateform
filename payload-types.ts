@@ -159,9 +159,19 @@ export interface PayloadMcpApiKeyAuthOperations {
 export interface User {
   id: number;
   fullName?: string | null;
+  phone?: string | null;
+  faculty?: string | null;
+  studyYear?: ('1' | '2' | '3' | '4' | '5') | null;
   sub?: string | null;
   role: 'admin' | 'user';
   profilePicture?: (number | null) | Media;
+  verificationDocument?: (number | null) | Media;
+  verificationStatus?: ('pending_verification' | 'verified' | 'rejected') | null;
+  verificationNote?: string | null;
+  consentGiven?: boolean | null;
+  consentTimestamp?: string | null;
+  deletedAt?: string | null;
+  deletionScheduledFor?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -555,9 +565,19 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   fullName?: T;
+  phone?: T;
+  faculty?: T;
+  studyYear?: T;
   sub?: T;
   role?: T;
   profilePicture?: T;
+  verificationDocument?: T;
+  verificationStatus?: T;
+  verificationNote?: T;
+  consentGiven?: T;
+  consentTimestamp?: T;
+  deletedAt?: T;
+  deletionScheduledFor?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
