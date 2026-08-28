@@ -188,7 +188,37 @@ const Navbar: React.FC = () => {
               </li>
             ))}
           </ul>
-          {!user && (
+          {user ? (
+            <div className="mt-6 flex flex-col gap-3 border-t pt-4">
+              <div className="flex items-center gap-3 px-2">
+                <Avatar className="h-8 w-8 border border-primary/20">
+                  <AvatarImage src={avatarUrl} alt={media?.alt || ''} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                    {user?.fullName?.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold truncate">{user.fullName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+              </div>
+              <Link
+                href="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <User className="size-4" />
+                الملف الشخصي
+              </Link>
+              <button
+                onClick={() => { setMenuOpen(false); onLogout() }}
+                className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-destructive hover:bg-muted"
+              >
+                <LogOut className="size-4" />
+                تسجيل الخروج
+              </button>
+            </div>
+          ) : (
             <div className="mt-6">
               <LandingCtaButton
                 label="تسجيل الدخول"
