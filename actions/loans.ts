@@ -2,6 +2,8 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { getAuthenticatedUser } from '@/lib/auth'
+import type { Payload } from 'payload'
+import type { User } from '@/payload-types'
 
 interface BorrowBookResult {
   success: boolean
@@ -9,14 +11,11 @@ interface BorrowBookResult {
   loan?: unknown
 }
 
-export const borrowBook = async (bookId: string): Promise<BorrowBookResult> => {
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
-    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
-  }
-
-  const payload = await getPayload({ config })
+export async function borrowBookLogic(
+  bookId: string,
+  ctx: { payload: Payload; user: User },
+): Promise<BorrowBookResult> {
+  const { payload, user } = ctx
 
   try {
     const bookResult = await payload.findByID({
@@ -64,4 +63,15 @@ export const borrowBook = async (bookId: string): Promise<BorrowBookResult> => {
     console.error('Error borrowing book:', error)
     return { success: false, message: 'حدث خطأ أثناء تقديم طلب الإعارة' }
   }
+}
+
+export const borrowBook = async (bookId: string): Promise<BorrowBookResult> => {
+  const user = await getAuthenticatedUser()
+  
+  if (!user) {
+    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
+  }
+
+  const payload = await getPayload({ config })
+  return borrowBookLogic(bookId, { payload, user })
 }

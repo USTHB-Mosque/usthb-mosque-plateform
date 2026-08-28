@@ -1,5 +1,5 @@
 import Layout from '@/components/layouts'
-import { getProfileDashboardData } from '@/actions/profile'
+import { getProfileDashboardData } from '@/actions/profile/dashboard'
 import { redirect } from 'next/navigation'
 import ProfileDashboard from './_components/ProfileDashboard'
 

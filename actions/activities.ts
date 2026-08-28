@@ -2,6 +2,8 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { getAuthenticatedUser } from '@/lib/auth'
+import type { Payload } from 'payload'
+import type { User } from '@/payload-types'
 
 interface RegisterActivityResult {
   success: boolean
@@ -9,14 +11,11 @@ interface RegisterActivityResult {
   registration?: unknown
 }
 
-export const registerActivity = async (activityId: string): Promise<RegisterActivityResult> => {
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
-    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
-  }
-
-  const payload = await getPayload({ config })
+export async function registerActivityLogic(
+  activityId: string,
+  ctx: { payload: Payload; user: User },
+): Promise<RegisterActivityResult> {
+  const { payload, user } = ctx
 
   try {
     const activityResult = await payload.findByID({
@@ -82,4 +81,15 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
     console.error('Error registering for activity:', error)
     return { success: false, message: 'حدث خطأ أثناء التسجيل في النشاط' }
   }
+}
+
+export const registerActivity = async (activityId: string): Promise<RegisterActivityResult> => {
+  const user = await getAuthenticatedUser()
+  
+  if (!user) {
+    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
+  }
+
+  const payload = await getPayload({ config })
+  return registerActivityLogic(activityId, { payload, user })
 }

@@ -2,7 +2,7 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { User } from '@/payload-types'
-import { setPayloadTokenCookie } from '@/lib/server/set-cookie'
+import { setPayloadTokenCookie } from '@/lib/auth'
 
 interface RegisterResult {
   user: User | undefined

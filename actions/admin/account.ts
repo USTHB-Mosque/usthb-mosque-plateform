@@ -1,8 +1,7 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { cookies as nextCookies } from 'next/headers'
-import { User } from '@/payload-types'
+import { getAuthenticatedUser } from '@/lib/auth'
 
 interface AdminUser {
   id: number
@@ -13,34 +12,9 @@ interface AdminUser {
 }
 
 export async function getAdminUser(): Promise<AdminUser | null> {
-  try {
-    const cookies = await nextCookies()
-    const token = cookies.get('payload-token')
-    if (!token) return null
-
-    const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-    const response = await fetch(`${serverURL}/api/users/me`, {
-      headers: {
-        Cookie: `payload-token=${token.value}`,
-      },
-      credentials: 'include',
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = await response.json()
-    const user = data.user as User
-
-    if (!user || user.role !== 'admin') {
-      return null
-    }
-
-    return user as unknown as AdminUser
-  } catch {
-    return null
-  }
+  const user = await getAuthenticatedUser({ allowAdmin: true })
+  if (!user || user.role !== 'admin') return null
+  return user as unknown as AdminUser
 }
 
 export async function updateAdminProfile(fullName: string): Promise<{ ok: boolean; error?: string }> {

@@ -10,7 +10,7 @@ import { arDZ } from 'date-fns/locale'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { registerActivity } from '@/actions/activities'
-import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth-api'
 import { toast } from 'sonner'
 
 interface ActivityDescriptionProps {

@@ -1,10 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Funnel } from 'lucide-react'
-import { useDisclosure } from '@/hooks/use-disclosure'
 import ListingFiltersDialog from './ListingFiltersDialog'
 import ListingFiltersGroup from './ListingFiltersGroup'
 import { listingFilterSectionsVisible, type ListingFilterSection } from './listing-filter.types'
@@ -33,7 +32,8 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   quickFilterIds = [],
   quickFilterSections = [],
 }) => {
-  const openFiltersDisclosure = useDisclosure()
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const openFiltersDisclosure = { isOpen: filtersOpen, onOpen: () => setFiltersOpen(true), onClose: () => setFiltersOpen(false), setIsOpen: setFiltersOpen }
   const visible = listingFilterSectionsVisible(filterSections)
 
   const hasQuickFilters = quickFilterIds.length > 0 || quickFilterSections.length > 0

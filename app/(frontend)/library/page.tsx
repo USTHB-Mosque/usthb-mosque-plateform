@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ListingContent from "@/components/listing/ListingContent";
 import ListingToolbar from "@/components/listing/listing-toolbar/ListingToolbar";
 import ListingRenderer from "@/components/listing/ListingRenderer";
-import { useGetBooksQuery } from "@/lib/apis/books/queries";
+import { useGetBooksQuery } from "@/lib/apis/books";
 import { useSearch } from "@/hooks/use-search";
 import {
   BookSearchParams,

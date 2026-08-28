@@ -7,7 +7,7 @@ import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import ReturnToIndex from '@/components/common/ReturnToIndex'
-import { getBookFavoriteState } from '@/actions/profile'
+import { getBookFavoriteState } from '@/actions/profile/favorites'
 
 const BookDetailsPage = async ({
   params,

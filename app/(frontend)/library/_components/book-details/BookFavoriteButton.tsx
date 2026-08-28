@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { BookmarkPlus, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { toggleBookFavorite } from '@/actions/profile'
+import { toggleBookFavorite } from '@/actions/profile/favorites'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
