@@ -1,8 +1,8 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { getAuthenticatedUser } from '@/lib/auth'
-import type { Payload } from 'payload'
+import { getPayloadWithUser } from '@/lib/auth'
+import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 
 interface RegisterActivityResult {
@@ -13,14 +13,16 @@ interface RegisterActivityResult {
 
 export async function registerActivityLogic(
   activityId: string,
-  ctx: { payload: Payload; user: User },
+  ctx: { payload: Payload; user: User; req: PayloadRequest },
 ): Promise<RegisterActivityResult> {
-  const { payload, user } = ctx
+  const { payload, user, req } = ctx
 
   try {
     const activityResult = await payload.findByID({
       collection: 'activities',
       id: activityId,
+      req,
+      overrideAccess: false,
     })
 
     if (!activityResult) {
@@ -53,6 +55,8 @@ export async function registerActivityLogic(
           { activity: { equals: activityId } },
         ],
       },
+      req,
+      overrideAccess: false,
     })
 
     if (existingRegistrationResult.docs.length > 0) {
@@ -66,6 +70,8 @@ export async function registerActivityLogic(
         activity: parseInt(activityId),
         attended: false,
       },
+      req,
+      overrideAccess: false,
     })
 
     await payload.update({
@@ -74,6 +80,8 @@ export async function registerActivityLogic(
       data: {
         currentParticipants: (activityResult.currentParticipants || 0) + 1,
       },
+      req,
+      overrideAccess: false,
     })
 
     return { success: true, message: 'تم التسجيل في النشاط بنجاح', registration }
@@ -84,12 +92,11 @@ export async function registerActivityLogic(
 }
 
 export const registerActivity = async (activityId: string): Promise<RegisterActivityResult> => {
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
+  const ctx = await getPayloadWithUser()
+
+  if (!ctx) {
     return { success: false, message: 'يجب تسجيل الدخول أولاً' }
   }
 
-  const payload = await getPayload({ config })
-  return registerActivityLogic(activityId, { payload, user })
+  return registerActivityLogic(activityId, ctx)
 }

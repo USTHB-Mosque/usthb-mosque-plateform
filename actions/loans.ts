@@ -1,8 +1,8 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { getAuthenticatedUser } from '@/lib/auth'
-import type { Payload } from 'payload'
+import { getPayloadWithUser } from '@/lib/auth'
+import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 
 interface BorrowBookResult {
@@ -13,14 +13,16 @@ interface BorrowBookResult {
 
 export async function borrowBookLogic(
   bookId: string,
-  ctx: { payload: Payload; user: User },
+  ctx: { payload: Payload; user: User; req: PayloadRequest },
 ): Promise<BorrowBookResult> {
-  const { payload, user } = ctx
+  const { payload, user, req } = ctx
 
   try {
     const bookResult = await payload.findByID({
       collection: 'books',
       id: bookId,
+      req,
+      overrideAccess: false,
     })
 
     if (!bookResult || !bookResult.availableBooks || bookResult.availableBooks <= 0) {
@@ -36,8 +38,8 @@ export async function borrowBookLogic(
           { status: { not_equals: 'returned' } },
         ],
       },
+      req,
       overrideAccess: false,
-      req: { user: { id: user.id, role: user.role } } as Parameters<typeof payload.find>[0]['req'],
     })
 
     if (existingLoansResult.docs.length > 0) {
@@ -56,6 +58,18 @@ export async function borrowBookLogic(
         loanDate: new Date().toISOString(),
         dueDate: dueDate.toISOString(),
       },
+      req,
+      overrideAccess: false,
+    })
+
+    await payload.update({
+      collection: 'books',
+      id: bookId,
+      data: {
+        availableBooks: bookResult.availableBooks - 1,
+      },
+      req,
+      overrideAccess: false,
     })
 
     return { success: true, message: 'تم تقديم طلب الإعارة بنجاح', loan }
@@ -66,12 +80,11 @@ export async function borrowBookLogic(
 }
 
 export const borrowBook = async (bookId: string): Promise<BorrowBookResult> => {
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
+  const ctx = await getPayloadWithUser()
+
+  if (!ctx) {
     return { success: false, message: 'يجب تسجيل الدخول أولاً' }
   }
 
-  const payload = await getPayload({ config })
-  return borrowBookLogic(bookId, { payload, user })
+  return borrowBookLogic(bookId, ctx)
 }
