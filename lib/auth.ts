@@ -1,19 +1,68 @@
-import { getPayload } from 'payload'
+import { createLocalReq, getPayload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 import config from '@/payload.config'
-import { headers as nextHeaders } from 'next/headers'
-import { User } from '@/payload-types'
+import { headers as nextHeaders, cookies as nextCookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import type { User } from '@/payload-types'
 
-export const getAuthenticatedUser = async () => {
+export interface AuthOptions {
+  allowAdmin?: boolean
+}
+
+export async function getAuthenticatedUser(
+  opts?: AuthOptions,
+): Promise<User | undefined> {
   const payload = await getPayload({ config })
   const headers = await nextHeaders()
   const response = await payload.auth({ headers })
 
-  if (!response.user) {
-    return undefined
-  }
+  if (!response.user) return undefined
 
   const user = response.user as User
-  if (user.role === 'admin') return undefined
+
+  if (!opts?.allowAdmin && user.role === 'admin') return undefined
 
   return user
+}
+
+export async function getPayloadWithUser(
+  opts?: AuthOptions,
+): Promise<{
+  payload: Payload
+  user: User
+  req: PayloadRequest
+} | null> {
+  const payload = await getPayload({ config })
+  const headers = await nextHeaders()
+  const auth = await payload.auth({ headers })
+
+  if (!auth.user) return null
+
+  const user = auth.user as User
+
+  if (!opts?.allowAdmin && user.role === 'admin') return null
+
+  const req = await createLocalReq({ user }, payload)
+  return { payload, user, req }
+}
+
+export async function requireUser(redirectTo = '/auth', opts?: AuthOptions) {
+  const ctx = await getPayloadWithUser(opts)
+  if (!ctx) redirect(redirectTo)
+  return ctx
+}
+
+export async function setPayloadTokenCookie(token: string) {
+  const cookieStore = await nextCookies()
+  cookieStore.set('payload-token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24 * 7,
+  })
+}
+
+export function isAdmin(user: { role?: string } | null | undefined): boolean {
+  return user?.role === 'admin'
 }

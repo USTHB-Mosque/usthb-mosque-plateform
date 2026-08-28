@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { changePassword } from '@/actions/profile'
+import { changePassword } from '@/actions/profile/settings'
 import { toast } from 'sonner'
 
 const ProfilePasswordForm: React.FC = () => {

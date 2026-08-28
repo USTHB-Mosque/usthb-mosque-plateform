@@ -1,7 +1,9 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { getAuthenticatedUser } from '@/lib/auth'
+import { getPayloadWithUser } from '@/lib/auth'
+import type { Payload, PayloadRequest } from 'payload'
+import type { User } from '@/payload-types'
 
 interface RegisterActivityResult {
   success: boolean
@@ -9,19 +11,18 @@ interface RegisterActivityResult {
   registration?: unknown
 }
 
-export const registerActivity = async (activityId: string): Promise<RegisterActivityResult> => {
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
-    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
-  }
-
-  const payload = await getPayload({ config })
+export async function registerActivityLogic(
+  activityId: string,
+  ctx: { payload: Payload; user: User; req: PayloadRequest },
+): Promise<RegisterActivityResult> {
+  const { payload, user, req } = ctx
 
   try {
     const activityResult = await payload.findByID({
       collection: 'activities',
       id: activityId,
+      req,
+      overrideAccess: false,
     })
 
     if (!activityResult) {
@@ -54,6 +55,8 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
           { activity: { equals: activityId } },
         ],
       },
+      req,
+      overrideAccess: false,
     })
 
     if (existingRegistrationResult.docs.length > 0) {
@@ -67,6 +70,8 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
         activity: parseInt(activityId),
         attended: false,
       },
+      req,
+      overrideAccess: false,
     })
 
     await payload.update({
@@ -75,6 +80,8 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
       data: {
         currentParticipants: (activityResult.currentParticipants || 0) + 1,
       },
+      req,
+      overrideAccess: false,
     })
 
     return { success: true, message: 'تم التسجيل في النشاط بنجاح', registration }
@@ -82,4 +89,14 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
     console.error('Error registering for activity:', error)
     return { success: false, message: 'حدث خطأ أثناء التسجيل في النشاط' }
   }
+}
+
+export const registerActivity = async (activityId: string): Promise<RegisterActivityResult> => {
+  const ctx = await getPayloadWithUser()
+
+  if (!ctx) {
+    return { success: false, message: 'يجب تسجيل الدخول أولاً' }
+  }
+
+  return registerActivityLogic(activityId, ctx)
 }

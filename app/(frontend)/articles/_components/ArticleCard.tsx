@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 import { Article, Media } from '@/payload-types'
 import { useRouter } from 'next/navigation'
 import { getImageUrl } from '@/utils/image-utils'
-import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth-api'
 
 interface ArticleCardProps {
   article: Article

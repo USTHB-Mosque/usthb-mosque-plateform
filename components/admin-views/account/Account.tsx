@@ -3,16 +3,10 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAdminUser, updateAdminProfile, updateAdminPassword } from '@/actions/admin/account'
-
-interface AdminUser {
-  id: number
-  email: string
-  fullName?: string
-  role: 'admin' | 'user'
-}
+import type { User } from '@/payload-types'
 
 const AdminAccount: React.FC = () => {
-  const [user, setUser] = useState<AdminUser | null>(null)
+  const [user, setUser] = useState<Pick<User, 'id' | 'email' | 'fullName' | 'role'> | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -24,13 +18,13 @@ const AdminAccount: React.FC = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await getAdminUser()
-      if (!userData) {
+      const ctx = await getAdminUser()
+      if (!ctx) {
         router.push('/admin/login')
         return
       }
-      setUser(userData)
-      setFullName(userData.fullName || '')
+      setUser(ctx.user)
+      setFullName(ctx.user.fullName || '')
       setLoading(false)
     }
 

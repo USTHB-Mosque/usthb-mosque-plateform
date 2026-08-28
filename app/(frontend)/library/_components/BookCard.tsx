@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Book, Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
-import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth-api'
 
 type BookCardProps = {
   book: Book

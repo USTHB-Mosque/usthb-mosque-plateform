@@ -1,7 +1,7 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { cookies as nextCookies } from 'next/headers'
+import { setPayloadTokenCookie } from '@/lib/auth'
 
 interface CreateFirstUserResult {
   ok: boolean
@@ -14,7 +14,6 @@ export async function createFirstAdminUser(
 ): Promise<CreateFirstUserResult> {
   try {
     const payload = await getPayload({ config })
-    const cookies = await nextCookies()
 
     const existingUsers = await payload.find({
       collection: 'users',
@@ -28,6 +27,7 @@ export async function createFirstAdminUser(
 
     const user = await payload.create({
       collection: 'users',
+      draft: false,
       data: {
         email,
         password,
@@ -41,13 +41,7 @@ export async function createFirstAdminUser(
     })
 
     if (token) {
-      cookies.set('payload-token', token, {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 7,
-      })
+      await setPayloadTokenCookie(token)
     }
 
     return { ok: true }

@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogOut, User, Settings, Menu, X } from 'lucide-react'
 import { Media } from '@/payload-types'
-import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth-api'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'

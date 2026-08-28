@@ -1,8 +1,8 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { cookies as nextCookies } from 'next/headers'
 import { User } from '@/payload-types'
+import { setPayloadTokenCookie } from '@/lib/auth'
 
 interface LoginResult {
   user: User | undefined
@@ -11,7 +11,6 @@ interface LoginResult {
 
 export const login = async (email: string, password: string): Promise<LoginResult> => {
   const payload = await getPayload({ config })
-  const cookies = await nextCookies()
   try {
     const { user, token } = await payload.login({
       collection: 'users',
@@ -21,13 +20,7 @@ export const login = async (email: string, password: string): Promise<LoginResul
       },
     })
     if (token) {
-      cookies.set('payload-token', token, {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 7,
-      })
+      await setPayloadTokenCookie(token)
     }
     return { user: user as User, token }
   } catch {

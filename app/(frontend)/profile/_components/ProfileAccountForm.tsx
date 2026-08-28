@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { updateProfileFullName } from '@/actions/profile'
+import { updateProfileFullName } from '@/actions/profile/settings'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 

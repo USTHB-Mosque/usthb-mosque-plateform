@@ -1,6 +1,5 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { generateLexicalRichText } from '@/utils/seed/utils'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { Timer } from 'lucide-react'
 import { Activity } from '@/payload-types'
@@ -9,7 +8,6 @@ interface ActivityInformationsProps {
   longDescription: Activity['longDescription']
   benefits: Activity['benefits']
 }
-const data = generateLexicalRichText() as any
 
 const ActivityInformations = ({ longDescription, benefits }: ActivityInformationsProps) => {
   return (

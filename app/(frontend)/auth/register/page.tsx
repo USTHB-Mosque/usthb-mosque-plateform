@@ -50,6 +50,9 @@ const step3Schema = z
     email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
     password: z.string().min(8, { message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }),
     confirmPassword: z.string(),
+    consentGiven: z.boolean().refine((val) => val === true, {
+      message: 'يجب الموافقة على شروط الخصوصية',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'كلمات المرور غير متطابقة',
@@ -100,6 +103,7 @@ export default function RegisterPage() {
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
+      consentGiven: false,
     },
   })
 
@@ -125,11 +129,21 @@ export default function RegisterPage() {
 
     startTransition(async () => {
       const store = useAuthFormStore.getState()
-      const result = await register(
-        store.email,
-        store.password,
-        `${store.firstName} ${store.lastName}`,
-      )
+
+      if (!store.schoolCertificate) {
+        toast.error('يجب تحميل وثيقة التحقق')
+        return
+      }
+
+      const result = await register({
+        email: store.email,
+        password: store.password,
+        fullName: `${store.firstName} ${store.lastName}`,
+        phone: store.phoneNumber || undefined,
+        faculty: store.state || undefined,
+        verificationDocument: store.schoolCertificate,
+        consentGiven: values.consentGiven,
+      })
 
       if (!result?.user) {
         toast.error(result?.error || 'فشل إنشاء الحساب')
@@ -500,6 +514,35 @@ export default function RegisterPage() {
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep3.control}
+                name="consentGiven"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        className="mt-1"
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-xs sm:text-sm text-gray-700">
+                        أوافق على{' '}
+                        <Link href="/privacy" className="text-primary hover:underline" target="_blank">
+                          سياسة الخصوصية
+                        </Link>{' '}
+                        و{' '}
+                        <Link href="/terms" className="text-primary hover:underline" target="_blank">
+                          شروط الاستخدام
+                        </Link>
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />

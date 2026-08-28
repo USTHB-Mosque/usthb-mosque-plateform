@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import BookFavoriteButton from './BookFavoriteButton'
 import { getImageUrl } from '@/utils/image-utils'
 import { borrowBook } from '@/actions/loans'
-import { useGetProfileQuery } from '@/lib/apis/auth/queries'
+import { useGetProfileQuery } from '@/lib/apis/auth-api'
 
 interface BookPreviewProps {
   image: Book['image']

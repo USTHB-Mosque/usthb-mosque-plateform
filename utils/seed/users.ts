@@ -13,6 +13,7 @@ export const createUser = async () => {
 
   const user = await payload.create({
     collection: 'users',
+    draft: false,
     data: {
       email,
       fullName,
@@ -43,6 +44,7 @@ export const createAdminUser = async () => {
 
   const admin = await payload.create({
     collection: 'users',
+    draft: false,
     data: {
       email: adminEmail,
       fullName: 'مسؤول المنصة',
@@ -72,6 +74,7 @@ export const seedUsers = async (n: number = 10) => {
 
       const user = await payload.create({
         collection: 'users',
+        draft: false,
         data: {
           email,
           fullName,
