@@ -10,7 +10,6 @@ export const Media: CollectionConfig = {
     read: () => true,
   },
   upload: {
-    staticDir: 'public/static/media/file',
     mimeTypes: ['image/*', 'application/pdf'],
   },
   fields: [

@@ -11,6 +11,7 @@ import ProfileFavoritesGrid from './ProfileFavoritesGrid'
 import ProfileLoansList from './ProfileLoansList'
 import ProfileRegistrationsList from './ProfileRegistrationsList'
 import { getImageUrl } from '@/utils/image-utils'
+import { AlertCircle, Clock } from 'lucide-react'
 
 export type ProfileDashboardData = {
   user: User
@@ -21,6 +22,38 @@ export type ProfileDashboardData = {
 
 type ProfileDashboardProps = {
   data: ProfileDashboardData
+}
+
+function VerificationBanner({ status }: { status: User['verificationStatus'] }) {
+  if (status === 'verified') return null
+
+  const isPending = status === 'pending_verification'
+
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${
+        isPending
+          ? 'border-amber-200 bg-amber-50 text-amber-800'
+          : 'border-red-200 bg-red-50 text-red-800'
+      }`}
+    >
+      {isPending ? (
+        <Clock className="h-5 w-5 shrink-0" />
+      ) : (
+        <AlertCircle className="h-5 w-5 shrink-0" />
+      )}
+      <div className="flex-1">
+        <p className="font-medium">
+          {isPending ? 'حسابك قيد المراجعة' : 'تم رفض التحقق'}
+        </p>
+        <p className="text-xs opacity-80">
+          {isPending
+            ? 'يمكنك تصفح المكتبة لكن لا يمكنك الإعارة حتى تتم مراجعة وثيقتك.'
+            : 'يرجى إعادة رفع وثيقة التحقق من الملف الشخصي.'}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
@@ -36,6 +69,8 @@ const ProfileDashboard: React.FC<ProfileDashboardProps> = ({ data }) => {
           إدارة بياناتك، مفضلتك، تسجيلاتك في الأنشطة وإعارات المكتبة.
         </p>
       </div>
+
+      <VerificationBanner status={user.verificationStatus} />
 
       <Card className="border-border/80 shadow-sm overflow-hidden">
         <CardHeader className="flex flex-row flex-wrap items-center gap-6 border-b border-border/60 bg-background-2/80 py-6 px-6">

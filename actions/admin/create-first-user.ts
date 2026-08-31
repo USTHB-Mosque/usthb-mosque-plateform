@@ -8,6 +8,20 @@ interface CreateFirstUserResult {
   error?: string
 }
 
+export async function hasAnyUser(): Promise<boolean> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'users',
+      limit: 1,
+      overrideAccess: true,
+    })
+    return result.totalDocs > 0
+  } catch {
+    return true // fail-closed: assume users exist if DB check fails
+  }
+}
+
 export async function createFirstAdminUser(
   email: string,
   password: string

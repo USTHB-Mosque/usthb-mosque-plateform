@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createFirstAdminUser } from '@/actions/admin/create-first-user'
+import { createFirstAdminUser, hasAnyUser } from '@/actions/admin/create-first-user'
 import { getAdminUser } from '@/actions/admin/account'
 
 const AdminFirstUser: React.FC = () => {
@@ -11,14 +11,27 @@ const AdminFirstUser: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [blocked, setBlocked] = useState(true) // default blocked until proven otherwise
   const router = useRouter()
 
   useEffect(() => {
     const checkAuth = async () => {
-      const user = await getAdminUser()
-      if (user) {
-        router.push('/admin')
+      const [user, usersExist] = await Promise.all([
+        getAdminUser(),
+        hasAnyUser(),
+      ])
+
+      if (usersExist) {
+        router.replace('/admin/login')
+        return
       }
+
+      if (user) {
+        router.replace('/admin')
+        return
+      }
+
+      setBlocked(false)
     }
     checkAuth()
   }, [router])
@@ -48,6 +61,17 @@ const AdminFirstUser: React.FC = () => {
     }
 
     router.push('/admin')
+  }
+
+  if (blocked || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">{loading ? 'جاري الإنشاء...' : 'جاري التحقق...'}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
