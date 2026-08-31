@@ -21,7 +21,7 @@ const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps)
       <Image
         src={imageUrl}
         alt={media?.alt || 'Activity'}
-        className="rounded-xl object-cover absolute top-0 left-0 h-full w-full z-0"
+        className="rounded-xl object-cover absolute top-0 start-0 h-full w-full z-0"
         width={1200}
         height={300}
         sizes="(max-width: 768px) 100vw, 80vw"

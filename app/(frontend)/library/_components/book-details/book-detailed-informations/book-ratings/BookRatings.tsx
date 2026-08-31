@@ -40,7 +40,7 @@ const BookRatings = ({ bookId }: { bookId: number }) => {
               لا توجد تقييمات بعد
             </div>
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pe-2">
               {reviews.map((review) => (
                 <div key={review.id} className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">

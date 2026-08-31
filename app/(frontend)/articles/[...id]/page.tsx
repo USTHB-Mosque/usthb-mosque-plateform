@@ -1,5 +1,4 @@
 import Layout from '@/components/layouts'
-import { ChevronLeft } from 'lucide-react'
 import Image from 'next/image'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
@@ -10,7 +9,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import ReturnToIndex from '@/components/common/ReturnToIndex'
 import { getImageUrl } from '@/utils/image-utils'
 
-const BookDetailsPage = async ({
+const ArticleDetailsPage = async ({
   params,
 }: {
   params: Promise<{
@@ -61,4 +60,4 @@ const BookDetailsPage = async ({
   )
 }
 
-export default BookDetailsPage
+export default ArticleDetailsPage

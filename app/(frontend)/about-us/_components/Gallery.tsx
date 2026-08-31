@@ -61,7 +61,7 @@ const Gallery: React.FC = () => {
 
           <button
             onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 z-50 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full border border-white/30 text-white transition-all duration-300 shadow-lg"
+            className="absolute top-4 end-4 z-50 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full border border-white/30 text-white transition-all duration-300 shadow-lg"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />

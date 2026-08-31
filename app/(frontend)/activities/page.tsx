@@ -49,7 +49,7 @@ const ActivitiesPage: React.FC = () => {
               enabled: true,
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
-              placeholder: 'عنوان المقال، الكاتب ...',
+              placeholder: 'اسم النشاط ...',
             }}
             filterSections={[
               {

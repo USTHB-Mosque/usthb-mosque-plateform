@@ -17,7 +17,7 @@ const BookCardSkeleton: React.FC<BookCardSkeletonProps> = ({ className }) => {
     >
       <header className="relative flex h-48 w-full flex-none self-stretch overflow-hidden rounded-xl">
         <Skeleton className="absolute inset-0 rounded-none" />
-        <Skeleton className="absolute top-4 right-4 z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
+        <Skeleton className="absolute top-4 end-4 z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
       </header>
 
       <div

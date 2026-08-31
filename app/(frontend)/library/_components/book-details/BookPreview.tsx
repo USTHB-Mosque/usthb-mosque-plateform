@@ -100,7 +100,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             disabled={isBorrowing}
           >
             {isBorrowing ? (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : user ? (
               'احجز الآن'
             ) : (

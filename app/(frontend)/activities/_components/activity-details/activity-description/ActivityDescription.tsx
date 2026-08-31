@@ -89,9 +89,9 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
             disabled={isRegistering}
           >
             {isRegistering ? (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : user ? (
-              openForRegistration ? 'سجل الآن' : 'التسغل مغلق'
+              openForRegistration ? 'سجل الآن' : 'التسجيل مغلق'
             ) : (
               'سجل الآن'
             )}

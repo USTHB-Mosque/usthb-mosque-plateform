@@ -65,10 +65,10 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
           ) : null}
           {searchProps?.enabled ? (
             <div className="relative w-full min-w-[200px] max-w-full sm:max-w-sm flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={searchPlaceholder}
-                className="h-10 pr-10 bg-background w-full rounded-xl"
+                className="h-10 pe-10 bg-background w-full rounded-xl"
                 value={searchProps.value}
                 onChange={(e) => searchProps.onChange(e.target.value)}
               />

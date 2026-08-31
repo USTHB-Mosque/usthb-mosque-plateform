@@ -7,9 +7,9 @@ const ActivitySkeleton: React.FC = () => {
       dir="rtl"
       className="relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white"
     >
-      <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 self-stretch border-l border-l-stroke-grey sm:w-[40%]">
+      <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 self-stretch border-e border-e-stroke-grey sm:w-[40%]">
         <Skeleton className="absolute inset-0 rounded-none" />
-        <Skeleton className="absolute top-[18px] right-[18px] z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
+        <Skeleton className="absolute top-[18px] end-[18px] z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
       </div>
 
       <div className="relative flex flex-1 grow flex-col items-start justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">

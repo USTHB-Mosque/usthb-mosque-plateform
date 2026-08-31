@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
         {label}
         {!mobile && (
           <span
-            className="absolute bottom-[-3px] right-0 h-[1.5px] bg-primary-300 transition-all duration-300 ease-out"
+            className="absolute bottom-[-3px] start-0 h-[1.5px] bg-primary-300 transition-all duration-300 ease-out"
             style={{ width: isActive ? '100%' : '0%' }}
           />
         )}
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
   return (
     <header
       dir="rtl"
-      className="sticky top-0 right-0 left-0 z-50 w-full border-b bg-background/95 backdrop-blur"
+      className="sticky top-0 start-0 end-0 z-50 w-full border-b bg-background/95 backdrop-blur"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         <Link href="/" className="shrink-0">
