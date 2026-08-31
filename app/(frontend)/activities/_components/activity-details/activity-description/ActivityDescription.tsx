@@ -49,7 +49,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
 
     if (result.success) {
       toast.success(result.message)
-      router.push('/profile?tab=registrations')
+      router.push('/user/my-activities')
     } else {
       toast.error(result.message)
     }

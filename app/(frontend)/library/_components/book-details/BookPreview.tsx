@@ -59,7 +59,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
 
     if (result.success) {
       toast.success(result.message)
-      router.push('/profile?tab=loans')
+      router.push('/user/my-loans')
     } else {
       toast.error(result.message)
     }

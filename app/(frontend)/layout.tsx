@@ -3,6 +3,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/lib/providers/query-client.provider'
+import ThemeProvider from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
 const khalidArt = localFont({
@@ -103,11 +104,21 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
     <html
       lang="ar"
       dir="rtl"
+      suppressHydrationWarning
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${uthmanic.variable}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var c=document.documentElement.classList;c.remove('light','dark');var t=localStorage.getItem('theme');var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(dark){c.add('dark');}else{c.add('light');}document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
-        <Toaster richColors position="top-center" />
-        <QueryClientProvider>{children}</QueryClientProvider>
+        <ThemeProvider>
+          <Toaster richColors position="top-center" />
+          <QueryClientProvider>{children}</QueryClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

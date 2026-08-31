@@ -127,14 +127,14 @@ const Navbar: React.FC = () => {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/profile" className="flex items-center gap-2 w-full">
+                      <Link href="/user/profile" className="flex items-center gap-2 w-full">
                         <User className="size-4" />
                         <span>الملف الشخصي</span>
                       </Link>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/profile" className="flex items-center gap-2 w-full">
+                      <Link href="/user/settings" className="flex items-center gap-2 w-full">
                         <Settings className="size-4" />
                         <span>الإعدادات</span>
                       </Link>
