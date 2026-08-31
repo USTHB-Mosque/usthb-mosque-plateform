@@ -5,10 +5,8 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-// import { s3Storage } from '@payloadcms/storage-s3'
-// import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
-// import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
+import { getStoragePlugin } from './storage'
 import {
   User,
   Media,
@@ -69,23 +67,7 @@ export default buildConfig({
   }),
 
   plugins: [
-    // s3Storage({
-    //   collections: {
-    //     [Media.slug]: {
-    //       prefix: 'media',
-    //     },
-    //   },
-    //   bucket: process.env.S3_BUCKET || 'media',
-    //   config: {
-    //     credentials: {
-    //       accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-    //       secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-    //     },
-    //     region: process.env.S3_REGION || 'local',
-    //     endpoint: process.env.S3_ENDPOINT || '',
-    //     forcePathStyle: true,
-    //   },
-    // }),
+    getStoragePlugin(),
     mcpPlugin({
       mcp: {
         serverOptions: {
