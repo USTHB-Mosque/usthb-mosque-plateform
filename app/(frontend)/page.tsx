@@ -1,62 +1,79 @@
-'use client'
+"use client";
 
-import React from 'react'
-import Navbar from '@/components/layouts/navbar/Navbar'
-import Footer from '@/components/layouts/Footer'
-import SectionBlock from '@/components/ui/sectionBlock'
-import ActivityCard from '@/components/ui/activityCard'
-import CTASection from '@/components/ui/CTASection'
-import Image from 'next/image'
-import { motion } from 'motion/react'
-import { useGetBooksQuery } from '@/lib/apis/books'
-import { useGetArticlesQuery } from '@/lib/apis/articles'
-import { useGetActivitiesQuery } from '@/lib/apis/activities'
-import { BookCategory } from '@/interfaces/books.interfaces'
-import { Media } from '@/payload-types'
-import { getImageUrl } from '@/utils/image-utils'
-import Link from 'next/link'
-import ListingRenderer from '@/components/listing/ListingRenderer'
-import EmptyData from '@/components/common/EmptyData'
-import ErrorData from '@/components/common/ErrorData'
-import ActivityCardSkeleton from '@/components/ui/activityCardSkeleton'
-import BookCard from '@/components/ui/landing/BookCard'
-import BlogArticleCard from '@/components/ui/landing/BlogArticleCard'
-import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
-import ArticleCardSkeleton from '@/components/ui/landing/ArticleCardSkeleton'
-import { staticBooks } from '@/static-content/books'
-import { staticActivities } from '@/static-content/activities'
-import { staticArticles } from '@/static-content/articles'
+import React from "react";
+import Navbar from "@/components/layouts/navbar/Navbar";
+import Footer from "@/components/layouts/Footer";
+import SectionBlock from "@/components/ui/sectionBlock";
+import ActivityCard from "@/components/ui/activityCard";
+import CTASection from "@/components/ui/CTASection";
+import Image from "next/image";
+import { motion } from "motion/react";
+import { useGetBooksQuery } from "@/lib/apis/books";
+import { useGetArticlesQuery } from "@/lib/apis/articles";
+import { useGetActivitiesQuery } from "@/lib/apis/activities";
+import { BookCategory } from "@/interfaces/books.interfaces";
+import { Media } from "@/payload-types";
+import { getImageUrl } from "@/utils/image-utils";
+import Link from "next/link";
+import ListingRenderer from "@/components/listing/ListingRenderer";
+import EmptyData from "@/components/common/EmptyData";
+import ErrorData from "@/components/common/ErrorData";
+import ActivityCardSkeleton from "@/components/ui/activityCardSkeleton";
+import BookCard from "@/components/ui/landing/BookCard";
+import BlogArticleCard from "@/components/ui/landing/BlogArticleCard";
+import BookCardSkeleton from "@/components/ui/landing/BookCardSkeleton";
+import ArticleCardSkeleton from "@/components/ui/landing/ArticleCardSkeleton";
+import { staticBooks } from "@/static-content/books";
+import { staticActivities } from "@/static-content/activities";
+import { staticArticles } from "@/static-content/articles";
 
 const LandingPage: React.FC = () => {
-  const { data: booksData, isLoading: booksLoading, isError: booksError } = useGetBooksQuery({
+  const {
+    data: booksData,
+    isLoading: booksLoading,
+    isError: booksError,
+  } = useGetBooksQuery({
     category: BookCategory.Religious,
     page: 1,
     limit: 4,
-  })
+  });
 
-  const { data: articlesData, isLoading: articlesLoading, isError: articlesError } = useGetArticlesQuery({
+  const {
+    data: articlesData,
+    isLoading: articlesLoading,
+    isError: articlesError,
+  } = useGetArticlesQuery({
     page: 1,
     limit: 3,
-  })
+  });
 
-  const { data: activitiesData, isLoading: activitiesLoading, isError: activitiesError } = useGetActivitiesQuery({
+  const {
+    data: activitiesData,
+    isLoading: activitiesLoading,
+    isError: activitiesError,
+  } = useGetActivitiesQuery({
     page: 1,
     limit: 4,
-  })
+  });
 
-  const books = booksData?.docs || []
-  const articles = articlesData?.docs || []
-  const activities = activitiesData?.docs || []
+  const books = booksData?.docs || [];
+  const articles = articlesData?.docs || [];
+  const activities = activitiesData?.docs || [];
 
   const activityHadith = (
     <>
-      قال رسول <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> صلى{' '}
-      <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> عليه وسلم :{' '}
-      &quot;خيركم من تعلم القرآن وعلمه&quot;
+      قال رسول{" "}
+      <span style={{ fontSize: 14, color: "var(--primary-300)" }}>الله</span>{" "}
+      صلى{" "}
+      <span style={{ fontSize: 14, color: "var(--primary-300)" }}>الله</span>{" "}
+      عليه وسلم : &quot;خيركم من تعلم القرآن وعلمه&quot;
     </>
-  )
+  );
 
-  const renderActivityBento = (items: typeof activities, withHadith: boolean) => (
+  const renderActivityBento = (
+    items: typeof activities,
+    withHadith: boolean,
+  ) => (
     <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {items[0] && (
         <motion.div
@@ -76,8 +93,8 @@ const LandingPage: React.FC = () => {
             description={items[0].shortDescription}
             hadith={withHadith ? activityHadith : undefined}
             actions={[
-              { label: 'سجل الآن', variant: 'primary' },
-              { label: 'التفاصيل', variant: 'secondary' },
+              { label: "سجل الآن", variant: "primary" },
+              { label: "التفاصيل", variant: "secondary" },
             ]}
           />
         </motion.div>
@@ -139,65 +156,116 @@ const LandingPage: React.FC = () => {
         </motion.div>
       )}
     </div>
-  )
+  );
 
   return (
     <>
       <Navbar />
       <div className="w-full min-h-screen">
-
         {/* ── Hero Video Section ── */}
         <section className="relative w-full overflow-hidden h-[calc(100svh-73px)]">
+          {/* Hero video */}
           <video
-            src="/static/images/hero-section-animation.mp4"
+            src="/static/images/hero_vid_light.mp4"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '200%',
-              height: '100%',
-              transform: 'scale(1.2) translateX(-6%) translateY(-4%)',
-              objectFit: 'cover',
-              filter: 'grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)',
+              filter:
+                "grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)",
             }}
-            className="absolute top-0 left-0 w-full h-full object-cover scale-125"
+            className="absolute bottom-0 w-full object-cover sm:scale-115 scale-150  translate-x-[-6vw] lg:translate-y-[7vh] translate-y-[-7vh] sm:translate-y-0 "
             autoPlay
             muted
             loop
+            playsInline
           />
 
-          <div className="absolute inset-0 z-[2] pointer-events-none" style={{ background: 'rgba(220, 235, 255, 0.15)' }} />
-
+          {/* Full-screen gradient overlay */}
           <div
-            className="absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16"
+            className="
+              absolute inset-0 z-2 pointer-events-none
+
+              /* Mobile */
+              [--solid:55%]
+              [--fade-1:65%]
+              [--fade-2:75%]
+              [--fade-3:85%]
+              [--transparent:95%]
+
+
+
+              /* md */
+              md:[--solid:50%]
+              md:[--fade-1:60%]
+              md:[--fade-2:70%]
+              md:[--fade-3:80%]
+              md:[--transparent:90%]
+
+              /* lg and larger = your original gradient */
+              lg:[--solid:40%]
+              lg:[--fade-1:50%]
+              lg:[--fade-2:60%]
+              lg:[--fade-3:70%]
+              lg:[--transparent:80%]
+            "
             style={{
-              background:
-                'linear-gradient(to bottom, var(--background-2) 0%, var(--background-2) 60%, color-mix(in srgb, var(--background-2) 85%, transparent) 72%, color-mix(in srgb, var(--background-2) 60%, transparent) 82%, color-mix(in srgb, var(--background-2) 30%, transparent) 91%, transparent 100%)',
+              background: `
+                linear-gradient(
+                  to bottom,
+                  var(--background-2) 0%,
+                  var(--background-2) var(--solid),
+                  color-mix(in srgb, var(--background-2) 90%, transparent) var(--fade-1),
+                  color-mix(in srgb, var(--background-2) 60%, transparent) var(--fade-2),
+                  color-mix(in srgb, var(--background-2) 30%, transparent) var(--fade-3),
+                  transparent var(--transparent)
+                )
+              `,
             }}
-          >
-            <motion.div initial={{ y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Image
-                src="/static/images/bismilah.svg"
-                alt="بسم الله"
-                width={180}
-                height={40}
-                priority
-                className="w-28 sm:w-36 md:w-auto"
-              />
-            </motion.div>
-            <motion.p
-              dir="rtl"
-              initial={{ y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              style={{ fontFamily: 'var(--font-uthmanic)' }}
-              className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(18px,2vw,28px)]"
-            >
-              ﴿في بُيوتٍ أَذِنَ <span style={{ color: 'var(--primary-300)' }}>اللَّهُ</span> أَن تُرفَعَ وَيُذكَرَ فيهَا اسمُ
-              <span style={{ color: 'var(--primary-300)' }}>هُ</span> يُسَبِّحُ لَهُ فيها بِالغُدُوِّ وَالآصالِ۝ رِجَالٌ لَا تُلْهِيهِمْ تِجَارَةٌ وَلَا بَيْعٌ عَنْ ذِكْرِ{' '}
-              <span style={{ color: 'var(--primary-300)' }}>اللَّهِ</span> وَإِقَامِ الصَّلَاةِ وَإِيتَاءِ الزَّكَاةِ ۙ يَخَافُونَ يَوْمًا تَتَقَلَّبُ فِيهِ الْقُلُوبُ وَالْأَبْصَارُ﴾ [النور: ٣٦]
-            </motion.p>
-          </div>
+          />
+
+          {/* Light color overlay */}
+          <div
+            className="absolute inset-0 z-[2] pointer-events-none"
+            style={{
+              background: "rgba(220, 235, 255, 0.15)",
+            }}
+          />
+
+          {/* Hero content */}
+          <div className="absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] sm:min-h-[90%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16">
+            {/* Bismillah */}
+            {/* Quran verse */}
+             <motion.div initial={{ y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}> <Image src="/static/images/bismilah.svg" alt="بسم الله" width={180} height={40} priority className="w-40 sm:w-48 md:w-auto" /> </motion.div>
+             <motion.p
+  dir="rtl"
+  initial={{ y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 0.2 }}
+  style={{ fontFamily: "var(--font-uthmanic)" }}
+  className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(24px,2.5vw,28px)]"
+>
+  ﴿في بُيوتٍ أَذِنَ{" "}
+  <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
+    اللَّهُ
+  </span>{" "}
+  أَن تُرفَعَ وَيُذكَرَ فيهَا{" "}
+
+  <span style={{ whiteSpace: "nowrap", fontSize: "inherit" }}>
+    اسمُ
+    <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
+      هُ
+    </span>
+  </span>{" "}
+
+  يُسَبِّحُ لَهُ فيها بِالغُدُوِّ وَالْآصالِ۝ رِجَالٌ لَا تُلْهِيهِمْ
+  تِجَارَةٌ وَلَا بَيْعٌ عَنْ ذِكْرِ{" "}
+
+  <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
+    اللَّهِ
+  </span>{" "}
+
+  وَإِقَامِ الصَّلَاةِ وَإِيتَاءِ الزَّكَاةِ ۙ يَخَافُونَ يَوْمًا
+  تَتَقَلَّبُ فِيهِ الْقُلُوبُ وَالْأَبْصَارُ﴾ [النور: ٣٦]
+</motion.p>
+</div>
         </section>
 
         {/* ── Section 1: لبنة المجتمع ── */}
@@ -233,8 +301,8 @@ const LandingPage: React.FC = () => {
             imagePosition="left"
             backgroundColor="#E8F2F8"
             stats={[
-              { value: '5000+', label: 'كتاب ومرجع' },
-              { value: '8+', label: 'نشاط سنوي' },
+              { value: "5000+", label: "كتاب ومرجع" },
+              { value: "8+", label: "نشاط سنوي" },
             ]}
           />
         </motion.div>
@@ -358,7 +426,10 @@ const LandingPage: React.FC = () => {
               isEmpty={activities.length === 0}
               loader={
                 <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <ActivityCardSkeleton large className="md:col-span-2 lg:col-span-2 lg:row-span-2" />
+                  <ActivityCardSkeleton
+                    large
+                    className="md:col-span-2 lg:col-span-2 lg:row-span-2"
+                  />
                   <ActivityCardSkeleton className="md:col-span-2 lg:col-span-2" />
                   <ActivityCardSkeleton />
                   <ActivityCardSkeleton />
@@ -468,7 +539,7 @@ const LandingPage: React.FC = () => {
       </div>
       <Footer />
     </>
-  )
-}
+  );
+};
 
-export default LandingPage
+export default LandingPage;
