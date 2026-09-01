@@ -11,7 +11,7 @@ const BookCardSkeleton: React.FC<BookCardSkeletonProps> = ({ className }) => {
     <article
       dir="rtl"
       className={cn(
-        'relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white',
+        'relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main',
         className,
       )}
     >

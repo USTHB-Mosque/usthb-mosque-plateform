@@ -39,7 +39,7 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
     <article
       dir="rtl"
       className={cn(
-        'group/card relative flex h-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white px-0 pt-0 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
+        'group/card relative flex h-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main px-0 pt-0 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
         className,
       )}
     >

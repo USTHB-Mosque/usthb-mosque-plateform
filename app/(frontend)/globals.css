@@ -44,9 +44,10 @@
   /* ============================================
      BACKGROUND (#F2F8FC)
      ============================================ */
-  --background: #f2f8fc;
+  --background: #ffffff;
   --background-2: #f2f8fc;
   --foreground: #243245;
+  --tabs-active: #d6ecfa;
 
   /* ============================================
      TEXT BLUE - Semantic text colors
@@ -98,7 +99,7 @@
   /* ============================================
      SHADCN UI VARIABLES
      ============================================ */
-  --card: #ffffff;
+  --card: #f2f8fc;
   --card-foreground: #243245;
   --popover: #ffffff;
   --popover-foreground: #243245;
@@ -140,6 +141,7 @@
   --background: #243245;
   --background-2: #1a2a3a;
   --foreground: #f2f8fc;
+  --tabs-active: #223a53;
 
   --card: #2d3d50;
   --card-foreground: #f2f8fc;
@@ -223,6 +225,7 @@
   --color-background: var(--background);
   --color-background-2: var(--background-2);
   --color-foreground: var(--foreground);
+  --color-tabs-active: var(--tabs-active);
 
   /* ============================================
      BLUE - Tailwind: text-blue-400, bg-blue-200, etc.

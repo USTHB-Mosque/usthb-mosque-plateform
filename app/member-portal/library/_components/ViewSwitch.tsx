@@ -13,7 +13,7 @@ type ViewSwitchProps = {
 
 const ViewSwitch: React.FC<ViewSwitchProps> = ({ view, onViewChange }) => {
   return (
-    <div className="flex h-10 shrink-0 items-center gap-1 rounded-lg bg-white p-1">
+    <div className="flex h-10 shrink-0 items-center gap-1 rounded-lg bg-background-2 p-1">
       <SwitchButton
         active={view === 'grid'}
         label="عرض شبكة"

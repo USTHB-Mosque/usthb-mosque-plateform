@@ -172,7 +172,7 @@ const MobileTopbar: React.FC = () => {
   const current = userMainNav.find((i) => userNavHelpers.isActive(i, pathname))
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur lg:hidden">
+    <header className="sticky top-0 z-40 border-b border-border bg-background-2/95 backdrop-blur lg:hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="overflow-x-auto">
           <nav className="flex gap-2">

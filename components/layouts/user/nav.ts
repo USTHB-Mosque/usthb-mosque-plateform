@@ -1,6 +1,7 @@
 import {
   ClipboardList,
   CalendarDays,
+  CalendarCheck,
   Clock,
   Newspaper,
   LayoutDashboard,
@@ -25,7 +26,8 @@ export const userMainNav: UserNavItem[] = [
   { label: 'الكتب', href: '/user/library', icon: LibraryBig },
   { label: 'الإعارات', href: '/user/my-loans', icon: ClipboardList },
   { label: 'المقالات', href: '/user/articles', icon: Newspaper },
-  { label: 'الأنشطة', href: '/user/my-activities', icon: CalendarDays },
+  { label: 'الأنشطة', href: '/user/activities', icon: CalendarDays },
+  { label: 'تسجيلاتي', href: '/user/my-registrations', icon: CalendarCheck },
 ]
 
 export const userSecondaryNav: UserNavItem[] = [

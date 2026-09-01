@@ -14,9 +14,10 @@ import { Button } from '@/components/ui/button'
 interface ActivityCardProps {
   activity: Activity
   className?: string
+  href?: string
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }) => {
   const router = useRouter()
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isShared, setIsShared] = useState(false)
@@ -63,13 +64,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
   }
 
   const handleOpen = (): void => {
-    router.push(`/activities/${activity.id}`)
+    router.push(href ?? `/activities/${activity.id}`)
   }
 
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
+      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
     >
       <button

@@ -1,39 +1,43 @@
 'use client'
 
 import React from 'react'
-import { Tag } from 'lucide-react'
+import { CalendarCheck, Tag } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import UserPage from '@/app/member-portal/UserPage'
 import { Pagination } from '@/components/common/Pagination'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
-import BlogArticleCard from '@/components/ui/landing/BlogArticleCard'
-import ArticleCardSkeleton from '@/components/ui/landing/ArticleCardSkeleton'
+import { Button } from '@/components/ui/button'
+import ActivityCard from '@/app/(frontend)/activities/_components/ActivityCard'
+import ActivitySkeleton from '@/app/(frontend)/activities/_components/ActivitySkeleton'
 import EmptyData from '@/components/common/EmptyData'
 import ErrorData from '@/components/common/ErrorData'
-import { useGetArticlesQuery } from '@/lib/apis/articles'
+import { useGetActivitiesQuery } from '@/lib/apis/activities'
 import { useSearch } from '@/hooks/use-search'
-import { ArticleSearchParams, ArticleType } from '@/interfaces/articles.interfaces'
-import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { ActivitySearchParams, ActivityType } from '@/interfaces/activities.interfaces'
+import { activitiesTypesConfigArray } from '@/utils/constants/activities'
 
-const MemberArticlesPage: React.FC = () => {
-  const { searchValues, values, setValue } = useSearch<ArticleSearchParams>({
+const MemberActivitiesPage: React.FC = () => {
+  const router = useRouter()
+
+  const { searchValues, values, setValue } = useSearch<ActivitySearchParams>({
     initialValues: {
       page: 1,
-      limit: 12,
+      limit: 3,
       search: '',
       types: [],
     },
-    scope: 'member-articles',
+    scope: 'member-activities',
   })
 
   const {
-    data: { docs: articles = [], totalPages = 1, totalDocs = 0 } = {},
+    data: { docs: activities = [], totalPages = 1, totalDocs = 0 } = {},
     isLoading,
     isError,
-  } = useGetArticlesQuery(searchValues)
+  } = useGetActivitiesQuery(searchValues)
 
   return (
-    <UserPage title="المقالات">
+    <UserPage title="الأنشطة">
       <div className="mt-6">
         <ListingToolbar
           onApplyFilters={() => setValue('page', 1)}
@@ -43,10 +47,10 @@ const MemberArticlesPage: React.FC = () => {
               multiple: false,
               options: [
                 { value: '', label: 'الكل' },
-                ...articleTypesConfigArray,
+                ...activitiesTypesConfigArray,
               ],
               value: (values.types || [])[0] || '',
-              onChange: (v) => setValue('types', v ? [v as ArticleType] : []),
+              onChange: (v) => setValue('types', v ? [v as ActivityType] : []),
             },
           ]}
           searchProps={{
@@ -56,7 +60,7 @@ const MemberArticlesPage: React.FC = () => {
               setValue('search', value)
               setValue('page', 1)
             },
-            placeholder: 'عنوان المقال، الكاتب ...',
+            placeholder: 'اسم النشاط ...',
           }}
           filterSections={[
             {
@@ -64,13 +68,24 @@ const MemberArticlesPage: React.FC = () => {
               title: 'التصنيفات',
               icon: <Tag />,
               multiple: true,
-              options: articleTypesConfigArray,
+              options: activitiesTypesConfigArray,
               value: values.types || [],
-              onChange: (v) => setValue('types', v as ArticleType[]),
+              onChange: (v) => setValue('types', v as ActivityType[]),
               resetValue: [],
             },
           ]}
           filterButtonClassName="bg-card"
+          actions={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push('/user/my-registrations')}
+              className="h-10 gap-2 rounded-lg"
+            >
+              <CalendarCheck className="size-4" />
+              أنشطتي المسجّلة
+            </Button>
+          }
         />
       </div>
 
@@ -79,22 +94,22 @@ const MemberArticlesPage: React.FC = () => {
           isEmpty={totalDocs === 0}
           isError={isError}
           isLoading={isLoading}
-          emptyFallback={<EmptyData title="لم يتم العثور على أي مقالات" />}
+          emptyFallback={<EmptyData title="لم يتم العثور على أي أنشطة" />}
           errorFallback={<ErrorData />}
           loader={
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <ArticleCardSkeleton key={index} />
+            <div className="flex flex-col space-y-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ActivitySkeleton key={index} />
               ))}
             </div>
           }
         >
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {articles.map((article) => (
-              <BlogArticleCard
-                key={article.id}
-                article={article}
-                href={`/user/articles/${article.id}`}
+          <div className="flex flex-col space-y-6">
+            {activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                href={`/user/activities/${activity.id}`}
               />
             ))}
           </div>
@@ -114,4 +129,4 @@ const MemberArticlesPage: React.FC = () => {
   )
 }
 
-export default MemberArticlesPage
+export default MemberActivitiesPage

@@ -24,7 +24,7 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center p-2 bg-white text-muted-foreground group-data-horizontal/tabs:h-8 group-data-horizontal/tabs:flex-col data-[variant=line]:rounded-none",
+  "group/tabs-list inline-flex w-fit items-center justify-center p-2 bg-background-2 text-muted-foreground group-data-horizontal/tabs:h-8 group-data-horizontal/tabs:flex-col data-[variant=line]:rounded-none",
   {
     variants: {
       variant: {
@@ -45,7 +45,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       className={cn(
         "relative inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all",
         "text-grey-400 hover:text-grey-500",
-        "data-active:bg-primary-200 data-active:text-blue-400",
+        "data-active:bg-tabs-active data-active:text-blue-400",
         className
       )}
       {...props}

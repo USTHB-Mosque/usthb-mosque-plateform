@@ -35,9 +35,9 @@ const sectionLinks = [
     getCount: (d: ProfileOverviewData) => d.loans.length,
   },
   {
-    href: '/user/my-activities',
+    href: '/user/my-registrations',
     icon: CalendarDays,
-    title: 'أنشطتي',
+    title: 'تسجيلاتي',
     description: 'تسجيلاتك في الأنشطة',
     getCount: (d: ProfileOverviewData) => d.registrations.length,
   },

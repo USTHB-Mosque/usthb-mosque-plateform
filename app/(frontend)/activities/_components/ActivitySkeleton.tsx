@@ -5,7 +5,7 @@ const ActivitySkeleton: React.FC = () => {
   return (
     <article
       dir="rtl"
-      className="relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white"
+      className="relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main"
     >
       <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 self-stretch border-e border-e-stroke-grey sm:w-[40%]">
         <Skeleton className="absolute inset-0 rounded-none" />

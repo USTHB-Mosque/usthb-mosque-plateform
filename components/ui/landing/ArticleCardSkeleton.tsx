@@ -5,7 +5,7 @@ const ArticleCardSkeleton: React.FC = () => {
   return (
     <article
       dir="rtl"
-      className="flex h-full w-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white px-0 pt-0 pb-4"
+      className="flex h-full w-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main px-0 pt-0 pb-4"
     >
       <header className="relative flex h-[200px] w-full items-start justify-start gap-2.5 self-stretch overflow-hidden rounded-xl p-4">
         <Skeleton className="absolute inset-0 rounded-none" />

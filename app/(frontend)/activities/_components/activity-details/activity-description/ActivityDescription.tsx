@@ -1,9 +1,9 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, User, Loader2 } from 'lucide-react'
+import { Calendar, MapPin, User } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
-import { Button } from '@/components/ui/button'
+import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { Activity } from '@/payload-types'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
@@ -49,7 +49,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
 
     if (result.success) {
       toast.success(result.message)
-      router.push('/user/my-activities')
+      router.push('/user/my-registrations')
     } else {
       toast.error(result.message)
     }
@@ -82,20 +82,13 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
         </div>
         <Separator />
         <div>
-          <Button 
-            className="w-full text-xl text-foreground" 
-            size="lg"
+          <LandingCtaButton
+            label={openForRegistration ? 'سجل الآن' : 'التسجيل مغلق'}
             onClick={handleRegister}
-            disabled={isRegistering}
-          >
-            {isRegistering ? (
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-            ) : user ? (
-              openForRegistration ? 'سجل الآن' : 'التسجيل مغلق'
-            ) : (
-              'سجل الآن'
-            )}
-          </Button>
+            disabled={!openForRegistration}
+            loading={isRegistering}
+            ariaLabel={openForRegistration ? 'سجّل في هذا النشاط' : 'التسجيل مغلق'}
+          />
         </div>
       </CardContent>
     </Card>
