@@ -19,7 +19,7 @@ const statusConfig: Record<
     className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
   },
   passed: {
-    label: 'مضى موعده',
+    label: 'مكتمل',
     className: 'bg-muted text-muted-foreground',
   },
 }

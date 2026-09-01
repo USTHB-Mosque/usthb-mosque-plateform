@@ -51,7 +51,7 @@ const statusOptions = [
   { value: '', label: 'الكل' },
   { value: 'registered', label: 'مسجّل' },
   { value: 'attended', label: 'تم الحضور' },
-  { value: 'passed', label: 'مضى موعده' },
+  { value: 'passed', label: 'مكتمل' },
 ]
 
 const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }) => {
