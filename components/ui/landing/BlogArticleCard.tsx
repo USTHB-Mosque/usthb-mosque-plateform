@@ -12,11 +12,12 @@ import LandingCtaButton from './LandingCtaButton'
 interface BlogArticleCardProps {
   article?: Article
   className?: string
+  href?: string
 }
 
 const defaultTags = ['مقال', 'المسجد']
 
-const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className }) => {
+const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, href }) => {
   const router = useRouter()
 
   const media = article?.image as Media | undefined
@@ -30,7 +31,7 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className })
 
   const handleReadArticle = (): void => {
     if (article) {
-      router.push(`/articles/${article.id}`)
+      router.push(href ?? `/articles/${article.id}`)
     }
   }
 

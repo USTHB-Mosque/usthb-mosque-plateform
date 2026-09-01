@@ -140,6 +140,7 @@ const LibraryMemberPage: React.FC = () => {
             },
           ]}
           actions={<ViewSwitch view={view} onViewChange={setView} />}
+          filterButtonClassName="bg-card"
         />
       </div>
 

@@ -7,6 +7,7 @@ import { Search, Funnel } from 'lucide-react'
 import ListingFiltersDialog from './ListingFiltersDialog'
 import ListingFiltersGroup from './ListingFiltersGroup'
 import { listingFilterSectionsVisible, type ListingFilterSection } from './listing-filter.types'
+import { cn } from '@/lib/utils'
 
 export type { ListingFilterSection } from './listing-filter.types'
 
@@ -25,6 +26,8 @@ export interface ListingToolbarProps {
   quickFilterSections?: ListingFilterSection[]
   /** Rendered next to the search input (e.g. a grid/table view switch) */
   actions?: React.ReactNode
+  /** Extra classes for the فلاتر toggle button (default: visitor tone bg-background-2) */
+  filterButtonClassName?: string
 }
 
 const ListingToolbar: React.FC<ListingToolbarProps> = ({
@@ -34,6 +37,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   quickFilterIds = [],
   quickFilterSections = [],
   actions,
+  filterButtonClassName,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const openFiltersDisclosure = { isOpen: filtersOpen, onOpen: () => setFiltersOpen(true), onClose: () => setFiltersOpen(false), setIsOpen: setFiltersOpen }
@@ -59,10 +63,14 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
           {useDialog ? (
             <Button
               type="button"
+              variant="ghost"
               size="icon-lg"
               onClick={openFiltersDisclosure.onOpen}
               aria-label="تصفية"
-              className="h-10 w-10 rounded-lg"
+              className={cn(
+                'h-10 w-10 rounded-lg',
+                filterButtonClassName ?? 'bg-background-2',
+              )}
             >
               <Funnel />
             </Button>
