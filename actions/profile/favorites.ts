@@ -39,7 +39,7 @@ export async function toggleBookFavorite(bookId: number) {
       req: ctx.req,
       overrideAccess: false,
     })
-    revalidatePath('/user/profile')
+    revalidatePath('/user/dashboard')
     revalidatePath('/user/bookmarks')
     revalidatePath('/library')
     return { ok: true as const, favorited: false }
@@ -54,7 +54,7 @@ export async function toggleBookFavorite(bookId: number) {
     req: ctx.req,
     overrideAccess: false,
   })
-  revalidatePath('/user/profile')
+  revalidatePath('/user/dashboard')
   revalidatePath('/user/bookmarks')
   revalidatePath('/library')
   return { ok: true as const, favorited: true }
@@ -69,7 +69,7 @@ export async function removeBookFavorite(favoriteId: number) {
     req: ctx.req,
     overrideAccess: false,
   })
-  revalidatePath('/user/profile')
+  revalidatePath('/user/dashboard')
   revalidatePath('/user/bookmarks')
   return { ok: true as const }
 }

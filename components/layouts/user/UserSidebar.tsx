@@ -49,7 +49,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
         )}
       >
         <div className={cn('flex shrink-0 items-center', collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5')}>
-          <Link href="/user/profile" aria-label="بوابة العضو">
+          <Link href="/user/dashboard" aria-label="بوابة العضو">
             {collapsed ? (
               <Image
                 src="/static/images/logo-icon.svg"

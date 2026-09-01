@@ -124,7 +124,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/user',
-        destination: '/user/profile',
+        destination: '/user/dashboard',
       },
     ]
   },

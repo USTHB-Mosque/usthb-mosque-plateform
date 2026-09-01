@@ -22,7 +22,7 @@ export type UserNavItem = {
 }
 
 export const userMainNav: UserNavItem[] = [
-  { label: 'الرئيسية', href: '/user/profile', icon: LayoutDashboard },
+  { label: 'الرئيسية', href: '/user/dashboard', icon: LayoutDashboard },
   { label: 'الكتب', href: '/user/library', icon: LibraryBig },
   { label: 'الإعارات', href: '/user/my-loans', icon: ClipboardList },
   { label: 'المقالات', href: '/user/articles', icon: Newspaper },

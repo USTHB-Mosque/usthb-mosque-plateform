@@ -74,7 +74,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const redirect = searchParams.get('redirect') || '/user/profile'
+  const redirect = searchParams.get('redirect') || '/user/dashboard'
   const { step, setStep, ...formData } = useAuthFormStore()
 
   useEffect(() => {

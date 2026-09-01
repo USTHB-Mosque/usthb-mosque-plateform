@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, User, Settings, Menu, X } from 'lucide-react'
+import { LogOut, Settings, Menu, X, LayoutDashboard } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { useGetProfileQuery } from '@/lib/apis/auth-api'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
@@ -127,9 +127,9 @@ const Navbar: React.FC = () => {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/user/profile" className="flex items-center gap-2 w-full">
-                        <User className="size-4" />
-                        <span>الملف الشخصي</span>
+                      <Link href="/user/dashboard" className="flex items-center gap-2 w-full">
+                        <LayoutDashboard className="size-4" />
+                        <span>لوحة التحكم</span>
                       </Link>
                     </DropdownMenuItem>
 
@@ -203,12 +203,12 @@ const Navbar: React.FC = () => {
                 </div>
               </div>
               <Link
-                href="/user/profile"
+                href="/user/dashboard"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium hover:bg-muted"
               >
-                <User className="size-4" />
-                الملف الشخصي
+                <LayoutDashboard className="size-4" />
+                لوحة التحكم
               </Link>
               <button
                 onClick={() => { setMenuOpen(false); onLogout() }}
