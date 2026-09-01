@@ -1,13 +1,11 @@
 'use client'
 
 import React from 'react'
-import { CalendarCheck, Tag } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Tag } from 'lucide-react'
 import UserPage from '@/app/member-portal/UserPage'
 import { Pagination } from '@/components/common/Pagination'
 import ListingRenderer from '@/components/listing/ListingRenderer'
 import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
-import { Button } from '@/components/ui/button'
 import ActivityCard from '@/app/(frontend)/activities/_components/ActivityCard'
 import ActivitySkeleton from '@/app/(frontend)/activities/_components/ActivitySkeleton'
 import EmptyData from '@/components/common/EmptyData'
@@ -18,8 +16,6 @@ import { ActivitySearchParams, ActivityType } from '@/interfaces/activities.inte
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
 
 const MemberActivitiesPage: React.FC = () => {
-  const router = useRouter()
-
   const { searchValues, values, setValue } = useSearch<ActivitySearchParams>({
     initialValues: {
       page: 1,
@@ -75,17 +71,6 @@ const MemberActivitiesPage: React.FC = () => {
             },
           ]}
           filterButtonClassName="bg-card"
-          actions={
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push('/user/my-registrations')}
-              className="h-10 gap-2 rounded-lg"
-            >
-              <CalendarCheck className="size-4" />
-              أنشطتي المسجّلة
-            </Button>
-          }
         />
       </div>
 
