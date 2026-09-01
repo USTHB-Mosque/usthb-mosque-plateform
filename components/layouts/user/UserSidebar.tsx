@@ -116,7 +116,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col lg:bg-background-2">
         <MobileTopbar />
         <main className="flex flex-1 flex-col">{children}</main>
       </div>

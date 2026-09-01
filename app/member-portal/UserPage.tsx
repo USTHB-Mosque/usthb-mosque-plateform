@@ -10,7 +10,7 @@ const UserPage: React.FC<UserPageProps> = ({ title, description, children }) => 
   return (
     <div className="flex min-h-full flex-col">
       <UserPageHeader title={title} />
-      <div className="flex-1 space-y-6 p-4 sm:p-6 lg:rounded-ss-xl lg:p-8">
+      <div className="flex-1 space-y-6 bg-background p-3 sm:p-4 lg:mx-5 lg:my-5 lg:rounded-2xl lg:p-5">
         {description ? (
           <p className="mb-4 text-muted-foreground">{description}</p>
         ) : null}
