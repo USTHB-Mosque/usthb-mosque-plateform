@@ -24,7 +24,7 @@ const UserPageHeader: React.FC<UserPageHeaderProps> = ({
   const handleToggle = onToggleSidebar ?? toggle
 
   return (
-    <header className="sticky top-0 z-40 -ms-px flex items-center justify-between gap-4 border-b border-border bg-background-2 px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 flex items-center justify-between gap-4 bg-background-2 px-4 py-3 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <Button
           type="button"

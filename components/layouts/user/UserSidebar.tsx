@@ -44,7 +44,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
     <div className="flex min-h-screen">
       <aside
         className={cn(
-          'sticky top-0 hidden h-screen shrink-0 flex-col border-e border-border bg-background-2 transition-[width] duration-200 lg:flex',
+          'sticky top-0 hidden h-screen shrink-0 flex-col bg-background-2 transition-[width] duration-200 lg:flex',
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
@@ -172,7 +172,7 @@ const MobileTopbar: React.FC = () => {
   const current = userMainNav.find((i) => userNavHelpers.isActive(i, pathname))
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background-2/95 backdrop-blur lg:hidden">
+    <header className="sticky top-0 z-40 bg-background-2/95 backdrop-blur lg:hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="overflow-x-auto">
           <nav className="flex gap-2">
