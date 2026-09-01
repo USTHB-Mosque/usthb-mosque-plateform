@@ -21,7 +21,7 @@ const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
           <Separator />
         </div>
         <div className="flex flex-col gap-6">
-          {schedules?.map((schedule) => {
+          {schedules?.map((schedule, index) => {
             const date = new Date(schedule.dateAndTime)
             const day = date.toLocaleDateString('ar-DZ', { weekday: 'long' })
             const time = date.toLocaleTimeString('ar-DZ', {
@@ -30,7 +30,7 @@ const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
               hour12: false,
             })
             return (
-              <div key={schedule.dateAndTime} className="flex">
+              <div key={`${schedule.dateAndTime}-${index}`} className="flex">
                 <p className="flex-1 font-bold">{day}</p>
                 <div className="flex-1 text-primary">{time}</div>
               </div>

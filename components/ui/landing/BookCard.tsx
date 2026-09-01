@@ -13,11 +13,12 @@ type LandingBookCardProps = {
   book?: Book
   className?: string
   imageClassName?: string
+  href?: string
 }
 
 const defaultTags = ['قرآن', 'تفسير']
 
-const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName }) => {
+const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName, href }) => {
   const router = useRouter()
 
   const media = book?.image as Media | undefined
@@ -28,14 +29,14 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
   const handleRegister = (): void => {
-    router.push(`/library/book/${book?.id ?? 1}`)
+    router.push(href ?? `/library/book/${book?.id ?? 1}`)
   }
 
   return (
     <article
       dir="rtl"
       className={cn(
-        'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
+        'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
         className,
       )}
     >
@@ -48,7 +49,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
         {isAvailable && (
-          <div className="absolute top-4 right-4 z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 bg-success-50 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px]">
+          <div className="absolute top-4 end-4 z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 bg-success-50 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px]">
             <span className="relative flex w-fit items-center justify-center text-center font-alyamama text-sm font-normal leading-[normal] text-fill-white">
               متوفر
             </span>

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { MapPin, Calendar, Clock, Users, Heart, MessageCircle, Share2, Bookmark, ArrowLeft } from 'lucide-react'
+import { MapPin, Calendar, Clock, Users, Share2, Bookmark, ArrowLeft } from 'lucide-react'
 import { Activity, Media } from '@/payload-types'
 import { getImageUrl } from '@/utils/image-utils'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button'
 interface ActivityCardProps {
   activity: Activity
   className?: string
+  href?: string
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
+const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }) => {
   const router = useRouter()
-  const [isLiked, setIsLiked] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isShared, setIsShared] = useState(false)
 
@@ -64,19 +64,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
   }
 
   const handleOpen = (): void => {
-    router.push(`/activities/${activity.id}`)
+    router.push(href ?? `/activities/${activity.id}`)
   }
 
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-white transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
+      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
     >
       <button
         type="button"
         onClick={handleOpen}
-        className="relative flex h-full w-[45%] max-w-[500px] flex-none shrink-0 cursor-pointer self-stretch overflow-hidden border-l border-l-stroke-grey bg-cover bg-[50%_50%] sm:w-[40%]"
+        className="relative flex h-full w-[45%] max-w-[500px] flex-none shrink-0 cursor-pointer self-stretch overflow-hidden border-e border-e-stroke-grey bg-cover bg-[50%_50%] sm:w-[40%]"
         role="img"
         aria-label={`صورة نشاط ${activity.title}`}
       >
@@ -89,7 +89,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 40vw, 500px"
           />
         )}
-        <span className={`absolute top-[18px] right-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}>
+        <span className={`absolute top-[18px] end-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}>
           <span className="relative flex w-fit items-center justify-center text-center font-khalid text-sm font-normal leading-[normal] text-fill-white">
             {badgeText}
           </span>
@@ -159,28 +159,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className }) => {
               onClick={handleShare}
             >
               <Share2 className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isShared ? 'text-primary-300' : 'text-blue-200'}`} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 cursor-pointer"
-              aria-label="عرض التعليقات"
-              onClick={handleOpen}
-            >
-              <span className="font-alyamama text-xs leading-3 text-blue-300 transition-colors hover:text-primary-300">13</span>
-              <MessageCircle className="h-[18px] w-[18px] text-blue-200 transition-colors hover:text-primary-300" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 cursor-pointer"
-              aria-label={isLiked ? 'إزالة الإعجاب' : 'الإعجاب بالنشاط'}
-              aria-pressed={isLiked}
-              onClick={() => setIsLiked((current) => !current)}
-            >
-              <span className="font-alyamama text-xs leading-3 text-blue-300 transition-colors hover:text-primary-300">{isLiked ? 195 : 194}</span>
-              <Heart
-                className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isLiked ? 'text-danger fill-danger' : 'text-blue-200'}`}
-                aria-hidden="true"
-              />
             </button>
           </div>
           <Button

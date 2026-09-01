@@ -39,7 +39,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/user/dashboard";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -111,7 +111,7 @@ export default function LoginPage() {
           className="inline-flex items-center justify-center w-full h-10 sm:h-11 lg:h-12 text-xs sm:text-sm md:text-lg font-medium mb-3 sm:mb-4 lg:mb-6 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md"
         >
           <svg
-            className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2"
+            className="w-3 h-3 sm:w-4 sm:h-4 me-1 sm:me-2"
             viewBox="0 0 24 24"
           >
             <path
@@ -131,8 +131,7 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span className="hidden xs:inline text-xs sm:text-sm">Google</span>
-          <span className="xs:hidden">Google</span>
+          <span className="text-xs sm:text-sm">Google</span>
         </a>
 
         {/* Separator */}
@@ -205,7 +204,7 @@ export default function LoginPage() {
           ليس لديك حساب؟
           <Link
             href="/auth/register"
-            className="text-primary font-semibold hover:underline mr-1"
+            className="text-primary font-semibold hover:underline ms-1"
           >
             أنشئ حسابك الآن
           </Link>

@@ -16,7 +16,8 @@ export async function updateProfileFullName(formData: FormData) {
     req: ctx.req,
     overrideAccess: false,
   })
-  revalidatePath('/profile')
+  revalidatePath('/user/dashboard')
+  revalidatePath('/user/settings')
   return { ok: true as const }
 }
 
@@ -50,6 +51,7 @@ export async function changePassword(formData: FormData) {
     req: ctx.req,
     overrideAccess: false,
   })
-  revalidatePath('/profile')
+  revalidatePath('/user/dashboard')
+  revalidatePath('/user/settings')
   return { ok: true as const }
 }

@@ -59,7 +59,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
 
     if (result.success) {
       toast.success(result.message)
-      router.push('/profile?tab=loans')
+      router.push('/user/my-loans')
     } else {
       toast.error(result.message)
     }
@@ -100,7 +100,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             disabled={isBorrowing}
           >
             {isBorrowing ? (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : user ? (
               'احجز الآن'
             ) : (

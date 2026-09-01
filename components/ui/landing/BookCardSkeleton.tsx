@@ -11,13 +11,13 @@ const BookCardSkeleton: React.FC<BookCardSkeletonProps> = ({ className }) => {
     <article
       dir="rtl"
       className={cn(
-        'relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white',
+        'relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main',
         className,
       )}
     >
       <header className="relative flex h-48 w-full flex-none self-stretch overflow-hidden rounded-xl">
         <Skeleton className="absolute inset-0 rounded-none" />
-        <Skeleton className="absolute top-4 right-4 z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
+        <Skeleton className="absolute top-4 end-4 z-10 h-7 w-16 flex-none rounded-lg bg-success-50" />
       </header>
 
       <div

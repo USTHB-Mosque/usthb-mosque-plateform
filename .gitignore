@@ -39,6 +39,8 @@ next-env.d.ts
 
 # local agent process & context notes
 .context/
+SESSION.md
+.opencode/
 # supabase
 supabase/.branches/
 supabase/.temp/

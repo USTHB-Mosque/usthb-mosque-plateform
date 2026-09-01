@@ -3,7 +3,7 @@ import { BookCategory, BookType } from '@/interfaces/books.interfaces'
 export const languagesConfig: Record<string, string> = {
   fr: 'الفرنسية',
   ar: 'العربية',
-  en: 'الإنجلزية',
+  en: 'الإنجليزية',
 }
 
 export const languagesConfigArray = Object.entries(languagesConfig).map(([value, label]) => {

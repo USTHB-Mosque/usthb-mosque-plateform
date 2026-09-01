@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, User, Settings, Menu, X } from 'lucide-react'
+import { LogOut, Settings, Menu, X, LayoutDashboard } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { useGetProfileQuery } from '@/lib/apis/auth-api'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
         {label}
         {!mobile && (
           <span
-            className="absolute bottom-[-3px] right-0 h-[1.5px] bg-primary-300 transition-all duration-300 ease-out"
+            className="absolute bottom-[-3px] start-0 h-[1.5px] bg-primary-300 transition-all duration-300 ease-out"
             style={{ width: isActive ? '100%' : '0%' }}
           />
         )}
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
   return (
     <header
       dir="rtl"
-      className="sticky top-0 right-0 left-0 z-50 w-full border-b bg-background/95 backdrop-blur"
+      className="sticky top-0 start-0 end-0 z-50 w-full border-b bg-background/95 backdrop-blur"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         <Link href="/" className="shrink-0">
@@ -127,14 +127,14 @@ const Navbar: React.FC = () => {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/profile" className="flex items-center gap-2 w-full">
-                        <User className="size-4" />
-                        <span>الملف الشخصي</span>
+                      <Link href="/user/dashboard" className="flex items-center gap-2 w-full">
+                        <LayoutDashboard className="size-4" />
+                        <span>لوحة التحكم</span>
                       </Link>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/profile" className="flex items-center gap-2 w-full">
+                      <Link href="/user/settings" className="flex items-center gap-2 w-full">
                         <Settings className="size-4" />
                         <span>الإعدادات</span>
                       </Link>
@@ -203,12 +203,12 @@ const Navbar: React.FC = () => {
                 </div>
               </div>
               <Link
-                href="/profile"
+                href="/user/dashboard"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium hover:bg-muted"
               >
-                <User className="size-4" />
-                الملف الشخصي
+                <LayoutDashboard className="size-4" />
+                لوحة التحكم
               </Link>
               <button
                 onClick={() => { setMenuOpen(false); onLogout() }}

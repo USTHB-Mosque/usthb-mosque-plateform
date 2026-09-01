@@ -115,6 +115,19 @@ const nextConfig: NextConfig = {
   },
 
   serverExternalPackages: ['payload', '@payloadcms/db-postgres'],
+
+  async rewrites() {
+    return [
+      {
+        source: '/user/:path*',
+        destination: '/member-portal/:path*',
+      },
+      {
+        source: '/user',
+        destination: '/user/dashboard',
+      },
+    ]
+  },
 }
 
 export default withPayload(nextConfig)

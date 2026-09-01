@@ -46,7 +46,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     >
       {showArrow && (
         <button
-          className="absolute top-5 right-5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-secondary-800 border-none cursor-pointer overflow-hidden"
+          className="absolute top-5 end-5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-secondary-800 border-none cursor-pointer overflow-hidden"
           onMouseEnter={() => setButtonHovered(true)}
           onMouseLeave={() => setButtonHovered(false)}
           aria-label={title}

@@ -35,7 +35,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, className, imageClassName }) 
         <div className="relative w-full aspect-[4/3] sm:aspect-[4/3]">
           {isAvailable ? (
             <Badge
-              className="absolute top-2 sm:top-4 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-2 rounded-lg 
+              className="absolute top-2 sm:top-4 end-2 sm:end-4 px-2 sm:px-4 py-1 sm:py-2 rounded-lg 
              bg-[#00FF9180] backdrop-blur-md 
              border border-background/20 shadow-lg
              text-xs sm:text-sm font-bold"

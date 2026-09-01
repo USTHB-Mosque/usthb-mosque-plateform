@@ -11,7 +11,7 @@ import { languagesConfig } from '@/utils/constants/data'
 interface FullDescriptionProps {
   longDescription: SerializedEditorState | null | undefined
   publisher: Book['publisher']
-  language: Book['publisher']
+  language: Book['language']
   pageCount: Book['pageCount']
   isbn: Book['isbn']
   publishDate: Book['publishDate']

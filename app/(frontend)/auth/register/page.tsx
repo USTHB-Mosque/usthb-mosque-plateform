@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { useAuthFormStore } from '@/store/auth-form'
 import { register } from '@/actions/auth/register'
+import { authErrorMessage } from '@/lib/auth-errors'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { AlertCircle, Upload } from 'lucide-react'
 
@@ -73,7 +74,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const redirect = searchParams.get('redirect') || '/profile'
+  const redirect = searchParams.get('redirect') || '/user/dashboard'
   const { step, setStep, ...formData } = useAuthFormStore()
 
   useEffect(() => {
@@ -146,7 +147,7 @@ export default function RegisterPage() {
       })
 
       if (!result?.user) {
-        toast.error(result?.error || 'فشل إنشاء الحساب')
+        toast.error(result?.error ? authErrorMessage(result.error.code) : 'فشل إنشاء الحساب')
       } else {
         if (result.token) {
           localStorage.setItem('access_token', result.token)
@@ -185,7 +186,7 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 p-3 sm:p-4 order-2">
         <div className="w-full h-[30vh] sm:h-[40vh] lg:h-full rounded-2xl sm:rounded-3xl overflow-hidden relative">
           <Image
-            src={stepImages[step as 1]}
+            src={stepImages[step as keyof typeof stepImages]}
             alt="تسجيل"
             fill
             className="object-cover scale-x-[-1]"
@@ -210,10 +211,10 @@ export default function RegisterPage() {
         {/* Title & Description */}
         <div className="text-center mb-4 sm:mb-5 lg:mb-8">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-bold text-gray-900 mb-1 sm:mb-2">
-            {titles[step as 1].title}
+            {titles[step as keyof typeof titles].title}
           </h1>
           <p className="text-xs sm:text-sm md:text-base lg:text-base text-gray-500">
-            {titles[step as 1].desc}
+            {titles[step as keyof typeof titles].desc}
           </p>
         </div>
 
@@ -239,7 +240,7 @@ export default function RegisterPage() {
                 >
                   {s}
                   {errorSteps.includes(s) && (
-                    <AlertCircle className="absolute -top-1.5 -left-1.5 h-4 w-4 text-red-500" />
+                    <AlertCircle className="absolute -top-1.5 -end-1.5 h-4 w-4 text-red-500" />
                   )}
                 </div>
                 {step >= s && !errorSteps.includes(s) && (
@@ -321,7 +322,7 @@ export default function RegisterPage() {
                 لديك حساب؟
                 <Link
                   href="/auth/login"
-                  className="text-primary font-semibold hover:underline mr-1"
+                  className="text-primary font-semibold hover:underline ms-1"
                 >
                   تسجيل الدخول الآن
                 </Link>
@@ -387,6 +388,27 @@ export default function RegisterPage() {
                           className="sr-only"
                           onChange={(e) => {
                             const file = e.target.files?.[0] || null
+                            if (file) {
+                              const ext = file.name.split('.').pop()?.toLowerCase()
+                              const extOk = ext
+                                ? ['pdf', 'jpg', 'jpeg', 'png'].includes(ext)
+                                : false
+                              const mimeOk = [
+                                'image/jpeg',
+                                'image/png',
+                                'application/pdf',
+                              ].some((p) => file.type.startsWith(p))
+                              if (!extOk || !mimeOk) {
+                                toast.error(
+                                  'صيغة الملف غير مدعومة. يرجى اختيار ملف بصيغة PDF أو JPG أو PNG',
+                                )
+                                return
+                              }
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast.error('حجم الملف كبير جداً. يرجى اختيار ملف أصغر من 5 ميغابايت')
+                                return
+                              }
+                            }
                             setSelectedCertificate(file?.name ?? null)
                             useAuthFormStore.getState().setField('schoolCertificate', file)
                             field.onChange(file)
@@ -447,7 +469,7 @@ export default function RegisterPage() {
                 لديك حساب؟
                 <Link
                   href="/auth/login"
-                  className="text-primary font-semibold hover:underline mr-1"
+                  className="text-primary font-semibold hover:underline ms-1"
                 >
                   تسجيل الدخول الآن
                 </Link>
@@ -533,13 +555,9 @@ export default function RegisterPage() {
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-xs sm:text-sm text-gray-700">
                         أوافق على{' '}
-                        <Link href="/privacy" className="text-primary hover:underline" target="_blank">
-                          سياسة الخصوصية
-                        </Link>{' '}
+                        <span className="text-primary">سياسة الخصوصية</span>{' '}
                         و{' '}
-                        <Link href="/terms" className="text-primary hover:underline" target="_blank">
-                          شروط الاستخدام
-                        </Link>
+                        <span className="text-primary">شروط الاستخدام</span>
                       </FormLabel>
                       <FormMessage />
                     </div>
@@ -567,7 +585,7 @@ export default function RegisterPage() {
                 لديك حساب؟
                 <Link
                   href="/auth/login"
-                  className="text-primary font-semibold hover:underline mr-1"
+                  className="text-primary font-semibold hover:underline ms-1"
                 >
                   تسجيل الدخول الآن
                 </Link>

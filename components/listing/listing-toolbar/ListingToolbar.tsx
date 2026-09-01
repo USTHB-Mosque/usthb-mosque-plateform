@@ -7,6 +7,7 @@ import { Search, Funnel } from 'lucide-react'
 import ListingFiltersDialog from './ListingFiltersDialog'
 import ListingFiltersGroup from './ListingFiltersGroup'
 import { listingFilterSectionsVisible, type ListingFilterSection } from './listing-filter.types'
+import { cn } from '@/lib/utils'
 
 export type { ListingFilterSection } from './listing-filter.types'
 
@@ -23,6 +24,10 @@ export interface ListingToolbarProps {
   onApplyFilters?: () => void
   quickFilterIds?: string[]
   quickFilterSections?: ListingFilterSection[]
+  /** Rendered next to the search input (e.g. a grid/table view switch) */
+  actions?: React.ReactNode
+  /** Extra classes for the فلاتر toggle button (default: visitor tone bg-background-2) */
+  filterButtonClassName?: string
 }
 
 const ListingToolbar: React.FC<ListingToolbarProps> = ({
@@ -31,6 +36,8 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   onApplyFilters,
   quickFilterIds = [],
   quickFilterSections = [],
+  actions,
+  filterButtonClassName,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const openFiltersDisclosure = { isOpen: filtersOpen, onOpen: () => setFiltersOpen(true), onClose: () => setFiltersOpen(false), setIsOpen: setFiltersOpen }
@@ -52,23 +59,28 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex flex-wrap gap-3 items-center min-w-0 flex-1">
+          {actions}
           {useDialog ? (
             <Button
               type="button"
+              variant="ghost"
               size="icon-lg"
               onClick={openFiltersDisclosure.onOpen}
               aria-label="تصفية"
-              className="h-10 w-10 rounded-lg"
+              className={cn(
+                'h-10 w-10 rounded-lg',
+                filterButtonClassName ?? 'bg-background-2',
+              )}
             >
               <Funnel />
             </Button>
           ) : null}
           {searchProps?.enabled ? (
             <div className="relative w-full min-w-[200px] max-w-full sm:max-w-sm flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={searchPlaceholder}
-                className="h-10 pr-10 bg-background w-full rounded-xl"
+                className="h-10 pe-10 bg-background w-full rounded-xl"
                 value={searchProps.value}
                 onChange={(e) => searchProps.onChange(e.target.value)}
               />

@@ -65,9 +65,19 @@ export const useSearch = <T extends object>({
     return parseSearchParams(stored, initialValues, fieldsConfig, keyName)
   }, [initialValues, fieldsConfig, storage, keyName])
 
-  const [values, setInternalValues] = useState<T>(() => parseStored())
+  const [values, setInternalValues] = useState<T>(initialValues)
 
   const searchValues = useDebounce(values, delay.current)
+
+  const firstWrite = useRef(true)
+
+  useEffect(() => {
+    delay.current = 0
+
+    const stored = parseStored()
+
+    setInternalValues((curr) => ({ ...curr, ...stored }))
+  }, [])
 
   const setValue = useCallback<SetValue<T>>(
     (name, value, { debounced = false } = {}) => {
@@ -135,6 +145,11 @@ export const useSearch = <T extends object>({
   )
 
   useEffect(() => {
+    if (firstWrite.current) {
+      firstWrite.current = false
+      return
+    }
+
     const serialized = serializeSearchParams(searchValues, initialValues, fieldsConfig, keyName)
     storage.write(serialized)
   }, [searchValues, keyName])

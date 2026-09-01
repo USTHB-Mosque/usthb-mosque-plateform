@@ -39,8 +39,8 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
                   flex-1 px-4 py-4 text-black transition-all relative
                   hover:text-primary-200
                   ${isActive ? 'text-primary-300' : ''}
-                  ${isFirst ? 'rounded-tl-lg' : ''}
-                  ${isLast ? 'rounded-tr-lg' : ''}
+                  ${isFirst ? 'rounded-ss-lg' : ''}
+                  ${isLast ? 'rounded-se-lg' : ''}
                 `}
                 style={{
                   backgroundColor: 'transparent',
@@ -49,7 +49,7 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
                 {tab.label}
                 {isActive && (
                   <span 
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-300" 
+                    className="absolute bottom-0 start-0 end-0 h-0.5 bg-primary-300" 
                     style={{ backgroundColor: 'var(--primary-300)' }}
                   />
                 )}

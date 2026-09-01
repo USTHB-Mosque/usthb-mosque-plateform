@@ -14,7 +14,7 @@ export default function AuthLayout({
       <Link
         href="/"
         aria-label="العودة للرئيسية"
-        className="group/back fixed top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-md backdrop-blur transition-colors hover:bg-white"
+        className="group/back fixed top-4 end-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-md backdrop-blur transition-colors hover:bg-white"
       >
         <X className="h-5 w-5 text-gray-700 transition-colors group-hover/back:text-primary" />
       </Link>
