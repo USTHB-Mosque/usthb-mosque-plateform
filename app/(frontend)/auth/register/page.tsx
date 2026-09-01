@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/form'
 import { useAuthFormStore } from '@/store/auth-form'
 import { register } from '@/actions/auth/register'
+import { authErrorMessage } from '@/lib/auth-errors'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { AlertCircle, Upload } from 'lucide-react'
 
@@ -73,7 +74,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const redirect = searchParams.get('redirect') || '/profile'
+  const redirect = searchParams.get('redirect') || '/user/profile'
   const { step, setStep, ...formData } = useAuthFormStore()
 
   useEffect(() => {
@@ -146,7 +147,7 @@ export default function RegisterPage() {
       })
 
       if (!result?.user) {
-        toast.error(result?.error || 'فشل إنشاء الحساب')
+        toast.error(result?.error ? authErrorMessage(result.error.code) : 'فشل إنشاء الحساب')
       } else {
         if (result.token) {
           localStorage.setItem('access_token', result.token)
@@ -387,6 +388,27 @@ export default function RegisterPage() {
                           className="sr-only"
                           onChange={(e) => {
                             const file = e.target.files?.[0] || null
+                            if (file) {
+                              const ext = file.name.split('.').pop()?.toLowerCase()
+                              const extOk = ext
+                                ? ['pdf', 'jpg', 'jpeg', 'png'].includes(ext)
+                                : false
+                              const mimeOk = [
+                                'image/jpeg',
+                                'image/png',
+                                'application/pdf',
+                              ].some((p) => file.type.startsWith(p))
+                              if (!extOk || !mimeOk) {
+                                toast.error(
+                                  'صيغة الملف غير مدعومة. يرجى اختيار ملف بصيغة PDF أو JPG أو PNG',
+                                )
+                                return
+                              }
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast.error('حجم الملف كبير جداً. يرجى اختيار ملف أصغر من 5 ميغابايت')
+                                return
+                              }
+                            }
                             setSelectedCertificate(file?.name ?? null)
                             useAuthFormStore.getState().setField('schoolCertificate', file)
                             field.onChange(file)

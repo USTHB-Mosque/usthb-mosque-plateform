@@ -13,11 +13,12 @@ type LandingBookCardProps = {
   book?: Book
   className?: string
   imageClassName?: string
+  href?: string
 }
 
 const defaultTags = ['قرآن', 'تفسير']
 
-const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName }) => {
+const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName, href }) => {
   const router = useRouter()
 
   const media = book?.image as Media | undefined
@@ -28,7 +29,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
   const handleRegister = (): void => {
-    router.push(`/library/book/${book?.id ?? 1}`)
+    router.push(href ?? `/library/book/${book?.id ?? 1}`)
   }
 
   return (

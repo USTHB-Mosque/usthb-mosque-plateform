@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const protectedRoutes = ['/profile', '/library/book-requests']
+const protectedRoutes = ['/user', '/library/book-requests']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -19,5 +19,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/profile/:path*', '/library/book-requests/:path*'],
+  matcher: ['/user/:path*', '/library/book-requests/:path*'],
 }

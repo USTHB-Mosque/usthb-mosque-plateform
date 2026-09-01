@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import UserSidebar from '@/components/layouts/user/UserSidebar'
+import RootHtmlShell from '@/components/root-html-shell'
 import { getAuthenticatedUser } from '@/lib/auth'
 
 export const metadata: Metadata = {
@@ -13,8 +14,10 @@ export default async function MemberPortalLayout({ children }: { children: React
   if (!user) redirect('/auth/login')
 
   return (
-    <UserSidebar userName={user.fullName ?? undefined} userEmail={user.email ?? undefined}>
-      {children}
-    </UserSidebar>
+    <RootHtmlShell>
+      <UserSidebar userName={user.fullName ?? undefined} userEmail={user.email ?? undefined}>
+        {children}
+      </UserSidebar>
+    </RootHtmlShell>
   )
 }

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { httpClient } from './http-client'
-import { buildQuery } from './build-query'
 import { PaginatedDocs, Where } from 'payload'
 import { Book } from '@/payload-types'
 import { BookSearchParams } from '@/interfaces/books.interfaces'
@@ -9,15 +8,6 @@ import { stringify } from 'qs-esm'
 export const booksKeys = {
   list: (params?: BookSearchParams) => ['books', 'list', params] as const,
   detail: (id: string) => ['books', 'detail', id] as const,
-}
-
-function buildBookQuery(params?: BookSearchParams): Where {
-  return buildQuery({
-    category: params?.category,
-    type: params?.types?.length ? undefined : undefined,
-    author: params?.authors?.length ? undefined : undefined,
-    language: params?.languages,
-  })
 }
 
 export async function fetchBooks(params?: BookSearchParams) {

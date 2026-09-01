@@ -2,62 +2,111 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { logout } from '@/actions/auth/logout'
 import { toast } from 'sonner'
-import { userMainNav, userSecondaryNav, userNavHelpers } from '@/components/layouts/user/nav'
+import {
+  userMainNav,
+  userSecondaryNav,
+  userNavHelpers,
+  type UserNavItem,
+} from '@/components/layouts/user/nav'
+import { UserSidebarProvider, useUserSidebar } from '@/components/layouts/user/sidebar-context'
 
 type UserSidebarProps = React.PropsWithChildren<{
   userName?: string
   userEmail?: string
 }>
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ children, userName, userEmail }) => {
+const UserSidebar: React.FC<UserSidebarProps> = ({ userName, userEmail, children }) => {
+  return (
+    <UserSidebarProvider>
+      <SidebarShell userName={userName} userEmail={userEmail}>
+        {children}
+      </SidebarShell>
+    </UserSidebarProvider>
+  )
+}
+
+const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, children }) => {
   const pathname = usePathname()
+  const { collapsed } = useUserSidebar()
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 h-screen w-64 shrink-0 border-e border-border bg-background-2/60 p-4 hidden lg:flex flex-col">
-        <Link href="/" className="mb-6 flex items-center gap-2 px-3 pt-2">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15">
-            <LayoutDashboard className="size-5 text-primary" />
-          </span>
-          <span className="text-lg font-bold font-dubai text-foreground">بوابة العضو</span>
-        </Link>
+      <aside
+        className={cn(
+          'sticky top-0 hidden h-screen shrink-0 flex-col border-e border-border bg-background-2 transition-[width] duration-200 lg:flex',
+          collapsed ? 'w-[80px]' : 'w-[220px]',
+        )}
+      >
+        <div className={cn('flex shrink-0 items-center', collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5')}>
+          <Link href="/user/profile" aria-label="بوابة العضو">
+            {collapsed ? (
+              <Image
+                src="/static/images/logo-icon.svg"
+                alt="بوابة العضو"
+                width={32}
+                height={40}
+                className="h-9 w-auto"
+              />
+            ) : (
+              <Image
+                src="/static/images/logo-horizontal.svg"
+                alt="بوابة العضو"
+                width={112}
+                height={44}
+                className="h-10 w-auto"
+              />
+            )}
+          </Link>
+        </div>
 
-        <nav className="flex flex-col gap-1" aria-label="أقسام المنصة">
-          {userMainNav.map((item) => {
-            const Icon = item.icon
-            const active = userNavHelpers.isActive(item, pathname)
-            return (
-              <NavItem key={item.href} item={item} active={active} icon={<Icon className="size-[18px] shrink-0" />} />
-            )
-          })}
-        </nav>
+        <NavGroup
+          title="القائمة الرئيسية"
+          items={userMainNav}
+          pathname={pathname}
+          collapsed={collapsed}
+        />
 
-        <div className="mt-auto space-y-1">
-          <nav className="flex flex-col gap-1 border-t border-border pt-3" aria-label="روابط إضافية">
-            {userSecondaryNav.map((item) => {
-              const Icon = item.icon
-              const active = userNavHelpers.isActive(item, pathname)
-              return (
-                <NavItem key={item.href} item={item} active={active} icon={<Icon className="size-[18px] shrink-0" />} />
-              )
-            })}
-          </nav>
+        <div className="mt-auto flex flex-col gap-3">
+          <NavGroup
+            title="القائمة الثانوية"
+            items={userSecondaryNav}
+            pathname={pathname}
+            collapsed={collapsed}
+          />
 
-          <div className="border-t border-border pt-3 space-y-1">
-            {userName ? (
-              <div className="px-3 py-2">
-                <p className="text-sm font-bold font-dubai truncate">{userName}</p>
-                {userEmail ? (
-                  <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
-                ) : null}
+          <div className={cn('border-t border-border pb-3 pt-3', collapsed ? 'px-2' : 'ps-4 pe-2')}>
+            {collapsed ? (
+              userName ? (
+                <div className="flex justify-center">
+                  <span
+                    title={userName}
+                    className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-primary-200 text-sm font-bold text-[#243245]"
+                  >
+                    {userName.trim().charAt(0) || 'م'}
+                  </span>
+                </div>
+              ) : null
+            ) : userName ? (
+              <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
+                    {userName.trim().charAt(0) || 'م'}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">{userName}</p>
+                    {userEmail ? (
+                      <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             ) : null}
-            <SidebarLogout />
           </div>
         </div>
       </aside>
@@ -70,44 +119,46 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ children, userName, userEmail
   )
 }
 
-const NavItem: React.FC<{ item: (typeof userMainNav)[number]; active: boolean; icon: React.ReactNode }> = ({
-  item,
-  active,
-  icon,
-}) => {
+const NavGroup: React.FC<{
+  title: string
+  items: UserNavItem[]
+  pathname: string
+  collapsed: boolean
+}> = ({ title, items, pathname, collapsed }) => {
   return (
-    <Link
-      href={item.href}
-      className={cn(
-        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-        active ? 'bg-primary-200 text-blue-400' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
-      )}
-    >
-      {icon}
-      <span>{item.label}</span>
-    </Link>
-  )
-}
-
-const SidebarLogout: React.FC = () => {
-  const router = useRouter()
-
-  const onLogout = async () => {
-    await logout()
-    localStorage.removeItem('access_token')
-    toast.success('تم تسجيل الخروج بنجاح')
-    router.push('/auth/login')
-    router.refresh()
-  }
-
-  return (
-    <button
-      onClick={onLogout}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-    >
-      <LogOut className="size-[18px] shrink-0" />
-      <span>تسجيل الخروج</span>
-    </button>
+    <div className={cn('flex flex-col gap-1', collapsed ? 'px-2' : 'ps-4 pe-2')}>
+      {!collapsed ? (
+        <p className="ps-3 pb-1 pt-2 text-[12px] font-medium text-grey-400">{title}</p>
+      ) : null}
+      <nav className="flex flex-col gap-1" aria-label={title}>
+        {items.map((item) => {
+          const Icon = item.icon
+          const active = userNavHelpers.isActive(item, pathname)
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              title={collapsed ? item.label : undefined}
+              className={cn(
+                'flex h-[38px] items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-colors',
+                collapsed && 'justify-center px-0',
+                active
+                  ? 'bg-primary-200 text-[#243245]'
+                  : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
+              )}
+            >
+              <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
+              {!collapsed ? <span className="min-w-0 flex-1 truncate">{item.label}</span> : null}
+              {!collapsed && item.badge ? (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-300/15 px-1.5 text-[10px] font-bold text-primary-300">
+                  {item.badge}
+                </span>
+              ) : null}
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
 }
 
@@ -129,7 +180,7 @@ const MobileTopbar: React.FC = () => {
                   href={item.href}
                   className={cn(
                     'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors',
-                    active ? 'bg-primary-200 text-blue-400' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
+                    active ? 'bg-primary-200 text-[#243245]' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
                   )}
                 >
                   <Icon className="size-4" />

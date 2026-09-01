@@ -23,6 +23,8 @@ export interface ListingToolbarProps {
   onApplyFilters?: () => void
   quickFilterIds?: string[]
   quickFilterSections?: ListingFilterSection[]
+  /** Rendered next to the search input (e.g. a grid/table view switch) */
+  actions?: React.ReactNode
 }
 
 const ListingToolbar: React.FC<ListingToolbarProps> = ({
@@ -31,6 +33,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   onApplyFilters,
   quickFilterIds = [],
   quickFilterSections = [],
+  actions,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const openFiltersDisclosure = { isOpen: filtersOpen, onOpen: () => setFiltersOpen(true), onClose: () => setFiltersOpen(false), setIsOpen: setFiltersOpen }
@@ -52,6 +55,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex flex-wrap gap-3 items-center min-w-0 flex-1">
+          {actions}
           {useDialog ? (
             <Button
               type="button"

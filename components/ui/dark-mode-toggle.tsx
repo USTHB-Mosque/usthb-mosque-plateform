@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useTheme } from 'next-themes'
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const DarkModeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme()
@@ -22,9 +23,10 @@ const DarkModeToggle: React.FC = () => {
       variant="outline"
       aria-label={isDark ? 'إيقاف الوضع الداكن' : 'تفعيل الوضع الداكن'}
       aria-pressed={isDark}
-      disabled={!mounted}
+      aria-disabled={!mounted}
+      tabIndex={mounted ? 0 : -1}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="relative"
+      className={cn('relative', !mounted && 'pointer-events-none opacity-50')}
     >
       {mounted && (
         <>
