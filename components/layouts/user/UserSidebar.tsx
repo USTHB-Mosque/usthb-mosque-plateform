@@ -41,10 +41,10 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
   )
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-dvh overflow-hidden">
       <aside
         className={cn(
-          'sticky top-0 hidden h-screen shrink-0 flex-col bg-background-2 transition-[width] duration-200 lg:flex',
+          'hidden h-full shrink-0 flex-col bg-background-2 transition-[width] duration-200 lg:flex',
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
@@ -116,9 +116,9 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col lg:bg-background-2">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:bg-background-2">
         <MobileTopbar />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </div>
   )
