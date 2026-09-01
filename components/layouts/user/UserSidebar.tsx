@@ -19,21 +19,26 @@ import { UserSidebarProvider, useUserSidebar } from '@/components/layouts/user/s
 type UserSidebarProps = React.PropsWithChildren<{
   userName?: string
   userEmail?: string
+  loansBadge?: number
 }>
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ userName, userEmail, children }) => {
+const UserSidebar: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBadge, children }) => {
   return (
     <UserSidebarProvider>
-      <SidebarShell userName={userName} userEmail={userEmail}>
+      <SidebarShell userName={userName} userEmail={userEmail} loansBadge={loansBadge}>
         {children}
       </SidebarShell>
     </UserSidebarProvider>
   )
 }
 
-const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, children }) => {
+const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBadge, children }) => {
   const pathname = usePathname()
   const { collapsed } = useUserSidebar()
+
+  const mainNav = userMainNav.map((item) =>
+    item.href === '/user/my-loans' && loansBadge ? { ...item, badge: loansBadge } : item,
+  )
 
   return (
     <div className="flex min-h-screen">
@@ -67,7 +72,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, childre
 
         <NavGroup
           title="القائمة الرئيسية"
-          items={userMainNav}
+          items={mainNav}
           pathname={pathname}
           collapsed={collapsed}
         />

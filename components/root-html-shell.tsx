@@ -1,5 +1,6 @@
 import '../app/(frontend)/globals.css'
 import React from 'react'
+import Script from 'next/script'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/lib/providers/query-client.provider'
 import ThemeProvider from '@/components/theme-provider'
@@ -86,7 +87,10 @@ const RootHtmlShell: React.FC<React.PropsWithChildren> = ({ children }) => {
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${uthmanic.variable}`}
     >
       <head>
-        <script
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document -- runs pre-paint in the App Router html shell */}
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var c=document.documentElement.classList;c.remove('light','dark');var t=localStorage.getItem('theme');var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(dark){c.add('dark');}else{c.add('light');}document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
           }}

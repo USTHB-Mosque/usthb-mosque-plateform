@@ -1,6 +1,6 @@
 import { getProfileDashboardData } from '@/actions/profile/dashboard'
-import ProfileLoansList from '../profile/_components/ProfileLoansList'
 import UserPage from '../UserPage'
+import LoansTable from './_components/LoansTable'
 
 export default async function DashboardMyLoansPage() {
   const data = await getProfileDashboardData()
@@ -13,8 +13,8 @@ export default async function DashboardMyLoansPage() {
   }
 
   return (
-    <UserPage title="إعاراتي" description="تتبع حالة إعاراتك من المكتبة.">
-      <ProfileLoansList loans={data.loans} />
+    <UserPage title="إعاراتي">
+      <LoansTable loans={data.loans} />
     </UserPage>
   )
 }
