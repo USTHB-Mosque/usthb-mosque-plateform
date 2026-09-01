@@ -45,7 +45,7 @@ const SwitchButton: React.FC<{
       title={label}
       className={cn(
         'flex h-8 w-9 items-center justify-center rounded-[6px] transition-colors',
-        active ? 'bg-primary-200 text-[#243245]' : 'text-muted-foreground hover:text-foreground',
+        active ? 'bg-tabs-active text-[#243245]' : 'text-muted-foreground hover:text-foreground',
       )}
     >
       {icon}
