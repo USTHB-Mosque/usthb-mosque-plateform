@@ -4,6 +4,7 @@ import Script from 'next/script'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/lib/providers/query-client.provider'
 import ThemeProvider from '@/components/theme-provider'
+import ThemeScopeGuard from '@/components/theme-scope-guard'
 import { Toaster } from '@/components/ui/sonner'
 
 const khalidArt = localFont({
@@ -92,12 +93,13 @@ const RootHtmlShell: React.FC<React.PropsWithChildren> = ({ children }) => {
           id="theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=document.documentElement.classList;c.remove('light','dark');var t=localStorage.getItem('theme');var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(dark){c.add('dark');}else{c.add('light');}document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
+            __html: `(function(){try{var c=document.documentElement.classList;c.remove('light','dark');var p=window.location.pathname;var portal=p==='/user'||p.indexOf('/user/')===0||p==='/member-portal'||p.indexOf('/member-portal/')===0;var admin=p==='/admin'||p.indexOf('/admin/')===0;var t=localStorage.getItem('theme');var dark=(portal||admin)?(t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches):false;c.add(dark?'dark':'light');document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
           }}
         />
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
+          <ThemeScopeGuard />
           <Toaster richColors position="top-center" />
           <QueryClientProvider>{children}</QueryClientProvider>
         </ThemeProvider>
