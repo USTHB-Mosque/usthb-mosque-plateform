@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from '@/lib/auth'
 import { getProfileDashboardData } from '@/actions/profile/dashboard'
 
 export const metadata: Metadata = {
-  title: 'بوابة العضو',
+  title: 'بوابة المستخدم',
   robots: { index: false, follow: false },
 }
 

@@ -49,11 +49,11 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
         )}
       >
         <div className={cn('flex shrink-0 items-center', collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5')}>
-          <Link href="/user/dashboard" aria-label="بوابة العضو">
+          <Link href="/user/dashboard" aria-label="بوابة المستخدم">
             {collapsed ? (
               <Image
                 src="/static/images/logo-icon.svg"
-                alt="بوابة العضو"
+                alt="بوابة المستخدم"
                 width={32}
                 height={40}
                 className="h-9 w-auto"
@@ -61,7 +61,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
             ) : (
               <Image
                 src="/static/images/logo-horizontal.svg"
-                alt="بوابة العضو"
+                alt="بوابة المستخدم"
                 width={112}
                 height={44}
                 className="h-10 w-auto"
@@ -197,7 +197,7 @@ const MobileTopbar: React.FC = () => {
           </nav>
         </div>
         <span className="ms-auto shrink-0 text-sm font-bold font-dubai">
-          {current?.label ?? 'بوابة العضو'}
+          {current?.label ?? 'بوابة المستخدم'}
         </span>
       </div>
     </header>
