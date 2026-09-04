@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { User } from '@/payload-types'
 import { setPayloadTokenCookie } from '@/lib/auth'
 import { AuthError } from '@/lib/auth-errors'
+import { randomUUID } from 'crypto'
 
 interface RegisterResult {
   user: User | undefined
@@ -30,10 +31,11 @@ function getFileExtension(name: string): string | null {
   return match ? match[1].toLowerCase() : null
 }
 
-function buildSafeFileKey(email: string, originalName: string, timestamp: number): string {
+function buildSafeFileKey(originalName: string): string {
   const ext = getFileExtension(originalName) || 'pdf'
-  const safeEmail = email.replace(/[^a-zA-Z0-9@.]/g, '').toLowerCase() || 'user'
-  return `verification-${safeEmail}-${timestamp}.${ext}`
+  // Random, not derived from the user's email: a verification document's filename
+  // must not be guessable, since it is served from a path an attacker could enumerate.
+  return `verification-${randomUUID()}.${ext}`
 }
 
 export const register = async (params: RegisterParams): Promise<RegisterResult> => {
@@ -80,23 +82,6 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
       return { user: undefined, error: { code: 'EMAIL_TAKEN', field: 'email' } }
     }
 
-    const safeFileName = buildSafeFileKey(email, verificationDocument.name, Date.now())
-
-    const mediaDoc = await payload.create({
-      collection: 'media',
-      draft: false,
-      data: {
-        alt: `وثيقة تحقق: ${verificationDocument.name}`,
-      },
-      filePath: undefined,
-      file: {
-        data: Buffer.from(await verificationDocument.arrayBuffer()),
-        name: safeFileName,
-        mimetype: verificationDocument.type,
-        size: verificationDocument.size,
-      },
-    })
-
     const user = await payload.create({
       collection: 'users',
       draft: false,
@@ -108,12 +93,43 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
         faculty,
         studyYear: studyYear as '1' | '2' | '3' | '4' | '5' | undefined,
         role: 'user',
-        verificationDocument: mediaDoc.id,
         verificationStatus: 'pending_verification',
         consentGiven: true,
         consentTimestamp: new Date().toISOString(),
       },
     })
+
+    try {
+      const safeFileName = buildSafeFileKey(verificationDocument.name)
+
+      const mediaDoc = await payload.create({
+        collection: 'media',
+        draft: false,
+        data: {
+          alt: `وثيقة تحقق: ${verificationDocument.name}`,
+          isPrivate: true,
+          owner: user.id,
+        },
+        filePath: undefined,
+        file: {
+          data: Buffer.from(await verificationDocument.arrayBuffer()),
+          name: safeFileName,
+          mimetype: verificationDocument.type,
+          size: verificationDocument.size,
+        },
+      })
+
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: { verificationDocument: mediaDoc.id },
+      })
+    } catch (uploadError) {
+      // The account is useless without its verification document, so do not
+      // leave an orphaned pending_verification user behind.
+      await payload.delete({ collection: 'users', id: user.id }).catch(() => {})
+      throw uploadError
+    }
 
     const { token, exp } = await payload.login({
       collection: 'users',
