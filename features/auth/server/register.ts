@@ -2,8 +2,8 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { User } from '@/payload-types'
-import { setPayloadTokenCookie } from '@/lib/auth'
-import { AuthError } from '@/lib/auth-errors'
+import { setPayloadTokenCookie } from '@/shared/lib/auth'
+import { AuthError } from '@/features/auth/lib/auth-errors'
 import { randomUUID } from 'crypto'
 
 interface RegisterResult {

@@ -1,7 +1,7 @@
 'use server'
 import { cookies as nextCookies } from 'next/headers'
 import { logoutOperation } from 'payload'
-import { getPayloadWithUser } from '@/lib/auth'
+import { getPayloadWithUser } from '@/shared/lib/auth'
 
 export const logout = async (opts?: { allSessions?: boolean }) => {
   const ctx = await getPayloadWithUser({ allowAdmin: true })

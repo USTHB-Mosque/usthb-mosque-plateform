@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { X } from 'lucide-react'
-import { getAuthenticatedUser } from '@/lib/auth'
+import { getAuthenticatedUser } from '@/shared/lib/auth'
 
 export default async function AuthLayout({
   children,

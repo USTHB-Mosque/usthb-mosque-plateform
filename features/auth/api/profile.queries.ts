@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ProfileResponse } from '@/interfaces/auth.interfaces'
-import { httpClient } from './http-client'
+import { ProfileResponse } from '@/features/auth/types'
+import { httpClient } from '@/shared/lib/http-client'
 
 export const authKeys = {
   profile: ['profile'] as const,
