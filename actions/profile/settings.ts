@@ -1,7 +1,8 @@
 'use server'
 
-import { getPayloadWithUser } from '@/lib/auth'
+import { getPayloadWithUser, setPayloadTokenCookie } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { logoutOperation } from 'payload'
 
 export async function updateProfileFullName(formData: FormData) {
   const ctx = await getPayloadWithUser()
@@ -51,6 +52,24 @@ export async function changePassword(formData: FormData) {
     req: ctx.req,
     overrideAccess: false,
   })
+
+  // A stolen session must not survive a password change: revoke every
+  // session the login check above and the old password may have left behind,
+  // then issue exactly one fresh session for this device.
+  await logoutOperation({
+    allSessions: true,
+    collection: ctx.payload.collections['users'],
+    req: ctx.req,
+  })
+
+  const { token, exp } = await ctx.payload.login({
+    collection: 'users',
+    data: { email: ctx.user.email, password: next },
+  })
+  if (token) {
+    await setPayloadTokenCookie(token, exp)
+  }
+
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')
   return { ok: true as const }
