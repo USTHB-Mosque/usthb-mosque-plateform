@@ -115,7 +115,7 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
       },
     })
 
-    const { token } = await payload.login({
+    const { token, exp } = await payload.login({
       collection: 'users',
       data: {
         email,
@@ -124,7 +124,7 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
     })
 
     if (token) {
-      await setPayloadTokenCookie(token)
+      await setPayloadTokenCookie(token, exp)
     }
     return { user: user as User }
   } catch (error) {

@@ -4,6 +4,7 @@ import config from '@/payload.config'
 import { headers as nextHeaders, cookies as nextCookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { User } from '@/payload-types'
+import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 
 export interface AuthOptions {
   allowAdmin?: boolean
@@ -52,14 +53,18 @@ export async function requireUser(redirectTo = '/auth', opts?: AuthOptions) {
   return ctx
 }
 
-export async function setPayloadTokenCookie(token: string) {
+export async function setPayloadTokenCookie(token: string, exp?: number) {
   const cookieStore = await nextCookies()
+  const maxAge = exp
+    ? Math.max(0, exp - Math.floor(Date.now() / 1000))
+    : TOKEN_EXPIRATION_SECONDS
+
   cookieStore.set('payload-token', token, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7,
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'lax',
+    maxAge,
   })
 }
 

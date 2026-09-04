@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 
 export const User: CollectionConfig = {
   slug: 'users',
@@ -19,7 +20,7 @@ export const User: CollectionConfig = {
     delete: ({ req: { user } }) => isAdmin(user),
   },
   auth: {
-    tokenExpiration: 7200,
+    tokenExpiration: TOKEN_EXPIRATION_SECONDS,
     verify: false,
     maxLoginAttempts: 5,
     lockTime: 600 * 1000,
