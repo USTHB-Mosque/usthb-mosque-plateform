@@ -25,6 +25,7 @@ import {
 import { useAuthFormStore } from '@/store/auth-form'
 import { register } from '@/actions/auth/register'
 import { authErrorMessage } from '@/lib/auth-errors'
+import { safeRedirect } from '@/lib/redirect'
 import LandingCtaButton from '@/components/ui/landing/LandingCtaButton'
 import { AlertCircle, Upload } from 'lucide-react'
 
@@ -74,7 +75,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const redirect = searchParams.get('redirect') || '/user/dashboard'
+  const redirect = safeRedirect(searchParams.get('redirect'), '/user/dashboard')
   const { step, setStep, ...formData } = useAuthFormStore()
 
   useEffect(() => {

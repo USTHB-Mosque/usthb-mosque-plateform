@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { login } from "@/actions/auth/login";
+import { safeRedirect } from "@/lib/redirect";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -39,7 +40,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const redirect = searchParams.get("redirect") || "/user/dashboard";
+  const redirect = safeRedirect(searchParams.get("redirect"), "/user/dashboard");
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
