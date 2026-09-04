@@ -1,31 +1,31 @@
 "use client";
 
 import React from "react";
-import Navbar from "@/components/layouts/navbar/Navbar";
-import Footer from "@/components/layouts/Footer";
-import SectionBlock from "@/components/ui/sectionBlock";
-import ActivityCard from "@/components/ui/activityCard";
-import CTASection from "@/components/ui/CTASection";
+import Navbar from "@/shared/layouts/navbar/Navbar";
+import Footer from "@/shared/layouts/Footer";
+import SectionBlock from "@/features/landing/components/SectionBlock";
+import ActivityCard from "@/features/activities/components/ActivityHighlightCard";
+import CTASection from "@/features/landing/components/CTASection";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { useGetBooksQuery } from "@/lib/apis/books";
-import { useGetArticlesQuery } from "@/lib/apis/articles";
-import { useGetActivitiesQuery } from "@/lib/apis/activities";
-import { BookCategory } from "@/interfaces/books.interfaces";
+import { useGetBooksQuery } from "@/features/library/api/books.queries";
+import { useGetArticlesQuery } from "@/features/articles/api/articles.queries";
+import { useGetActivitiesQuery } from "@/features/activities/api/activities.queries";
+import { BookCategory } from "@/features/library/types";
 import { Media } from "@/payload-types";
-import { getImageUrl } from "@/utils/image-utils";
+import { getImageUrl } from "@/shared/lib/image-utils";
 import Link from "next/link";
-import ListingRenderer from "@/components/listing/ListingRenderer";
-import EmptyData from "@/components/common/EmptyData";
-import ErrorData from "@/components/common/ErrorData";
-import ActivityCardSkeleton from "@/components/ui/activityCardSkeleton";
-import BookCard from "@/components/ui/landing/BookCard";
-import BlogArticleCard from "@/components/ui/landing/BlogArticleCard";
-import BookCardSkeleton from "@/components/ui/landing/BookCardSkeleton";
-import ArticleCardSkeleton from "@/components/ui/landing/ArticleCardSkeleton";
-import { staticBooks } from "@/static-content/books";
-import { staticActivities } from "@/static-content/activities";
-import { staticArticles } from "@/static-content/articles";
+import ListingRenderer from "@/shared/listing/ListingRenderer";
+import EmptyData from "@/shared/common/EmptyData";
+import ErrorData from "@/shared/common/ErrorData";
+import ActivityCardSkeleton from "@/features/activities/components/ActivityCardSkeleton";
+import BookCard from "@/features/library/components/BookCard";
+import BlogArticleCard from "@/features/articles/components/BlogArticleCard";
+import BookCardSkeleton from "@/features/library/components/BookCardSkeleton";
+import ArticleCardSkeleton from "@/features/articles/components/ArticleCardSkeleton";
+import { staticBooks } from "@/features/library/fixtures";
+import { staticActivities } from "@/features/activities/fixtures";
+import { staticArticles } from "@/features/articles/fixtures";
 
 const LandingPage: React.FC = () => {
   const {

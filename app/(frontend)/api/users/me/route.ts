@@ -1,4 +1,4 @@
-import { getAuthenticatedUser } from '@/lib/auth'
+import { getAuthenticatedUser } from '@/shared/lib/auth'
 import { NextResponse } from 'next/server'
 
 export async function GET() {

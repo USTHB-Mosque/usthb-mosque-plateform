@@ -2,12 +2,12 @@ import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { Bookmark, CalendarCheck, LibraryBig, Newspaper } from 'lucide-react'
 import type { Activity, ActivityRegistration } from '@/payload-types'
-import { getProfileDashboardData } from '@/actions/profile/dashboard'
+import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 import UserPage from '../UserPage'
-import StatCard from './_components/StatCard'
-import LoansPreview from './_components/LoansPreview'
-import RegistrationsPreview from './_components/RegistrationsPreview'
-import ArticlesPreview from './_components/ArticlesPreview'
+import StatCard from '@/features/profile/components/dashboard/StatCard'
+import LoansPreview from '@/features/profile/components/dashboard/LoansPreview'
+import RegistrationsPreview from '@/features/profile/components/dashboard/RegistrationsPreview'
+import ArticlesPreview from '@/features/profile/components/dashboard/ArticlesPreview'
 
 function isUpcomingRegistration(registration: ActivityRegistration): boolean {
   if (registration.attended) return false

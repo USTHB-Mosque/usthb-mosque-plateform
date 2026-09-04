@@ -1,7 +1,7 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
-import { setPayloadTokenCookie } from '@/lib/auth'
+import { setPayloadTokenCookie } from '@/shared/lib/auth'
 
 interface CreateFirstUserResult {
   ok: boolean

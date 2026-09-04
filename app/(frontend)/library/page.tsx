@@ -1,25 +1,25 @@
 "use client";
 import React from "react";
-import LibraryShell from "@/components/layouts/user/LibraryShell";
+import LibraryShell from "@/shared/layouts/user/LibraryShell";
 import UserPage from "@/app/member-portal/UserPage";
-import { useGetProfileQuery } from "@/lib/apis/auth-api";
-import { Pagination } from "@/components/common/Pagination";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ListingContent from "@/components/listing/ListingContent";
-import ListingToolbar from "@/components/listing/listing-toolbar/ListingToolbar";
-import ListingRenderer from "@/components/listing/ListingRenderer";
-import { useGetBooksQuery } from "@/lib/apis/books";
-import { useSearch } from "@/hooks/use-search";
+import { useGetProfileQuery } from "@/features/auth/api/profile.queries";
+import { Pagination } from "@/shared/common/Pagination";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import ListingContent from "@/shared/listing/ListingContent";
+import ListingToolbar from "@/shared/listing/listing-toolbar/ListingToolbar";
+import ListingRenderer from "@/shared/listing/ListingRenderer";
+import { useGetBooksQuery } from "@/features/library/api/books.queries";
+import { useSearch } from "@/shared/hooks/use-search";
 import {
   BookSearchParams,
   BookCategory,
   BookType,
-} from "@/interfaces/books.interfaces";
+} from "@/features/library/types";
 import { languagesConfigArray } from "@/utils/constants/data";
-import BookCard from "@/components/ui/landing/BookCard";
-import BookCardSkeleton from "@/components/ui/landing/BookCardSkeleton";
-import EmptyData from "@/components/common/EmptyData";
-import ErrorData from "@/components/common/ErrorData";
+import BookCard from "@/features/library/components/BookCard";
+import BookCardSkeleton from "@/features/library/components/BookCardSkeleton";
+import EmptyData from "@/shared/common/EmptyData";
+import ErrorData from "@/shared/common/ErrorData";
 import {
   bookQuickTypesConfigArray,
   bookAuthorsConfigArray,

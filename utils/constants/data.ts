@@ -1,4 +1,4 @@
-import { BookCategory, BookType } from '@/interfaces/books.interfaces'
+import { BookCategory, BookType } from '@/utils/constants/books'
 
 export const languagesConfig: Record<string, string> = {
   fr: 'الفرنسية',

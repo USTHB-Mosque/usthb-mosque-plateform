@@ -1,5 +1,5 @@
 import React from 'react'
-import UserPageHeader from '@/components/layouts/user/UserPageHeader'
+import UserPageHeader from '@/shared/layouts/user/UserPageHeader'
 
 type UserPageProps = React.PropsWithChildren<{
   title: string

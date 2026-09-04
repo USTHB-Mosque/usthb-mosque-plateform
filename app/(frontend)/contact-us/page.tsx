@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import Navbar from '@/components/layouts/navbar/Navbar'
-import Footer from '@/components/layouts/Footer'
+import Navbar from '@/shared/layouts/navbar/Navbar'
+import Footer from '@/shared/layouts/Footer'
 import { MapPin, Mail, MessageCircle, MessagesSquare, Instagram, Facebook } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
