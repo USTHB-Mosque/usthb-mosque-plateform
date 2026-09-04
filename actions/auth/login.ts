@@ -6,13 +6,12 @@ import { setPayloadTokenCookie } from '@/lib/auth'
 
 interface LoginResult {
   user: User | undefined
-  token?: string
 }
 
 export const login = async (email: string, password: string): Promise<LoginResult> => {
   const payload = await getPayload({ config })
   try {
-    const { user, token } = await payload.login({
+    const { user, token, exp } = await payload.login({
       collection: 'users',
       data: {
         email,
@@ -20,9 +19,9 @@ export const login = async (email: string, password: string): Promise<LoginResul
       },
     })
     if (token) {
-      await setPayloadTokenCookie(token)
+      await setPayloadTokenCookie(token, exp)
     }
-    return { user: user as User, token }
+    return { user: user as User }
   } catch {
     return { user: undefined }
   }

@@ -17,6 +17,10 @@ export async function borrowBookLogic(
 ): Promise<BorrowBookResult> {
   const { payload, user, req } = ctx
 
+  if (user.verificationStatus !== 'verified') {
+    return { success: false, message: 'يجب تأكيد حسابك قبل استعارة الكتب' }
+  }
+
   try {
     const bookResult = await payload.findByID({
       collection: 'books',

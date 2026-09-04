@@ -35,17 +35,8 @@ const nextConfig: NextConfig = {
         port: '3000',
         pathname: '/api/media/file/**',
       },
-      {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '54321',
-        pathname: '/storage/v1/object/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/**',
-      },
+      // No direct storage bucket patterns here on purpose: media is always
+      // served through /api/media/file/** so collection access control applies.
     ],
   },
   headers: async () => {

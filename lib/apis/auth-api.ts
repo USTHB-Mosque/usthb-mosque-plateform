@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AuthResponse } from '@/interfaces/auth.interfaces'
+import { ProfileResponse } from '@/interfaces/auth.interfaces'
 import { httpClient } from './http-client'
 
 export const authKeys = {
@@ -11,7 +11,7 @@ export async function logoutRequest() {
 }
 
 export async function fetchProfile() {
-  return httpClient.get<AuthResponse>('/users/me', { useAuth: false })
+  return httpClient.get<ProfileResponse>('/users/me', { useAuth: false })
 }
 
 export function useLogoutMutation() {

@@ -198,6 +198,11 @@ export interface User {
 export interface Media {
   id: number;
   alt?: string | null;
+  /**
+   * وثائق التحقق من الهوية فقط. لا يمكن لغير المالك أو الإدارة الوصول إليها.
+   */
+  isPrivate?: boolean | null;
+  owner?: (number | null) | User;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -602,6 +607,8 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  isPrivate?: T;
+  owner?: T;
   prefix?: T;
   updatedAt?: T;
   createdAt?: T;
