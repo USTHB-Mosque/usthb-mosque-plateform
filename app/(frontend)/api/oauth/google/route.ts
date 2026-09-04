@@ -4,7 +4,7 @@ import {
   GOOGLE_OAUTH_STATE_COOKIE,
   buildGoogleAuthorizationUrl,
   isGoogleOAuthConfigured,
-} from '@/lib/oauth/google'
+} from '@/features/auth/server/oauth-google'
 
 export async function GET(request: NextRequest) {
   if (!isGoogleOAuthConfigured()) {

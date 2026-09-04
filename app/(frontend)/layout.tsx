@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import RootHtmlShell from '@/components/root-html-shell'
+import RootHtmlShell from '@/shared/root-html-shell'
 
 export const metadata: Metadata = {
   title: 'مسجد USTHB - المنصة الرقمية',

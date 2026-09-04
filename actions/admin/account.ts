@@ -1,7 +1,7 @@
 'use server'
 import config from '@/payload.config'
 import { getPayload, createLocalReq } from 'payload'
-import { getPayloadWithUser } from '@/lib/auth'
+import { getPayloadWithUser } from '@/shared/lib/auth'
 
 export async function getAdminUser() {
   const ctx = await getPayloadWithUser({ allowAdmin: true })

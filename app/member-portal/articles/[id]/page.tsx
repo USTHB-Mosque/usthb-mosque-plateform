@@ -3,10 +3,10 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import Image from 'next/image'
 import UserPage from '@/app/member-portal/UserPage'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { Media } from '@/payload-types'
-import { getImageUrl } from '@/utils/image-utils'
+import { getImageUrl } from '@/shared/lib/image-utils'
 
 const MemberArticleDetailsPage = async ({
   params,

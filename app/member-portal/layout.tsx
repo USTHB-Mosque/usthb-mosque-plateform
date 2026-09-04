@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import UserSidebar from '@/components/layouts/user/UserSidebar'
-import RootHtmlShell from '@/components/root-html-shell'
-import { getAuthenticatedUser } from '@/lib/auth'
-import { getProfileDashboardData } from '@/actions/profile/dashboard'
+import UserSidebar from '@/shared/layouts/user/UserSidebar'
+import RootHtmlShell from '@/shared/root-html-shell'
+import { getAuthenticatedUser } from '@/shared/lib/auth'
+import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 
 export const metadata: Metadata = {
   title: 'بوابة المستخدم',

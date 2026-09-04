@@ -1,13 +1,13 @@
-import Layout from '@/components/layouts'
-import BookBasicInformations from '../../_components/book-details/BookBasicInformations'
-import BookDetailedInformation from '../../_components/book-details/book-detailed-informations/BookDetailedInformations'
-import BookPreview from '../../_components/book-details/BookPreview'
-import BookAvailability from '../../_components/book-details/BookAvailability'
+import Layout from '@/shared/layouts'
+import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
+import BookDetailedInformation from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
+import BookPreview from '@/features/library/components/book-details/BookPreview'
+import BookAvailability from '@/features/library/components/book-details/BookAvailability'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
-import { getBookFavoriteState } from '@/actions/profile/favorites'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import { getBookFavoriteState } from '@/features/library/server/favorites'
 
 const BookDetailsPage = async ({
   params,

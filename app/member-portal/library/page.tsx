@@ -3,26 +3,26 @@
 import React, { useState } from 'react'
 import { Languages, PackageSearch, Tag, User } from 'lucide-react'
 import UserPage from '@/app/member-portal/UserPage'
-import { Pagination } from '@/components/common/Pagination'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import ListingRenderer from '@/components/listing/ListingRenderer'
-import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
-import { useGetBooksQuery } from '@/lib/apis/books'
-import { useSearch } from '@/hooks/use-search'
-import { BookSearchParams, BookCategory, BookType } from '@/interfaces/books.interfaces'
+import { Pagination } from '@/shared/common/Pagination'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import ListingRenderer from '@/shared/listing/ListingRenderer'
+import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
+import { useGetBooksQuery } from '@/features/library/api/books.queries'
+import { useSearch } from '@/shared/hooks/use-search'
+import { BookSearchParams, BookCategory, BookType } from '@/features/library/types'
 import { languagesConfigArray } from '@/utils/constants/data'
 import {
   bookQuickTypesConfigArray,
   bookAuthorsConfigArray,
   bookTypesConfigArray,
 } from '@/utils/constants/books'
-import BookCard from '@/components/ui/landing/BookCard'
-import BookCardSkeleton from '@/components/ui/landing/BookCardSkeleton'
-import EmptyData from '@/components/common/EmptyData'
-import ErrorData from '@/components/common/ErrorData'
-import BooksTable from './_components/BooksTable'
-import BooksTableSkeleton from './_components/BooksTableSkeleton'
-import ViewSwitch, { CatalogView } from './_components/ViewSwitch'
+import BookCard from '@/features/library/components/BookCard'
+import BookCardSkeleton from '@/features/library/components/BookCardSkeleton'
+import EmptyData from '@/shared/common/EmptyData'
+import ErrorData from '@/shared/common/ErrorData'
+import BooksTable from '@/features/library/components/BooksTable'
+import BooksTableSkeleton from '@/features/library/components/BooksTableSkeleton'
+import ViewSwitch, { CatalogView } from '@/features/library/components/ViewSwitch'
 
 const LibraryMemberPage: React.FC = () => {
   const [view, setView] = useState<CatalogView>('grid')

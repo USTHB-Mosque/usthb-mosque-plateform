@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { createSessionForUser, setPayloadTokenCookie } from '@/lib/auth'
-import { GOOGLE_OAUTH_STATE_COOKIE, exchangeGoogleCode } from '@/lib/oauth/google'
+import { createSessionForUser, setPayloadTokenCookie } from '@/shared/lib/auth'
+import { GOOGLE_OAUTH_STATE_COOKIE, exchangeGoogleCode } from '@/features/auth/server/oauth-google'
 import type { User } from '@/payload-types'
 
 function redirectClearingState(request: NextRequest, path: string) {

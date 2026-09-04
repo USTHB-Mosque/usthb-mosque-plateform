@@ -1,6 +1,6 @@
-import { getProfileDashboardData } from '@/actions/profile/dashboard'
-import ProfileAccountForm from './_components/ProfileAccountForm'
-import ProfilePasswordForm from './_components/ProfilePasswordForm'
+import { getProfileDashboardData } from '@/features/profile/server/dashboard'
+import ProfileAccountForm from '@/features/profile/components/settings/ProfileAccountForm'
+import ProfilePasswordForm from '@/features/profile/components/settings/ProfilePasswordForm'
 import UserPage from '../UserPage'
 
 export default async function DashboardSettingsPage() {

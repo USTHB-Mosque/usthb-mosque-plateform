@@ -2,12 +2,12 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import UserPage from '@/app/member-portal/UserPage'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
-import BookBasicInformations from '@/app/(frontend)/library/_components/book-details/BookBasicInformations'
-import BookDetailedInformation from '@/app/(frontend)/library/_components/book-details/book-detailed-informations/BookDetailedInformations'
-import BookPreview from '@/app/(frontend)/library/_components/book-details/BookPreview'
-import BookAvailability from '@/app/(frontend)/library/_components/book-details/BookAvailability'
-import { getBookFavoriteState } from '@/actions/profile/favorites'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
+import BookDetailedInformation from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
+import BookPreview from '@/features/library/components/book-details/BookPreview'
+import BookAvailability from '@/features/library/components/book-details/BookAvailability'
+import { getBookFavoriteState } from '@/features/library/server/favorites'
 
 const MemberBookDetailsPage = async ({
   params,

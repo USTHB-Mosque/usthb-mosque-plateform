@@ -1,4 +1,4 @@
-import Layout from '@/components/layouts'
+import Layout from '@/shared/layouts'
 import Image from 'next/image'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
@@ -6,8 +6,8 @@ import { notFound } from 'next/navigation'
 
 import { Media } from '@/payload-types'
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
-import { getImageUrl } from '@/utils/image-utils'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import { getImageUrl } from '@/shared/lib/image-utils'
 
 const ArticleDetailsPage = async ({
   params,

@@ -1,6 +1,6 @@
-import { getProfileDashboardData } from '@/actions/profile/dashboard'
+import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 import UserPage from '../UserPage'
-import LoansTable from './_components/LoansTable'
+import LoansTable from '@/features/library/components/LoansTable'
 
 export default async function DashboardMyLoansPage() {
   const data = await getProfileDashboardData()

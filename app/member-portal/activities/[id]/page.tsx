@@ -2,11 +2,11 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import UserPage from '@/app/member-portal/UserPage'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
-import ActivityHeader from '@/app/(frontend)/activities/_components/activity-details/ActivityHeader'
-import ActivityInformations from '@/app/(frontend)/activities/_components/activity-details/ActivityInformations'
-import ActivityDescription from '@/app/(frontend)/activities/_components/activity-details/activity-description/ActivityDescription'
-import ActivitySchedule from '@/app/(frontend)/activities/_components/activity-details/ActivitySchedule'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import ActivityHeader from '@/features/activities/components/activity-details/ActivityHeader'
+import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
+import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
+import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
 
 const MemberActivityDetailsPage = async ({
   params,

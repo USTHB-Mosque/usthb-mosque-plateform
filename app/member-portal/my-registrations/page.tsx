@@ -1,5 +1,5 @@
-import { getProfileDashboardData } from '@/actions/profile/dashboard'
-import RegistrationsTable from './_components/RegistrationsTable'
+import { getProfileDashboardData } from '@/features/profile/server/dashboard'
+import RegistrationsTable from '@/features/activities/components/RegistrationsTable'
 import UserPage from '../UserPage'
 
 export default async function DashboardMyRegistrationsPage() {
