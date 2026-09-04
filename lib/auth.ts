@@ -1,8 +1,9 @@
-import { createLocalReq, getPayload } from 'payload'
+import { createLocalReq, getFieldsToSign, getPayload, jwtSign } from 'payload'
 import type { Payload, PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import { headers as nextHeaders, cookies as nextCookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { randomUUID } from 'crypto'
 import type { User } from '@/payload-types'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 
@@ -70,4 +71,47 @@ export async function setPayloadTokenCookie(token: string, exp?: number) {
 
 export function isAdmin(user: { role?: string } | null | undefined): boolean {
   return user?.role === 'admin'
+}
+
+/**
+ * Issues a real Payload session (JWT + `sessions` array entry) for a user who has
+ * already proven their identity through another channel, without a password
+ * check — used by the Google OAuth callback. This mirrors what
+ * `payload.login()` does internally (see `payload/dist/auth/operations/login.js`),
+ * since the Local API has no "log this known user in" operation for
+ * password-based collections.
+ */
+export async function createSessionForUser(
+  payload: Payload,
+  user: User,
+): Promise<{ token: string; exp: number }> {
+  const collectionConfig = payload.collections['users'].config
+  const sid = randomUUID()
+  const now = new Date()
+  const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
+  const activeSessions = (user.sessions ?? []).filter(
+    (session) => new Date(session.expiresAt) > now,
+  )
+
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    data: {
+      sessions: [...activeSessions, { id: sid, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() }],
+    },
+    overrideAccess: true,
+  })
+
+  const fieldsToSign = getFieldsToSign({
+    collectionConfig,
+    email: user.email,
+    sid,
+    user,
+  })
+
+  return jwtSign({
+    fieldsToSign,
+    secret: payload.secret,
+    tokenExpiration: TOKEN_EXPIRATION_SECONDS,
+  })
 }
