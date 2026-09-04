@@ -1,10 +1,8 @@
 'use server'
 
-import { getPayload } from 'payload'
-import payloadConfig from '@/payload.config'
-import { getAuthenticatedUser } from '@/lib/auth'
+import { getPayloadWithUser } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { Payload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 
 export interface ReviewBookParams {
@@ -15,10 +13,10 @@ export interface ReviewBookParams {
 
 export async function reviewBookLogic(
   params: ReviewBookParams,
-  ctx: { payload: Payload; user: User },
+  ctx: { payload: Payload; user: User; req: PayloadRequest },
 ) {
   const { bookId, rating, comment } = params
-  const { payload, user } = ctx
+  const { payload, user, req } = ctx
 
   if (!rating || !comment) {
     throw new Error('Please provide a rating and comment')
@@ -32,7 +30,7 @@ export async function reviewBookLogic(
       rating: Number(rating),
       comment,
     },
-    req: { payload, user },
+    req,
     overrideAccess: false,
   })
 
@@ -40,14 +38,13 @@ export async function reviewBookLogic(
 }
 
 export const reviewBook = async (bookId: number, rating: number, comment: string) => {
-  const payload = await getPayload({ config: payloadConfig })
-  const user = await getAuthenticatedUser()
+  const ctx = await getPayloadWithUser()
 
-  if (!user) {
+  if (!ctx) {
     throw new Error('You must be logged in to review this book')
   }
 
-  const review = await reviewBookLogic({ bookId, rating, comment }, { payload, user })
+  const review = await reviewBookLogic({ bookId, rating, comment }, ctx)
   revalidatePath(`/library/book/${bookId}`)
   return review
 }
