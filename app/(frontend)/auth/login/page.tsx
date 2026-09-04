@@ -55,9 +55,6 @@ export default function LoginPage() {
       if (!result?.user) {
         toast.error("فشل تسجيل الدخول");
       } else {
-        if (result.token) {
-          localStorage.setItem("access_token", result.token);
-        }
         await queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success("تم تسجيل الدخول بنجاح");
         router.push(result.user.role === "admin" ? "/admin" : redirect);

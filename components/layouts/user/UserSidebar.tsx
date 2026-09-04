@@ -209,7 +209,6 @@ const SidebarLogoutCompact: React.FC = () => {
 
   const onLogout = async () => {
     await logout()
-    localStorage.removeItem('access_token')
     toast.success('تم تسجيل الخروج بنجاح')
     router.push('/auth/login')
     router.refresh()

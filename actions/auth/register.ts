@@ -7,7 +7,6 @@ import { AuthError } from '@/lib/auth-errors'
 
 interface RegisterResult {
   user: User | undefined
-  token?: string
   error?: AuthError
 }
 
@@ -127,7 +126,7 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
     if (token) {
       await setPayloadTokenCookie(token)
     }
-    return { user: user as User, token }
+    return { user: user as User }
   } catch (error) {
     const msg = error instanceof Error ? error.message : ''
     const isUploadError =

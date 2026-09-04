@@ -149,9 +149,6 @@ export default function RegisterPage() {
       if (!result?.user) {
         toast.error(result?.error ? authErrorMessage(result.error.code) : 'فشل إنشاء الحساب')
       } else {
-        if (result.token) {
-          localStorage.setItem('access_token', result.token)
-        }
         await queryClient.invalidateQueries({ queryKey: ['profile'] })
         toast.success('تم إنشاء الحساب بنجاح')
         router.push(redirect)
