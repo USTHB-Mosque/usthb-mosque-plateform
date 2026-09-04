@@ -11,8 +11,9 @@ export const metadata: Metadata = {
 }
 
 export default async function MemberPortalLayout({ children }: { children: React.ReactNode }) {
-  const user = await getAuthenticatedUser()
-  if (!user) redirect('/auth/login')
+  const user = await getAuthenticatedUser({ allowAdmin: true })
+  if (!user) redirect('/auth/login?redirect=/user/dashboard')
+  if (user.role === 'admin') redirect('/admin')
 
   const dashboard = await getProfileDashboardData()
   const activeLoans = dashboard?.loans.filter((loan) => loan.status !== 'returned').length ?? 0

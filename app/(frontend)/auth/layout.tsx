@@ -1,14 +1,17 @@
-'use client'
-
 import React from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { X } from 'lucide-react'
+import { getAuthenticatedUser } from '@/lib/auth'
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getAuthenticatedUser({ allowAdmin: true })
+  if (user) redirect(user.role === 'admin' ? '/admin' : '/user/dashboard')
+
   return (
     <>
       <Link
