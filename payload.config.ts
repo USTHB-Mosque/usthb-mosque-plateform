@@ -1,14 +1,13 @@
 import path from 'path'
-import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
-import { vercelBlobAdapter } from 'payload-cloud-storage-vercel-adapter'
+import { mcpPlugin } from '@payloadcms/plugin-mcp'
+import { getStoragePlugin } from './storage'
 import {
-  Admin,
   User,
   Media,
   Book,
@@ -25,13 +24,24 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: Admin.slug,
+    user: 'users',
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    routes: {
+      login: '/login',
+      createFirstUser: '/first-user',
+      account: '/account',
+    },
+    components: {
+      views: {
+        login: { Component: '@/components/admin-views/login/Login' },
+        firstUser: { Component: '@/components/admin-views/first-user/FirstUser' },
+        account: { Component: '@/components/admin-views/account/Account' },
+      },
+    },
   },
   collections: [
-    Admin,
     User,
     Media,
     Book,
@@ -51,35 +61,33 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 
-  db: vercelPostgresAdapter({
-    pool: { connectionString: process.env.POSTGRES_URL || '' },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URL || '' },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
+
   plugins: [
-    cloudStoragePlugin({
-      collections: {
-        [Media.slug]: {
-          adapter: vercelBlobAdapter({
-            token: process.env.BLOB_READ_WRITE_TOKEN || '',
-            storeId: process.env.BLOB_STORE_ID || '',
-          }),
-          disableLocalStorage: true,
-          disablePayloadAccessControl: true,
+    getStoragePlugin(),
+    mcpPlugin({
+      mcp: {
+        serverOptions: {
+          serverInfo: { name: 'usthb-mosque-mcp', version: '1.0.0' },
         },
       },
     }),
   ],
+
   email: nodemailerAdapter({
-    defaultFromAddress: process.env.EMAIL_USER || '',
-    defaultFromName: process.env.EMAIL_USER || '',
+    defaultFromAddress: process.env.EMAIL_USER || 'noreply@localhost',
+    defaultFromName: process.env.EMAIL_USER || 'USTHB Mosque',
     transportOptions: {
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || '465'),
+      secure: process.env.EMAIL_PORT === '465',
+      auth: process.env.EMAIL_USER && process.env.EMAIL_PASSWORD ? {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD,
-      },
+      } : undefined,
     },
   }),
 })

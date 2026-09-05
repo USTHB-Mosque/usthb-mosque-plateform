@@ -1,16 +1,17 @@
 import { CollectionConfig } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const Review: CollectionConfig = {
   slug: 'reviews',
   access: {
     read: () => true,
-    create: () => true,
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (isAdmin(req.user)) return true
       return false
     },
     delete: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (isAdmin(req.user)) return true
       return false
     },
   },

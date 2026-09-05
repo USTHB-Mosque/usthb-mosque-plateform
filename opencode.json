@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["@techdivision/opencode-plugin-shell-env"],
+  "mcp": {
+    "figma": {
+      "type": "local",
+      "command": ["pnpm", "dlx", "figma-developer-mcp", "--stdio", "--image-dir", "/tmp/opencode/figma-tmp"],
+      "environment": {
+        "FIGMA_API_KEY": "{env:FIGMA_PAT}",
+        "DO_NOT_TRACK": "1"
+      },
+      "enabled": true,
+      "timeout": 15000
+    }
+  }
+}

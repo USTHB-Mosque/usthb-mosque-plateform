@@ -1,6 +1,5 @@
 import { CollectionConfig } from 'payload'
-
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const Loan: CollectionConfig = {
   slug: 'loans',
@@ -11,7 +10,7 @@ export const Loan: CollectionConfig = {
       if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => Boolean(user?.collection === 'users' || isAdmin(user)),
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
       if (isAdmin(user)) return true

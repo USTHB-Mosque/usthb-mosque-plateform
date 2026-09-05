@@ -1,19 +1,19 @@
 'use client'
 import React from 'react'
-import Layout from '@/components/layouts'
-import { Pagination } from '@/components/common/Pagination'
-import ListingContent from '@/components/listing/ListingContent'
-import ListingToolbar from '@/components/listing/listing-toolbar/ListingToolbar'
-import ListingRenderer from '@/components/listing/ListingRenderer'
-import ActivityCard from './_components/ActivityCard'
-import { useGetActivitiesQuery } from '@/lib/apis/activities/queries'
-import { ActivitySearchParams, ActivityType } from '@/interfaces/activities.interfaces'
-import { useSearch } from '@/hooks/use-search'
+import Layout from '@/shared/layouts'
+import { Pagination } from '@/shared/common/Pagination'
+import ListingContent from '@/shared/listing/ListingContent'
+import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
+import ListingRenderer from '@/shared/listing/ListingRenderer'
+import ActivityCard from '@/features/activities/components/ActivityCard'
+import { useGetActivitiesQuery } from '@/features/activities/api/activities.queries'
+import { ActivitySearchParams, ActivityType } from '@/features/activities/types'
+import { useSearch } from '@/shared/hooks/use-search'
 import { Tag } from 'lucide-react'
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
-import EmptyData from '@/components/common/EmptyData'
-import ErrorData from '@/components/common/ErrorData'
-import ActivitySkeleton from './_components/ActivitySkeleton'
+import EmptyData from '@/shared/common/EmptyData'
+import ErrorData from '@/shared/common/ErrorData'
+import ActivitySkeleton from '@/features/activities/components/ActivitySkeleton'
 
 const ActivitiesPage: React.FC = () => {
   const { searchValues, values, setValue } = useSearch<ActivitySearchParams>({
@@ -23,6 +23,7 @@ const ActivitiesPage: React.FC = () => {
       search: '',
       types: [],
     },
+    scope: 'activities',
   })
 
   const {
@@ -32,13 +33,12 @@ const ActivitiesPage: React.FC = () => {
   } = useGetActivitiesQuery(searchValues)
   return (
     <Layout>
-      <div className="flex flex-col space-y-14">
-        <div className="flex flex-col items-center justify-center gap-12">
-          <div className="space-y-4">
-            <p className="text-secondary text-5xl text-center font-khalid">أنشطة المسجد</p>
-            <p className="text-foreground text-xl text-center">
-              مجموعة من النشاطات الدعوية والتعليمية والاجتماعية التي تهدف إلى بناء مجتمع واعٍ،
-              متآلف، يسير على هدي الإسلام.
+      <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
+        <div className="flex flex-col items-center justify-center gap-8 sm:gap-10 lg:gap-12 px-4">
+          <div className="space-y-3 sm:space-y-4 text-center">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">أنشطة المسجد</h1>
+            <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
+              مجموعة من النشاطات الدعوية والتعليمية والاجتماعية التي تهدف إلى بناء مجتمع واعٍ، متآلف، يسير على هدي الإسلام.
             </p>
           </div>
         </div>
@@ -49,7 +49,7 @@ const ActivitiesPage: React.FC = () => {
               enabled: true,
               value: searchValues.search || '',
               onChange: (value) => setValue('search', value),
-              placeholder: 'عنوان المقال، الكاتب ...',
+              placeholder: 'اسم النشاط ...',
             }}
             filterSections={[
               {

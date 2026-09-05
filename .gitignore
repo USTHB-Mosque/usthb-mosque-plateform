@@ -5,14 +5,10 @@
 /.pnp
 .pnp.*
 /.pnpm-store
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # testing
 /coverage
+.playwright-cli/
 
 # next.js
 /.next/
@@ -40,3 +36,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent process & context notes
+.context/
+SESSION.md
+.opencode/
+# supabase
+supabase/.branches/
+supabase/.temp/
+supabase/snippets/
