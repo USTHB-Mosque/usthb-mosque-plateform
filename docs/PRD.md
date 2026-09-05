@@ -57,7 +57,19 @@ Recorded here so nobody rebuilds it. Verified against `dev` on 2026-09-05.
 
 **Architecture.** Feature folders (`features/<domain>/{components,api,server}`) with a shared layer (`shared/{ui,listing,layouts,hooks,lib}`), import boundaries enforced by ESLint, Next 16 `proxy.ts`.
 
-**Not built.** Migrations, tests, deployment pipeline, and everything in section 5.
+**Not built.** Migrations, tests, a deployable container, and everything in section 5.
+
+**Defects found in shipped features**, measured against the running app on 2026-09-05 rather than read from the code:
+
+| Defect | Fixed by |
+| --- | --- |
+| Marking a loan `returned` does not give the copy back (`availableBooks` 59 before, 59 after) | #19 |
+| Nothing marks loans overdue: 8 seeded loans are past due and still `pending` or `approved` | #19 |
+| `books.averageRating` and `books.ratingCount` are never recalculated, so displayed ratings are seed fiction | #25 |
+| `/user` returns 404: the rewrite to `/user/dashboard` does not chain to a real route | #94 |
+| `/privacy` and `/terms` are linked from registration but return 404 | #38 |
+
+Verified as working: borrow with its verification, duplicate and availability gates; activity registration with its open, deadline, capacity and duplicate gates; book favorites with a duplicate guard; review creation; the full auth flow; and every visitor and portal route returning 200.
 
 ---
 
