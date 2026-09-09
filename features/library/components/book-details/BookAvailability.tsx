@@ -18,7 +18,7 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
   location,
 }) => {
   return (
-    <Card className="p-4">
+    <Card className="p-4 ring-0 border border-border">
       <div className="flex flex-col gap-4">
         <CardHeader className="text-lg font-semibold p-0">معلومات التوفر</CardHeader>
         

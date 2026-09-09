@@ -2,8 +2,8 @@
 
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { User } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'
 import { Book, Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -19,8 +19,6 @@ type LandingBookCardProps = {
 const defaultTags = ['قرآن', 'تفسير']
 
 const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName, href }) => {
-  const router = useRouter()
-
   const media = book?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const title = book?.title ?? 'مختصر تفسير ابن كثير'
@@ -28,12 +26,11 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
   const tags = book?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
-  const handleRegister = (): void => {
-    router.push(href ?? `/library/book/${book?.id ?? 1}`)
-  }
+  const destination = href ?? `/library/book/${book?.id ?? 1}`
 
   return (
-    <article
+    <Link
+      href={destination}
       dir="rtl"
       className={cn(
         'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
@@ -97,12 +94,12 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
           <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
           <LandingCtaButton
             label="تصفح الكتاب"
-            onClick={handleRegister}
             ariaLabel={`تصفح الكتاب: ${title}`}
+            className="pointer-events-none"
           />
         </div>
       </div>
-    </article>
+    </Link>
   )
 }
 

@@ -24,8 +24,8 @@ async function seedAll() {
     await seedMedias(50)
     console.log('✅ Medias seeded!\n')
 
-    console.log('📚 Seeding Books (50 items)...')
-    await seedBooks(50)
+    console.log('📚 Seeding Books...')
+    await seedBooks()
     console.log('✅ Books seeded!\n')
 
     console.log('🎉 Seeding Activities (50 items)...')

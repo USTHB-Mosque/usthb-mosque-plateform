@@ -38,6 +38,7 @@ export const Loan: CollectionConfig = {
     },
     { name: 'loanDate', type: 'date', required: true, defaultValue: () => new Date() },
     { name: 'dueDate', type: 'date', required: true },
+    { name: 'pickupDate', type: 'date' },
     { name: 'returnDate', type: 'date' },
   ],
 }

@@ -1,9 +1,8 @@
 import React from 'react'
-import { Card, CardContent } from '@/shared/ui/card'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { Separator } from '@/shared/ui/separator'
-import { BookA, BookIcon, Building, Languages, Tag, Timer } from 'lucide-react'
+import { BookA, BookIcon, Building, Languages, Tag, Timer, FileText } from 'lucide-react'
 import { Book } from '@/payload-types'
 import { format } from 'date-fns'
 import { languagesConfig } from '@/utils/constants/data'
@@ -27,79 +26,93 @@ const FullDescription: React.FC<FullDescriptionProps> = ({
   editionNumber,
   isbn,
 }) => {
+  const hasMetadata = publisher || publishDate || language || isbn || pageCount || editionNumber
+
+  if (!longDescription && !hasMetadata) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <FileText className="size-10 mb-3 opacity-40" />
+        <p className="text-sm">لا يوجد وصف متاح لهذا الكتاب</p>
+      </div>
+    )
+  }
+
   return (
-    <Card className="p-6 border-none shadow-none bg-transparent">
-      <CardContent className="space-y-6">
+    <div className="flex flex-col gap-6">
+      {longDescription ? (
         <div
           dir="rtl"
           className="prose prose-lg max-w-none font-yamama text-right 
                      prose-headings:font-khalid prose-headings:text-secondary 
                      prose-strong:text-primary prose-p:leading-relaxed"
         >
-          {longDescription ? <RichText data={longDescription} /> : null}
+          <RichText data={longDescription} />
         </div>
-        <Separator />
-        <div className="grid grid-cols-2 gap-x-2.5 gap-y-4">
-          {publisher ? (
-            <div className="flex gap-2">
-              <Building className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">دار النشر</p>
-                <p className="font-bold">{publisher}</p>
+      ) : null}
+      {hasMetadata && (
+        <>
+          {longDescription && <Separator />}
+          <div className="grid grid-cols-2 gap-x-2.5 gap-y-4">
+            {publisher ? (
+              <div className="flex gap-2">
+                <Building className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">دار النشر</p>
+                  <p className="font-bold">{publisher}</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-          {publishDate ? (
-            <div className="flex gap-2">
-              <Timer className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">تاريخ النشر</p>
-                <p className="font-bold">{format(publishDate, 'yyyy')}</p>
+            ) : null}
+            {publishDate ? (
+              <div className="flex gap-2">
+                <Timer className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">تاريخ النشر</p>
+                  <p className="font-bold">{format(publishDate, 'yyyy')}</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-          {language ? (
-            <div className="flex gap-2">
-              <Languages className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">اللغة</p>
-                <p className="font-bold">
-                  {languagesConfig[language] ? languagesConfig[language] : language}
-                </p>
+            ) : null}
+            {language ? (
+              <div className="flex gap-2">
+                <Languages className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">اللغة</p>
+                  <p className="font-bold">
+                    {languagesConfig[language] ? languagesConfig[language] : language}
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : null}
-          {isbn ? (
-            <div className="flex gap-2">
-              <Tag className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">رقم ISBN</p>
-                <p className="font-bold">{isbn}</p>
+            ) : null}
+            {isbn ? (
+              <div className="flex gap-2">
+                <Tag className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">رقم ISBN</p>
+                  <p className="font-bold">{isbn}</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-          {pageCount !== undefined && pageCount !== null ? (
-            <div className="flex gap-2">
-              <BookIcon className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">عدد الصفحات</p>
-                <p className="font-bold">{pageCount} صفحة</p>
+            ) : null}
+            {pageCount !== undefined && pageCount !== null ? (
+              <div className="flex gap-2">
+                <BookIcon className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">عدد الصفحات</p>
+                  <p className="font-bold">{pageCount} صفحة</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-
-          {editionNumber ? (
-            <div className="flex gap-2">
-              <BookA className="size-6 text-primary" />
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground">الطبعة</p>
-                <p className="font-bold">{editionNumber}</p>
+            ) : null}
+            {editionNumber ? (
+              <div className="flex gap-2">
+                <BookA className="size-6 text-primary" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-muted-foreground">الطبعة</p>
+                  <p className="font-bold">{editionNumber}</p>
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
-      </CardContent>
-    </Card>
+            ) : null}
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 
