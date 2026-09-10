@@ -32,8 +32,8 @@ async function seedAll() {
     await seedActivities(50)
     console.log('✅ Activities seeded!\n')
 
-    console.log('📰 Seeding Articles (50 items)...')
-    await seedArticles(50)
+    console.log('📰 Seeding Articles...')
+    await seedArticles()
     console.log('✅ Articles seeded!\n')
 
     console.log('📋 Seeding Loans (30 items)...')
