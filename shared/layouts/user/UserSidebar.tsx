@@ -148,7 +148,7 @@ const NavGroup: React.FC<{
                 'flex h-[38px] items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-colors',
                 collapsed && 'justify-center px-0',
                 active
-                  ? 'bg-primary-200 text-[#243245]'
+                  ? 'bg-primary-main-20 text-primary-300 font-bold'
                   : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
               )}
             >
@@ -185,7 +185,7 @@ const MobileTopbar: React.FC = () => {
                   href={item.href}
                   className={cn(
                     'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors',
-                    active ? 'bg-primary-200 text-[#243245]' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
+                    active ? 'bg-primary-main-15 text-primary-300 font-bold' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
                   )}
                 >
                   <Icon className="size-4" />
