@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { FileQuestion } from 'lucide-react'
-import Layout from '@/components/layouts'
-import { Button } from '@/components/ui/button'
+import Layout from '@/shared/layouts'
+import { Button } from '@/shared/ui/button'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -33,9 +33,9 @@ const NotFoundPage: React.FC = () => {
           </p>
         </div>
 
-        <Button asChild size="lg" className="rounded-full px-8">
-          <Link href="/">العودة إلى الرئيسية</Link>
-        </Button>
+        <Link href="/">
+          <Button size="lg" className="rounded-full px-8">العودة إلى الرئيسية</Button>
+        </Link>
       </div>
     </Layout>
   )

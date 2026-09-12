@@ -1,0 +1,32 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build artifacts
+.next
+out
+dist
+
+# Environment files (use env_file in docker-compose)
+.env
+.env.local
+.env*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Media (use volumes for persistence)
+media

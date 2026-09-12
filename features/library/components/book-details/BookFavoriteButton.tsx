@@ -1,0 +1,53 @@
+'use client'
+
+import React, { useState, useTransition } from 'react'
+import { BookmarkPlus, Heart } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
+import { toggleBookFavorite } from '@/features/library/server/favorites'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { cn } from '@/shared/lib/utils'
+
+type BookFavoriteButtonProps = {
+  bookId: number
+  initialFavorited: boolean
+  className?: string
+}
+
+const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initialFavorited, className }) => {
+  const [favorited, setFavorited] = useState(initialFavorited)
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      className={cn(
+        'shrink-0 rounded-xl border-2 transition-colors flex-1',
+        favorited && 'border-primary/50 bg-primary/5 text-primary',
+        className
+      )}
+      disabled={pending}
+      onClick={() => {
+        startTransition(async () => {
+          const r = await toggleBookFavorite(bookId)
+          if (!r.ok) {
+            toast.error('error' in r ? r.error : 'تعذر التحديث')
+            return
+          }
+          setFavorited(r.favorited)
+          toast.success(r.favorited ? 'أُضيف إلى المفضلة' : 'أُزيل من المفضلة')
+          router.refresh()
+        })
+      }}
+      aria-label={favorited ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
+    >
+      <span className="font-bold text-secondary">حفظ</span>
+      <BookmarkPlus className={cn('size-5', favorited && 'fill-primary text-primary')} />
+    </Button>
+  )
+}
+
+export default BookFavoriteButton

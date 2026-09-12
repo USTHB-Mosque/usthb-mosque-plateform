@@ -1,12 +1,12 @@
-import Layout from '@/components/layouts'
-import ActivityDescription from '../_components/activity-details/activity-description/ActivityDescription'
-import ActivitySchedule from '../_components/activity-details/ActivitySchedule'
-import ActivityHeader from '../_components/activity-details/ActivityHeader'
-import ActivityInformations from '../_components/activity-details/ActivityInformations'
+import Layout from '@/shared/layouts'
+import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
+import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
+import ActivityHeader from '@/features/activities/components/activity-details/ActivityHeader'
+import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { notFound } from 'next/navigation'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
 
 const ActivityDetailsPage = async ({
   params,
@@ -51,9 +51,11 @@ const ActivityDetailsPage = async ({
 
           <div className="flex-1 flex flex-col gap-8">
             <ActivityDescription
+              activityId={String(activity.id)}
               supervisor={activity.supervisor}
               location={activity.location}
               startDate={activity.startDate}
+              openForRegistration={activity.openForRegistration || false}
             />
             <ActivitySchedule schedules={activity.schedules} />
           </div>
