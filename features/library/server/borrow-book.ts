@@ -14,12 +14,9 @@ interface BorrowBookResult {
 export async function borrowBookLogic(
   bookId: string,
   ctx: { payload: Payload; user: User; req: PayloadRequest },
+  options?: { dueDate?: string; pickupDate?: string },
 ): Promise<BorrowBookResult> {
   const { payload, user, req } = ctx
-
-  if (user.verificationStatus !== 'verified') {
-    return { success: false, message: 'يجب تأكيد حسابك قبل استعارة الكتب' }
-  }
 
   try {
     const bookResult = await payload.findByID({
@@ -50,8 +47,9 @@ export async function borrowBookLogic(
       return { success: false, message: 'لديك بالفعل طلب إعارة نشط لهذا الكتاب' }
     }
 
-    const dueDate = new Date()
-    dueDate.setDate(dueDate.getDate() + 14)
+    const dueDate = options?.dueDate
+      ? new Date(options.dueDate)
+      : (() => { const d = new Date(); d.setDate(d.getDate() + 14); return d })()
 
     const loan = await payload.create({
       collection: 'loans',
@@ -61,6 +59,7 @@ export async function borrowBookLogic(
         status: 'pending',
         loanDate: new Date().toISOString(),
         dueDate: dueDate.toISOString(),
+        pickupDate: options?.pickupDate ? new Date(options.pickupDate).toISOString() : undefined,
       },
       req,
       overrideAccess: false,
@@ -83,12 +82,15 @@ export async function borrowBookLogic(
   }
 }
 
-export const borrowBook = async (bookId: string): Promise<BorrowBookResult> => {
+export const borrowBook = async (
+  bookId: string,
+  options?: { dueDate?: string; pickupDate?: string },
+): Promise<BorrowBookResult> => {
   const ctx = await getPayloadWithUser()
 
   if (!ctx) {
     return { success: false, message: 'يجب تسجيل الدخول أولاً' }
   }
 
-  return borrowBookLogic(bookId, ctx)
+  return borrowBookLogic(bookId, ctx, options)
 }

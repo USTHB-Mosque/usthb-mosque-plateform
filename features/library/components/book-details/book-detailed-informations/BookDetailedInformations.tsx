@@ -14,18 +14,17 @@ interface BookDetailedInformationsProps {
 type TabValue = 'similar-books' | 'ratings' | 'full-description'
 
 const tabs = [
+  { value: 'full-description' as const, label: 'الوصف الكامل' },
   { value: 'similar-books' as const, label: 'كتب مشابهة' },
   { value: 'ratings' as const, label: 'التقييمات' },
-  { value: 'full-description' as const, label: 'الوصف الكامل' },
 ]
 
 const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ book, similarBooks }) => {
-  const [activeTab, setActiveTab] = useState<TabValue>('similar-books')
+  const [activeTab, setActiveTab] = useState<TabValue>('full-description')
 
   return (
-    <div className="flex flex-col rounded-xl bg-card text-sm text-card-foreground ring-1 ring-foreground/10">
-      <div className="flex flex-col">
-        <div className="w-full justify-start border-b border-grey-200 flex">
+    <div className="flex flex-col rounded-xl border border-border bg-card text-sm text-card-foreground">
+      <div className="w-full justify-start border-b border-grey-200 flex">
           {tabs.map((tab, index) => {
             const isActive = activeTab === tab.value
             const isFirst = index === 0
@@ -56,10 +55,9 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({ boo
               </button>
             )
           })}
-        </div>
       </div>
       
-      <div className="overflow-x-auto px-4 pb-4">
+      <div className="overflow-x-auto px-4 pb-4 pt-4">
         {activeTab === 'similar-books' && <SimilarBooks books={similarBooks} />}
         {activeTab === 'ratings' && <BookRatings bookId={book.id} />}
         {activeTab === 'full-description' && (

@@ -4,22 +4,31 @@ import { getPayloadWithUser, setPayloadTokenCookie } from '@/shared/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { logoutOperation } from 'payload'
 
-export async function updateProfileFullName(formData: FormData) {
+export async function updateProfileField(formData: FormData, field: string) {
   const ctx = await getPayloadWithUser()
   if (!ctx) return { ok: false as const, error: 'غير مصرح' }
-  const fullName = (formData.get('fullName') as string)?.trim()
-  if (!fullName) return { ok: false as const, error: 'الاسم مطلوب' }
+  const value = (formData.get(field) as string)?.trim()
+  if (!value) return { ok: false as const, error: 'القيمة مطلوبة' }
+
+  const allowedFields = ['fullName', 'phone', 'email'] as const
+  if (!allowedFields.includes(field as typeof allowedFields[number])) {
+    return { ok: false as const, error: 'حقل غير صالح' }
+  }
 
   await ctx.payload.update({
     collection: 'users',
     id: ctx.user.id,
-    data: { fullName },
+    data: { [field]: value },
     req: ctx.req,
     overrideAccess: false,
   })
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')
   return { ok: true as const }
+}
+
+export async function updateProfileFullName(formData: FormData) {
+  return updateProfileField(formData, 'fullName')
 }
 
 export async function changePassword(formData: FormData) {

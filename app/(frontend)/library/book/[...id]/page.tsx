@@ -57,6 +57,7 @@ const BookDetailsPage = async ({
               isAvailable={book.availableBooks && book.availableBooks > 0 ? true : false}
               bookId={book.id}
               initialFavorited={favorited}
+              bookTitle={book.title}
             />
             <BookAvailability
               totalBooks={book.totalBooks}

@@ -2,8 +2,8 @@
 
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'
 import { Article, Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -18,8 +18,6 @@ interface BlogArticleCardProps {
 const defaultTags = ['مقال', 'المسجد']
 
 const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, href }) => {
-  const router = useRouter()
-
   const media = article?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const publishDate = article?.publishDate ?? new Date().toISOString()
@@ -29,14 +27,11 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
     article?.description ??
     'يُعَدّ مصلى الجامعة أكثر من مجرد مكانٍ للصلاة، فهو منارةٌ للعلم والتزكية والتواصل بين طلاب الجامعة وأساتذتها.'
 
-  const handleReadArticle = (): void => {
-    if (article) {
-      router.push(href ?? `/articles/${article.id}`)
-    }
-  }
+  const destination = href ?? `/articles/${article?.id}`
 
   return (
-    <article
+    <Link
+      href={destination}
       dir="rtl"
       className={cn(
         'group/card relative flex h-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main px-0 pt-0 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
@@ -106,12 +101,12 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
           />
           <LandingCtaButton
             label="مطالعة المقال"
-            onClick={handleReadArticle}
             ariaLabel={`مطالعة المقال: ${title}`}
+            className="pointer-events-none"
           />
         </footer>
       </div>
-    </article>
+    </Link>
   )
 }
 

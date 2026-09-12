@@ -22,6 +22,7 @@
   --primary-foreground: #243245;
   --primary-main-10: #0de9c31a;
   --primary-main-15: #0de9c326;
+  --primary-main-20: #0de9c333;
   --primary-main-30: #0de9c34d;
   --primary-main-60: #0de9c399;
 
@@ -200,6 +201,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-main-10: var(--primary-main-10);
   --color-primary-main-15: var(--primary-main-15);
+  --color-primary-main-20: var(--primary-main-20);
   --color-primary-main-30: var(--primary-main-30);
   --color-primary-main-60: var(--primary-main-60);
 

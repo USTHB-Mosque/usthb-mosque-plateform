@@ -382,6 +382,7 @@ export interface Loan {
   status?: ('pending' | 'approved' | 'returned' | 'overdue') | null;
   loanDate: string;
   dueDate: string;
+  pickupDate?: string | null;
   returnDate?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -729,6 +730,7 @@ export interface LoansSelect<T extends boolean = true> {
   status?: T;
   loanDate?: T;
   dueDate?: T;
+  pickupDate?: T;
   returnDate?: T;
   updatedAt?: T;
   createdAt?: T;

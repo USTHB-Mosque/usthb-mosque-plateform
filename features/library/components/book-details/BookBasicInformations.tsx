@@ -18,7 +18,7 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
   tags,
 }) => {
   return (
-    <Card className="p-4 lg:p-6">
+    <Card className="p-4 lg:p-6 ring-0 border border-border">
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground leading-tight">
           {title}
