@@ -44,7 +44,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
     { icon: Users, text: audience, label: 'الفئة' },
   ]
 
-  const handleShare = async (): Promise<void> => {
+  const handleShare = async (e: React.MouseEvent): Promise<void> => {
+    e.preventDefault()
+    e.stopPropagation()
     const shareData = {
       title: activity.title,
       text: activity.shortDescription,
@@ -63,6 +65,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
     }
   }
 
+  const handleBookmark = (e: React.MouseEvent): void => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsBookmarked((current) => !current)
+  }
+
   const handleOpen = (): void => {
     router.push(href ?? `/activities/${activity.id}`)
   }
@@ -70,16 +78,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex h-[390px] w-full items-start justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] ${className}`}
+      className={`group/activity relative flex w-full h-[320px] items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
+      onClick={handleOpen}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleOpen() }}
+      tabIndex={0}
+      role="link"
     >
-      <button
-        type="button"
-        onClick={handleOpen}
-        className="relative flex h-full w-[45%] max-w-[500px] flex-none shrink-0 cursor-pointer self-stretch overflow-hidden border-e border-e-stroke-grey bg-cover bg-[50%_50%] sm:w-[40%]"
-        role="img"
-        aria-label={`صورة نشاط ${activity.title}`}
-      >
+      <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 overflow-hidden border-e border-e-stroke-grey bg-cover bg-[50%_50%] sm:w-[40%]">
         {imageUrl && (
           <Image
             src={imageUrl}
@@ -89,17 +95,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 40vw, 500px"
           />
         )}
-        <span className={`absolute top-[18px] end-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}>
+        <span className={`absolute top-[18px] start-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}>
           <span className="relative flex w-fit items-center justify-center text-center font-khalid text-sm font-normal leading-[normal] text-fill-white">
             {badgeText}
           </span>
         </span>
-      </button>
+      </div>
 
-      <div className="relative flex flex-1 grow flex-col items-start justify-between self-stretch px-6 py-5 pt-6 pb-7 md:px-8">
-        <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
+      <div className="relative flex flex-1 grow flex-col items-start justify-between self-stretch gap-2 px-5 pt-4 pb-3 md:px-6">
+        <div className="relative flex w-full flex-none flex-col items-start gap-3 self-stretch">
           <section
-            className="relative flex w-full flex-col items-start gap-3 self-stretch"
+            className="relative flex w-full flex-col items-start gap-2.5 self-stretch"
             aria-label="معلومات النشاط"
           >
             <div className="flex flex-wrap items-start justify-start gap-2 self-stretch" aria-label="تصنيفات النشاط">
@@ -111,14 +117,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
             </div>
             <h2
               id={`activity-title-${activity.id}`}
-              className="relative w-fit max-w-full items-center self-start text-2xl leading-[26.4px] font-khalid text-blue-400 line-clamp-1"
+              className="relative w-full max-w-full items-center self-start text-2xl leading-[28px] font-khalid text-blue-400 line-clamp-1"
             >
               {activity.title}
             </h2>
-            <p className="relative flex w-full items-start justify-start self-stretch font-alyamama text-sm leading-[20.3px] text-blue-300 line-clamp-2">
+            <p className="relative flex w-full items-start justify-start self-stretch font-alyamama text-base leading-[24px] text-blue-300 line-clamp-3 min-h-[72px]">
               {activity.shortDescription}
             </p>
-            <dl className="grid h-fit w-full grid-cols-2 grid-flow-row gap-[10px_16px] p-3 rounded-[10px] border border-solid border-stroke-grey bg-fill-contrast">
+            <dl className="grid h-fit w-full grid-cols-2 grid-flow-row gap-[8px_12px] p-2.5 rounded-[10px] border border-solid border-stroke-grey bg-fill-contrast">
               {details.map((detail) => {
                 const Icon = detail.icon
                 return (
@@ -128,7 +134,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
                   >
                     <dt className="sr-only">{detail.label}</dt>
                     <Icon className="h-5 w-5 flex-none text-blue-200" aria-hidden="true" />
-                    <dd className="flex flex-1 min-w-0 items-center justify-start overflow-hidden whitespace-nowrap text-ellipsis font-alyamama text-xs leading-3 text-blue-300">
+                    <dd className="flex flex-1 min-w-0 items-center justify-start overflow-hidden whitespace-nowrap text-ellipsis font-alyamama text-xs leading-4 text-blue-300">
                       {detail.text}
                     </dd>
                   </div>
@@ -145,7 +151,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
               className="cursor-pointer"
               aria-label={isBookmarked ? 'إزالة النشاط من المحفوظات' : 'حفظ النشاط'}
               aria-pressed={isBookmarked}
-              onClick={() => setIsBookmarked((current) => !current)}
+              onClick={handleBookmark}
             >
               <Bookmark
                 className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isBookmarked ? 'text-primary-300 fill-primary-300' : 'text-blue-200'}`}
