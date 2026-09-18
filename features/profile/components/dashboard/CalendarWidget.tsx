@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ChevronLeft, ChevronDown, RotateCcw } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { activitiesTypesConfig } from '@/utils/constants/activities'
 
 const HIJRI_MONTHS = [
   'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
@@ -91,6 +93,14 @@ interface CalendarEvent {
   label: string
   image?: string
   isRegistered?: boolean
+  type?: string
+  location?: string
+}
+
+interface HoveredDay {
+  day: number
+  events: CalendarEvent[]
+  anchor: HTMLElement
 }
 
 interface CalendarWidgetProps {
@@ -104,6 +114,8 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const [calendarMode, setCalendarMode] = useState<CalendarMode>('hijri')
   const [currentMonth, setCurrentMonth] = useState(hijriToday.month)
   const [currentYear, setCurrentYear] = useState(hijriToday.year)
+  const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const daysInMonth = calendarMode === 'hijri'
     ? getDaysInHijriMonth(currentYear, currentMonth)
@@ -211,6 +223,18 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
     }
   }
 
+  const handleDayMouseEnter = useCallback(
+    (day: number, dayEvents: CalendarEvent[], element: HTMLElement) => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+      setHoveredDay({ day, events: dayEvents, anchor: element })
+    },
+    [],
+  )
+
+  const handleDayMouseLeave = useCallback(() => {
+    hoverTimeoutRef.current = setTimeout(() => setHoveredDay(null), 100)
+  }, [])
+
   return (
     <section className="w-full rounded-xl border border-border pt-[21px] px-[21px]">
       <div className="mb-3.5 flex items-center justify-between self-stretch px-1">
@@ -272,13 +296,19 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
           return (
             <div
               key={idx}
+              onMouseEnter={(e) => {
+                if (hasActivity) {
+                  handleDayMouseEnter(cell.day, dayEvents, e.currentTarget)
+                }
+              }}
+              onMouseLeave={handleDayMouseLeave}
               className={`relative flex flex-col items-center justify-start rounded-[10px] py-3.5 ${
                 todayCell
                   ? 'border border-primary bg-primary-main-30'
                   : cell.prevMonth || cell.nextMonth
                     ? 'bg-[#E2EFF7]/50'
                     : 'bg-[#E2EFF7]'
-              }`}
+              } ${hasActivity ? 'cursor-pointer' : ''}`}
             >
               <span className={`text-xs ${cell.prevMonth || cell.nextMonth ? 'text-card-foreground/40' : 'text-card-foreground'}`}>{cell.day}</span>
               {showImage ? (
@@ -294,6 +324,51 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
           )
         })}
       </div>
+
+      {hoveredDay && hoveredDay.events.length > 0 && typeof document !== 'undefined' && createPortal(
+        (() => {
+          const event = hoveredDay.events[0]
+          const typeLabel = event.type ? (activitiesTypesConfig[event.type] ?? event.type) : null
+          const rect = hoveredDay.anchor.getBoundingClientRect()
+
+          return (
+            <div
+              onMouseEnter={() => {
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+              }}
+              onMouseLeave={handleDayMouseLeave}
+              className="fixed z-[9999] w-[200px]"
+              style={{
+                top: rect.bottom + 4,
+                left: rect.left + rect.width / 2,
+                transform: 'translateX(-50%)',
+              }}
+            >
+              <div className="relative">
+                <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 rotate-45">
+                  <div className="h-2.5 w-2.5 border border-b-0 border-r-0 border-border bg-card" />
+                </div>
+                <div className="rounded-xl border border-border bg-card p-3 shadow-lg">
+                  <div className="flex flex-col gap-1.5">
+                    {typeLabel && (
+                      <span className="inline-flex w-fit items-center rounded-full bg-primary-main-15 px-2 py-0.5 text-[10px] font-medium text-primary-300">
+                        {typeLabel}
+                      </span>
+                    )}
+                    <p className="text-sm font-semibold leading-tight text-card-foreground line-clamp-2">
+                      {event.label}
+                    </p>
+                    {event.location && (
+                      <p className="text-[11px] text-muted-foreground truncate">{event.location}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })(),
+        document.body,
+      )}
     </section>
   )
 }
