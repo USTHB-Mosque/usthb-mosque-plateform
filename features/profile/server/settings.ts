@@ -31,6 +31,33 @@ export async function updateProfileFullName(formData: FormData) {
   return updateProfileField(formData, 'fullName')
 }
 
+export async function updateNotificationPreferences(data: {
+  loanRequests?: boolean
+  activityRegistrations?: boolean
+  loanExtensions?: boolean
+}) {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { ok: false as const, error: 'غير مصرح' }
+
+  await ctx.payload.update({
+    collection: 'users',
+    id: ctx.user.id,
+    data: {
+      notificationPreferences: {
+        loanRequests: data.loanRequests ?? true,
+        activityRegistrations: data.activityRegistrations ?? true,
+        loanExtensions: data.loanExtensions ?? true,
+        loanReturnReminder: true,
+      },
+    },
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  revalidatePath('/user/settings/notifications')
+  return { ok: true as const }
+}
+
 export async function changePassword(formData: FormData) {
   const ctx = await getPayloadWithUser()
   if (!ctx) return { ok: false as const, error: 'غير مصرح' }

@@ -143,5 +143,36 @@ export const User: CollectionConfig = {
         update: ({ req: { user } }) => isAdmin(user),
       },
     },
+    {
+      name: 'notificationPreferences',
+      type: 'group',
+      label: 'Notification Preferences',
+      fields: [
+        {
+          name: 'loanRequests',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Loan Requests',
+        },
+        {
+          name: 'activityRegistrations',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Activity Registrations',
+        },
+        {
+          name: 'loanExtensions',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Loan Extensions',
+        },
+        {
+          name: 'loanReturnReminder',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Loan Return Reminder',
+        },
+      ],
+    },
   ],
 }

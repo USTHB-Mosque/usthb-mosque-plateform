@@ -172,6 +172,12 @@ export interface User {
   consentTimestamp?: string | null;
   deletedAt?: string | null;
   deletionScheduledFor?: string | null;
+  notificationPreferences?: {
+    loanRequests?: boolean | null;
+    activityRegistrations?: boolean | null;
+    loanExtensions?: boolean | null;
+    loanReturnReminder?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -585,6 +591,14 @@ export interface UsersSelect<T extends boolean = true> {
   consentTimestamp?: T;
   deletedAt?: T;
   deletionScheduledFor?: T;
+  notificationPreferences?:
+    | T
+    | {
+        loanRequests?: T;
+        activityRegistrations?: T;
+        loanExtensions?: T;
+        loanReturnReminder?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;

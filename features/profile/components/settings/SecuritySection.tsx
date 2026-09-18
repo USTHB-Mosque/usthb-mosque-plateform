@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Mail, Key, Smartphone, Activity, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
+import ConnectedDevices from './ConnectedDevices'
 
 type SecuritySectionProps = {
   className?: string
@@ -156,6 +157,7 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ className }) => {
 
         {/* Form content */}
         {activeView.item === 'password' && <PasswordForm onBack={() => setActiveView(null)} />}
+        {activeView.item === 'devices' && <ConnectedDevices onBack={() => setActiveView(null)} />}
       </div>
     )
   }
