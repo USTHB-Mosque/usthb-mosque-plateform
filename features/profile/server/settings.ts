@@ -3,6 +3,7 @@
 import { getPayloadWithUser, setPayloadTokenCookie } from '@/shared/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { logoutOperation } from 'payload'
+import { logActivity } from '@/utils/activity-log'
 
 export async function updateProfileField(formData: FormData, field: string) {
   const ctx = await getPayloadWithUser()
@@ -22,6 +23,7 @@ export async function updateProfileField(formData: FormData, field: string) {
     req: ctx.req,
     overrideAccess: false,
   })
+  await logActivity(ctx.payload, ctx.user.id, 'profile_updated', field)
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')
   return { ok: true as const }
@@ -29,6 +31,33 @@ export async function updateProfileField(formData: FormData, field: string) {
 
 export async function updateProfileFullName(formData: FormData) {
   return updateProfileField(formData, 'fullName')
+}
+
+export async function updateNotificationPreferences(data: {
+  loanRequests?: boolean
+  activityRegistrations?: boolean
+  loanExtensions?: boolean
+}) {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { ok: false as const, error: 'غير مصرح' }
+
+  await ctx.payload.update({
+    collection: 'users',
+    id: ctx.user.id,
+    data: {
+      notificationPreferences: {
+        loanRequests: data.loanRequests ?? true,
+        activityRegistrations: data.activityRegistrations ?? true,
+        loanExtensions: data.loanExtensions ?? true,
+        loanReturnReminder: true,
+      },
+    },
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  revalidatePath('/user/settings/notifications')
+  return { ok: true as const }
 }
 
 export async function changePassword(formData: FormData) {
@@ -78,6 +107,8 @@ export async function changePassword(formData: FormData) {
   if (token) {
     await setPayloadTokenCookie(token, exp)
   }
+
+  await logActivity(ctx.payload, ctx.user.id, 'password_changed')
 
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')

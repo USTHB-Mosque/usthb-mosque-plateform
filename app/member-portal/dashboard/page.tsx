@@ -47,6 +47,8 @@ export default async function MemberDashboardPage() {
       label: activity.title,
       image: getImageUrl(image?.url, ''),
       isRegistered: registeredActivityIds.has(activity.id),
+      type: activity.type,
+      location: activity.location ?? undefined,
     }
   })
 

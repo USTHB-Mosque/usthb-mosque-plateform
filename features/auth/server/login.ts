@@ -3,6 +3,7 @@ import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { User } from '@/payload-types'
 import { setPayloadTokenCookie } from '@/shared/lib/auth'
+import { logActivity } from '@/utils/activity-log'
 
 interface LoginResult {
   user: User | undefined
@@ -20,6 +21,9 @@ export const login = async (email: string, password: string): Promise<LoginResul
     })
     if (token) {
       await setPayloadTokenCookie(token, exp)
+    }
+    if (user) {
+      await logActivity(payload, user.id, 'login')
     }
     return { user: user as User }
   } catch {

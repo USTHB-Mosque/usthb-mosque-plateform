@@ -45,3 +45,6 @@ SESSION.md
 supabase/.branches/
 supabase/.temp/
 supabase/snippets/
+
+# playwright screenshots
+screenshot*.cjs
