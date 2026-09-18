@@ -160,10 +160,12 @@ const LandingPage: React.FC = () => {
 
   return (
     <>
-      <Navbar />
+      <div className="fixed top-0 left-0 w-full z-100" >
+        <Navbar />
+      </div>
       <div className="w-full min-h-screen">
         {/* ── Hero Video Section ── */}
-        <section className="relative w-full overflow-hidden h-[calc(100svh-73px)]">
+        <section className="relative w-full overflow-hidden h-screen">
           {/* Hero video */}
           <video
             src="/static/images/hero_vid_light.mp4"

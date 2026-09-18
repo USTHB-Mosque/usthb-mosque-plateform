@@ -80,7 +80,7 @@ const Navbar: React.FC = () => {
   return (
     <header
       dir="rtl"
-      className="sticky top-0 start-0 end-0 z-50 w-full border-b bg-background/95 backdrop-blur"
+      className="sticky top-0 start-0 end-0 z-50 w-full bg-background/20 backdrop-blur "
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         <Link href="/" className="shrink-0">
