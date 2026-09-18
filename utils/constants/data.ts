@@ -1,9 +1,9 @@
-import { BookCategory, BookType } from '@/interfaces/books.interfaces'
+import { BookCategory, BookType } from '@/utils/constants/books'
 
 export const languagesConfig: Record<string, string> = {
   fr: 'الفرنسية',
   ar: 'العربية',
-  en: 'الإنجلزية',
+  en: 'الإنجليزية',
 }
 
 export const languagesConfigArray = Object.entries(languagesConfig).map(([value, label]) => {
