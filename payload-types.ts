@@ -178,6 +178,14 @@ export interface User {
     loanExtensions?: boolean | null;
     loanReturnReminder?: boolean | null;
   };
+  activityLog?:
+    | {
+        action: 'login' | 'password_changed' | 'profile_updated' | 'account_verified' | 'account_created';
+        timestamp: string;
+        metadata?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -598,6 +606,14 @@ export interface UsersSelect<T extends boolean = true> {
         activityRegistrations?: T;
         loanExtensions?: T;
         loanReturnReminder?: T;
+      };
+  activityLog?:
+    | T
+    | {
+        action?: T;
+        timestamp?: T;
+        metadata?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -3,6 +3,7 @@
 import { getPayloadWithUser, setPayloadTokenCookie } from '@/shared/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { logoutOperation } from 'payload'
+import { logActivity } from '@/utils/activity-log'
 
 export async function updateProfileField(formData: FormData, field: string) {
   const ctx = await getPayloadWithUser()
@@ -22,6 +23,7 @@ export async function updateProfileField(formData: FormData, field: string) {
     req: ctx.req,
     overrideAccess: false,
   })
+  await logActivity(ctx.payload, ctx.user.id, 'profile_updated', field)
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')
   return { ok: true as const }
@@ -105,6 +107,8 @@ export async function changePassword(formData: FormData) {
   if (token) {
     await setPayloadTokenCookie(token, exp)
   }
+
+  await logActivity(ctx.payload, ctx.user.id, 'password_changed')
 
   revalidatePath('/user/dashboard')
   revalidatePath('/user/settings')

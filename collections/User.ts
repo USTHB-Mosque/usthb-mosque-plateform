@@ -1,9 +1,30 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
+import { logActivity } from '@/utils/activity-log'
 
 export const User: CollectionConfig = {
   slug: 'users',
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        if (operation === 'create') {
+          await logActivity(req.payload, doc.id, 'account_created')
+        }
+        if (operation === 'update' && doc.verificationStatus === 'verified') {
+          const previousDoc = await req.payload.findByID({
+            collection: 'users',
+            id: doc.id,
+            overrideAccess: true,
+          })
+          if (previousDoc.verificationStatus !== 'verified') {
+            await logActivity(req.payload, doc.id, 'account_verified')
+          }
+        }
+        return doc
+      },
+    ],
+  },
   access: {
     admin: ({ req: { user } }) => isAdmin(user),
     create: () => true,
@@ -171,6 +192,40 @@ export const User: CollectionConfig = {
           type: 'checkbox',
           defaultValue: true,
           label: 'Loan Return Reminder',
+        },
+      ],
+    },
+    {
+      name: 'activityLog',
+      type: 'array',
+      maxRows: 50,
+      admin: { disabled: true },
+      access: {
+        read: ({ req: { user }, doc }) => user?.id === doc?.id,
+        create: () => false,
+        update: () => false,
+      },
+      fields: [
+        {
+          name: 'action',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Login', value: 'login' },
+            { label: 'Password Changed', value: 'password_changed' },
+            { label: 'Profile Updated', value: 'profile_updated' },
+            { label: 'Account Verified', value: 'account_verified' },
+            { label: 'Account Created', value: 'account_created' },
+          ],
+        },
+        {
+          name: 'timestamp',
+          type: 'date',
+          required: true,
+        },
+        {
+          name: 'metadata',
+          type: 'text',
         },
       ],
     },

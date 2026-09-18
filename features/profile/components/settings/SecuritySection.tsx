@@ -3,54 +3,60 @@
 import React, { useState } from 'react'
 import { Mail, Key, Smartphone, Activity, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
+import { User } from '@/payload-types'
 import ConnectedDevices from './ConnectedDevices'
+import ActivityLog from './ActivityLog'
 
 type SecuritySectionProps = {
+  user: User
   className?: string
 }
 
 type ActiveView = null | { section: string; item: string; label: string }
 
-const sections = [
-  {
-    title: 'خيارات تسجيل الدخول',
-    items: [
-      {
-        id: 'email',
-        label: 'البريد الإلكتروني',
-        subtitle: 'البريد الإلكتروني المُوَثَّق: 2',
-        icon: Mail,
-        buttonText: 'إدارة',
-      },
-      {
-        id: 'password',
-        label: 'كلمة السر',
-        subtitle: 'مُعَدَّة',
-        icon: Key,
-        buttonText: 'تغيير',
-      },
-    ],
-  },
-  {
-    title: 'نشاط الحساب',
-    items: [
-      {
-        id: 'devices',
-        label: 'الأجهزة المرتبطة',
-        subtitle: 'عدد الأجهزة المرتبطة: 2',
-        icon: Smartphone,
-        buttonText: 'إدارة',
-      },
-      {
-        id: 'activity-log',
-        label: 'سجل أحداث الحساب',
-        subtitle: 'أحداث جديدة: 10',
-        icon: Activity,
-        buttonText: 'تفقد',
-      },
-    ],
-  },
-]
+function getSections(user: User) {
+  const logCount = user.activityLog?.length ?? 0
+  return [
+    {
+      title: 'خيارات تسجيل الدخول',
+      items: [
+        {
+          id: 'email',
+          label: 'البريد الإلكتروني',
+          subtitle: 'البريد الإلكتروني المُوَثَّق: 2',
+          icon: Mail,
+          buttonText: 'إدارة',
+        },
+        {
+          id: 'password',
+          label: 'كلمة السر',
+          subtitle: 'مُعَدَّة',
+          icon: Key,
+          buttonText: 'تغيير',
+        },
+      ],
+    },
+    {
+      title: 'نشاط الحساب',
+      items: [
+        {
+          id: 'devices',
+          label: 'الأجهزة المرتبطة',
+          subtitle: 'عدد الأجهزة المرتبطة: 2',
+          icon: Smartphone,
+          buttonText: 'إدارة',
+        },
+        {
+          id: 'activity-log',
+          label: 'سجل أحداث الحساب',
+          subtitle: logCount > 0 ? `أحداث جديدة: ${logCount}` : 'لا توجد أحداث',
+          icon: Activity,
+          buttonText: 'تفقد',
+        },
+      ],
+    },
+  ]
+}
 
 function PasswordForm({ onBack }: { onBack: () => void }) {
   const [showCurrent, setShowCurrent] = useState(false)
@@ -136,7 +142,7 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
   )
 }
 
-const SecuritySection: React.FC<SecuritySectionProps> = ({ className }) => {
+const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) => {
   const [activeView, setActiveView] = useState<ActiveView>(null)
 
   if (activeView) {
@@ -158,13 +164,14 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ className }) => {
         {/* Form content */}
         {activeView.item === 'password' && <PasswordForm onBack={() => setActiveView(null)} />}
         {activeView.item === 'devices' && <ConnectedDevices onBack={() => setActiveView(null)} />}
+        {activeView.item === 'activity-log' && <ActivityLog user={user} onBack={() => setActiveView(null)} />}
       </div>
     )
   }
 
   return (
     <div dir="rtl" className={cn('flex flex-1 flex-col pt-6 gap-8', className)}>
-      {sections.map((section) => (
+      {getSections(user).map((section) => (
         <div key={section.title} className="flex flex-col self-stretch gap-6">
           <div className="flex flex-col items-start self-stretch">
             <span className="text-xl font-bold font-dubai text-[#243245]">{section.title}</span>
