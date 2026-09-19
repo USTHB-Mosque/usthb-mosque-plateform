@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { logout } from '@/features/auth/server/logout'
 import { toast } from 'sonner'
@@ -15,6 +15,23 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
+import { motion } from 'motion/react'
+import type { Variants } from 'motion/react'
+
+const drawerContainerVariants: Variants = {
+  open: { transition: { staggerChildren: 0.06 } },
+  closed: { transition: { staggerChildren: 0.02 } },
+}
+
+const drawerSectionVariants: Variants = {
+  open: { opacity: 1, y: 0, transition: { staggerChildren: 0.05 } },
+  closed: { opacity: 0, y: 16 },
+}
+
+const drawerItemVariants: Variants = {
+  open: { opacity: 1, y: 0 },
+  closed: { opacity: 0, y: 16 },
+}
 
 type UserSidebarProps = React.PropsWithChildren<{
   userName?: string
@@ -129,7 +146,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
       </aside>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:bg-background-2">
-        <MobileTopbar />
+        <MobileNavigation mainNav={mainNav} userName={userName} userEmail={userEmail} />
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </div>
@@ -141,7 +158,9 @@ const NavGroup: React.FC<{
   items: UserNavItem[]
   pathname: string
   collapsed: boolean
-}> = ({ title, items, pathname, collapsed }) => {
+  onNavigate?: () => void
+  animated?: boolean
+}> = ({ title, items, pathname, collapsed, onNavigate, animated = false }) => {
   return (
     <div className={cn('flex flex-col gap-1', collapsed ? 'px-2' : 'ps-4 pe-2')}>
       {!collapsed ? (
@@ -151,10 +170,10 @@ const NavGroup: React.FC<{
         {items.map((item) => {
           const Icon = item.icon
           const active = userNavHelpers.isActive(item, pathname)
-          return (
+          const link = (
             <Link
-              key={item.href}
               href={item.href}
+              onClick={onNavigate}
               title={collapsed ? item.label : undefined}
               className={cn(
                 'flex h-[38px] items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-colors',
@@ -173,53 +192,30 @@ const NavGroup: React.FC<{
               ) : null}
             </Link>
           )
+
+          if (!animated) {
+            return <div key={item.href}>{link}</div>
+          }
+
+          return (
+            <motion.div key={item.href} variants={drawerItemVariants}>
+              {link}
+            </motion.div>
+          )
         })}
       </nav>
     </div>
   )
 }
 
-const MobileTopbar: React.FC = () => {
+const MobileNavigation: React.FC<{
+  mainNav: UserNavItem[]
+  userName?: string
+  userEmail?: string
+}> = ({ mainNav, userName, userEmail }) => {
   const pathname = usePathname()
-  const current = userMainNav.find((i) => userNavHelpers.isActive(i, pathname))
-
-  return (
-    <header className="sticky top-0 z-40 bg-background-2/95 backdrop-blur lg:hidden">
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="overflow-x-auto">
-          <nav className="flex gap-2">
-            {userMainNav.map((item) => {
-              const Icon = item.icon
-              const active = userNavHelpers.isActive(item, pathname)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors',
-                    active
-                      ? 'bg-primary-main-15 text-primary-300 font-bold'
-                      : 'text-grey-400 hover:bg-muted hover:text-grey-500',
-                  )}
-                >
-                  <Icon className="size-4" />
-                  <span>{item.label}</span>
-                </Link>
-              )
-            })}
-            <SidebarLogoutCompact />
-          </nav>
-        </div>
-        <span className="ms-auto shrink-0 text-sm font-bold font-dubai">
-          {current?.label ?? 'بوابة المستخدم'}
-        </span>
-      </div>
-    </header>
-  )
-}
-
-const SidebarLogoutCompact: React.FC = () => {
   const router = useRouter()
+  const [open, setOpen] = useState(false)
 
   const onLogout = async () => {
     await logout()
@@ -228,14 +224,106 @@ const SidebarLogoutCompact: React.FC = () => {
     router.refresh()
   }
 
+  const close = () => setOpen(false)
+
+  useEffect(() => {
+    if (!open) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [open])
+
   return (
-    <button
-      onClick={onLogout}
-      aria-label="تسجيل الخروج"
-      className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-    >
-      <LogOut className="size-4" />
-    </button>
+    <div className="relative z-50 lg:hidden">
+      <header
+        dir="ltr"
+        className="sticky top-0 z-50 flex shrink-0 items-center justify-between bg-background-2/95 px-4 py-3 backdrop-blur"
+      >
+        <Link href="/user/dashboard" aria-label="بوابة المستخدم" className="shrink-0">
+          <Image
+            src="/static/images/logo-icon.svg"
+            alt="بوابة المستخدم"
+            width={32}
+            height={40}
+            className="h-10 w-auto"
+          />
+        </Link>
+
+        <button
+          aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
+          aria-expanded={open}
+          onClick={() => setOpen((prev) => !prev)}
+          className="rounded-md p-2 text-foreground transition-colors hover:bg-muted"
+        >
+          {open ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </header>
+
+      <div
+        aria-hidden={!open}
+        className={cn(
+          'fixed inset-x-0 bottom-0 top-16 z-40 bg-background-2 transition-opacity duration-300',
+          open ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <motion.nav
+          initial="closed"
+          animate={open ? 'open' : 'closed'}
+          variants={drawerContainerVariants}
+          className="flex h-full flex-col overflow-y-auto px-4 pb-6 pt-4"
+          aria-label="قائمة المستخدم"
+        >
+          <motion.div variants={drawerSectionVariants} className="flex-1">
+            <NavGroup
+              animated
+              title="القائمة الرئيسية"
+              items={mainNav}
+              pathname={pathname}
+              collapsed={false}
+              onNavigate={close}
+            />
+          </motion.div>
+
+          <motion.div variants={drawerSectionVariants} className="mt-2">
+            <NavGroup
+              animated
+              title="القائمة الثانوية"
+              items={userSecondaryNav}
+              pathname={pathname}
+              collapsed={false}
+              onNavigate={close}
+            />
+          </motion.div>
+
+          <motion.div variants={drawerSectionVariants} className="mt-2 flex flex-col gap-3 border-t pt-4">
+            {userName ? (
+              <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
+                    {userName.trim().charAt(0) || 'م'}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">{userName}</p>
+                    {userEmail ? (
+                      <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <LogOut className="size-4" />
+              تسجيل الخروج
+            </button>
+          </motion.div>
+        </motion.nav>
+      </div>
+    </div>
   )
 }
 

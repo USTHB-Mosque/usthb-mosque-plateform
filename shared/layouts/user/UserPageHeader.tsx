@@ -24,7 +24,7 @@ const UserPageHeader: React.FC<UserPageHeaderProps> = ({
   const handleToggle = onToggleSidebar ?? toggle
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between gap-4 bg-background-2 px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 hidden items-center justify-between gap-4 bg-background-2 px-4 py-3 sm:px-6 lg:flex">
       <div className="flex min-w-0 items-center gap-2">
         <Button
           type="button"
@@ -36,19 +36,19 @@ const UserPageHeader: React.FC<UserPageHeaderProps> = ({
         >
           {collapsed ? <PanelRightOpen className="size-5" /> : <PanelRight className="size-5" />}
         </Button>
-        <Separator orientation="vertical" className="h-[17px]" />
-        <h1 className="text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl]">
+        <Separator orientation="vertical" className="hidden h-[17px] lg:block" />
+        <h1 className="hidden text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl] lg:block">
           {title}
         </h1>
       </div>
 
       <SearchInput
         placeholder="اسم الكتاب / المؤلف ..."
-        className="max-w-xs flex-1"
+        className="hidden max-w-xs flex-1 lg:flex"
         aria-label="البحث عن كتاب أو مؤلف"
       />
 
-      <div className="flex items-center gap-2">
+      <div className="hidden items-center gap-2 lg:flex">
         <DarkModeToggle />
         <NotificationBell />
       </div>
