@@ -160,6 +160,14 @@ interface CalendarWidgetProps {
   events?: CalendarEvent[]
 }
 
+function computeTodayWeekRow(today: Date, hijriToday: { day: number; month: number; year: number }, mode: CalendarMode): number {
+  const gridIndex =
+    mode === 'hijri'
+      ? getHijriFirstDayOfWeek(hijriToday.year, hijriToday.month) + hijriToday.day - 2
+      : getGregorianFirstDayOfWeek(today.getFullYear(), today.getMonth()) + today.getDate() - 2
+  return Math.max(0, Math.min(4, Math.floor(gridIndex / 7)))
+}
+
 const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const today = new Date()
   const hijriToday = gregorianToHijri(today)
@@ -170,7 +178,12 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isWeekMode = useMediaQuery('(max-width: 639px)')
-  const [weekIndex, setWeekIndex] = useState(0)
+  const [weekIndex, setWeekIndex] = useState(
+    () =>
+      typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
+        ? computeTodayWeekRow(today, hijriToday, 'hijri')
+        : 0,
+  )
 
   const daysInMonth =
     calendarMode === 'hijri'
@@ -252,13 +265,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
     goToNextMonth()
   }
 
-  const getTodayWeekRow = () => {
-    const gridIndex =
-      calendarMode === 'hijri'
-        ? getHijriFirstDayOfWeek(hijriToday.year, hijriToday.month) + hijriToday.day - 2
-        : getGregorianFirstDayOfWeek(today.getFullYear(), today.getMonth()) + today.getDate() - 2
-    return Math.max(0, Math.min(4, Math.floor(gridIndex / 7)))
-  }
+  const getTodayWeekRow = () => computeTodayWeekRow(today, hijriToday, calendarMode)
 
   const goToToday = () => {
     if (calendarMode === 'hijri') {
@@ -276,45 +283,33 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       ? currentMonth !== hijriToday.month || currentYear !== hijriToday.year
       : currentMonth !== today.getMonth() || currentYear !== today.getFullYear()
 
-  const isToday = (day: number, prevMonth?: boolean, nextMonth?: boolean) => {
-    if (prevMonth || nextMonth) return false
+  const visibleCells = isWeekMode
+    ? calendarDays.slice(weekIndex * 7, weekIndex * 7 + 7)
+    : calendarDays
+
+  const cellDate = (idx: number) => new Date(currentYear, currentMonth, 1 - firstDay + idx)
+
+  const isTodayCell = (idx: number) => {
+    const date = cellDate(idx)
     if (calendarMode === 'hijri') {
-      return (
-        day === hijriToday.day &&
-        currentMonth === hijriToday.month &&
-        currentYear === hijriToday.year
-      )
+      const h = gregorianToHijri(date)
+      return h.day === hijriToday.day && h.month === hijriToday.month && h.year === hijriToday.year
     }
-    return (
-      day === today.getDate() &&
-      currentMonth === today.getMonth() &&
-      currentYear === today.getFullYear()
-    )
+    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate()
   }
 
-  const getEventsForDay = (
-    day: number,
-    prevMonth?: boolean,
-    nextMonth?: boolean,
-  ): CalendarEvent[] => {
-    if (prevMonth || nextMonth) return []
+  const getEventsForDay = (idx: number): CalendarEvent[] => {
+    const date = cellDate(idx)
     return events.filter((e) => {
       if (!e.date) return false
       const eventDate = new Date(e.date)
       if (isNaN(eventDate.getTime())) return false
       if (calendarMode === 'hijri') {
         const eventHijri = gregorianToHijri(eventDate)
-        return (
-          eventHijri.day === day &&
-          eventHijri.month === currentMonth &&
-          eventHijri.year === currentYear
-        )
+        const cellHijri = gregorianToHijri(date)
+        return eventHijri.day === cellHijri.day && eventHijri.month === cellHijri.month && eventHijri.year === cellHijri.year
       }
-      return (
-        eventDate.getDate() === day &&
-        eventDate.getMonth() === currentMonth &&
-        eventDate.getFullYear() === currentYear
-      )
+      return eventDate.getFullYear() === date.getFullYear() && eventDate.getMonth() === date.getMonth() && eventDate.getDate() === date.getDate()
     })
   }
 
@@ -327,6 +322,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       setCurrentMonth(today.getMonth())
       setCurrentYear(today.getFullYear())
     }
+    setWeekIndex(getTodayWeekRow())
   }
 
   const handleDayMouseEnter = useCallback(
@@ -342,7 +338,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   }, [])
 
   return (
-    <section className="w-full rounded-xl border border-border pt-[21px] px-[21px]">
+    <section className={`w-full rounded-xl border border-border pt-[21px] px-[21px] ${isWeekMode ? 'pb-[21px]' : ''}`}>
       <div className="mb-3.5 flex items-center justify-between self-stretch px-1">
         <div className="flex shrink-0 items-center gap-1.5">
           <span className="text-sm text-card-foreground">اليوم:</span>
@@ -369,18 +365,10 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
             </select>
             <ChevronDown className="pointer-events-none absolute left-1.5 top-1/2 size-3.5 -translate-y-1/2 text-card-foreground" />
           </div>
-          <button
-            onClick={goToPrevMonth}
-            className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95"
-            aria-label="الشهر السابق"
-          >
+          <button onClick={goPrev} className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95" aria-label="السابق">
             <ChevronRight className="size-4 text-card-foreground" />
           </button>
-          <button
-            onClick={goToNextMonth}
-            className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95"
-            aria-label="الشهر التالي"
-          >
+          <button onClick={goNext} className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95" aria-label="التالي">
             <ChevronLeft className="size-4 text-card-foreground" />
           </button>
         </div>
@@ -397,10 +385,10 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
         ))}
       </div>
 
-      <div className="mb-10 grid grid-cols-7 gap-1.5 pb-[1px]">
-        {calendarDays.map((cell, idx) => {
-          const todayCell = isToday(cell.day, cell.prevMonth, cell.nextMonth)
-          const dayEvents = getEventsForDay(cell.day, cell.prevMonth, cell.nextMonth)
+      <div className={`grid grid-cols-7 gap-1.5 pb-[1px] ${isWeekMode ? '' : 'mb-10'}`}>
+        {visibleCells.map((cell, idx) => {
+          const todayCell = isTodayCell(idx)
+          const dayEvents = getEventsForDay(idx)
           const hasActivity = dayEvents.length > 0
           const hasRegistered = dayEvents.some((e) => e.isRegistered)
           const showImage = hasRegistered && dayEvents[0]?.image
