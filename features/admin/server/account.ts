@@ -1,6 +1,5 @@
 'use server'
-import config from '@/payload.config'
-import { getPayload, createLocalReq } from 'payload'
+import { createLocalReq } from 'payload'
 import { getPayloadWithUser } from '@/shared/lib/auth'
 
 export async function getAdminUser() {
@@ -9,9 +8,10 @@ export async function getAdminUser() {
   return ctx
 }
 
-export async function updateAdminProfile(
-  fullName: string,
-): Promise<{ ok: boolean; error?: string }> {
+async function updateAdminField(data: {
+  fullName?: string
+  password?: string
+}): Promise<{ ok: boolean; error?: string }> {
   try {
     const ctx = await getAdminUser()
     if (!ctx) {
@@ -22,7 +22,7 @@ export async function updateAdminProfile(
     await payload.update({
       collection: 'users',
       id: user.id,
-      data: { fullName },
+      data,
       overrideAccess: false,
       req,
     })
@@ -34,27 +34,14 @@ export async function updateAdminProfile(
   }
 }
 
+export async function updateAdminProfile(
+  fullName: string,
+): Promise<{ ok: boolean; error?: string }> {
+  return updateAdminField({ fullName })
+}
+
 export async function updateAdminPassword(
   password: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const ctx = await getAdminUser()
-    if (!ctx) {
-      return { ok: false, error: 'غير مصرح' }
-    }
-
-    const { payload, user, req } = ctx
-    await payload.update({
-      collection: 'users',
-      id: user.id,
-      data: { password },
-      overrideAccess: false,
-      req,
-    })
-
-    return { ok: true }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'حدث خطأ'
-    return { ok: false, error: message }
-  }
+  return updateAdminField({ password })
 }

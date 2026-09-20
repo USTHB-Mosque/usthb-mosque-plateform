@@ -79,6 +79,13 @@ the list to revisit when the host is chosen (#76).
 - Rewrites in `next.config.ts` do **not** chain: a rewrite destination must be a real route.
 - Local dev pushes the schema; migration drift is invisible until a fresh DB. Trust migrations, not push.
 
+## Auth surface
+
+`shared/lib/auth.ts` is the single auth helper module: `getAuthenticatedUser`,
+`getPayloadWithUser`, `requireUser`, `setPayloadTokenCookie`, `isAdmin`, and
+`createSessionForUser` (issues the token cookie after registration/OAuth).
+Import auth helpers from there, never re-derive sessions ad hoc.
+
 ## Agent skills
 
 - Issue tracker: GitHub Issues — `docs/agents/issue-tracker.md`

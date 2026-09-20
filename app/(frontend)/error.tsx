@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import SegmentError from '@/shared/common/SegmentError'
 
 export default function FrontendError({
   error,
@@ -14,17 +15,9 @@ export default function FrontendError({
   }, [error])
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="font-khalid text-3xl text-secondary sm:text-4xl">حدث خطأ في هذه الصفحة</h1>
-      <p className="max-w-md text-lg text-muted-foreground">
-        حدث خطأ غير متوقع. يمكنك إعادة المحاولة أو العودة إلى الصفحة الرئيسية.
-      </p>
-      <button
-        onClick={() => reset()}
-        className="rounded-full bg-primary px-8 py-2 text-white hover:bg-primary/90"
-      >
-        إعادة المحاولة
-      </button>
-    </div>
+    <SegmentError
+      reset={reset}
+      fallbackSentence="حدث خطأ غير متوقع. يمكنك إعادة المحاولة أو العودة إلى الصفحة الرئيسية."
+    />
   )
 }
