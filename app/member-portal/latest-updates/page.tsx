@@ -126,9 +126,7 @@ const LatestUpdatesPage: React.FC = async () => {
           </section>
         </div>
       ) : (
-        <Card className="p-10 text-center text-muted-foreground">
-          تعذّر تحميل آخر التحديثات.
-        </Card>
+        <Card className="p-10 text-center text-muted-foreground">تعذّر تحميل آخر التحديثات.</Card>
       )}
     </UserPage>
   )

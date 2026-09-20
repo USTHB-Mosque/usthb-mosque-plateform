@@ -13,7 +13,7 @@ interface AuthFormState {
   email: string
   password: string
   confirmPassword: string
-  
+
   setStep: (step: number) => void
   setField: (field: string, value: string | File | null) => void
   reset: () => void
@@ -34,13 +34,14 @@ const initialState = {
 
 export const useAuthFormStore = create<AuthFormState>((set) => ({
   ...initialState,
-  
+
   setStep: (step) => set({ step }),
-  
-  setField: (field, value) => set((state) => ({
-    ...state,
-    [field]: value,
-  })),
-  
+
+  setField: (field, value) =>
+    set((state) => ({
+      ...state,
+      [field]: value,
+    })),
+
   reset: () => set(initialState),
 }))

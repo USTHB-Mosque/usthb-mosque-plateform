@@ -29,8 +29,7 @@ const ThemeScopeGuard: React.FC = () => {
     const visitor = !isPortalPath(pathname) && !isAdminPath(pathname)
 
     const sync = () => {
-      const wantDark =
-        !visitor && (theme === 'dark' || (theme === 'system' && mql.matches))
+      const wantDark = !visitor && (theme === 'dark' || (theme === 'system' && mql.matches))
       applyThemeClasses(wantDark)
     }
 

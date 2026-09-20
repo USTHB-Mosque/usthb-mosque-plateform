@@ -1,12 +1,7 @@
 'use client'
 
 import React, { useLayoutEffect, useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-} from '@/shared/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import { RotateCcw } from 'lucide-react'
 import LandingCtaButton from '@/shared/ui/LandingCtaButton'
@@ -14,7 +9,9 @@ import ListingFiltersGroup from './ListingFiltersGroup'
 import { Separator } from '@/shared/ui/separator'
 import type { ListingFilterSection } from './listing-filter.types'
 
-function cloneDraftFromSections(sections: ListingFilterSection[]): Record<string, string | string[]> {
+function cloneDraftFromSections(
+  sections: ListingFilterSection[],
+): Record<string, string | string[]> {
   const d: Record<string, string | string[]> = {}
   for (const s of sections) {
     if (s.multiple) {
@@ -26,7 +23,9 @@ function cloneDraftFromSections(sections: ListingFilterSection[]): Record<string
   return d
 }
 
-function resetDraftFromSections(sections: ListingFilterSection[]): Record<string, string | string[]> {
+function resetDraftFromSections(
+  sections: ListingFilterSection[],
+): Record<string, string | string[]> {
   const d: Record<string, string | string[]> = {}
   for (const s of sections) {
     if (s.resetValue !== undefined) {
@@ -86,7 +85,10 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent showCloseButton={false} className="max-w-5xl sm:max-w-5xl flex max-h-[85vh] flex-col gap-4">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-5xl sm:max-w-5xl flex max-h-[85vh] flex-col gap-4"
+      >
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold">خيارات التصفية</p>
@@ -135,7 +137,12 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
           >
             إلغاء
           </Button>
-          <LandingCtaButton label="تطبيق التصفية" onClick={handleApply} ariaLabel="تطبيق التصفية" className="w-auto px-6" />
+          <LandingCtaButton
+            label="تطبيق التصفية"
+            onClick={handleApply}
+            ariaLabel="تطبيق التصفية"
+            className="w-auto px-6"
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

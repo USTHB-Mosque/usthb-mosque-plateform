@@ -2,11 +2,7 @@ import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
 
 export type ActivityAction =
-  | 'login'
-  | 'password_changed'
-  | 'profile_updated'
-  | 'account_verified'
-  | 'account_created'
+  'login' | 'password_changed' | 'profile_updated' | 'account_verified' | 'account_created'
 
 const MAX_LOG_ENTRIES = 50
 

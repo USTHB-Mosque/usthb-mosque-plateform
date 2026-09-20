@@ -48,8 +48,12 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
           <thead>
             <tr className="border-b border-border bg-background-2">
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">النشاط</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">تاريخ بدأ النشاط</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">مكان النشاط</th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                تاريخ بدأ النشاط
+              </th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                مكان النشاط
+              </th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">حالة الطلب</th>
               <th className="w-12 px-3 py-3 text-center" />
             </tr>
@@ -66,7 +70,10 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                 const activity = registration.activity as Activity | undefined
                 const status = getStatus(registration)
                 return (
-                  <tr key={registration.id} className="border-b border-border last:border-0 hover:bg-muted/40">
+                  <tr
+                    key={registration.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/40"
+                  >
                     <td className="truncate px-4 py-3 font-medium text-card-foreground">
                       {activity?.title || 'نشاط'}
                     </td>
@@ -79,7 +86,9 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                       {activity?.location || '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
+                      >
                         {STATUS_LABELS[status]}
                       </span>
                     </td>

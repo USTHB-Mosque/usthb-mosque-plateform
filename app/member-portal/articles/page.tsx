@@ -41,10 +41,7 @@ const MemberArticlesPage: React.FC = () => {
             {
               id: 'types-quick',
               multiple: false,
-              options: [
-                { value: '', label: 'الكل' },
-                ...articleTypesConfigArray,
-              ],
+              options: [{ value: '', label: 'الكل' }, ...articleTypesConfigArray],
               value: (values.types || [])[0] || '',
               onChange: (v) => setValue('types', v ? [v as ArticleType] : []),
             },

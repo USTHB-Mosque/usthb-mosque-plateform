@@ -1,8 +1,8 @@
 export function redirectToLogin() {
-  const currentUrl = window.location.pathname;
-  if (!currentUrl.startsWith("/auth")) {
-    const loginUrl = "/auth/login?redirect=" + encodeURIComponent(currentUrl);
-    window.location.replace(loginUrl);
+  const currentUrl = window.location.pathname
+  if (!currentUrl.startsWith('/auth')) {
+    const loginUrl = '/auth/login?redirect=' + encodeURIComponent(currentUrl)
+    window.location.replace(loginUrl)
   }
 }
 
@@ -10,6 +10,6 @@ export function redirectToLogin() {
 // attacker-controlled input, so `?redirect=https://evil.example` must not
 // send a just-authenticated user off site.
 export function safeRedirect(value: string | null | undefined, fallback: string): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return fallback;
-  return value;
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return fallback
+  return value
 }

@@ -91,22 +91,26 @@ const BookPreview: React.FC<BookPreviewProps> = ({
               sizes="(max-width: 1024px) 100vw, 300px"
             />
           </div>
-          
+
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-center">
               <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
             </div>
-            
-            <Button 
-              className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none" 
+
+            <Button
+              className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none"
               onClick={handleBorrowClick}
               disabled={isBorrowing}
             >
               {user ? 'احجز الآن' : 'تصفح الكتاب'}
             </Button>
-            
+
             <div className="flex gap-3">
-              <BookFavoriteButton bookId={bookId} initialFavorited={initialFavorited} className="flex-1 h-12" />
+              <BookFavoriteButton
+                bookId={bookId}
+                initialFavorited={initialFavorited}
+                className="flex-1 h-12"
+              />
               <Button variant="outline" size="icon" onClick={onCopyLink} className="h-12 w-12">
                 <Link className="size-5" />
               </Button>

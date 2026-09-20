@@ -24,13 +24,17 @@ const LoansPreview: React.FC<LoansPreviewProps> = ({ loans, className }) => {
       </header>
 
       {loans.length === 0 ? (
-        <p className="px-4 py-10 text-center text-sm text-muted-foreground">لا توجد إعارات حالية.</p>
+        <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+          لا توجد إعارات حالية.
+        </p>
       ) : (
         <ul className="divide-y divide-border">
           {loans.slice(0, 4).map((loan) => {
             const book = loan.book as Book | undefined
             const cover = book?.image as Media | undefined
-            const due = loan.dueDate ? format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ }) : null
+            const due = loan.dueDate
+              ? format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ })
+              : null
 
             return (
               <li key={loan.id}>

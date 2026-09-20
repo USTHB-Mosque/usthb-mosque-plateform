@@ -6,10 +6,7 @@ import type { Activity, ActivityRegistration } from '@/payload-types'
 
 export type EffectiveRegistrationStatus = 'registered' | 'attended' | 'passed'
 
-const statusConfig: Record<
-  EffectiveRegistrationStatus,
-  { label: string; className: string }
-> = {
+const statusConfig: Record<EffectiveRegistrationStatus, { label: string; className: string }> = {
   registered: {
     label: 'مسجّل',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
@@ -30,7 +27,9 @@ export function getEffectiveRegistrationStatus(
   if (registration.attended) return 'attended'
 
   const activity = registration.activity as Activity | undefined
-  const start = activity?.startDate ? new Date(activity.startDate).getTime() : Number.POSITIVE_INFINITY
+  const start = activity?.startDate
+    ? new Date(activity.startDate).getTime()
+    : Number.POSITIVE_INFINITY
   if (start < Date.now()) return 'passed'
 
   return 'registered'

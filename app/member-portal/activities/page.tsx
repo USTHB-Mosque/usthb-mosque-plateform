@@ -41,10 +41,7 @@ const MemberActivitiesPage: React.FC = () => {
             {
               id: 'types-quick',
               multiple: false,
-              options: [
-                { value: '', label: 'الكل' },
-                ...activitiesTypesConfigArray,
-              ],
+              options: [{ value: '', label: 'الكل' }, ...activitiesTypesConfigArray],
               value: (values.types || [])[0] || '',
               onChange: (v) => setValue('types', v ? [v as ActivityType] : []),
             },

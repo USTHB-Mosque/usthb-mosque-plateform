@@ -40,7 +40,10 @@ const BookCardSkeleton: React.FC<BookCardSkeletonProps> = ({ className }) => {
           </div>
         </div>
         <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
-          <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
+          <div
+            className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey"
+            aria-hidden="true"
+          />
           <Skeleton className="h-11 w-full rounded-lg" />
         </div>
       </div>

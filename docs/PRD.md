@@ -3,6 +3,7 @@
 Rewritten 2026-09-05 against the Figma file, which is the source of truth for scope and visuals.
 
 **Design file:** `mosque-website`, key `3SxNbbKMi8ZR6bYdl2ctec`
+
 - Viewer views: [`731-3454`](https://www.figma.com/design/3SxNbbKMi8ZR6bYdl2ctec/mosque-website?node-id=731-3454)
 - User views: [`1315-6383`](https://www.figma.com/design/3SxNbbKMi8ZR6bYdl2ctec/mosque-website?node-id=1315-6383)
 - Admin views: [`1464-17224`](https://www.figma.com/design/3SxNbbKMi8ZR6bYdl2ctec/mosque-website?node-id=1464-17224)
@@ -13,18 +14,18 @@ Where this document and Figma disagree, Figma wins and this document is wrong. W
 
 ## 1. Decisions (locked 2026-09-05)
 
-| Topic | Decision |
-| --- | --- |
-| Source of truth | The Figma file, for both scope and visuals |
-| First users | Real USTHB students, this semester |
-| Admin panel | Full custom admin at `/admin`, matching Figma. Payload admin is not the product |
-| Loan flow | Five states with a pickup step and a pickup code, per the Borrowings screens |
-| Notifications | Full subsystem: collection, SSE bell, and per-type email opt-in |
-| Deployment | One root `docker-compose` that runs the app and Postgres. Host not yet chosen |
-| Storage | S3 compatible in every environment |
-| Language | Arabic only, RTL |
-| Password reset | In scope. Not designed in Figma, so it follows the existing auth screens |
-| Privacy and terms | In scope. Required by Law 18-07 since identity documents are collected |
+| Topic             | Decision                                                                        |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Source of truth   | The Figma file, for both scope and visuals                                      |
+| First users       | Real USTHB students, this semester                                              |
+| Admin panel       | Full custom admin at `/admin`, matching Figma. Payload admin is not the product |
+| Loan flow         | Five states with a pickup step and a pickup code, per the Borrowings screens    |
+| Notifications     | Full subsystem: collection, SSE bell, and per-type email opt-in                 |
+| Deployment        | One root `docker-compose` that runs the app and Postgres. Host not yet chosen   |
+| Storage           | S3 compatible in every environment                                              |
+| Language          | Arabic only, RTL                                                                |
+| Password reset    | In scope. Not designed in Figma, so it follows the existing auth screens        |
+| Privacy and terms | In scope. Required by Law 18-07 since identity documents are collected          |
 
 **Cut, because Figma does not show them:** book requests, article bookmarks, article like/dislike feedback, activity feedback. Article opinions are covered by article **reviews**, which the admin Reviews screen shows as a tab.
 
@@ -32,11 +33,11 @@ Where this document and Figma disagree, Figma wins and this document is wrong. W
 
 ## 2. Personas
 
-| Persona | Scope |
-| --- | --- |
-| **Visitor** | Landing, library, articles, activities, about, contact. Any write action redirects to sign in and returns |
-| **User** | The `/user/*` portal: dashboard, books, borrowings, articles, activities, latest updates, event log, settings |
-| **Admin** | The `/admin` panel: dashboard, books, cards, loans, users, articles, activities, reviews, logs, analytics, settings |
+| Persona     | Scope                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Visitor** | Landing, library, articles, activities, about, contact. Any write action redirects to sign in and returns           |
+| **User**    | The `/user/*` portal: dashboard, books, borrowings, articles, activities, latest updates, event log, settings       |
+| **Admin**   | The `/admin` panel: dashboard, books, cards, loans, users, articles, activities, reviews, logs, analytics, settings |
 
 **Verification gate.** A student uploads a school certificate at registration. An admin approves or rejects it. Only a verified user can reach the pickup step.
 
@@ -54,14 +55,14 @@ Verified by running the app on 2026-09-05, not read from the code.
 
 **Defects in shipped features:**
 
-| Defect | Fixed by |
-| --- | --- |
-| Marking a loan returned does not release the copy (`availableBooks` 59 before, 59 after) | #19 |
-| Nothing marks loans overdue: 8 seeded loans past due, still pending or approved | #19 |
-| `books.averageRating` and `ratingCount` never recalculated: book 52 shows 30 ratings and an average of 5 against one real review | #25 |
-| Registration collects `speciality` and throws it away, and never sends `studyYear` | #19 |
-| `/user` returns 404, dead rewrite | #94 |
-| `/privacy` and `/terms` are linked from registration and return 404 | #38 |
+| Defect                                                                                                                           | Fixed by |
+| -------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Marking a loan returned does not release the copy (`availableBooks` 59 before, 59 after)                                         | #19      |
+| Nothing marks loans overdue: 8 seeded loans past due, still pending or approved                                                  | #19      |
+| `books.averageRating` and `ratingCount` never recalculated: book 52 shows 30 ratings and an average of 5 against one real review | #25      |
+| Registration collects `speciality` and throws it away, and never sends `studyYear`                                               | #19      |
+| `/user` returns 404, dead rewrite                                                                                                | #94      |
+| `/privacy` and `/terms` are linked from registration and return 404                                                              | #38      |
 
 **Not built:** migrations, tests, a deployable container, the entire admin panel, and everything in section 5.
 
@@ -95,19 +96,19 @@ Transitions: request creates `pending` and joins the waitlist when no copy is fr
 
 ### 5.3 Admin panel
 
-| Screen | Content |
-| --- | --- |
-| Dashboard | Pending verification, severe overdue, pending extension and loan request counts, upcoming pickups with date and hour, Hijri calendar |
-| Books | Table, grid and detail. Book code, publisher, category, loan duration, copies available of total, shelf location, ratings, similar books |
-| Cards | Library card index: card ID, holder, situation, photo, created date, active state, plus counts of active, inactive and archived |
-| Loans | List with the five status tabs, waitlist queue, extension queue with original and new return dates, KPIs, manual add |
-| Users | Users and admins tabs, CSV import, card ID, situation, study year, speciality, active state. Detail with info, loan requests, extension requests, borrowed books, ratings and delete |
-| Articles | Grid and list, CRUD |
-| Activities | List and detail, CRUD |
-| Reviews | Books and articles tabs, total and positive and negative shares, delete |
-| Logs | Event feed grouped by day, actor, action, target, timestamp |
-| Analytics | Most read categories, most requested books, busiest loan request days, computed from Postgres |
-| Settings | Info, security (email, password, 2FA, linked devices, account log), notifications |
+| Screen     | Content                                                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dashboard  | Pending verification, severe overdue, pending extension and loan request counts, upcoming pickups with date and hour, Hijri calendar                                                 |
+| Books      | Table, grid and detail. Book code, publisher, category, loan duration, copies available of total, shelf location, ratings, similar books                                             |
+| Cards      | Library card index: card ID, holder, situation, photo, created date, active state, plus counts of active, inactive and archived                                                      |
+| Loans      | List with the five status tabs, waitlist queue, extension queue with original and new return dates, KPIs, manual add                                                                 |
+| Users      | Users and admins tabs, CSV import, card ID, situation, study year, speciality, active state. Detail with info, loan requests, extension requests, borrowed books, ratings and delete |
+| Articles   | Grid and list, CRUD                                                                                                                                                                  |
+| Activities | List and detail, CRUD                                                                                                                                                                |
+| Reviews    | Books and articles tabs, total and positive and negative shares, delete                                                                                                              |
+| Logs       | Event feed grouped by day, actor, action, target, timestamp                                                                                                                          |
+| Analytics  | Most read categories, most requested books, busiest loan request days, computed from Postgres                                                                                        |
+| Settings   | Info, security (email, password, 2FA, linked devices, account log), notifications                                                                                                    |
 
 ### 5.4 User portal
 

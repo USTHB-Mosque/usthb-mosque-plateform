@@ -6,18 +6,18 @@ Built Arabic-first, RTL throughout.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Framework** | Next.js 16 (App Router) |
-| **CMS** | Payload CMS 3 |
-| **Database** | PostgreSQL — local Supabase in dev, remote Supabase elsewhere |
-| **File Storage** | Local Supabase S3 in dev, Vercel Blob elsewhere (`storage.ts`) |
-| **UI** | shadcn/ui patterns, Base UI / Radix |
-| **Styling** | Tailwind CSS 4 |
-| **State** | Zustand + React Query |
-| **Authentication** | Payload Auth (JWT), hand-rolled Google OAuth |
-| **Email** | Nodemailer |
-| **Testing** | Vitest + React Testing Library |
+| Layer              | Technology                                                     |
+| ------------------ | -------------------------------------------------------------- |
+| **Framework**      | Next.js 16 (App Router)                                        |
+| **CMS**            | Payload CMS 3                                                  |
+| **Database**       | PostgreSQL — local Supabase in dev, remote Supabase elsewhere  |
+| **File Storage**   | Local Supabase S3 in dev, Vercel Blob elsewhere (`storage.ts`) |
+| **UI**             | shadcn/ui patterns, Base UI / Radix                            |
+| **Styling**        | Tailwind CSS 4                                                 |
+| **State**          | Zustand + React Query                                          |
+| **Authentication** | Payload Auth (JWT), hand-rolled Google OAuth                   |
+| **Email**          | Nodemailer                                                     |
+| **Testing**        | Vitest + React Testing Library                                 |
 
 ## Project Structure
 
@@ -36,6 +36,7 @@ migrations/          Postgres migrations (the authoritative schema source)
 Current feature domains: `admin auth library activities articles profile landing`.
 
 Import rules (enforced in `eslint.config.mjs`):
+
 - Features import each other **only through the barrel** (`@/features/<domain>`).
 - `app/**` may reach into feature internals because it is the composition root.
 
@@ -50,12 +51,14 @@ Import rules (enforced in `eslint.config.mjs`):
 ### Setup
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Configure environment — copy `example.env` to `.env.local` (development)
    and to `.env` (preview/production) and fill in the values. Development needs:
+
    ```env
    DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
    S3_ENDPOINT=http://127.0.0.1:54321/storage/v1/s3
@@ -66,16 +69,19 @@ Import rules (enforced in `eslint.config.mjs`):
    ```
 
 3. Start the local Supabase stack:
+
    ```bash
    pnpm supabase:start
    ```
 
 4. Seed the database (optional, realistic demo content):
+
    ```bash
    pnpm seed
    ```
 
 5. Start the dev server:
+
    ```bash
    pnpm dev
    ```
@@ -97,29 +103,29 @@ Import rules (enforced in `eslint.config.mjs`):
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Next.js dev server (start Supabase first) |
-| `pnpm dev:full` | Start Supabase then the dev server |
-| `pnpm dev:preview` | Dev server with `NODE_ENV=preview` (uses `.env`) |
-| `pnpm dev:stop` | Stop local Supabase |
-| `pnpm build` / `pnpm start` | Production build / server (migrations are applied at deploy time, not by build) |
-| `pnpm lint` | ESLint |
-| `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` / `pnpm test:watch` | Vitest once / in watch mode |
-| `pnpm format:check` / `pnpm format` | Prettier check / write |
-| `pnpm payload:importmap` | Regenerate the admin import map |
-| `pnpm payload:migrate-create <name>` | Generate a migration from the schema diff |
-| `pnpm payload:migrate` | Apply migrations |
-| `pnpm seed` | Seed the local database |
-| `pnpm supabase:start` / `:stop` / `:status` | Local Supabase stack |
+| Command                                     | Description                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------- |
+| `pnpm dev`                                  | Next.js dev server (start Supabase first)                                       |
+| `pnpm dev:full`                             | Start Supabase then the dev server                                              |
+| `pnpm dev:preview`                          | Dev server with `NODE_ENV=preview` (uses `.env`)                                |
+| `pnpm dev:stop`                             | Stop local Supabase                                                             |
+| `pnpm build` / `pnpm start`                 | Production build / server (migrations are applied at deploy time, not by build) |
+| `pnpm lint`                                 | ESLint                                                                          |
+| `pnpm typecheck`                            | `tsc --noEmit`                                                                  |
+| `pnpm test` / `pnpm test:watch`             | Vitest once / in watch mode                                                     |
+| `pnpm format:check` / `pnpm format`         | Prettier check / write                                                          |
+| `pnpm payload:importmap`                    | Regenerate the admin import map                                                 |
+| `pnpm payload:migrate-create <name>`        | Generate a migration from the schema diff                                       |
+| `pnpm payload:migrate`                      | Apply migrations                                                                |
+| `pnpm seed`                                 | Seed the local database                                                         |
+| `pnpm supabase:start` / `:stop` / `:status` | Local Supabase stack                                                            |
 
 ## Environments
 
-| Environment | Database | Storage | Config file |
-|-------------|----------|---------|-------------|
-| **Development** | Local Supabase (CLI) | Local Supabase S3 | `.env.local` |
-| **Non-development** | Remote Supabase | Vercel Blob (today; revisit when the host is chosen) | `.env` |
+| Environment         | Database             | Storage                                              | Config file  |
+| ------------------- | -------------------- | ---------------------------------------------------- | ------------ |
+| **Development**     | Local Supabase (CLI) | Local Supabase S3                                    | `.env.local` |
+| **Non-development** | Remote Supabase      | Vercel Blob (today; revisit when the host is chosen) | `.env`       |
 
 `storage.ts` implements this split. The deployment decision is self-hosting via
 Docker — see [ADR 0002](docs/adr/0002-self-hosted-docker-deployment.md).

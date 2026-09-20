@@ -9,7 +9,9 @@ export async function getAdminUser() {
   return ctx
 }
 
-export async function updateAdminProfile(fullName: string): Promise<{ ok: boolean; error?: string }> {
+export async function updateAdminProfile(
+  fullName: string,
+): Promise<{ ok: boolean; error?: string }> {
   try {
     const ctx = await getAdminUser()
     if (!ctx) {
@@ -32,7 +34,9 @@ export async function updateAdminProfile(fullName: string): Promise<{ ok: boolea
   }
 }
 
-export async function updateAdminPassword(password: string): Promise<{ ok: boolean; error?: string }> {
+export async function updateAdminPassword(
+  password: string,
+): Promise<{ ok: boolean; error?: string }> {
   try {
     const ctx = await getAdminUser()
     if (!ctx) {

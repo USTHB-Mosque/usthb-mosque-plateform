@@ -4,7 +4,14 @@
   "mcp": {
     "figma": {
       "type": "local",
-      "command": ["pnpm", "dlx", "figma-developer-mcp", "--stdio", "--image-dir", "/tmp/opencode/figma-tmp"],
+      "command": [
+        "pnpm",
+        "dlx",
+        "figma-developer-mcp",
+        "--stdio",
+        "--image-dir",
+        "/tmp/opencode/figma-tmp"
+      ],
       "environment": {
         "FIGMA_API_KEY": "{env:FIGMA_PAT}",
         "DO_NOT_TRACK": "1"

@@ -32,7 +32,12 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBad
   )
 }
 
-const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBadge, children }) => {
+const SidebarShell: React.FC<UserSidebarProps> = ({
+  userName,
+  userEmail,
+  loansBadge,
+  children,
+}) => {
   const pathname = usePathname()
   const { collapsed } = useUserSidebar()
 
@@ -48,7 +53,12 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
-        <div className={cn('flex shrink-0 items-center', collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5')}>
+        <div
+          className={cn(
+            'flex shrink-0 items-center',
+            collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5',
+          )}
+        >
           <Link href="/user/dashboard" aria-label="بوابة المستخدم">
             {collapsed ? (
               <Image
@@ -104,7 +114,9 @@ const SidebarShell: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBa
                     {userName.trim().charAt(0) || 'م'}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">{userName}</p>
+                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">
+                      {userName}
+                    </p>
                     {userEmail ? (
                       <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
                     ) : null}
@@ -185,7 +197,9 @@ const MobileTopbar: React.FC = () => {
                   href={item.href}
                   className={cn(
                     'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors',
-                    active ? 'bg-primary-main-15 text-primary-300 font-bold' : 'text-grey-400 hover:bg-muted hover:text-grey-500',
+                    active
+                      ? 'bg-primary-main-15 text-primary-300 font-bold'
+                      : 'text-grey-400 hover:bg-muted hover:text-grey-500',
                   )}
                 >
                   <Icon className="size-4" />

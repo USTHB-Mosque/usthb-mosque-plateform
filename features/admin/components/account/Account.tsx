@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAdminUser, updateAdminProfile, updateAdminPassword } from '@/features/admin/server/account'
+import {
+  getAdminUser,
+  updateAdminProfile,
+  updateAdminPassword,
+} from '@/features/admin/server/account'
 import type { User } from '@/payload-types'
 
 const AdminAccount: React.FC = () => {
@@ -119,9 +123,7 @@ const AdminAccount: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                الاسم الكامل
-              </label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">الاسم الكامل</label>
               <input
                 type="text"
                 value={fullName}
@@ -131,9 +133,7 @@ const AdminAccount: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                الدور
-              </label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">الدور</label>
               <input
                 type="text"
                 value={user?.role === 'admin' ? 'مسؤول' : 'مستخدم'}

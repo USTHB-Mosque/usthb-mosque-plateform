@@ -62,7 +62,9 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
             </div>
             <CardContent className="flex flex-1 flex-col gap-3 p-4">
               <div className="space-y-1">
-                <p className="font-bold font-dubai text-lg leading-snug line-clamp-2">{book.title}</p>
+                <p className="font-bold font-dubai text-lg leading-snug line-clamp-2">
+                  {book.title}
+                </p>
                 <p className="text-sm text-muted-foreground line-clamp-1">{book.author}</p>
               </div>
               <div className="flex flex-wrap gap-2 mt-auto">
@@ -74,7 +76,9 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
               </div>
               <div className="flex gap-2 pt-1">
                 <Link href={`/library/book/${book.id}`}>
-                  <Button size="sm" className="flex-1">عرض الكتاب</Button>
+                  <Button size="sm" className="flex-1">
+                    عرض الكتاب
+                  </Button>
                 </Link>
                 <Button
                   size="sm"

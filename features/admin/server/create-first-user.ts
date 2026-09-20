@@ -24,7 +24,7 @@ export async function hasAnyUser(): Promise<boolean> {
 
 export async function createFirstAdminUser(
   email: string,
-  password: string
+  password: string,
 ): Promise<CreateFirstUserResult> {
   try {
     const payload = await getPayload({ config })

@@ -8,11 +8,7 @@ import ActivityInformations from '@/features/activities/components/activity-deta
 import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
 import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
 
-const MemberActivityDetailsPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) => {
+const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
 
   const payload = await getPayload({ config })

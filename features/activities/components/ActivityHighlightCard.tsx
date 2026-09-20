@@ -80,7 +80,11 @@ const ActivityHighlightCard: React.FC<ActivityCardProps> = ({
         className="absolute inset-0 z-[3] flex flex-col justify-end gap-5 p-5 rounded-xl"
         style={{ background: gradientOverlay }}
       >
-        {badge && <div className="self-start rounded-lg bg-primary-600 px-2 pt-[7px] pb-1 text-sm text-white">{badge}</div>}
+        {badge && (
+          <div className="self-start rounded-lg bg-primary-600 px-2 pt-[7px] pb-1 text-sm text-white">
+            {badge}
+          </div>
+        )}
 
         <div className="text-white/85">
           <h2 className="text-xl font-bold text-white font-khalid md:text-2xl">{title}</h2>

@@ -4,23 +4,24 @@ Mosque community platform (library, activities, articles) built with Next.js 16
 (App Router) + Payload CMS 3 on Postgres (Supabase), Arabic-first and RTL.
 
 Generic Payload/Next knowledge lives upstream — do not paste it here:
+
 - Payload docs: https://payloadcms.com/docs (LLM dump: https://payloadcms.com/llms-full.txt)
 - Next.js docs: `node_modules/next/dist/docs/`
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Next dev server (start Supabase first) |
-| `pnpm supabase:start` / `pnpm supabase:stop` / `pnpm supabase:status` | Local Supabase stack (Docker) |
-| `pnpm typecheck` | `tsc --noEmit` — run after every code change |
-| `pnpm lint` | ESLint |
-| `pnpm test` | Vitest (RTL) once; `pnpm test:watch` while TDD-ing |
-| `pnpm format:check` / `pnpm format` | Prettier check / write |
-| `pnpm payload:importmap` | Regenerate admin import map after adding/modifying admin components |
-| `pnpm payload:migrate-create <name>` | Generate a migration from the schema diff |
-| `pnpm payload:migrate` | Apply migrations (run against a scratch DB to verify) |
-| `pnpm seed` | Seed the local database (`utils/seed-all.ts`) |
+| Command                                                               | What it does                                                        |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `pnpm dev`                                                            | Next dev server (start Supabase first)                              |
+| `pnpm supabase:start` / `pnpm supabase:stop` / `pnpm supabase:status` | Local Supabase stack (Docker)                                       |
+| `pnpm typecheck`                                                      | `tsc --noEmit` — run after every code change                        |
+| `pnpm lint`                                                           | ESLint                                                              |
+| `pnpm test`                                                           | Vitest (RTL) once; `pnpm test:watch` while TDD-ing                  |
+| `pnpm format:check` / `pnpm format`                                   | Prettier check / write                                              |
+| `pnpm payload:importmap`                                              | Regenerate admin import map after adding/modifying admin components |
+| `pnpm payload:migrate-create <name>`                                  | Generate a migration from the schema diff                           |
+| `pnpm payload:migrate`                                                | Apply migrations (run against a scratch DB to verify)               |
+| `pnpm seed`                                                           | Seed the local database (`utils/seed-all.ts`)                       |
 
 Validate with all four gates before finishing: `format:check`, `lint`, `typecheck`, `test`.
 
@@ -38,31 +39,35 @@ proxy.ts             Next 16 proxy (auth cookie gate only, never the security bo
 Current features: `admin auth library activities articles profile landing`.
 
 Import rules (enforced in `eslint.config.mjs`):
+
 - Features import each other **only through the barrel** (`@/features/<domain>`), never `@/features/<domain>/components/...`.
 - `app/**` may reach into feature internals because it is the composition root.
 
 ## Non-negotiable rules
 
 ### Migrations (#95)
+
 - **A change under `collections/` (or `globals/`) ships with a migration in the same pull request.** CI fails otherwise.
 - Generate with `pnpm payload:migrate-create <name>`, review the SQL, and run `pnpm payload:migrate` against a scratch database to confirm it applies cleanly.
 - Migrations are the authoritative schema source. `pnpm build` does **not** run migrations; they are applied at deploy/start time (see ADR 0002) and can be run manually with `pnpm payload:migrate`.
 
 ### Server actions ship with tests (#96)
+
 - Every new or changed server action under `features/*/server/` gets a test file next to it (vitest).
 - Run the single test file while working: `pnpm test <path>`; run the full suite once at the end.
 
 ### Payload security essentials
+
 - The Local API **bypasses access control by default**. When passing `user`, always set `overrideAccess: false`. Administrative operations may omit `user` (intentional bypass).
 - Always pass `req` to nested operations inside hooks — otherwise the nested op runs in a separate transaction.
 - Use a `context: { skipHooks: true }` flag to prevent infinite hook loops.
 
 ## Environment reality
 
-| Environment | Database | Storage | Config file |
-| --- | --- | --- | --- |
-| Development | Local Supabase (CLI) | Local Supabase S3 (`@payloadcms/storage-s3`) | `.env.local` |
-| Non-development | Remote Supabase (`@payloadcms/db-postgres`) | Vercel Blob (`@payloadcms/storage-vercel-blob`) today | `.env` |
+| Environment     | Database                                    | Storage                                               | Config file  |
+| --------------- | ------------------------------------------- | ----------------------------------------------------- | ------------ |
+| Development     | Local Supabase (CLI)                        | Local Supabase S3 (`@payloadcms/storage-s3`)          | `.env.local` |
+| Non-development | Remote Supabase (`@payloadcms/db-postgres`) | Vercel Blob (`@payloadcms/storage-vercel-blob`) today | `.env`       |
 
 `storage.ts` implements this split — do not claim otherwise in docs. Self-hosting
 via Docker is the deployment decision (ADR 0002); the Vercel Blob branch is on

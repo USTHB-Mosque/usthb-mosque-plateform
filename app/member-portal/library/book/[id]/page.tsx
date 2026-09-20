@@ -9,11 +9,7 @@ import BookPreview from '@/features/library/components/book-details/BookPreview'
 import BookAvailability from '@/features/library/components/book-details/BookAvailability'
 import { getBookFavoriteState } from '@/features/library/server/favorites'
 
-const MemberBookDetailsPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) => {
+const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
 
   const payload = await getPayload({ config })

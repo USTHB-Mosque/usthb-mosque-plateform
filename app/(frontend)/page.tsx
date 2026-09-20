@@ -1,31 +1,31 @@
-"use client";
+'use client'
 
-import React from "react";
-import Navbar from "@/shared/layouts/navbar/Navbar";
-import Footer from "@/shared/layouts/Footer";
-import SectionBlock from "@/features/landing/components/SectionBlock";
-import ActivityCard from "@/features/activities/components/ActivityHighlightCard";
-import CTASection from "@/features/landing/components/CTASection";
-import Image from "next/image";
-import { motion } from "motion/react";
-import { useGetBooksQuery } from "@/features/library/api/books.queries";
-import { useGetArticlesQuery } from "@/features/articles/api/articles.queries";
-import { useGetActivitiesQuery } from "@/features/activities/api/activities.queries";
-import { BookCategory } from "@/features/library/types";
-import { Media } from "@/payload-types";
-import { getImageUrl } from "@/shared/lib/image-utils";
-import Link from "next/link";
-import ListingRenderer from "@/shared/listing/ListingRenderer";
-import EmptyData from "@/shared/common/EmptyData";
-import ErrorData from "@/shared/common/ErrorData";
-import ActivityCardSkeleton from "@/features/activities/components/ActivityCardSkeleton";
-import BookCard from "@/features/library/components/BookCard";
-import BlogArticleCard from "@/features/articles/components/BlogArticleCard";
-import BookCardSkeleton from "@/features/library/components/BookCardSkeleton";
-import ArticleCardSkeleton from "@/features/articles/components/ArticleCardSkeleton";
-import { staticBooks } from "@/features/library/fixtures";
-import { staticActivities } from "@/features/activities/fixtures";
-import { staticArticles } from "@/features/articles/fixtures";
+import React from 'react'
+import Navbar from '@/shared/layouts/navbar/Navbar'
+import Footer from '@/shared/layouts/Footer'
+import SectionBlock from '@/features/landing/components/SectionBlock'
+import ActivityCard from '@/features/activities/components/ActivityHighlightCard'
+import CTASection from '@/features/landing/components/CTASection'
+import Image from 'next/image'
+import { motion } from 'motion/react'
+import { useGetBooksQuery } from '@/features/library/api/books.queries'
+import { useGetArticlesQuery } from '@/features/articles/api/articles.queries'
+import { useGetActivitiesQuery } from '@/features/activities/api/activities.queries'
+import { BookCategory } from '@/features/library/types'
+import { Media } from '@/payload-types'
+import { getImageUrl } from '@/shared/lib/image-utils'
+import Link from 'next/link'
+import ListingRenderer from '@/shared/listing/ListingRenderer'
+import EmptyData from '@/shared/common/EmptyData'
+import ErrorData from '@/shared/common/ErrorData'
+import ActivityCardSkeleton from '@/features/activities/components/ActivityCardSkeleton'
+import BookCard from '@/features/library/components/BookCard'
+import BlogArticleCard from '@/features/articles/components/BlogArticleCard'
+import BookCardSkeleton from '@/features/library/components/BookCardSkeleton'
+import ArticleCardSkeleton from '@/features/articles/components/ArticleCardSkeleton'
+import { staticBooks } from '@/features/library/fixtures'
+import { staticActivities } from '@/features/activities/fixtures'
+import { staticArticles } from '@/features/articles/fixtures'
 
 const LandingPage: React.FC = () => {
   const {
@@ -36,7 +36,7 @@ const LandingPage: React.FC = () => {
     category: BookCategory.Religious,
     page: 1,
     limit: 4,
-  });
+  })
 
   const {
     data: articlesData,
@@ -45,7 +45,7 @@ const LandingPage: React.FC = () => {
   } = useGetArticlesQuery({
     page: 1,
     limit: 3,
-  });
+  })
 
   const {
     data: activitiesData,
@@ -54,26 +54,21 @@ const LandingPage: React.FC = () => {
   } = useGetActivitiesQuery({
     page: 1,
     limit: 4,
-  });
+  })
 
-  const books = booksData?.docs || [];
-  const articles = articlesData?.docs || [];
-  const activities = activitiesData?.docs || [];
+  const books = booksData?.docs || []
+  const articles = articlesData?.docs || []
+  const activities = activitiesData?.docs || []
 
   const activityHadith = (
     <>
-      قال رسول{" "}
-      <span style={{ fontSize: 14, color: "var(--primary-300)" }}>الله</span>{" "}
-      صلى{" "}
-      <span style={{ fontSize: 14, color: "var(--primary-300)" }}>الله</span>{" "}
-      عليه وسلم : &quot;خيركم من تعلم القرآن وعلمه&quot;
+      قال رسول <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> صلى{' '}
+      <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> عليه وسلم :
+      &quot;خيركم من تعلم القرآن وعلمه&quot;
     </>
-  );
+  )
 
-  const renderActivityBento = (
-    items: typeof activities,
-    withHadith: boolean,
-  ) => (
+  const renderActivityBento = (items: typeof activities, withHadith: boolean) => (
     <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {items[0] && (
         <motion.div
@@ -93,8 +88,8 @@ const LandingPage: React.FC = () => {
             description={items[0].shortDescription}
             hadith={withHadith ? activityHadith : undefined}
             actions={[
-              { label: "سجل الآن", variant: "primary" },
-              { label: "التفاصيل", variant: "secondary" },
+              { label: 'سجل الآن', variant: 'primary' },
+              { label: 'التفاصيل', variant: 'secondary' },
             ]}
           />
         </motion.div>
@@ -156,11 +151,11 @@ const LandingPage: React.FC = () => {
         </motion.div>
       )}
     </div>
-  );
+  )
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full z-100" >
+      <div className="fixed top-0 left-0 w-full z-100">
         <Navbar />
       </div>
       <div className="w-full min-h-screen">
@@ -170,8 +165,7 @@ const LandingPage: React.FC = () => {
           <video
             src="/static/images/hero_vid_light.mp4"
             style={{
-              filter:
-                "grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)",
+              filter: 'grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)',
             }}
             className="absolute bottom-0 w-full object-cover sm:scale-115 scale-150  translate-x-[-6vw] lg:translate-y-[7vh] translate-y-[-7vh] sm:translate-y-0 "
             autoPlay
@@ -227,7 +221,7 @@ const LandingPage: React.FC = () => {
           <div
             className="absolute inset-0 z-[2] pointer-events-none"
             style={{
-              background: "rgba(220, 235, 255, 0.15)",
+              background: 'rgba(220, 235, 255, 0.15)',
             }}
           />
 
@@ -235,39 +229,43 @@ const LandingPage: React.FC = () => {
           <div className="absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] sm:min-h-[90%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16">
             {/* Bismillah */}
             {/* Quran verse */}
-             <motion.div initial={{ y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}> <Image src="/static/images/bismilah.svg" alt="بسم الله" width={180} height={40} priority className="w-40 sm:w-48 md:w-auto" /> </motion.div>
-             <motion.p
-  dir="rtl"
-  initial={{ y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6, delay: 0.2 }}
-  style={{ fontFamily: "var(--font-uthmanic)" }}
-  className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(24px,2.5vw,28px)]"
->
-  ﴿في بُيوتٍ أَذِنَ{" "}
-  <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
-    اللَّهُ
-  </span>{" "}
-  أَن تُرفَعَ وَيُذكَرَ فيهَا{" "}
-
-  <span style={{ whiteSpace: "nowrap", fontSize: "inherit" }}>
-    اسمُ
-    <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
-      هُ
-    </span>
-  </span>{" "}
-
-  يُسَبِّحُ لَهُ فيها بِالغُدُوِّ وَالْآصالِ۝ رِجَالٌ لَا تُلْهِيهِمْ
-  تِجَارَةٌ وَلَا بَيْعٌ عَنْ ذِكْرِ{" "}
-
-  <span style={{ color: "var(--primary-300)", fontSize: "inherit" }}>
-    اللَّهِ
-  </span>{" "}
-
-  وَإِقَامِ الصَّلَاةِ وَإِيتَاءِ الزَّكَاةِ ۙ يَخَافُونَ يَوْمًا
-  تَتَقَلَّبُ فِيهِ الْقُلُوبُ وَالْأَبْصَارُ﴾ [النور: ٣٦]
-</motion.p>
-</div>
+            <motion.div
+              initial={{ y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              {' '}
+              <Image
+                src="/static/images/bismilah.svg"
+                alt="بسم الله"
+                width={180}
+                height={40}
+                priority
+                className="w-40 sm:w-48 md:w-auto"
+              />{' '}
+            </motion.div>
+            <motion.p
+              dir="rtl"
+              initial={{ y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              style={{ fontFamily: 'var(--font-uthmanic)' }}
+              className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(24px,2.5vw,28px)]"
+            >
+              ﴿في بُيوتٍ أَذِنَ{' '}
+              <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>اللَّهُ</span> أَن
+              تُرفَعَ وَيُذكَرَ فيهَا{' '}
+              <span style={{ whiteSpace: 'nowrap', fontSize: 'inherit' }}>
+                اسمُ
+                <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>هُ</span>
+              </span>{' '}
+              يُسَبِّحُ لَهُ فيها بِالغُدُوِّ وَالْآصالِ۝ رِجَالٌ لَا تُلْهِيهِمْ تِجَارَةٌ وَلَا
+              بَيْعٌ عَنْ ذِكْرِ{' '}
+              <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>اللَّهِ</span>{' '}
+              وَإِقَامِ الصَّلَاةِ وَإِيتَاءِ الزَّكَاةِ ۙ يَخَافُونَ يَوْمًا تَتَقَلَّبُ فِيهِ
+              الْقُلُوبُ وَالْأَبْصَارُ﴾ [النور: ٣٦]
+            </motion.p>
+          </div>
         </section>
 
         {/* ── Section 1: لبنة المجتمع ── */}
@@ -303,8 +301,8 @@ const LandingPage: React.FC = () => {
             imagePosition="left"
             backgroundColor="#E8F2F8"
             stats={[
-              { value: "5000+", label: "كتاب ومرجع" },
-              { value: "8+", label: "نشاط سنوي" },
+              { value: '5000+', label: 'كتاب ومرجع' },
+              { value: '8+', label: 'نشاط سنوي' },
             ]}
           />
         </motion.div>
@@ -541,7 +539,7 @@ const LandingPage: React.FC = () => {
       </div>
       <Footer />
     </>
-  );
-};
+  )
+}
 
-export default LandingPage;
+export default LandingPage

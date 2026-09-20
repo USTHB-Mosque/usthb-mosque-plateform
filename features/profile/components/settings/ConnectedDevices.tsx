@@ -63,9 +63,15 @@ const ConnectedDevices: React.FC<ConnectedDevicesProps> = ({ onBack }) => {
                 <div className="flex flex-col items-start gap-1">
                   <span className="text-base font-alyamama text-[#243245]">{device.name}</span>
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="text-sm font-alyamama text-grey-500">المكان: {device.location}</span>
-                    <span className="text-sm font-alyamama text-grey-500">تاريخ التسجيل: {device.registeredAt}</span>
-                    <span className="text-sm font-alyamama text-grey-500">آخر دخول: {device.lastLogin}</span>
+                    <span className="text-sm font-alyamama text-grey-500">
+                      المكان: {device.location}
+                    </span>
+                    <span className="text-sm font-alyamama text-grey-500">
+                      تاريخ التسجيل: {device.registeredAt}
+                    </span>
+                    <span className="text-sm font-alyamama text-grey-500">
+                      آخر دخول: {device.lastLogin}
+                    </span>
                   </div>
                 </div>
               </div>

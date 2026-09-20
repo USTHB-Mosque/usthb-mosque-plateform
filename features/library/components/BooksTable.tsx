@@ -5,14 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Check, GripVertical, Layers, Minus, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { Book } from '@/payload-types'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import {
@@ -26,12 +19,8 @@ import { languagesConfigArray } from '@/utils/constants/data'
 import { borrowBook } from '@/features/library/server/borrow-book'
 import { cn } from '@/shared/lib/utils'
 
-const typeLabelMap = Object.fromEntries(
-  bookTypesConfigArray.map((t) => [t.value, t.label]),
-)
-const languageLabelMap = Object.fromEntries(
-  languagesConfigArray.map((l) => [l.value, l.label]),
-)
+const typeLabelMap = Object.fromEntries(bookTypesConfigArray.map((t) => [t.value, t.label]))
+const languageLabelMap = Object.fromEntries(languagesConfigArray.map((l) => [l.value, l.label]))
 
 type BooksTableProps = {
   books: Book[]
@@ -152,10 +141,7 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
             const available = (book.availableBooks ?? 0) > 0
             const isSelected = selected.has(book.id)
             return (
-              <TableRow
-                key={book.id}
-                className={cn(isSelected && 'bg-primary-200/5')}
-              >
+              <TableRow key={book.id} className={cn(isSelected && 'bg-primary-200/5')}>
                 <TableCell>
                   <TableCheckbox
                     checked={isSelected}
@@ -172,17 +158,10 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
                     {book.title}
                   </button>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {book.author}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {book.publisher || '—'}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{book.author}</TableCell>
+                <TableCell className="text-muted-foreground">{book.publisher || '—'}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className="bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg"
-                  >
+                  <Badge variant="secondary" className="bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg">
                     {typeLabelMap[book.type] || '—'}
                   </Badge>
                 </TableCell>
@@ -220,10 +199,7 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
                       <DropdownMenuItem onSelect={() => goToDetails(book.id)}>
                         تفاصيل الكتاب
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => borrowOne(book)}
-                        disabled={!available}
-                      >
+                      <DropdownMenuItem onSelect={() => borrowOne(book)} disabled={!available}>
                         <Layers className="size-4" />
                         استعارة
                       </DropdownMenuItem>

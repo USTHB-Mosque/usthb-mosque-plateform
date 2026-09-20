@@ -44,7 +44,10 @@ function FieldDisplay({
 
   if (isEditing) {
     return (
-      <div dir="rtl" className="flex items-center gap-3 bg-fill-contrast py-2 px-4 rounded-lg border border-primary-300">
+      <div
+        dir="rtl"
+        className="flex items-center gap-3 bg-fill-contrast py-2 px-4 rounded-lg border border-primary-300"
+      >
         <Icon className="h-5 w-5 flex-none text-primary-300" />
         <input
           type={field.key === 'email' ? 'email' : 'text'}
@@ -57,10 +60,20 @@ function FieldDisplay({
         />
         {!field.readOnly && (
           <>
-            <button type="button" onClick={onSave} disabled={pending} className="text-primary-300 hover:text-primary">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={pending}
+              className="text-primary-300 hover:text-primary"
+            >
               <Check className="h-4 w-4" />
             </button>
-            <button type="button" onClick={onCancel} disabled={pending} className="text-grey-400 hover:text-grey-500">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={pending}
+              className="text-grey-400 hover:text-grey-500"
+            >
               <X className="h-4 w-4" />
             </button>
           </>
@@ -70,7 +83,10 @@ function FieldDisplay({
   }
 
   return (
-    <div dir="rtl" className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3">
+    <div
+      dir="rtl"
+      className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+    >
       <Icon className="h-5 w-5 flex-none text-grey-400" />
       <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
         {value || 'غير محدد'}

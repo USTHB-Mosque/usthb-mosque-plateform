@@ -16,10 +16,7 @@ const AdminFirstUser: React.FC = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const [user, usersExist] = await Promise.all([
-        getAdminUser(),
-        hasAnyUser(),
-      ])
+      const [user, usersExist] = await Promise.all([getAdminUser(), hasAnyUser()])
 
       if (usersExist) {
         router.replace('/admin/login')
@@ -78,8 +75,10 @@ const AdminFirstUser: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-2">إنشاء المسؤول الأول</h1>
-        <p className="text-gray-600 text-center mb-6">أنشئ حساب المسؤول الأول للوصول إلى لوحة الإدارة</p>
-        
+        <p className="text-gray-600 text-center mb-6">
+          أنشئ حساب المسؤول الأول للوصول إلى لوحة الإدارة
+        </p>
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -88,9 +87,7 @@ const AdminFirstUser: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              البريد الإلكتروني
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">البريد الإلكتروني</label>
             <input
               type="email"
               value={email}
@@ -101,9 +98,7 @@ const AdminFirstUser: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              كلمة المرور
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">كلمة المرور</label>
             <input
               type="password"
               value={password}
@@ -115,9 +110,7 @@ const AdminFirstUser: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              تأكيد كلمة المرور
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">تأكيد كلمة المرور</label>
             <input
               type="password"
               value={confirmPassword}
