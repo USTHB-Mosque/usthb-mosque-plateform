@@ -3,6 +3,9 @@ import type { NextConfig } from 'next'
 import path from 'path'
 
 const nextConfig: NextConfig = {
+  // next dev otherwise appends a generated agent-rules block to AGENTS.md on
+  // every start; AGENTS.md is hand-maintained project guidance.
+  agentRules: false,
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
