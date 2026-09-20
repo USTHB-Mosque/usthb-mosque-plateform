@@ -1,6 +1,6 @@
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 import RegistrationsTable from '@/features/activities/components/RegistrationsTable'
-import UserPage from '../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 
 export default async function DashboardMyRegistrationsPage() {
   const data = await getProfileDashboardData()

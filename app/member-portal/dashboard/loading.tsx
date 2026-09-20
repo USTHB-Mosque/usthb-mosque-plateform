@@ -1,5 +1,5 @@
 import { Skeleton } from '@/shared/ui/skeleton'
-import UserPage from '../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 
 export default function MemberDashboardLoading() {
   return (

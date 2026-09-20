@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Tag } from 'lucide-react'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import { Pagination } from '@/shared/common/Pagination'
 import ListingRenderer from '@/shared/listing/ListingRenderer'
 import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'

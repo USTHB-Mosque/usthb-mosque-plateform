@@ -1,5 +1,5 @@
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
-import UserPage from '../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import LoansTable from '@/features/library/components/LoansTable'
 
 export default async function DashboardMyLoansPage() {

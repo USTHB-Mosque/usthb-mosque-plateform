@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Languages, PackageSearch, Tag, User } from 'lucide-react'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import { Pagination } from '@/shared/common/Pagination'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import ListingRenderer from '@/shared/listing/ListingRenderer'

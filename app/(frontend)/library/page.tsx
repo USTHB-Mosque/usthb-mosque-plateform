@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import LibraryShell from "@/shared/layouts/user/LibraryShell";
-import UserPage from "@/app/member-portal/UserPage";
+import UserPage from "@/shared/layouts/user/UserPage"
 import { useGetProfileQuery } from "@/features/auth/api/profile.queries";
 import { Pagination } from "@/shared/common/Pagination";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
