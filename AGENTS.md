@@ -19,9 +19,9 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 ### Migrations
 
 - **A change under `collections/` (or `globals/`) ships with a migration in the same pull request.** CI enforces this: a PR that touches `collections/` or `globals/` without adding a file under `migrations/` fails.
-- Local dev pushes the schema (`push: true` in the Postgres adapter), so missing migrations are invisible locally and break every fresh production database. Never rely on push beyond development.
+- Local dev pushes the schema (the Postgres adapter's default outside production), so missing migrations are invisible locally and break every fresh production database. Never rely on push beyond development.
 - Generate the migration with `pnpm payload:migrate-create <name>`, review the generated SQL before committing, and run `pnpm payload:migrate` against a scratch database to confirm it applies cleanly.
-- Migrations are the authoritative schema source. `pnpm build` does **not** run migrations; they are applied at deploy/start time (see the docker-compose setup) and can be run manually with `pnpm payload:migrate`.
+- Migrations are the authoritative schema source. `pnpm build` does **not** run migrations; they are applied at deploy/start time, which the deployment setup wires (issue #76) and can be run manually with `pnpm payload:migrate`.
 
 ## Environment-Specific Configuration
 
