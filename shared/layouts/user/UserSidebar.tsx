@@ -68,7 +68,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
     <div className="flex h-dvh overflow-hidden">
       <aside
         className={cn(
-          'hidden h-full shrink-0 flex-col bg-background-2 transition-[width] duration-200 lg:flex',
+          'hidden h-full shrink-0 flex-col bg-background-2 transition-[width] duration-200 md:flex',
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
@@ -147,7 +147,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
         </div>
       </aside>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:bg-background-2">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:bg-background-2">
         <MobileNavigation mainNav={mainNav} userName={userName} userEmail={userEmail} />
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</main>
       </div>
@@ -239,10 +239,10 @@ const MobileNavigation: React.FC<{
   }, [open])
 
   return (
-    <div className="relative z-50 lg:hidden">
+    <div className="relative z-50 md:hidden">
       <header
         dir="ltr"
-        className="sticky top-0 z-50 flex shrink-0 items-center justify-between bg-background-2/95 px-4 py-3 backdrop-blur"
+        className="sticky top-0 z-50 flex shrink-0 items-center justify-between bg-background-2/95 px-8 py-2 backdrop-blur"
       >
         <Link href="/user/dashboard" aria-label="بوابة المستخدم" className="shrink-0">
           <Image
@@ -267,7 +267,7 @@ const MobileNavigation: React.FC<{
       <div
         aria-hidden={!open}
         className={cn(
-          'fixed inset-x-0 bottom-0 top-16 z-40 bg-background-2 transition-opacity duration-300',
+          'fixed inset-x-0 bottom-0 top-14 z-40 border-t border-border bg-background-2 transition-opacity duration-300',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
@@ -275,13 +275,12 @@ const MobileNavigation: React.FC<{
           initial="closed"
           animate={open ? 'open' : 'closed'}
           variants={drawerContainerVariants}
-          className="flex h-full flex-col overflow-y-auto px-4 pb-6 pt-4"
+          className="flex h-full flex-col justify-between overflow-y-auto px-4 pb-6 pt-4"
           aria-label="قائمة المستخدم"
         >
           <motion.div variants={drawerSectionVariants}>
             <NavGroup
               animated
-              hideTitle
               title="القائمة الرئيسية"
               items={mainNav}
               pathname={pathname}
@@ -290,10 +289,9 @@ const MobileNavigation: React.FC<{
             />
           </motion.div>
 
-          <motion.div variants={drawerSectionVariants} className="mt-2 border-t pt-3">
+          <motion.div variants={drawerSectionVariants} className="mt-6 border-t pt-3">
             <NavGroup
               animated
-              hideTitle
               title="القائمة الثانوية"
               items={userSecondaryNav}
               pathname={pathname}
@@ -305,7 +303,8 @@ const MobileNavigation: React.FC<{
             </div>
           </motion.div>
 
-          <motion.div variants={drawerSectionVariants} className="mt-auto flex flex-col gap-3 border-t pt-4">
+          <motion.div variants={drawerSectionVariants} className="mt-auto flex flex-col gap-3 pt-4">
+            <ThemeSwitcher />
             {userName ? (
               <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -321,13 +320,12 @@ const MobileNavigation: React.FC<{
                 </div>
               </div>
             ) : null}
-            <ThemeSwitcher />
             <button
               onClick={onLogout}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              className="flex w-full items-center gap-3 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
             >
-              تسجيل الخروج
               <LogOut className="size-4" />
+              تسجيل الخروج
             </button>
           </motion.div>
         </motion.nav>
