@@ -12,8 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import LoanDetailsDialog from '@/features/library/components/LoanDetailsDialog'
-import ExtensionDialog from '@/features/library/components/ExtensionDialog'
+import { LoanDetailsDialog } from '@/features/library'
+import { ExtensionDialog } from '@/features/library'
 
 interface BookReturnTableProps {
   loans: Loan[]

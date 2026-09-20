@@ -12,6 +12,9 @@ export { default as BookAvailability } from './components/book-details/BookAvail
 export { default as BookBasicInformations } from './components/book-details/BookBasicInformations'
 export { default as BookPreview } from './components/book-details/BookPreview'
 export { default as BookDetailedInformations } from './components/book-details/book-detailed-informations/BookDetailedInformations'
+export { default as LoanDetailsDialog } from './components/LoanDetailsDialog'
+export { default as LoanStatusDetailsDialog } from './components/LoanStatusDetailsDialog'
+export { default as ExtensionDialog } from './components/ExtensionDialog'
 
 export * from './api/books.queries'
 export * from './api/reviews.queries'

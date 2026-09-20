@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import LoanStatusDetailsDialog from '@/features/library/components/LoanStatusDetailsDialog'
+import { LoanStatusDetailsDialog } from '@/features/library'
 
 interface LoanStatusTableProps {
   loans: Loan[]
