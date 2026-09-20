@@ -159,6 +159,8 @@ export interface PayloadMcpApiKeyAuthOperations {
 export interface User {
   id: number;
   fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   faculty?: string | null;
   studyYear?: ('1' | '2' | '3' | '4' | '5') | null;
@@ -586,6 +588,8 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   fullName?: T;
+  firstName?: T;
+  lastName?: T;
   phone?: T;
   faculty?: T;
   studyYear?: T;

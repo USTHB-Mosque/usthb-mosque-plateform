@@ -7,6 +7,7 @@ import ActivityHeader from '@/features/activities/components/activity-details/Ac
 import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
 import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
 import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
+import { getUserActivityRegistration } from '@/features/activities/server/activities'
 
 const MemberActivityDetailsPage = async ({
   params,
@@ -25,6 +26,8 @@ const MemberActivityDetailsPage = async ({
   })
   const activity = result.docs[0]
   if (!activity) return notFound()
+
+  const { registered } = await getUserActivityRegistration(id)
 
   return (
     <UserPage title="تفاصيل النشاط">
@@ -52,6 +55,7 @@ const MemberActivityDetailsPage = async ({
               location={activity.location}
               startDate={activity.startDate}
               openForRegistration={activity.openForRegistration || false}
+              isRegistered={registered}
             />
             <ActivitySchedule schedules={activity.schedules} />
           </div>

@@ -8,6 +8,7 @@ import BookDetailedInformation from '@/features/library/components/book-details/
 import BookPreview from '@/features/library/components/book-details/BookPreview'
 import BookAvailability from '@/features/library/components/book-details/BookAvailability'
 import { getBookFavoriteState } from '@/features/library/server/favorites'
+import { getUserBookLoanState } from '@/features/library/server/borrow-book'
 
 const MemberBookDetailsPage = async ({
   params,
@@ -36,7 +37,10 @@ const MemberBookDetailsPage = async ({
     sort: '-publishDate',
   })
 
-  const { favorited } = await getBookFavoriteState(book.id)
+  const [{ favorited }, { hasActiveLoan }] = await Promise.all([
+    getBookFavoriteState(book.id),
+    getUserBookLoanState(book.id),
+  ])
 
   return (
     <UserPage title="تفاصيل الكتاب">
@@ -53,6 +57,7 @@ const MemberBookDetailsPage = async ({
               bookId={book.id}
               initialFavorited={favorited}
               bookTitle={book.title}
+              hasActiveLoan={hasActiveLoan}
             />
             <BookAvailability
               totalBooks={book.totalBooks}
