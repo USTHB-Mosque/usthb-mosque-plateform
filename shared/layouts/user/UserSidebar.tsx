@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
-import { LogOut, Menu, X } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
-import { logout } from '@/features/auth/server/logout'
-import { toast } from 'sonner'
 import {
   userMainNav,
   userSecondaryNav,
@@ -72,12 +70,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
-        <div
-          className={cn(
-            'flex shrink-0 items-center',
-            collapsed ? 'h-16 justify-center' : 'h-20 pe-2 ps-5',
-          )}
-        >
+        <div className={cn('flex h-20 shrink-0 items-center', collapsed ? 'justify-center' : 'pe-2 ps-5')}>
           <Link href="/user/dashboard" aria-label="بوابة المستخدم">
             {collapsed ? (
               <Image
@@ -114,24 +107,21 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
             collapsed={collapsed}
           />
 
-          <div className={cn('border-t border-border pb-3 pt-3', collapsed ? 'px-2' : 'ps-4 pe-2')}>
-            {collapsed ? (
-              userName ? (
-                <div className="flex justify-center">
-                  <span
-                    title={userName}
-                    className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-primary-200 text-sm font-bold text-[#243245]"
-                  >
-                    {userName.trim().charAt(0) || 'م'}
-                  </span>
-                </div>
-              ) : null
-            ) : userName ? (
-              <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
-                    {userName.trim().charAt(0) || 'م'}
-                  </span>
+          <div className={cn('border-t border-border pb-3 pt-3', collapsed ? 'ps-2' : 'ps-4 pe-2')}>
+            {userName ? (
+              <div
+                className={cn(
+                  'flex h-[56px] items-center rounded-[10px] bg-[#e8f1f7]',
+                  collapsed ? 'justify-center px-0' : 'px-3',
+                )}
+              >
+                <span
+                  title={userName}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]"
+                >
+                  {userName.trim().charAt(0) || 'م'}
+                </span>
+                {!collapsed ? (
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold font-dubai text-[#243245]">
                       {userName}
@@ -140,7 +130,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
                       <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
                     ) : null}
                   </div>
-                </div>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -165,10 +155,15 @@ const NavGroup: React.FC<{
   hideTitle?: boolean
 }> = ({ title, items, pathname, collapsed, onNavigate, animated = false, hideTitle = false }) => {
   return (
-    <div className={cn('flex flex-col gap-1', collapsed ? 'px-2' : 'ps-4 pe-2')}>
-      {!collapsed && !hideTitle ? (
-        <p className="ps-3 pb-1 pt-2 text-[12px] font-medium text-grey-400">{title}</p>
-      ) : null}
+    <div className={cn('flex flex-col gap-1', collapsed ? 'ps-2' : 'ps-4 pe-2')}>
+      <p
+        className={cn(
+          'truncate ps-3 pb-1 pt-2 text-[12px] font-medium text-grey-400',
+          (collapsed || hideTitle) && 'invisible',
+        )}
+      >
+        {title}
+      </p>
       <nav className="flex flex-col gap-1" aria-label={title}>
         {items.map((item) => {
           const Icon = item.icon
@@ -217,15 +212,7 @@ const MobileNavigation: React.FC<{
   userEmail?: string
 }> = ({ mainNav, userName, userEmail }) => {
   const pathname = usePathname()
-  const router = useRouter()
   const [open, setOpen] = useState(false)
-
-  const onLogout = async () => {
-    await logout()
-    toast.success('تم تسجيل الخروج بنجاح')
-    router.push('/auth/login')
-    router.refresh()
-  }
 
   const close = () => setOpen(false)
 
@@ -320,13 +307,6 @@ const MobileNavigation: React.FC<{
                 </div>
               </div>
             ) : null}
-            <button
-              onClick={onLogout}
-              className="flex w-full items-center gap-3 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-            >
-              <LogOut className="size-4" />
-              تسجيل الخروج
-            </button>
           </motion.div>
         </motion.nav>
       </div>
