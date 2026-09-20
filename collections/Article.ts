@@ -7,7 +7,7 @@ export const Article: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', 'publishDate'],
   },
- access: {
+  access: {
     read: () => true,
   },
   fields: [

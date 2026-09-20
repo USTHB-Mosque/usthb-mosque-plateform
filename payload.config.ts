@@ -5,7 +5,6 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { getStoragePlugin } from './storage'
 import {
   User,
@@ -36,9 +35,9 @@ export default buildConfig({
     },
     components: {
       views: {
-        login: { Component: '@/components/admin-views/login/Login' },
-        firstUser: { Component: '@/components/admin-views/first-user/FirstUser' },
-        account: { Component: '@/components/admin-views/account/Account' },
+        login: { Component: '@/features/admin/components/login/Login' },
+        firstUser: { Component: '@/features/admin/components/first-user/FirstUser' },
+        account: { Component: '@/features/admin/components/account/Account' },
       },
     },
   },
@@ -68,16 +67,7 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
 
-  plugins: [
-    getStoragePlugin(),
-    mcpPlugin({
-      mcp: {
-        serverOptions: {
-          serverInfo: { name: 'usthb-mosque-mcp', version: '1.0.0' },
-        },
-      },
-    }),
-  ],
+  plugins: [getStoragePlugin()],
 
   email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_USER || 'noreply@localhost',
@@ -86,10 +76,13 @@ export default buildConfig({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT || '465'),
       secure: process.env.EMAIL_PORT === '465',
-      auth: process.env.EMAIL_USER && process.env.EMAIL_PASSWORD ? {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      } : undefined,
+      auth:
+        process.env.EMAIL_USER && process.env.EMAIL_PASSWORD
+          ? {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASSWORD,
+            }
+          : undefined,
     },
   }),
 })

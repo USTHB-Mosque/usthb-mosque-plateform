@@ -1,7 +1,7 @@
 import { Bookmark, CalendarCheck, LibraryBig, Newspaper } from 'lucide-react'
 import type { Activity, ActivityRegistration, Media } from '@/payload-types'
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
-import UserPage from '../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import StatCard from '@/features/profile/components/dashboard/StatCard'
 import BookReturnTable from '@/features/profile/components/dashboard/BookReturnTable'
 import CalendarWidget from '@/features/profile/components/dashboard/CalendarWidget'

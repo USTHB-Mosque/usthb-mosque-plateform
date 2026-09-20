@@ -3,11 +3,9 @@ import Footer from './Footer'
 import Navbar from './navbar/Navbar'
 import { cn } from '@/shared/lib/utils'
 
-const Layout: React.FC<React.PropsWithChildren & { className?: string; containerClassName?: string }> = ({
-  children,
-  className,
-  containerClassName,
-}) => {
+const Layout: React.FC<
+  React.PropsWithChildren & { className?: string; containerClassName?: string }
+> = ({ children, className, containerClassName }) => {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />

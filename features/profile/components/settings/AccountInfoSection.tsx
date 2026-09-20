@@ -25,7 +25,10 @@ function ReadOnlyField({
       <div className="flex flex-col items-start self-stretch">
         <span className="text-base font-alyamama text-[#243245]">{label}</span>
       </div>
-      <div dir="rtl" className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3">
+      <div
+        dir="rtl"
+        className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+      >
         <Icon className="h-5 w-5 flex-none text-grey-400" />
         <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
           {value || 'غير محدد'}
@@ -41,7 +44,8 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
-  const displayName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || ''
+  const displayName =
+    user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || ''
   const email = user.email || ''
   const phone = user.phone || ''
 
@@ -83,45 +87,61 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
 
       {/* Phone — editable */}
       <div className="flex flex-1 flex-col gap-1">
-          <div className="flex flex-col items-start self-stretch">
-            <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
-          </div>
-          {editing ? (
-            <div dir="rtl" className="flex items-center gap-3 bg-fill-contrast py-2 px-4 rounded-lg border border-primary-300">
-              <Phone className="h-5 w-5 flex-none text-primary-300" />
-              <input
-                type="text"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                disabled={pending}
-                className="flex-1 bg-transparent text-base font-alyamama text-[#243245] outline-none"
-                autoFocus
-                dir="rtl"
-              />
-              <button type="button" onClick={saveEdit} disabled={pending} className="text-primary-300 hover:text-primary">
-                <Check className="h-4 w-4" />
-              </button>
-              <button type="button" onClick={cancelEdit} disabled={pending} className="text-grey-400 hover:text-grey-500">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <div dir="rtl" className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3">
-              <Phone className="h-5 w-5 flex-none text-grey-400" />
-              <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
-                {phone || 'غير محدد'}
-              </span>
-              <button
-                type="button"
-                onClick={startEdit}
-                className="text-grey-400 hover:text-primary-300 transition-colors"
-                aria-label="تعديل رقم الهاتف"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+        <div className="flex flex-col items-start self-stretch">
+          <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
         </div>
+        {editing ? (
+          <div
+            dir="rtl"
+            className="flex items-center gap-3 bg-fill-contrast py-2 px-4 rounded-lg border border-primary-300"
+          >
+            <Phone className="h-5 w-5 flex-none text-primary-300" />
+            <input
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              disabled={pending}
+              className="flex-1 bg-transparent text-base font-alyamama text-[#243245] outline-none"
+              autoFocus
+              dir="rtl"
+            />
+            <button
+              type="button"
+              onClick={saveEdit}
+              disabled={pending}
+              className="text-primary-300 hover:text-primary"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={cancelEdit}
+              disabled={pending}
+              className="text-grey-400 hover:text-grey-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div
+            dir="rtl"
+            className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+          >
+            <Phone className="h-5 w-5 flex-none text-grey-400" />
+            <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+              {phone || 'غير محدد'}
+            </span>
+            <button
+              type="button"
+              onClick={startEdit}
+              className="text-grey-400 hover:text-primary-300 transition-colors"
+              aria-label="تعديل رقم الهاتف"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

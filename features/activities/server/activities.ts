@@ -50,10 +50,7 @@ export async function registerActivityLogic(
     const existingRegistrationResult = await payload.find({
       collection: 'activity-registrations',
       where: {
-        and: [
-          { user: { equals: user.id } },
-          { activity: { equals: activityId } },
-        ],
+        and: [{ user: { equals: user.id } }, { activity: { equals: activityId } }],
       },
       req,
       overrideAccess: false,
@@ -108,10 +105,7 @@ export async function getUserActivityRegistration(activityId: string) {
   const existing = await ctx.payload.find({
     collection: 'activity-registrations',
     where: {
-      and: [
-        { user: { equals: ctx.user.id } },
-        { activity: { equals: activityId } },
-      ],
+      and: [{ user: { equals: ctx.user.id } }, { activity: { equals: activityId } }],
     },
     limit: 1,
     req: ctx.req,

@@ -26,7 +26,9 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
             <BookSearch className="size-5 text-primary" />
             <span className="text-sm text-muted-foreground">النسخ المتوفرة</span>
           </div>
-          <span className="text-base font-semibold text-card-foreground">{totalBooks ?? 0} / {availableBooks ?? 0}</span>
+          <span className="text-base font-semibold text-card-foreground">
+            {totalBooks ?? 0} / {availableBooks ?? 0}
+          </span>
         </div>
 
         <Separator />
@@ -36,7 +38,9 @@ const BookAvailability: React.FC<BookAvailabilityProps> = ({
             <MapPin className="size-5 text-primary" />
             <span className="text-sm text-muted-foreground">الموقع</span>
           </div>
-          <span className="text-base font-semibold text-card-foreground">{location || 'غير محدد'}</span>
+          <span className="text-base font-semibold text-card-foreground">
+            {location || 'غير محدد'}
+          </span>
         </div>
 
         <Separator />

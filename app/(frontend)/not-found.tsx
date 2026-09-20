@@ -34,7 +34,9 @@ const NotFoundPage: React.FC = () => {
         </div>
 
         <Link href="/">
-          <Button size="lg" className="rounded-full px-8">العودة إلى الرئيسية</Button>
+          <Button size="lg" className="rounded-full px-8">
+            العودة إلى الرئيسية
+          </Button>
         </Link>
       </div>
     </Layout>

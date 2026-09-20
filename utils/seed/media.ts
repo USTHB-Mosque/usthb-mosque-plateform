@@ -5,7 +5,9 @@ import fs from 'fs'
 
 const RAMADAN_IMAGE_PATH = path.resolve(process.cwd(), 'public/static/images/ramadan.png')
 
-async function readImageAsBuffer(filePath: string): Promise<{ buffer: Buffer; filename: string; mimeType: string } | null> {
+async function readImageAsBuffer(
+  filePath: string,
+): Promise<{ buffer: Buffer; filename: string; mimeType: string } | null> {
   try {
     if (!fs.existsSync(filePath)) {
       console.warn(`⚠️ Image not found: ${filePath}`)
@@ -14,7 +16,8 @@ async function readImageAsBuffer(filePath: string): Promise<{ buffer: Buffer; fi
 
     const buffer = fs.readFileSync(filePath)
     const ext = path.extname(filePath).toLowerCase()
-    const mimeType = ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/jpeg'
+    const mimeType =
+      ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/jpeg'
 
     return {
       buffer,
@@ -78,9 +81,14 @@ export const seedMedias = async (n: number = 10) => {
         console.log(`✅ Media ${i + 1}/${n} created: ${altText}`)
         successCount++
       } catch (uploadError: unknown) {
-        const errorMessage = uploadError instanceof Error ? uploadError.message : String(uploadError)
+        const errorMessage =
+          uploadError instanceof Error ? uploadError.message : String(uploadError)
 
-        if (errorMessage.includes('Invalid Access Key') || errorMessage.includes('EAUTH') || errorMessage.includes('NoSuchBucket')) {
+        if (
+          errorMessage.includes('Invalid Access Key') ||
+          errorMessage.includes('EAUTH') ||
+          errorMessage.includes('NoSuchBucket')
+        ) {
           console.log(`⚠️ Upload failed for ${altText}, creating placeholder...`)
 
           const media = await payload.create({
@@ -102,6 +110,8 @@ export const seedMedias = async (n: number = 10) => {
     }
   }
 
-  console.log(`\n📊 Media seeding complete: ${successCount} success, ${skipCount} skipped, ${failCount} failed`)
+  console.log(
+    `\n📊 Media seeding complete: ${successCount} success, ${skipCount} skipped, ${failCount} failed`,
+  )
   return { successCount, skipCount, failCount }
 }

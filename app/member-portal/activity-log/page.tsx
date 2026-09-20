@@ -1,4 +1,4 @@
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import { Card } from '@/shared/ui/card'
 
 export default function ActivityLogPage() {

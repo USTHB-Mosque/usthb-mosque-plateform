@@ -14,14 +14,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Input } from '@/shared/ui/input'
 import { PasswordInput } from '@/shared/ui/password-input'
 import { Button } from '@/shared/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/shared/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { useAuthFormStore } from '@/features/auth/store'
 import { register } from '@/features/auth/server/register'
 import { authErrorMessage } from '@/features/auth/lib/auth-errors'
@@ -311,11 +304,7 @@ export default function RegisterWizard() {
                   </FormItem>
                 )}
               />
-              <LandingCtaButton
-                type="submit"
-                label="التالي"
-                className="h-10 sm:h-11 mt-2"
-              />
+              <LandingCtaButton type="submit" label="التالي" className="h-10 sm:h-11 mt-2" />
               <p className="text-center text-gray-600 text-xs sm:text-sm mt-3">
                 لديك حساب؟
                 <Link
@@ -391,11 +380,9 @@ export default function RegisterWizard() {
                               const extOk = ext
                                 ? ['pdf', 'jpg', 'jpeg', 'png'].includes(ext)
                                 : false
-                              const mimeOk = [
-                                'image/jpeg',
-                                'image/png',
-                                'application/pdf',
-                              ].some((p) => file.type.startsWith(p))
+                              const mimeOk = ['image/jpeg', 'image/png', 'application/pdf'].some(
+                                (p) => file.type.startsWith(p),
+                              )
                               if (!extOk || !mimeOk) {
                                 toast.error(
                                   'صيغة الملف غير مدعومة. يرجى اختيار ملف بصيغة PDF أو JPG أو PNG',
@@ -403,7 +390,9 @@ export default function RegisterWizard() {
                                 return
                               }
                               if (file.size > 5 * 1024 * 1024) {
-                                toast.error('حجم الملف كبير جداً. يرجى اختيار ملف أصغر من 5 ميغابايت')
+                                toast.error(
+                                  'حجم الملف كبير جداً. يرجى اختيار ملف أصغر من 5 ميغابايت',
+                                )
                                 return
                               }
                             }
@@ -457,11 +446,7 @@ export default function RegisterWizard() {
                 >
                   السابق
                 </Button>
-                <LandingCtaButton
-                  type="submit"
-                  label="التالي"
-                  className="flex-1 h-10 sm:h-11"
-                />
+                <LandingCtaButton type="submit" label="التالي" className="flex-1 h-10 sm:h-11" />
               </div>
               <p className="text-center text-gray-600 text-xs sm:text-sm mt-3">
                 لديك حساب؟
@@ -552,9 +537,7 @@ export default function RegisterWizard() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-xs sm:text-sm text-gray-700">
-                        أوافق على{' '}
-                        <span className="text-primary">سياسة الخصوصية</span>{' '}
-                        و{' '}
+                        أوافق على <span className="text-primary">سياسة الخصوصية</span> و{' '}
                         <span className="text-primary">شروط الاستخدام</span>
                       </FormLabel>
                       <FormMessage />
@@ -595,4 +578,3 @@ export default function RegisterWizard() {
     </div>
   )
 }
-

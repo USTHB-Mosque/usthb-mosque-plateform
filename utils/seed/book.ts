@@ -28,8 +28,10 @@ const booksData: BookData[] = [
     author: 'الإمام محمد بن إسماعيل البخاري',
     type: 'hadith',
     category: 'religious',
-    shortDescription: 'أصح كتاب بعد كتاب الله تعالى، جمع فيه الإمام البخاري أحاديث النبي ﷺ المرفوعة معتمداً على شروطه الصارمة في التخريج.',
-    longDescription: 'صحيح البخاري هو أشهر كتب الحديث النبوي الشريف، ألّفه الإمام أبو عبد الله محمد بن إسماعيل البخاري (ت 256 هـ). اشترط البخاري في صحيحه شروطاً صارمة في قبول الحديث، فلم يصحّح إلا ما اتفق العلماء على صحّته.',
+    shortDescription:
+      'أصح كتاب بعد كتاب الله تعالى، جمع فيه الإمام البخاري أحاديث النبي ﷺ المرفوعة معتمداً على شروطه الصارمة في التخريج.',
+    longDescription:
+      'صحيح البخاري هو أشهر كتب الحديث النبوي الشريف، ألّفه الإمام أبو عبد الله محمد بن إسماعيل البخاري (ت 256 هـ). اشترط البخاري في صحيحه شروطاً صارمة في قبول الحديث، فلم يصحّح إلا ما اتفق العلماء على صحّته.',
     tags: ['حديث', 'عقيدة'],
     publisher: 'دار طوق النجاة',
     language: 'ar',
@@ -47,8 +49,10 @@ const booksData: BookData[] = [
     author: 'الإمام مسلم بن الحجاج النيسابوري',
     type: 'hadith',
     category: 'religious',
-    shortDescription: 'الكتاب الثاني في مرتبة كتب الحديث النبوي، يضم أحاديث نبوية شريفة مصّنة بشرط الصحيح.',
-    longDescription: 'صحيح مسلم هو ثاني أصح كتب الحديث بعد صحيح البخاري، ألّفه الإمام مسلم بن الحجاج (ت 261 هـ). يتميز بترتيبه الفريد وتشعبه في تخريج الأحاديث المشابهة.',
+    shortDescription:
+      'الكتاب الثاني في مرتبة كتب الحديث النبوي، يضم أحاديث نبوية شريفة مصّنة بشرط الصحيح.',
+    longDescription:
+      'صحيح مسلم هو ثاني أصح كتب الحديث بعد صحيح البخاري، ألّفه الإمام مسلم بن الحجاج (ت 261 هـ). يتميز بترتيبه الفريد وتشعبه في تخريج الأحاديث المشابهة.',
     tags: ['حديث'],
     publisher: 'دار إحياء التراث العربي',
     language: 'ar',
@@ -66,8 +70,10 @@ const booksData: BookData[] = [
     author: 'الإمام يحيى بن شرف النووي',
     type: 'hadith',
     category: 'religious',
-    shortDescription: 'من أشهر كتب الإمام النووي، جمع فيه الأحاديث النبوية المرتبطة بآداب وأخلاق المسلم.',
-    longDescription: 'رياض الصالحين هو من أعظم ما صنف الإمام النووي (ت 676 هـ) من كتب الحديث. قسّمه أبواباً تبدأ بالنيّة وتنتهي بذم الرياء.',
+    shortDescription:
+      'من أشهر كتب الإمام النووي، جمع فيه الأحاديث النبوية المرتبطة بآداب وأخلاق المسلم.',
+    longDescription:
+      'رياض الصالحين هو من أعظم ما صنف الإمام النووي (ت 676 هـ) من كتب الحديث. قسّمه أبواباً تبدأ بالنيّة وتنتهي بذم الرياء.',
     tags: ['حديث', 'أخلاق'],
     publisher: 'مؤسسة الرسالة',
     language: 'ar',
@@ -86,7 +92,8 @@ const booksData: BookData[] = [
     type: 'aqidah',
     category: 'religious',
     shortDescription: 'رسالة مختصرة في أصول الدين تشمل أركان الإيمان والتوحيد.',
-    longDescription: 'العقيدة الواسطية هي رسالة مختصرة كتبها شيخ الإسلام ابن تيمية (ت 728 هـ) لبعض أهل واسط، تتضمن عقيدة أهل السنة والجماعة في أركان الإيمان.',
+    longDescription:
+      'العقيدة الواسطية هي رسالة مختصرة كتبها شيخ الإسلام ابن تيمية (ت 728 هـ) لبعض أهل واسط، تتضمن عقيدة أهل السنة والجماعة في أركان الإيمان.',
     tags: ['عقيدة'],
     publisher: 'دار العاصمة',
     language: 'ar',
@@ -105,7 +112,8 @@ const booksData: BookData[] = [
     type: 'sirah',
     category: 'religious',
     shortDescription: 'كتاب في سيرة النبي ﷺ وشريعته، يشمل أحكام العبادات والمعاملات.',
-    longDescription: 'زاد المعاد من أعظم كتب الإمام ابن القيم (ت 751 هـ)، حيث شرح فيه هدي النبي ﷺ في جميع شؤون الحياة.',
+    longDescription:
+      'زاد المعاد من أعظم كتب الإمام ابن القيم (ت 751 هـ)، حيث شرح فيه هدي النبي ﷺ في جميع شؤون الحياة.',
     tags: ['سيرة', 'فقه'],
     publisher: 'مؤسسة الرسالة',
     language: 'ar',
@@ -124,7 +132,8 @@ const booksData: BookData[] = [
     type: 'tafsir',
     category: 'religious',
     shortDescription: 'تفسير ميسر للقرآن الكريم يسر المعاني ويوضح المرامات.',
-    longDescription: 'تفسير السعدي هو تفسير ميسر لكتاب الله تعالى، ألّفه الإمام السعدي (ت 1376 هـ) ليكون في متناول الجميع.',
+    longDescription:
+      'تفسير السعدي هو تفسير ميسر لكتاب الله تعالى، ألّفه الإمام السعدي (ت 1376 هـ) ليكون في متناول الجميع.',
     tags: ['تفسير'],
     publisher: 'دار ابن الجوزي',
     language: 'ar',
@@ -143,7 +152,8 @@ const booksData: BookData[] = [
     type: 'fiqh',
     category: 'religious',
     shortDescription: 'كتاب جامع في فقه المذاهب الأربعة (الحنفي والشافعي والمالكي والحنابلة).',
-    longDescription: 'الفقه على المذاهب الأربعة للإمام الجزيري (ت 1360 هـ) هو من أشهر الكتب الفقهية المقارنة.',
+    longDescription:
+      'الفقه على المذاهب الأربعة للإمام الجزيري (ت 1360 هـ) هو من أشهر الكتب الفقهية المقارنة.',
     tags: ['فقه'],
     publisher: 'دار الكتب العلمية',
     language: 'ar',
@@ -162,7 +172,8 @@ const booksData: BookData[] = [
     type: 'fiqh',
     category: 'religious',
     shortDescription: 'من أعظم كتب أصول الفقه، يبحث في مقاصد الشريعة الإسلامية.',
-    longDescription: 'الموافقات للشاطبي (ت 790 هـ) هو من أعظم كتب أصول الفقه، حيث بحث في مقاصد الشريعة وأسرارها.',
+    longDescription:
+      'الموافقات للشاطبي (ت 790 هـ) هو من أعظم كتب أصول الفقه، حيث بحث في مقاصد الشريعة وأسرارها.',
     tags: ['فقه'],
     publisher: 'دار ابن عفان',
     language: 'ar',
@@ -181,7 +192,8 @@ const booksData: BookData[] = [
     type: 'sirah',
     category: 'religious',
     shortDescription: 'بحث في السيرة النبوية فاز بالجائزة الأولى في مسابقة السيرة النبوية.',
-    longDescription: 'الرحيق المختوم هو بحث متقن في السيرة النبوية، فاز بالجائزة الأولى في مسابقة السيرة التي أقامتها رابطة العالم الإسلامي.',
+    longDescription:
+      'الرحيق المختوم هو بحث متقن في السيرة النبوية، فاز بالجائزة الأولى في مسابقة السيرة التي أقامتها رابطة العالم الإسلامي.',
     tags: ['سيرة'],
     publisher: 'دار السلام',
     language: 'ar',
@@ -200,7 +212,8 @@ const booksData: BookData[] = [
     type: 'mathematics',
     category: 'scientific',
     shortDescription: 'كتاب تأسيسي في الرياضيات للمبتدئين يشمل العمليات الحسابية والجبر والهندسة.',
-    longDescription: 'كتاب أساسي في الرياضيات يغطي العمليات الحسابية والجبر الأساسي والهندسة للطلاب الجامعيين.',
+    longDescription:
+      'كتاب أساسي في الرياضيات يغطي العمليات الحسابية والجبر الأساسي والهندسة للطلاب الجامعيين.',
     tags: ['رياضيات'],
     publisher: 'دار النهضة',
     language: 'ar',
@@ -219,7 +232,8 @@ const booksData: BookData[] = [
     type: 'physics',
     category: 'scientific',
     shortDescription: 'كتاب في الفيزياء العامة يشمل الميكانيكا والكهرباء والظواهر الطبيعية.',
-    longDescription: 'كتاب متكامل في الفيزياء العامة يشرح المبادئ الأساسية والقوانين الفيزيائية للطلاب.',
+    longDescription:
+      'كتاب متكامل في الفيزياء العامة يشرح المبادئ الأساسية والقوانين الفيزيائية للطلاب.',
     tags: ['فيزياء'],
     publisher: 'دار الفكر',
     language: 'ar',
@@ -238,7 +252,8 @@ const booksData: BookData[] = [
     type: 'biology',
     category: 'scientific',
     shortDescription: 'كتاب مكمل في علم الأحياء يشمل التنظيم الخلوي والوراثة والتطور.',
-    longDescription: 'كتاب أكاديمي شامل في علم الأحياء يغطي التنظيم الخلوي والوراثة والتطور والبيئة.',
+    longDescription:
+      'كتاب أكاديمي شامل في علم الأحياء يغطي التنظيم الخلوي والوراثة والتطور والبيئة.',
     tags: ['أحياء'],
     publisher: 'Pearson',
     language: 'en',
@@ -333,7 +348,8 @@ const booksData: BookData[] = [
     type: 'history',
     category: 'religious',
     shortDescription: 'كتاب جامع في تاريخ الإسلام من البعثة النبوية حتى عصر المؤلف.',
-    longDescription: 'تاريخ الإسلام هو من أعظم كتب التاريخ الإسلامي، ألّفه الإمام الذهبي (ت 748 هـ).',
+    longDescription:
+      'تاريخ الإسلام هو من أعظم كتب التاريخ الإسلامي، ألّفه الإمام الذهبي (ت 748 هـ).',
     tags: ['تاريخ'],
     publisher: 'دار الكتب العلمية',
     language: 'ar',
@@ -371,7 +387,8 @@ const booksData: BookData[] = [
     type: 'dawah',
     category: 'religious',
     shortDescription: 'كتاب في آداب وسائل الدعوة الإسلامية وطرقها الصحيحة.',
-    longDescription: 'كتاب مفيد في آداب الدعوة الإسلامية يشرح الطرق الصحيحة والآداب اللازمة للدعاة.',
+    longDescription:
+      'كتاب مفيد في آداب الدعوة الإسلامية يشرح الطرق الصحيحة والآداب اللازمة للدعاة.',
     tags: ['دعوة', 'أخلاق'],
     publisher: 'دار البشائر الإسلامية',
     language: 'ar',
@@ -415,7 +432,13 @@ function buildLongDescription(title: string, description: string): Record<string
           format: 'right',
           indent: 0,
           version: 1,
-          children: [{ text: 'يُعدّ هذا الكتاب من أبرز المؤلفات في مجاله، وقد حظي باهتمام واسع من العلماء والمهتمين. يتناول الكتاب الموضوع بشكل شامل ومفصل، مع التركيز على الجوانب التطبيقية والنظرية معاً.', type: 'text', version: 1 }],
+          children: [
+            {
+              text: 'يُعدّ هذا الكتاب من أبرز المؤلفات في مجاله، وقد حظي باهتمام واسع من العلماء والمهتمين. يتناول الكتاب الموضوع بشكل شامل ومفصل، مع التركيز على الجوانب التطبيقية والنظرية معاً.',
+              type: 'text',
+              version: 1,
+            },
+          ],
         },
         {
           type: 'list',
@@ -425,9 +448,24 @@ function buildLongDescription(title: string, description: string): Record<string
           indent: 0,
           version: 1,
           children: [
-            { type: 'listitem', value: 1, version: 1, children: [{ text: 'نهج شامل ومتكامل للموضوع', type: 'text', version: 1 }] },
-            { type: 'listitem', value: 2, version: 1, children: [{ text: 'مناسب للمبتدئين والمتقدمين', type: 'text', version: 1 }] },
-            { type: 'listitem', value: 3, version: 1, children: [{ text: 'يحتوي على أمثلة وتدريبات عملية', type: 'text', version: 1 }] },
+            {
+              type: 'listitem',
+              value: 1,
+              version: 1,
+              children: [{ text: 'نهج شامل ومتكامل للموضوع', type: 'text', version: 1 }],
+            },
+            {
+              type: 'listitem',
+              value: 2,
+              version: 1,
+              children: [{ text: 'مناسب للمبتدئين والمتقدمين', type: 'text', version: 1 }],
+            },
+            {
+              type: 'listitem',
+              value: 3,
+              version: 1,
+              children: [{ text: 'يحتوي على أمثلة وتدريبات عملية', type: 'text', version: 1 }],
+            },
           ],
         },
         {
@@ -498,7 +536,9 @@ export const seedBooks = async () => {
         averageRating: bookData.averageRating,
         ratingCount: bookData.ratingCount,
         image: imageId,
-        publishDate: new Date(Date.now() - Math.random() * 10 * 365 * 24 * 60 * 60 * 1000).toISOString(),
+        publishDate: new Date(
+          Date.now() - Math.random() * 10 * 365 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       },
     })
     console.log(`Created: ${bookData.title}`)

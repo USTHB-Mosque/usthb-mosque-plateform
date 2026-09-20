@@ -3,6 +3,9 @@ import type { NextConfig } from 'next'
 import path from 'path'
 
 const nextConfig: NextConfig = {
+  // next dev otherwise appends a generated agent-rules block to AGENTS.md on
+  // every start; AGENTS.md is hand-maintained project guidance.
+  agentRules: false,
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
@@ -109,13 +112,15 @@ const nextConfig: NextConfig = {
 
   async rewrites() {
     return [
+      // Rewrites do not chain: an exact /user rewrite must come first and point
+      // at a real route (there is no /member-portal index page).
+      {
+        source: '/user',
+        destination: '/member-portal/dashboard',
+      },
       {
         source: '/user/:path*',
         destination: '/member-portal/:path*',
-      },
-      {
-        source: '/user',
-        destination: '/user/dashboard',
       },
     ]
   },

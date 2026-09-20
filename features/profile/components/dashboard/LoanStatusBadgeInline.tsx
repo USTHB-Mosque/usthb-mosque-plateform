@@ -20,7 +20,9 @@ const LoanStatusBadgeInline: React.FC<{ loan: Loan }> = ({ loan }) => {
   const status = getEffectiveStatus(loan)
   const config = statusConfig[status] ?? statusConfig.pending
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${config.className}`}>
+    <span
+      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${config.className}`}
+    >
       {config.label}
     </span>
   )

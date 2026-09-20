@@ -20,7 +20,9 @@ interface BookReturnTableProps {
   className?: string
 }
 
-function getDueDateStatus(dueDate: string | null | undefined): { label: string; className: string } | null {
+function getDueDateStatus(
+  dueDate: string | null | undefined,
+): { label: string; className: string } | null {
   if (!dueDate) return null
   const due = new Date(dueDate).getTime()
   const now = Date.now()
@@ -28,7 +30,8 @@ function getDueDateStatus(dueDate: string | null | undefined): { label: string; 
   const threeDays = 3 * 24 * 60 * 60 * 1000
 
   if (diff < 0) return { label: 'متأخر', className: 'bg-[#FF6B6B]/15 text-[#C0392B]' }
-  if (diff <= threeDays) return { label: 'قريب الموعد', className: 'bg-[#FFB020]/15 text-[#B45309]' }
+  if (diff <= threeDays)
+    return { label: 'قريب الموعد', className: 'bg-[#FFB020]/15 text-[#B45309]' }
   return null
 }
 
@@ -58,8 +61,12 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
             <tr className="border-b border-border bg-background-2">
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">الكتاب</th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">الرمز</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">تاريخ الإرجاع</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">ساعة الإرجاع</th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                تاريخ الإرجاع
+              </th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                ساعة الإرجاع
+              </th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">الحالة</th>
               <th className="w-12 px-3 py-3 text-center" />
             </tr>
@@ -84,9 +91,7 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
                     <td className="truncate px-4 py-3 font-medium text-card-foreground">
                       {book?.title || 'كتاب'}
                     </td>
-                    <td className="truncate px-4 py-3 text-muted-foreground">
-                      {loan.id}
-                    </td>
+                    <td className="truncate px-4 py-3 text-muted-foreground">{loan.id}</td>
                     <td className="truncate px-4 py-3 text-muted-foreground">
                       {loan.dueDate
                         ? format(new Date(loan.dueDate), 'dd/MM/yyyy', { locale: arDZ })
@@ -99,7 +104,9 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
                     </td>
                     <td className="px-4 py-3">
                       {dueStatus ? (
-                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${dueStatus.className}`}>
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${dueStatus.className}`}
+                        >
                           {dueStatus.label}
                         </span>
                       ) : (
@@ -145,11 +152,7 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
         </table>
       </div>
 
-      <LoanDetailsDialog
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        loan={detailsLoan}
-      />
+      <LoanDetailsDialog open={detailsOpen} onOpenChange={setDetailsOpen} loan={detailsLoan} />
       <ExtensionDialog
         open={extensionOpen}
         onOpenChange={setExtensionOpen}

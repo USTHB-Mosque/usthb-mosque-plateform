@@ -124,8 +124,7 @@ export const User: CollectionConfig = {
       name: 'verificationNote',
       type: 'text',
       admin: {
-        condition: ({ siblingData }) =>
-          siblingData?.verificationStatus === 'rejected',
+        condition: ({ siblingData }) => siblingData?.verificationStatus === 'rejected',
       },
       access: {
         update: ({ req: { user } }) => isAdmin(user),

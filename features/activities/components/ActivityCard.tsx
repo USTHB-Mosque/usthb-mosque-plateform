@@ -25,7 +25,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
   const media = activity.image as Media | undefined
   const imageUrl = getImageUrl(media?.url)
   const typeLabel = activitiesTypesConfig[activity.type] ?? 'نشاط'
-  const audience = activity.targetAudience?.map((a) => a.name).filter(Boolean).join(' • ') || 'الجميع'
+  const audience =
+    activity.targetAudience
+      ?.map((a) => a.name)
+      .filter(Boolean)
+      .join(' • ') || 'الجميع'
   const scheduleCount = activity.schedules?.length ?? 0
   const startLabel = activity.startDate
     ? format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: arDZ })
@@ -33,14 +37,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
 
   const open = activity.openForRegistration === true
   const badgeText = open ? 'قائم' : 'مكتمل'
-  const badgeClassName = open
-    ? 'bg-success-50'
-    : 'bg-[#24324580]'
+  const badgeClassName = open ? 'bg-success-50' : 'bg-[#24324580]'
 
   const details = [
     { icon: MapPin, text: activity.location || 'في مسجد الجامعة', label: 'الموقع' },
     { icon: Calendar, text: `ابتداء من ${startLabel}`, label: 'تاريخ البداية' },
-    { icon: Clock, text: scheduleCount > 0 ? `${scheduleCount} لقاءات` : 'لقاءات متعددة', label: 'المدة' },
+    {
+      icon: Clock,
+      text: scheduleCount > 0 ? `${scheduleCount} لقاءات` : 'لقاءات متعددة',
+      label: 'المدة',
+    },
     { icon: Users, text: audience, label: 'الفئة' },
   ]
 
@@ -81,7 +87,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
       className={`group/activity relative flex w-full h-[320px] items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
       onClick={handleOpen}
-      onKeyDown={(e) => { if (e.key === 'Enter') handleOpen() }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') handleOpen()
+      }}
       tabIndex={0}
       role="link"
     >
@@ -95,7 +103,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 40vw, 500px"
           />
         )}
-        <span className={`absolute top-[18px] start-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}>
+        <span
+          className={`absolute top-[18px] start-[18px] z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px] ${badgeClassName}`}
+        >
           <span className="relative flex w-fit items-center justify-center text-center font-khalid text-sm font-normal leading-[normal] text-fill-white">
             {badgeText}
           </span>
@@ -108,7 +118,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
             className="relative flex w-full flex-col items-start gap-2.5 self-stretch"
             aria-label="معلومات النشاط"
           >
-            <div className="flex flex-wrap items-start justify-start gap-2 self-stretch" aria-label="تصنيفات النشاط">
+            <div
+              className="flex flex-wrap items-start justify-start gap-2 self-stretch"
+              aria-label="تصنيفات النشاط"
+            >
               <span className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1">
                 <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
                   {typeLabel}
@@ -164,7 +177,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
               aria-label={isShared ? 'تمت مشاركة النشاط' : 'مشاركة النشاط'}
               onClick={handleShare}
             >
-              <Share2 className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isShared ? 'text-primary-300' : 'text-blue-200'}`} aria-hidden="true" />
+              <Share2
+                className={`h-[18px] w-[18px] transition-colors hover:text-primary-300 ${isShared ? 'text-primary-300' : 'text-blue-200'}`}
+                aria-hidden="true"
+              />
             </button>
           </div>
           <Button

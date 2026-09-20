@@ -1,16 +1,12 @@
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import { Media } from '@/payload-types'
 import ArticleDetailClient from '@/features/articles/components/ArticleDetailClient'
 
-const MemberArticleDetailsPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) => {
+const MemberArticleDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
 
   const payload = await getPayload({ config })

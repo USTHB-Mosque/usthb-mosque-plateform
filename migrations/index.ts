@@ -1,6 +1,7 @@
-import * as migration_20260918_094355 from './20260918_094355';
-import * as migration_20260918_102126 from './20260918_102126';
-import * as migration_20260920_104333_add_article_favorites from './20260920_104333_add_article_favorites';
+import * as migration_20260918_094355 from './20260918_094355'
+import * as migration_20260918_102126 from './20260918_102126'
+import * as migration_20260920_092548_drop_mcp_plugin_tables from './20260920_092548_drop_mcp_plugin_tables'
+import * as migration_20260920_104333_add_article_favorites from './20260920_104333_add_article_favorites'
 
 export const migrations = [
   {
@@ -14,8 +15,13 @@ export const migrations = [
     name: '20260918_102126',
   },
   {
+    up: migration_20260920_092548_drop_mcp_plugin_tables.up,
+    down: migration_20260920_092548_drop_mcp_plugin_tables.down,
+    name: '20260920_092548_drop_mcp_plugin_tables',
+  },
+  {
     up: migration_20260920_104333_add_article_favorites.up,
     down: migration_20260920_104333_add_article_favorites.down,
-    name: '20260920_104333_add_article_favorites'
+    name: '20260920_104333_add_article_favorites',
   },
-];
+]

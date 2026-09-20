@@ -14,7 +14,11 @@ type BookFavoriteButtonProps = {
   className?: string
 }
 
-const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initialFavorited, className }) => {
+const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({
+  bookId,
+  initialFavorited,
+  className,
+}) => {
   const [favorited, setFavorited] = useState(initialFavorited)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -46,11 +50,7 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initial
       aria-label={favorited ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
     >
       <span className="font-bold">{favorited ? 'محفوظ' : 'حفظ'}</span>
-      {favorited ? (
-        <BookmarkCheck className="size-5" />
-      ) : (
-        <BookmarkPlus className="size-5" />
-      )}
+      {favorited ? <BookmarkCheck className="size-5" /> : <BookmarkPlus className="size-5" />}
     </Button>
   )
 }

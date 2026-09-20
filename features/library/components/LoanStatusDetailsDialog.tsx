@@ -93,11 +93,7 @@ const LoanStatusDetailsDialog: React.FC<LoanStatusDetailsDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="font-alyamama"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>
           {onCancel && loan?.status !== 'returned' && loan?.status !== 'overdue' && (

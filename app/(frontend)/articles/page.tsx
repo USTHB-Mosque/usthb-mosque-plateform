@@ -36,7 +36,9 @@ const ArticlesPage: React.FC = () => {
       <div className="flex flex-col space-y-14">
         <div className="flex flex-col items-center justify-center gap-12">
           <div className="space-y-4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">مقالات المسجد</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-500 mb-4 md:mb-6 text-center font-khalid">
+              مقالات المسجد
+            </h1>
             <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
               مجموعة من المقالات التي تضيء الفكر وتقرّب القلب إلى الله، تجمع بين الحكمة، والمعرفة،
               وجمال الكلمة الهادفة.

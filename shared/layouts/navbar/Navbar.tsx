@@ -59,7 +59,10 @@ const Navbar: React.FC = () => {
         onClick={() => setMenuOpen(false)}
         className={
           mobile
-            ? cn('block text-base font-medium transition-colors', isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300')
+            ? cn(
+                'block text-base font-medium transition-colors',
+                isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
+              )
             : cn(
                 'relative text-sm font-medium transition-colors duration-200',
                 isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
@@ -210,7 +213,10 @@ const Navbar: React.FC = () => {
                 لوحة التحكم
               </Link>
               <button
-                onClick={() => { setMenuOpen(false); onLogout() }}
+                onClick={() => {
+                  setMenuOpen(false)
+                  onLogout()
+                }}
                 className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-destructive hover:bg-muted"
               >
                 <LogOut className="size-4" />
@@ -219,10 +225,7 @@ const Navbar: React.FC = () => {
             </div>
           ) : (
             <div className="mt-6">
-              <LandingCtaButton
-                label="تسجيل الدخول"
-                onClick={() => router.push('/auth/login')}
-              />
+              <LandingCtaButton label="تسجيل الدخول" onClick={() => router.push('/auth/login')} />
             </div>
           )}
         </nav>

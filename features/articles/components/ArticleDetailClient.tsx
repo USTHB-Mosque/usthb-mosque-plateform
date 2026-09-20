@@ -5,7 +5,10 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import type { SerializedEditorState, SerializedLexicalNode } from '@payloadcms/richtext-lexical/lexical'
+import type {
+  SerializedEditorState,
+  SerializedLexicalNode,
+} from '@payloadcms/richtext-lexical/lexical'
 import { User, Calendar, Clock, Heart, Share2 } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -110,9 +113,7 @@ export default function ArticleDetailClient({
                      prose-strong:text-primary prose-blockquote:border-r-4
                      prose-blockquote:border-primary prose-blockquote:pr-4"
         >
-          {content ? (
-            <RichText data={content} />
-          ) : null}
+          {content ? <RichText data={content} /> : null}
         </div>
       </div>
     </div>

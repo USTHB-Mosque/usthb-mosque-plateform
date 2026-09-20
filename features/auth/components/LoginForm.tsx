@@ -1,69 +1,60 @@
-"use client";
+'use client'
 
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useTransition } from "react";
-import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { useTransition } from 'react'
+import { toast } from 'sonner'
+import { useSearchParams } from 'next/navigation'
 
-import { Input } from "@/shared/ui/input";
-import { PasswordInput } from "@/shared/ui/password-input";
-import LandingCtaButton from "@/shared/ui/LandingCtaButton";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
-import { login } from "@/features/auth/server/login";
-import { safeRedirect } from "@/shared/lib/redirect";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { Input } from '@/shared/ui/input'
+import { PasswordInput } from '@/shared/ui/password-input'
+import LandingCtaButton from '@/shared/ui/LandingCtaButton'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
+import { login } from '@/features/auth/server/login'
+import { safeRedirect } from '@/shared/lib/redirect'
+import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
-  password: z
-    .string()
-    .min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
-});
+  email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
+  password: z.string().min(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }),
+})
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-  const redirect = safeRedirect(searchParams.get("redirect"), "/user/dashboard");
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+  const redirect = safeRedirect(searchParams.get('redirect'), '/user/dashboard')
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
-  });
+  })
 
   const onSubmit = (values: LoginFormValues) => {
     startTransition(async () => {
-      const result = await login(values.email, values.password);
+      const result = await login(values.email, values.password)
       if (!result?.user) {
-        toast.error("فشل تسجيل الدخول");
+        toast.error('فشل تسجيل الدخول')
       } else {
-        await queryClient.invalidateQueries({ queryKey: ["profile"] });
-        toast.success("تم تسجيل الدخول بنجاح");
-        router.push(result.user.role === "admin" ? "/admin" : redirect);
+        await queryClient.invalidateQueries({ queryKey: ['profile'] })
+        toast.success('تم تسجيل الدخول بنجاح')
+        router.push(result.user.role === 'admin' ? '/admin' : redirect)
       }
-    });
-  };
+    })
+  }
 
-  const googleOAuthURL = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000"}/api/oauth/google`;
+  const googleOAuthURL = `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/api/oauth/google`
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen">
@@ -108,10 +99,7 @@ export default function LoginForm() {
           href={googleOAuthURL}
           className="inline-flex items-center justify-center w-full h-10 sm:h-11 lg:h-12 text-xs sm:text-sm md:text-lg font-medium mb-3 sm:mb-4 lg:mb-6 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md"
         >
-          <svg
-            className="w-3 h-3 sm:w-4 sm:h-4 me-1 sm:me-2"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-3 h-3 sm:w-4 sm:h-4 me-1 sm:me-2" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -200,14 +188,11 @@ export default function LoginForm() {
         {/* Link to Register */}
         <p className="text-center text-gray-600 text-xs sm:text-sm md:text-base mt-4 sm:mt-5 lg:mt-8">
           ليس لديك حساب؟
-          <Link
-            href="/auth/register"
-            className="text-primary font-semibold hover:underline ms-1"
-          >
+          <Link href="/auth/register" className="text-primary font-semibold hover:underline ms-1">
             أنشئ حسابك الآن
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }

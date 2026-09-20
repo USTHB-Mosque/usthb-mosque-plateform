@@ -41,7 +41,9 @@ const ActivitySchedule = ({ schedules }: ActivityScheduleProps) => {
                   <div className="flex items-center gap-2.5">
                     <CalendarDays className="size-5 text-primary" />
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-base font-semibold text-card-foreground">{dayName}</span>
+                      <span className="text-base font-semibold text-card-foreground">
+                        {dayName}
+                      </span>
                       <span className="text-sm text-muted-foreground">{dayDate}</span>
                     </div>
                   </div>

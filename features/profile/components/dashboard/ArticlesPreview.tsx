@@ -29,7 +29,8 @@ const ArticlesPreview: React.FC<ArticlesPreviewProps> = ({ articles }) => {
             const cover = article.image as Media | undefined
             const published = article.publishDate || article.createdAt
             const typeLabel =
-              articleTypesConfigArray.find((config) => config.value === article.type)?.label ?? 'مقال'
+              articleTypesConfigArray.find((config) => config.value === article.type)?.label ??
+              'مقال'
 
             return (
               <li key={article.id}>

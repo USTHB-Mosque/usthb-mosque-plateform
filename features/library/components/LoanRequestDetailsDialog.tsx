@@ -62,17 +62,14 @@ const LoanRequestDetailsDialog: React.FC<LoanRequestDetailsDialogProps> = ({
           <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 p-3">
             <Info className="mt-0.5 size-4 shrink-0 text-primary" />
             <p className="text-xs leading-relaxed text-muted-foreground">
-              سيتم مراجعة طلبك من طرف الإدارة. ستتلقى إشعاراً فوراً عند اتخاذ قرار بقبول أو رفض طلبك.
+              سيتم مراجعة طلبك من طرف الإدارة. ستتلقى إشعاراً فوراً عند اتخاذ قرار بقبول أو رفض
+              طلبك.
             </p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="font-alyamama"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>
         </DialogFooter>
