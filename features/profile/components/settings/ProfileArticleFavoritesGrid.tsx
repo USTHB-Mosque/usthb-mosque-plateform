@@ -3,19 +3,19 @@
 import React, { useTransition } from 'react'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
-import type { BookFavorite } from '@/payload-types'
-import BookCard from '@/features/library/components/BookCard'
-import { removeBookFavorite } from '@/features/library'
+import type { ArticleFavorite } from '@/payload-types'
+import BlogArticleCard from '@/features/articles/components/BlogArticleCard'
+import { removeArticleFavorite } from '@/features/library'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import EmptyData from '@/shared/common/EmptyData'
 import { Trash2 } from 'lucide-react'
 
-type ProfileFavoritesGridProps = {
-  favorites: BookFavorite[]
+type ProfileArticleFavoritesGridProps = {
+  favorites: ArticleFavorite[]
 }
 
-const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }) => {
+const ProfileArticleFavoritesGrid: React.FC<ProfileArticleFavoritesGridProps> = ({ favorites }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -23,7 +23,7 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
     return (
       <Card>
         <CardContent className="py-12">
-          <EmptyData title="لا توجد كتب في المفضلة بعد" />
+          <EmptyData title="لا توجد مقالات في المفضلة بعد" />
         </CardContent>
       </Card>
     )
@@ -32,12 +32,12 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {favorites.map((fav) => {
-        const book = fav.book as any
-        if (!book?.id) return null
+        const article = fav.article as any
+        if (!article?.id) return null
 
         return (
           <div key={fav.id} className="relative group max-w-sm">
-            <BookCard book={book} href={`/user/library/book/${book.id}`} />
+            <BlogArticleCard article={article} href={`/articles/${article.id}`} />
             <Button
               size="icon"
               variant="destructive"
@@ -47,7 +47,7 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
                 e.preventDefault()
                 e.stopPropagation()
                 startTransition(async () => {
-                  const r = await removeBookFavorite(fav.id)
+                  const r = await removeArticleFavorite(fav.id)
                   if (r.ok) {
                     toast.success('تمت الإزالة من المفضلة')
                     router.refresh()
@@ -66,4 +66,4 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
   )
 }
 
-export default ProfileFavoritesGrid
+export default ProfileArticleFavoritesGrid

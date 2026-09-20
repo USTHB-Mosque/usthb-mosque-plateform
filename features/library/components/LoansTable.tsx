@@ -29,6 +29,7 @@ import LoanStatusBadge, {
 } from './LoanStatusBadge'
 import ExtensionDialog from './ExtensionDialog'
 import LoanDetailsDialog from './LoanDetailsDialog'
+import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
 
 type LoansFilters = {
   period: 'current' | 'past'
@@ -57,6 +58,19 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
   const [extensionOpen, setExtensionOpen] = useState(false)
   const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [requestDetailsLoan, setRequestDetailsLoan] = useState<Loan | null>(null)
+  const [requestDetailsOpen, setRequestDetailsOpen] = useState(false)
+
+  const openLoanDetails = (loan: Loan) => {
+    const effective = getEffectiveLoanStatus(loan)
+    if (effective === 'pending') {
+      setRequestDetailsLoan(loan)
+      setRequestDetailsOpen(true)
+    } else {
+      setDetailsLoan(loan)
+      setDetailsOpen(true)
+    }
+  }
 
   const { values, searchValues, setValue, reset } = useSearch<LoansFilters>({
     initialValues: {
@@ -215,8 +229,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                   key={loan.id}
                   className="cursor-pointer"
                   onClick={() => {
-                    setDetailsLoan(loan)
-                    setDetailsOpen(true)
+                    openLoanDetails(loan)
                   }}
                 >
                   <TableCell className="font-medium">
@@ -263,8 +276,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                         <DropdownMenuItem
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation()
-                            setDetailsLoan(loan)
-                            setDetailsOpen(true)
+                            openLoanDetails(loan)
                           }}
                         >
                           تفاصيل الإعارة
@@ -317,6 +329,12 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         loan={detailsLoan}
+      />
+
+      <LoanRequestDetailsDialog
+        open={requestDetailsOpen}
+        onOpenChange={setRequestDetailsOpen}
+        loan={requestDetailsLoan}
       />
     </div>
   )

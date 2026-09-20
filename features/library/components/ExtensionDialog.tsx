@@ -92,7 +92,7 @@ const ExtensionDialog: React.FC<ExtensionDialogProps> = ({
                 جاري...
               </>
             ) : (
-              'تأكيد التمديد'
+              'طلب التمديد'
             )}
           </Button>
         </DialogFooter>

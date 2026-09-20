@@ -15,11 +15,13 @@ export { default as BookDetailedInformations } from './components/book-details/b
 export { default as LoanDetailsDialog } from './components/LoanDetailsDialog'
 export { default as LoanStatusDetailsDialog } from './components/LoanStatusDetailsDialog'
 export { default as ExtensionDialog } from './components/ExtensionDialog'
+export { default as LoanRequestDetailsDialog } from './components/LoanRequestDetailsDialog'
 
 export * from './api/books.queries'
 export * from './api/reviews.queries'
 export * from './server/borrow-book'
 export * from './server/review-book'
 export * from './server/favorites'
+export * from './server/article-favorites'
 export * from './types'
 export * as libraryFixtures from './fixtures'

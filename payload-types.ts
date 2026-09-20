@@ -77,6 +77,7 @@ export interface Config {
     reviews: Review;
     'activity-registrations': ActivityRegistration;
     'book-favorites': BookFavorite;
+    'article-favorites': ArticleFavorite;
     'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -94,6 +95,7 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
+    'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -440,6 +442,17 @@ export interface BookFavorite {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-favorites".
+ */
+export interface ArticleFavorite {
+  id: number;
+  user: number | User;
+  article: number | Article;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * API keys control which collections, resources, tools, and prompts MCP clients can access
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -525,6 +538,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'book-favorites';
         value: number | BookFavorite;
+      } | null)
+    | ({
+        relationTo: 'article-favorites';
+        value: number | ArticleFavorite;
       } | null)
     | ({
         relationTo: 'payload-mcp-api-keys';
@@ -799,6 +816,16 @@ export interface ActivityRegistrationsSelect<T extends boolean = true> {
 export interface BookFavoritesSelect<T extends boolean = true> {
   user?: T;
   book?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-favorites_select".
+ */
+export interface ArticleFavoritesSelect<T extends boolean = true> {
+  user?: T;
+  article?: T;
   updatedAt?: T;
   createdAt?: T;
 }

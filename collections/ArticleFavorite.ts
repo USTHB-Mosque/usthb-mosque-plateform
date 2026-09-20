@@ -1,0 +1,73 @@
+import { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
+
+export const ArticleFavorite: CollectionConfig = {
+  slug: 'article-favorites',
+  admin: {
+    useAsTitle: 'id',
+    defaultColumns: ['user', 'article', 'createdAt'],
+  },
+  access: {
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdmin(user)) return true
+      return { user: { equals: user.id } }
+    },
+  },
+  fields: [
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      label: 'المستخدم',
+    },
+    {
+      name: 'article',
+      type: 'relationship',
+      relationTo: 'articles',
+      required: true,
+      label: 'المقال',
+    },
+  ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, req, operation }) => {
+        if (operation !== 'create' || !data?.article) return
+        const userId = data.user ?? req.user?.id
+        if (!userId) return
+        const dup = await req.payload.find({
+          collection: 'article-favorites',
+          where: {
+            and: [{ user: { equals: userId } }, { article: { equals: data.article } }],
+          },
+          limit: 1,
+          req,
+          overrideAccess: false,
+        })
+        if (dup.totalDocs > 0) {
+          throw new APIError('هذا المقال موجود بالفعل في المفضلة', 400)
+        }
+      },
+    ],
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        if (operation === 'create' && req.user) {
+          data.user = req.user.id
+        }
+      },
+    ],
+  },
+}

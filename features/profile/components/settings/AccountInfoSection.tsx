@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
-import { Pencil, Check, X, User, Phone } from 'lucide-react'
+import { Pencil, Check, X, User, Phone, Mail } from 'lucide-react'
 import { User as UserType } from '@/payload-types'
 import { updateProfileField } from '@/features/profile/server/settings'
 import { toast } from 'sonner'
@@ -41,8 +41,8 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
-  const firstName = user.firstName || ''
-  const lastName = user.lastName || ''
+  const displayName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || ''
+  const email = user.email || ''
   const phone = user.phone || ''
 
   const startEdit = () => {
@@ -75,15 +75,14 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
     <div dir="rtl" className="flex flex-1 flex-col gap-6 pt-6">
       <span className="text-xl font-bold font-dubai text-[#243245]">معلومات الحساب</span>
 
-      {/* Name fields row */}
-      <div className="flex items-start gap-[25px]">
-        <ReadOnlyField label="الاسم الأول" value={firstName} icon={User} />
-        <ReadOnlyField label="اسم العائلة" value={lastName} icon={User} />
-      </div>
+      {/* Name */}
+      <ReadOnlyField label="الاسم الكامل" value={displayName} icon={User} />
 
-      {/* Phone row — editable */}
-      <div className="flex items-start gap-[25px]">
-        <div className="flex flex-1 flex-col gap-1">
+      {/* Email */}
+      <ReadOnlyField label="البريد الإلكتروني" value={email} icon={Mail} />
+
+      {/* Phone — editable */}
+      <div className="flex flex-1 flex-col gap-1">
           <div className="flex flex-col items-start self-stretch">
             <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
           </div>
@@ -123,7 +122,6 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
             </div>
           )}
         </div>
-      </div>
     </div>
   )
 }

@@ -47,8 +47,8 @@ const MemberBookDetailsPage = async ({
       <div>
         <ReturnToIndex title="فهرس الكتب" value={book.title} href="/user/library" />
 
-        <div className="mt-4 grid grid-cols-1 gap-6 lg:mt-6 lg:grid-cols-12 lg:gap-10">
-          <div className="space-y-4 lg:col-span-4 lg:space-y-6 xl:col-span-3">
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="flex flex-col gap-5 lg:col-span-4 xl:col-span-3">
             <BookPreview
               image={book.image}
               averageRating={book.averageRating}
@@ -66,7 +66,7 @@ const MemberBookDetailsPage = async ({
             />
           </div>
 
-          <div className="space-y-4 lg:col-span-8 lg:space-y-6 xl:col-span-9">
+          <div className="flex flex-col gap-5 lg:col-span-8 xl:col-span-9">
             <BookBasicInformations
               title={book.title}
               author={book.author}

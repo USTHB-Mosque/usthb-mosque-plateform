@@ -14,9 +14,18 @@ export async function getProfileDashboardData() {
     overrideAccess: false,
   })
 
-  const [favorites, registrations, loans, articles, activities] = await Promise.all([
+  const [favorites, articleFavorites, registrations, loans, articles, activities] = await Promise.all([
     ctx.payload.find({
       collection: 'book-favorites',
+      where: { user: { equals: ctx.user.id } },
+      depth: 2,
+      limit: 100,
+      sort: '-createdAt',
+      req: ctx.req,
+      overrideAccess: false,
+    }),
+    ctx.payload.find({
+      collection: 'article-favorites',
       where: { user: { equals: ctx.user.id } },
       depth: 2,
       limit: 100,
@@ -63,6 +72,7 @@ export async function getProfileDashboardData() {
   return {
     user: fullUser,
     favorites: favorites.docs,
+    articleFavorites: articleFavorites.docs,
     registrations: registrations.docs,
     loans: loans.docs,
     articles: articles.docs,

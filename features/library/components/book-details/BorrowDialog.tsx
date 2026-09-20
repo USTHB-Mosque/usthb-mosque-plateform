@@ -246,14 +246,6 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
                   )
                 })}
               </div>
-
-              {/* Legend */}
-              <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <span className="inline-block size-2 rounded-full bg-destructive/50" />
-                  الجمعة (غير متاح)
-                </span>
-              </div>
             </div>
           </div>
 
@@ -303,7 +295,7 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
                 جاري...
               </>
             ) : (
-              'تأكيد الإعارة'
+              'تأكيد الطلب'
             )}
           </Button>
         </DialogFooter>

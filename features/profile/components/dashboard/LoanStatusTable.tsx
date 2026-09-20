@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import { LoanStatusDetailsDialog } from '@/features/library'
+import { LoanRequestDetailsDialog } from '@/features/library'
 
 interface LoanStatusTableProps {
   loans: Loan[]
@@ -115,14 +115,10 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         </table>
       </div>
 
-      <LoanStatusDetailsDialog
+      <LoanRequestDetailsDialog
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         loan={detailsLoan}
-        onCancel={() => {
-          // TODO: Cancel loan server action
-          setDetailsOpen(false)
-        }}
       />
     </section>
   )
