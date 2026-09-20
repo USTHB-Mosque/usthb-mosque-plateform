@@ -5,7 +5,6 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { getStoragePlugin } from './storage'
 import {
   User,
@@ -66,16 +65,7 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
 
-  plugins: [
-    getStoragePlugin(),
-    mcpPlugin({
-      mcp: {
-        serverOptions: {
-          serverInfo: { name: 'usthb-mosque-mcp', version: '1.0.0' },
-        },
-      },
-    }),
-  ],
+  plugins: [getStoragePlugin()],
 
   email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_USER || 'noreply@localhost',
