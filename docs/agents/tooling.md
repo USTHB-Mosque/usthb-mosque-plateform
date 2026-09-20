@@ -24,6 +24,8 @@ either deleted or documented here as intentionally kept.
 
 ## Local settings
 
-Personal/local agent settings (`.claude/settings.local.json`, anything ending
-in `.local.json`) belong to the developer, not the repo — `*.local.json` is
-gitignored.
+Personal/local agent settings (anything ending in `.local.json`, e.g. an
+editor's `settings.local.json`) belong to the developer, not the repo —
+`*.local.json` is gitignored. The repo itself carries no `.claude/` or similar
+directory; the committed agent tooling is `opencode.json` and `.mcp.json`
+(documented above).
