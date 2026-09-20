@@ -6,7 +6,7 @@ const OTHER_FEATURE_DEEP_IMPORT_MESSAGE =
 // One block per feature: block every OTHER feature's internals, but never the
 // feature's own (no-restricted-imports can't express "not my own feature" in
 // a single glob, so each feature lists its siblings explicitly).
-const FEATURES = ["auth", "library", "activities", "articles", "profile", "landing"];
+const FEATURES = ["auth", "library", "activities", "articles", "profile", "landing", "admin"];
 
 const featureBoundaryRules = FEATURES.map((feature) => ({
   files: [`features/${feature}/**/*.{ts,tsx}`],

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createFirstAdminUser, hasAnyUser } from '@/actions/admin/create-first-user'
-import { getAdminUser } from '@/actions/admin/account'
+import { createFirstAdminUser, hasAnyUser } from '@/features/admin/server/create-first-user'
+import { getAdminUser } from '@/features/admin/server/account'
 
 const AdminFirstUser: React.FC = () => {
   const [email, setEmail] = useState('')

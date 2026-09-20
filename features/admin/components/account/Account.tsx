@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAdminUser, updateAdminProfile, updateAdminPassword } from '@/actions/admin/account'
+import { getAdminUser, updateAdminProfile, updateAdminPassword } from '@/features/admin/server/account'
 import type { User } from '@/payload-types'
 
 const AdminAccount: React.FC = () => {

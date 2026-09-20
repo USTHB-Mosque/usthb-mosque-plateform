@@ -34,9 +34,9 @@ export default buildConfig({
     },
     components: {
       views: {
-        login: { Component: '@/components/admin-views/login/Login' },
-        firstUser: { Component: '@/components/admin-views/first-user/FirstUser' },
-        account: { Component: '@/components/admin-views/account/Account' },
+        login: { Component: '@/features/admin/components/login/Login' },
+        firstUser: { Component: '@/features/admin/components/first-user/FirstUser' },
+        account: { Component: '@/features/admin/components/account/Account' },
       },
     },
   },
