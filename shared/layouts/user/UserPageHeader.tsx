@@ -3,7 +3,6 @@
 import * as React from 'react'
 import { PanelRight, PanelRightOpen } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
-import { Separator } from '@/shared/ui/separator'
 import DarkModeToggle from '@/shared/ui/dark-mode-toggle'
 import SearchInput from '@/shared/ui/search-input'
 import NotificationBell from '@/shared/layouts/user/NotificationBell'
@@ -36,8 +35,8 @@ const UserPageHeader: React.FC<UserPageHeaderProps> = ({
         >
           {collapsed ? <PanelRightOpen className="size-5" /> : <PanelRight className="size-5" />}
         </Button>
-        <Separator orientation="vertical" className="hidden h-[17px] md:block" />
-        <h1 className="hidden text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl] md:block">
+        <div aria-hidden className="hidden h-[17px] w-px bg-stroke-grey md:block" />
+        <h1 className="hidden text-md font-medium font-yamama text-primary-300 whitespace-nowrap [direction:rtl] md:block">
           {title}
         </h1>
       </div>

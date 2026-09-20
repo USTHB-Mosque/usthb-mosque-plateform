@@ -82,7 +82,7 @@ export default async function MemberDashboardPage() {
   return (
     <UserPage title="لوحة التحكم">
       <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-semibold font-khalid text-[#243245] md:text-2xl lg:text-[28px]">
+        <h2 className="text-xl font-regular font-khalid text-[#243245] md:text-2xl lg:text-[32px]">
           اهلا بعودتك{data.user.fullName ? `، ${data.user.fullName}` : ''}
         </h2>
       </div>
