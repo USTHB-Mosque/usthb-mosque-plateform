@@ -1,7 +1,7 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
-import { Calendar, MapPin, User } from 'lucide-react'
+import { Calendar, CheckCircle2, MapPin, User } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
 import LandingCtaButton from '@/shared/ui/LandingCtaButton'
 import { Activity } from '@/payload-types'
@@ -19,6 +19,7 @@ interface ActivityDescriptionProps {
   location: Activity['location']
   startDate: Activity['startDate']
   openForRegistration: boolean
+  isRegistered?: boolean
 }
 
 const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
@@ -27,6 +28,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
   location,
   startDate,
   openForRegistration,
+  isRegistered = false,
 }) => {
   const router = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
@@ -53,6 +55,12 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
     } else {
       toast.error(result.message)
     }
+  }
+
+  const getButtonLabel = () => {
+    if (isRegistered) return 'مسجّل بالفعل'
+    if (!openForRegistration) return 'التسجيل مغلق'
+    return 'سجل الآن'
   }
 
   return (
@@ -82,13 +90,22 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
         </div>
         <Separator />
         <div>
-          <LandingCtaButton
-            label={openForRegistration ? 'سجل الآن' : 'التسجيل مغلق'}
-            onClick={handleRegister}
-            disabled={!openForRegistration}
-            loading={isRegistering}
-            ariaLabel={openForRegistration ? 'سجّل في هذا النشاط' : 'التسجيل مغلق'}
-          />
+          {isRegistered ? (
+            <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
+              <CheckCircle2 className="size-5 text-[#0DE9C3]" />
+              <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
+                أنت مسجّل في هذا النشاط
+              </span>
+            </div>
+          ) : (
+            <LandingCtaButton
+              label={getButtonLabel()}
+              onClick={handleRegister}
+              disabled={!openForRegistration}
+              loading={isRegistering}
+              ariaLabel={getButtonLabel()}
+            />
+          )}
         </div>
       </CardContent>
     </Card>

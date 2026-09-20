@@ -1,9 +1,18 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, Eye, XCircle } from 'lucide-react'
 import type { ActivityRegistration, Activity } from '@/payload-types'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
 
 interface ActivityStatusTableProps {
   registrations: ActivityRegistration[]
@@ -34,6 +43,8 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations }) => {
+  const router = useRouter()
+
   return (
     <section className="rounded-2xl border border-border p-4 sm:p-5">
       <header className="mb-4 flex items-center justify-between">
@@ -43,7 +54,7 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
         </Link>
       </header>
 
-      <div className="overflow-hidden rounded-xl">
+      <div className="overflow-x-auto rounded-xl">
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-background-2">
@@ -64,9 +75,14 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
             ) : (
               registrations.map((registration) => {
                 const activity = registration.activity as Activity | undefined
+                const activityId = activity?.id
                 const status = getStatus(registration)
                 return (
-                  <tr key={registration.id} className="border-b border-border last:border-0 hover:bg-muted/40">
+                  <tr
+                    key={registration.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/40 cursor-pointer"
+                    onClick={() => router.push(`/user/activities/${activityId}`)}
+                  >
                     <td className="truncate px-4 py-3 font-medium text-card-foreground">
                       {activity?.title || 'نشاط'}
                     </td>
@@ -84,9 +100,35 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                       </span>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <button className="rounded-lg p-1 hover:bg-muted" aria-label="خيارات">
-                        <MoreHorizontal className="size-4 text-muted-foreground" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="size-4 text-muted-foreground" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/user/activities/${activityId}`)
+                            }}
+                          >
+                            <Eye className="me-2 size-4" />
+                            تفاصيل النشاط
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // TODO: Cancel registration
+                            }}
+                            variant="destructive"
+                          >
+                            <XCircle className="me-2 size-4" />
+                            الغاء التسجيل
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 )
