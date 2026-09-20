@@ -9,7 +9,8 @@ import { getLatestUpdates } from '@/features/profile/server/latest-updates'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
 import { articleTypesConfigArray } from '@/utils/constants/articles'
-import type { Article, Activity, Media } from '@/payload-types'
+import { bookTypesConfigArray } from '@/utils/constants/books'
+import type { Article, Activity, Book, Media } from '@/payload-types'
 
 const formatDate = (value: string | undefined) =>
   value ? format(new Date(value), 'd MMM yyyy', { locale: arDZ }) : 'غير محدد'
@@ -78,6 +79,38 @@ const ActivityRow: React.FC<{ activity: Activity }> = ({ activity }) => {
   )
 }
 
+const BookRow: React.FC<{ book: Book }> = ({ book }) => {
+  const cover = book.image as Media | undefined
+  const typeLabel =
+    bookTypesConfigArray.find((config) => config.value === book.type)?.label ?? 'كتاب'
+
+  return (
+    <li>
+      <Link
+        href={`/user/library/book/${book.id}`}
+        className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
+      >
+        <Image
+          src={getImageUrl(cover?.url, '/static/images/quran.png')}
+          alt={book.title}
+          width={48}
+          height={48}
+          className="size-12 shrink-0 rounded-md border border-border object-cover"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-card-foreground">{book.title}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {book.author} • {formatDate(book.createdAt)}
+          </p>
+        </div>
+        <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-background-2 px-2.5 text-xs font-medium text-card-foreground">
+          {typeLabel}
+        </span>
+      </Link>
+    </li>
+  )
+}
+
 const LatestUpdatesPage: React.FC = async () => {
   const data = await getLatestUpdates()
 
@@ -120,6 +153,26 @@ const LatestUpdatesPage: React.FC = async () => {
               <ul className="divide-y divide-border">
                 {data.activities.map((activity) => (
                   <ActivityRow key={activity.id} activity={activity} />
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-border bg-card">
+            <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+              <h2 className="text-sm font-semibold text-card-foreground">كتب جديدة</h2>
+              <Link href="/user/library" className="text-xs text-primary-300 hover:underline">
+                عرض الكل
+              </Link>
+            </header>
+            {data.books.length === 0 ? (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                لا توجد كتب جديدة بعد.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {data.books.map((book) => (
+                  <BookRow key={book.id} book={book} />
                 ))}
               </ul>
             )}

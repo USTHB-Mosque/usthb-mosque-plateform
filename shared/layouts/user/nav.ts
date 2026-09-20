@@ -8,6 +8,7 @@ import {
   LibraryBig,
   ScrollText,
   Settings,
+  Heart,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -28,6 +29,7 @@ export const userMainNav: UserNavItem[] = [
   { label: 'المقالات', href: '/user/articles', icon: Newspaper },
   { label: 'الأنشطة', href: '/user/activities', icon: CalendarDays },
   { label: 'تسجيلاتي', href: '/user/my-registrations', icon: CalendarCheck },
+  { label: 'المفضلة', href: '/user/bookmarks', icon: Heart },
 ]
 
 export const userSecondaryNav: UserNavItem[] = [

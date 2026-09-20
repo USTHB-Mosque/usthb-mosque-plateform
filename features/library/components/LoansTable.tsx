@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
@@ -22,6 +23,9 @@ import EmptyData from '@/shared/common/EmptyData'
 import { useSearch } from '@/shared/hooks/use-search'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import LoanStatusBadge, { getDueUrgency, getEffectiveLoanStatus } from './LoanStatusBadge'
+import ExtensionDialog from './ExtensionDialog'
+import LoanDetailsDialog from './LoanDetailsDialog'
+import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
 
 type LoansFilters = {
   period: 'current' | 'past'
@@ -46,6 +50,23 @@ const statusOptions = [
 
 const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
   const router = useRouter()
+  const [extensionLoan, setExtensionLoan] = useState<Loan | null>(null)
+  const [extensionOpen, setExtensionOpen] = useState(false)
+  const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [requestDetailsLoan, setRequestDetailsLoan] = useState<Loan | null>(null)
+  const [requestDetailsOpen, setRequestDetailsOpen] = useState(false)
+
+  const openLoanDetails = (loan: Loan) => {
+    const effective = getEffectiveLoanStatus(loan)
+    if (effective === 'pending') {
+      setRequestDetailsLoan(loan)
+      setRequestDetailsOpen(true)
+    } else {
+      setDetailsLoan(loan)
+      setDetailsOpen(true)
+    }
+  }
 
   const { values, searchValues, setValue, reset } = useSearch<LoansFilters>({
     initialValues: {
@@ -200,7 +221,13 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                         : 'text-muted-foreground'
 
                   return (
-                    <TableRow key={loan.id}>
+                    <TableRow
+                      key={loan.id}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        openLoanDetails(loan)
+                      }}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Image
@@ -238,21 +265,29 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                       <TableCell className="text-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            render={
-                              <button
-                                type="button"
-                                aria-label={`خيارات ${book?.title ?? 'الإعارة'}`}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-                              />
-                            }
+                            className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onSelect={() => router.push(`/user/library/book/${bookId}`)}
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation()
+                                openLoanDetails(loan)
+                              }}
                             >
-                              تفاصيل الكتاب
+                              تفاصيل الإعارة
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation()
+                                setExtensionLoan(loan)
+                                setExtensionOpen(true)
+                              }}
+                            >
+                              طلب تمديد الإعارة
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -276,6 +311,25 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
           ) : null}
         </>
       )}
+
+      <ExtensionDialog
+        open={extensionOpen}
+        onOpenChange={setExtensionOpen}
+        onConfirm={(days) => {
+          console.log('Extension requested:', { loanId: extensionLoan?.id, days })
+          setExtensionOpen(false)
+          setExtensionLoan(null)
+        }}
+        bookTitle={(extensionLoan?.book as Book | undefined)?.title}
+      />
+
+      <LoanDetailsDialog open={detailsOpen} onOpenChange={setDetailsOpen} loan={detailsLoan} />
+
+      <LoanRequestDetailsDialog
+        open={requestDetailsOpen}
+        onOpenChange={setRequestDetailsOpen}
+        loan={requestDetailsLoan}
+      />
     </div>
   )
 }

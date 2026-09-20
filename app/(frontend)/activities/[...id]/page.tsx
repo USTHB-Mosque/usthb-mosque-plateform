@@ -43,10 +43,7 @@ const ActivityDetailsPage = async ({
               image={activity.image}
               type={activity.type}
             />
-            <ActivityInformations
-              longDescription={activity.longDescription}
-              benefits={activity.benefits}
-            />
+            <ActivityInformations longDescription={activity.longDescription} />
           </div>
 
           <div className="flex-1 flex flex-col gap-8">

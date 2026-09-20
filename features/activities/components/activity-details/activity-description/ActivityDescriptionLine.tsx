@@ -12,15 +12,11 @@ const ActivityDescriptionLine: React.FC<ActivityDescriptionLineProps> = ({
   description,
 }) => {
   return (
-    <div className="flex items-center gap-4">
-      <div className="bg-primary/10 size-10 rounded-lg flex items-center justify-center">
-        <div className="[&>svg]:size-5 [&>svg]:text-primary">{icon}</div>
-      </div>
-      <div>
-        <div className="space-y-2">
-          <p className="font-bold">{title}</p>
-          <p className="text-sm">{description}</p>
-        </div>
+    <div className="flex items-start gap-2.5">
+      <div className="text-primary mt-0.5 [&>svg]:size-5">{icon}</div>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm text-muted-foreground">{title}</span>
+        <span className="text-base font-semibold text-card-foreground">{description}</span>
       </div>
     </div>
   )

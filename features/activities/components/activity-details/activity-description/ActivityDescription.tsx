@@ -1,7 +1,7 @@
 'use client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardHeader } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
-import { Calendar, MapPin, User } from 'lucide-react'
+import { Calendar, CheckCircle2, MapPin, User } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
 import LandingCtaButton from '@/shared/ui/LandingCtaButton'
 import { Activity } from '@/payload-types'
@@ -19,6 +19,7 @@ interface ActivityDescriptionProps {
   location: Activity['location']
   startDate: Activity['startDate']
   openForRegistration: boolean
+  isRegistered?: boolean
 }
 
 const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
@@ -27,6 +28,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
   location,
   startDate,
   openForRegistration,
+  isRegistered = false,
 }) => {
   const router = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
@@ -55,19 +57,23 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
     }
   }
 
+  const getButtonLabel = () => {
+    if (isRegistered) return 'مسجّل بالفعل'
+    if (!openForRegistration) return 'التسجيل مغلق'
+    return 'سجل الآن'
+  }
+
   return (
-    <Card className="p-6 space-y-6">
-      <CardHeader>
-        <CardTitle className="text-secondary text-2xl font-bold">التفاصيل</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6 p-0">
-        <div className="space-y-8">
-          <ActivityDescriptionLine
-            icon={<User />}
-            title="المشرف"
-            description={`تحت إشراف ${supervisor}`}
-          />
+    <Card className="p-4 ring-0 border border-border">
+      <div className="flex flex-col gap-4">
+        <CardHeader className="text-xl font-bold p-0">التفاصيل</CardHeader>
+        <Separator />
+
+        <div className="flex flex-col gap-3">
+          <ActivityDescriptionLine icon={<User />} title="المشرف" description={supervisor || ''} />
+          <Separator />
           <ActivityDescriptionLine icon={<MapPin />} title="الموقع" description={location || ''} />
+          <Separator />
           <ActivityDescriptionLine
             icon={<Calendar />}
             title="تاريخ البدء"
@@ -80,17 +86,28 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
             }
           />
         </div>
+
         <Separator />
+
         <div>
-          <LandingCtaButton
-            label={openForRegistration ? 'سجل الآن' : 'التسجيل مغلق'}
-            onClick={handleRegister}
-            disabled={!openForRegistration}
-            loading={isRegistering}
-            ariaLabel={openForRegistration ? 'سجّل في هذا النشاط' : 'التسجيل مغلق'}
-          />
+          {isRegistered ? (
+            <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
+              <CheckCircle2 className="size-5 text-[#0DE9C3]" />
+              <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
+                أنت مسجّل في هذا النشاط
+              </span>
+            </div>
+          ) : (
+            <LandingCtaButton
+              label={getButtonLabel()}
+              onClick={handleRegister}
+              disabled={!openForRegistration}
+              loading={isRegistering}
+              ariaLabel={getButtonLabel()}
+            />
+          )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   )
 }

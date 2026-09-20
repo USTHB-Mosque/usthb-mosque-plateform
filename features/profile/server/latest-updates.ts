@@ -6,7 +6,7 @@ export async function getLatestUpdates() {
   const ctx = await getPayloadWithUser()
   if (!ctx) return null
 
-  const [articles, activities] = await Promise.all([
+  const [articles, activities, books] = await Promise.all([
     ctx.payload.find({
       collection: 'articles',
       depth: 1,
@@ -23,10 +23,19 @@ export async function getLatestUpdates() {
       req: ctx.req,
       overrideAccess: false,
     }),
+    ctx.payload.find({
+      collection: 'books',
+      depth: 1,
+      limit: 4,
+      sort: '-createdAt',
+      req: ctx.req,
+      overrideAccess: false,
+    }),
   ])
 
   return {
     articles: articles.docs,
     activities: activities.docs,
+    books: books.docs,
   }
 }

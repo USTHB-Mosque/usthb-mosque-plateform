@@ -97,3 +97,20 @@ export const registerActivity = async (activityId: string): Promise<RegisterActi
 
   return registerActivityLogic(activityId, ctx)
 }
+
+export async function getUserActivityRegistration(activityId: string) {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { registered: false }
+
+  const existing = await ctx.payload.find({
+    collection: 'activity-registrations',
+    where: {
+      and: [{ user: { equals: ctx.user.id } }, { activity: { equals: activityId } }],
+    },
+    limit: 1,
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  return { registered: Boolean(existing.docs[0]) }
+}

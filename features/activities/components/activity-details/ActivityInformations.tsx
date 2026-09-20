@@ -1,32 +1,44 @@
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardHeader } from '@/shared/ui/card'
+import { Separator } from '@/shared/ui/separator'
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import { Timer } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { Activity } from '@/payload-types'
 
 interface ActivityInformationsProps {
   longDescription: Activity['longDescription']
-  benefits: Activity['benefits']
 }
 
-const ActivityInformations = ({ longDescription, benefits }: ActivityInformationsProps) => {
-  return (
-    <Card className="p-6 space-y-6">
-      <CardHeader className="flex gap-2.5">
-        <div className="w-1.25 h-full py-2 text-primary" />
-        <CardTitle className="text-secondary text-3xl font-bold">عن الدورة</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {longDescription ? <RichText data={longDescription} /> : null}
-        <div className="grid grid-cols-2 gap-6">
-          {benefits.map((benefit) => (
-            <div key={benefit.id} className="bg-background-2 flex gap-4 p-4 rounded-xl">
-              <Timer className="text-primary size-5" />
-              <p>{benefit.name}</p>
-            </div>
-          ))}
+const ActivityInformations = ({ longDescription }: ActivityInformationsProps) => {
+  if (!longDescription) {
+    return (
+      <Card className="p-4 ring-0 border border-border">
+        <div className="flex flex-col gap-2.5">
+          <CardHeader className="text-xl font-bold p-0 pb-2.5">عن الدورة</CardHeader>
+          <Separator />
+          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+            <FileText className="size-8 mb-2 opacity-40" />
+            <p className="text-sm">لا يوجد وصف متاح</p>
+          </div>
         </div>
-      </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="p-4 ring-0 border border-border">
+      <div className="flex flex-col gap-2.5">
+        <CardHeader className="text-xl font-bold p-0 pb-2.5">عن الدورة</CardHeader>
+        <Separator />
+        <div
+          dir="rtl"
+          className="prose prose-sm max-w-none font-yamama text-right
+                     prose-headings:font-khalid prose-headings:text-secondary prose-headings:mt-0
+                     prose-strong:text-primary prose-p:leading-relaxed"
+        >
+          <RichText data={longDescription} />
+        </div>
+      </div>
     </Card>
   )
 }

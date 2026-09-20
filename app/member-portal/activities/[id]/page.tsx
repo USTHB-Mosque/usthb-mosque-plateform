@@ -7,6 +7,7 @@ import ActivityHeader from '@/features/activities/components/activity-details/Ac
 import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
 import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
 import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
+import { getUserActivityRegistration } from '@/features/activities/server/activities'
 
 const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
@@ -22,32 +23,32 @@ const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: str
   const activity = result.docs[0]
   if (!activity) return notFound()
 
+  const { registered } = await getUserActivityRegistration(id)
+
   return (
     <UserPage title="تفاصيل النشاط">
       <div>
         <ReturnToIndex title="فهرس الأنشطة" value={activity.title} href="/user/activities" />
 
-        <div className="mt-6 flex flex-col gap-8 lg:flex-row">
-          <div className="flex flex-3 flex-col gap-8">
+        <div className="mt-6 flex flex-col gap-5 lg:flex-row">
+          <div className="flex flex-3 flex-col gap-5">
             <ActivityHeader
               title={activity.title}
               supervisor={activity.supervisor}
               image={activity.image}
               type={activity.type}
             />
-            <ActivityInformations
-              longDescription={activity.longDescription}
-              benefits={activity.benefits}
-            />
+            <ActivityInformations longDescription={activity.longDescription} />
           </div>
 
-          <div className="flex flex-1 flex-col gap-8">
+          <div className="flex flex-1 flex-col gap-5">
             <ActivityDescription
               activityId={String(activity.id)}
               supervisor={activity.supervisor}
               location={activity.location}
               startDate={activity.startDate}
               openForRegistration={activity.openForRegistration || false}
+              isRegistered={registered}
             />
             <ActivitySchedule schedules={activity.schedules} />
           </div>

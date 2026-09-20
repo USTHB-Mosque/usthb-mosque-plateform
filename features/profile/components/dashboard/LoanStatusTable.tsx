@@ -1,16 +1,33 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, Eye, XCircle } from 'lucide-react'
 import type { Loan } from '@/payload-types'
 import LoanStatusBadge from './LoanStatusBadgeInline'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
+import { LoanRequestDetailsDialog } from '@/features/library'
 
 interface LoanStatusTableProps {
   loans: Loan[]
 }
 
 const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
+  const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+
+  const openDetails = (loan: Loan) => {
+    setDetailsLoan(loan)
+    setDetailsOpen(true)
+  }
+
   return (
     <section className="rounded-2xl border border-border p-4 sm:p-5">
       <header className="mb-4 flex items-center justify-between">
@@ -20,7 +37,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         </Link>
       </header>
 
-      <div className="overflow-hidden rounded-xl">
+      <div className="overflow-x-auto rounded-xl">
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-background-2">
@@ -42,11 +59,12 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
               </tr>
             ) : (
               loans.map((loan) => {
-                const book = loan.book as { title?: string } | undefined
+                const book = loan.book as { id?: number; title?: string } | undefined
                 return (
                   <tr
                     key={loan.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/40"
+                    className="border-b border-border last:border-0 hover:bg-muted/40 cursor-pointer"
+                    onClick={() => openDetails(loan)}
                   >
                     <td className="truncate px-4 py-3 font-medium text-card-foreground">
                       {book?.title || 'كتاب'}
@@ -59,9 +77,35 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                       <LoanStatusBadge loan={loan} />
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <button className="rounded-lg p-1 hover:bg-muted" aria-label="خيارات">
-                        <MoreHorizontal className="size-4 text-muted-foreground" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="size-4 text-muted-foreground" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openDetails(loan)
+                            }}
+                          >
+                            <Eye className="me-2 size-4" />
+                            التفاصيل
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // TODO: Cancel loan
+                            }}
+                            variant="destructive"
+                          >
+                            <XCircle className="me-2 size-4" />
+                            الغاء الطلب
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 )
@@ -70,6 +114,12 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
           </tbody>
         </table>
       </div>
+
+      <LoanRequestDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        loan={detailsLoan}
+      />
     </section>
   )
 }

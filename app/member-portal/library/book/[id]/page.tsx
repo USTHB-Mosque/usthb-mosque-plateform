@@ -8,6 +8,7 @@ import BookDetailedInformation from '@/features/library/components/book-details/
 import BookPreview from '@/features/library/components/book-details/BookPreview'
 import BookAvailability from '@/features/library/components/book-details/BookAvailability'
 import { getBookFavoriteState } from '@/features/library/server/favorites'
+import { getUserBookLoanState } from '@/features/library/server/borrow-book'
 
 const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
@@ -32,15 +33,18 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
     sort: '-publishDate',
   })
 
-  const { favorited } = await getBookFavoriteState(book.id)
+  const [{ favorited }, { hasActiveLoan }] = await Promise.all([
+    getBookFavoriteState(book.id),
+    getUserBookLoanState(book.id),
+  ])
 
   return (
     <UserPage title="تفاصيل الكتاب">
       <div>
         <ReturnToIndex title="فهرس الكتب" value={book.title} href="/user/library" />
 
-        <div className="mt-4 grid grid-cols-1 gap-6 lg:mt-6 lg:grid-cols-12 lg:gap-10">
-          <div className="space-y-4 lg:col-span-4 lg:space-y-6 xl:col-span-3">
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="flex flex-col gap-5 lg:col-span-4 xl:col-span-3">
             <BookPreview
               image={book.image}
               averageRating={book.averageRating}
@@ -49,6 +53,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
               bookId={book.id}
               initialFavorited={favorited}
               bookTitle={book.title}
+              hasActiveLoan={hasActiveLoan}
             />
             <BookAvailability
               totalBooks={book.totalBooks}
@@ -57,7 +62,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
             />
           </div>
 
-          <div className="space-y-4 lg:col-span-8 lg:space-y-6 xl:col-span-9">
+          <div className="flex flex-col gap-5 lg:col-span-8 xl:col-span-9">
             <BookBasicInformations
               title={book.title}
               author={book.author}

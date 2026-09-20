@@ -197,7 +197,11 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                     : 'نشاط'
 
                   return (
-                    <TableRow key={registration.id}>
+                    <TableRow
+                      key={registration.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/user/activities/${activityId}`)}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Image
@@ -239,19 +243,17 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                       <TableCell className="text-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            render={
-                              <button
-                                type="button"
-                                aria-label={`خيارات ${activity?.title ?? 'التسجيل'}`}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-                              />
-                            }
+                            className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onSelect={() => router.push(`/user/activities/${activityId}`)}
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation()
+                                router.push(`/user/activities/${activityId}`)
+                              }}
                             >
                               تفاصيل النشاط
                             </DropdownMenuItem>

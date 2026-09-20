@@ -76,6 +76,7 @@ export interface Config {
     reviews: Review;
     'activity-registrations': ActivityRegistration;
     'book-favorites': BookFavorite;
+    'article-favorites': ArticleFavorite;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
+    'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -138,6 +140,8 @@ export interface UserAuthOperations {
 export interface User {
   id: number;
   fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   faculty?: string | null;
   studyYear?: ('1' | '2' | '3' | '4' | '5') | null;
@@ -418,6 +422,17 @@ export interface BookFavorite {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-favorites".
+ */
+export interface ArticleFavorite {
+  id: number;
+  user: number | User;
+  article: number | Article;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -475,6 +490,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'book-favorites';
         value: number | BookFavorite;
+      } | null)
+    | ({
+        relationTo: 'article-favorites';
+        value: number | ArticleFavorite;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -524,6 +543,8 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   fullName?: T;
+  firstName?: T;
+  lastName?: T;
   phone?: T;
   faculty?: T;
   studyYear?: T;
@@ -733,6 +754,16 @@ export interface ActivityRegistrationsSelect<T extends boolean = true> {
 export interface BookFavoritesSelect<T extends boolean = true> {
   user?: T;
   book?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-favorites_select".
+ */
+export interface ArticleFavoritesSelect<T extends boolean = true> {
+  user?: T;
+  article?: T;
   updatedAt?: T;
   createdAt?: T;
 }
