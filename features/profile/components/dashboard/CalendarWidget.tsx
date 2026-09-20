@@ -5,6 +5,22 @@ import { ChevronRight, ChevronLeft, ChevronDown, RotateCcw } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = React.useState(
+    () => typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
+  )
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(query)
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+    mql.addEventListener('change', handler)
+    setMatches(mql.matches)
+    return () => mql.removeEventListener('change', handler)
+  }, [query])
+
+  return matches
+}
+
 const HIJRI_MONTHS = [
   'محرم',
   'صفر',
@@ -153,6 +169,8 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const [currentYear, setCurrentYear] = useState(hijriToday.year)
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isWeekMode = useMediaQuery('(max-width: 639px)')
+  const [weekIndex, setWeekIndex] = useState(0)
 
   const daysInMonth =
     calendarMode === 'hijri'
@@ -216,6 +234,32 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
     }
   }
 
+  const goPrev = () => {
+    if (isWeekMode && weekIndex > 0) {
+      setWeekIndex(weekIndex - 1)
+      return
+    }
+    if (isWeekMode) setWeekIndex(4)
+    goToPrevMonth()
+  }
+
+  const goNext = () => {
+    if (isWeekMode && weekIndex < 4) {
+      setWeekIndex(weekIndex + 1)
+      return
+    }
+    if (isWeekMode) setWeekIndex(0)
+    goToNextMonth()
+  }
+
+  const getTodayWeekRow = () => {
+    const gridIndex =
+      calendarMode === 'hijri'
+        ? getHijriFirstDayOfWeek(hijriToday.year, hijriToday.month) + hijriToday.day - 2
+        : getGregorianFirstDayOfWeek(today.getFullYear(), today.getMonth()) + today.getDate() - 2
+    return Math.max(0, Math.min(4, Math.floor(gridIndex / 7)))
+  }
+
   const goToToday = () => {
     if (calendarMode === 'hijri') {
       setCurrentMonth(hijriToday.month)
@@ -224,6 +268,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       setCurrentMonth(today.getMonth())
       setCurrentYear(today.getFullYear())
     }
+    setWeekIndex(getTodayWeekRow())
   }
 
   const isNavigatedAway =
