@@ -15,6 +15,8 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
+import NotificationBell from '@/shared/layouts/user/NotificationBell'
+import ThemeSwitcher from '@/shared/ui/theme-switcher'
 import { motion } from 'motion/react'
 import type { Variants } from 'motion/react'
 
@@ -160,10 +162,11 @@ const NavGroup: React.FC<{
   collapsed: boolean
   onNavigate?: () => void
   animated?: boolean
-}> = ({ title, items, pathname, collapsed, onNavigate, animated = false }) => {
+  hideTitle?: boolean
+}> = ({ title, items, pathname, collapsed, onNavigate, animated = false, hideTitle = false }) => {
   return (
     <div className={cn('flex flex-col gap-1', collapsed ? 'px-2' : 'ps-4 pe-2')}>
-      {!collapsed ? (
+      {!collapsed && !hideTitle ? (
         <p className="ps-3 pb-1 pt-2 text-[12px] font-medium text-grey-400">{title}</p>
       ) : null}
       <nav className="flex flex-col gap-1" aria-label={title}>
@@ -275,9 +278,10 @@ const MobileNavigation: React.FC<{
           className="flex h-full flex-col overflow-y-auto px-4 pb-6 pt-4"
           aria-label="قائمة المستخدم"
         >
-          <motion.div variants={drawerSectionVariants} className="flex-1">
+          <motion.div variants={drawerSectionVariants}>
             <NavGroup
               animated
+              hideTitle
               title="القائمة الرئيسية"
               items={mainNav}
               pathname={pathname}
@@ -286,18 +290,22 @@ const MobileNavigation: React.FC<{
             />
           </motion.div>
 
-          <motion.div variants={drawerSectionVariants} className="mt-2">
+          <motion.div variants={drawerSectionVariants} className="mt-2 border-t pt-3">
             <NavGroup
               animated
+              hideTitle
               title="القائمة الثانوية"
               items={userSecondaryNav}
               pathname={pathname}
               collapsed={false}
               onNavigate={close}
             />
+            <div className="ms-4 me-2 mt-1">
+              <NotificationBell sidebar />
+            </div>
           </motion.div>
 
-          <motion.div variants={drawerSectionVariants} className="mt-2 flex flex-col gap-3 border-t pt-4">
+          <motion.div variants={drawerSectionVariants} className="mt-auto flex flex-col gap-3 border-t pt-4">
             {userName ? (
               <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -313,12 +321,13 @@ const MobileNavigation: React.FC<{
                 </div>
               </div>
             ) : null}
+            <ThemeSwitcher />
             <button
               onClick={onLogout}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
             >
-              <LogOut className="size-4" />
               تسجيل الخروج
+              <LogOut className="size-4" />
             </button>
           </motion.div>
         </motion.nav>

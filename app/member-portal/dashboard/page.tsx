@@ -81,11 +81,18 @@ export default async function MemberDashboardPage() {
 
   return (
     <UserPage title="لوحة التحكم">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-xl font-bold font-dubai text-[#243245]">
+          مرحبًا بعودتك{data.user.fullName ? `، ${data.user.fullName}` : ''}
+        </h2>
+        <p className="text-sm text-grey-500">هذه نظرة عامة على نشاطك في المنصة</p>
+      </div>
+
+      {/* <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <StatCard key={stat.href} {...stat} />
         ))}
-      </div>
+      </div> */}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <CalendarWidget events={calendarEvents} />
