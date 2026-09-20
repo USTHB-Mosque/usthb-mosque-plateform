@@ -23,3 +23,21 @@ jobs:
       - run: pnpm lint
 
       - run: pnpm typecheck
+
+  migration-guard:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if collections changed without a migration
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          schema_changed=$(git diff --name-only "$BASE...HEAD" -- collections/ globals/ | wc -l)
+          migrations_changed=$(git diff --name-only "$BASE...HEAD" -- migrations/ | wc -l)
+          if [ "$schema_changed" -gt 0 ] && [ "$migrations_changed" -eq 0 ]; then
+            echo "::error::A PR that changes collections/ or globals/ must add a migration under migrations/. Run 'pnpm payload:migrate-create <name>' and commit the result."
+            exit 1
+          fi

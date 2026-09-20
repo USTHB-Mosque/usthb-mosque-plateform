@@ -8,7 +8,7 @@
     "dev:stop": "pnpx supabase stop",
     "dev:preview": "NODE_ENV=preview next dev",
     "dev:full": "pnpx supabase start && next dev",
-    "build": "payload migrate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
