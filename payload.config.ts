@@ -17,6 +17,7 @@ import {
   Review,
   ActivityRegistrations,
   BookFavorite,
+  ArticleFavorite,
 } from './collections'
 
 const filename = fileURLToPath(import.meta.url)
@@ -51,6 +52,7 @@ export default buildConfig({
     Review,
     ActivityRegistrations,
     BookFavorite,
+    ArticleFavorite,
   ],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

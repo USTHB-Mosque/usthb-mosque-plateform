@@ -94,3 +94,24 @@ export const borrowBook = async (
 
   return borrowBookLogic(bookId, ctx, options)
 }
+
+export async function getUserBookLoanState(bookId: number) {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { hasActiveLoan: false }
+
+  const existing = await ctx.payload.find({
+    collection: 'loans',
+    where: {
+      and: [
+        { user: { equals: ctx.user.id } },
+        { book: { equals: bookId } },
+        { status: { not_equals: 'returned' } },
+      ],
+    },
+    limit: 1,
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  return { hasActiveLoan: Boolean(existing.docs[0]) }
+}

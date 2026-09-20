@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
-import { BookmarkPlus, Heart } from 'lucide-react'
+import { BookmarkCheck, BookmarkPlus } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { toggleBookFavorite } from '@/features/library/server/favorites'
 import { toast } from 'sonner'
@@ -23,11 +23,12 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initial
     <Button
       type="button"
       variant="outline"
-      size="icon"
       className={cn(
-        'shrink-0 rounded-xl border-2 transition-colors flex-1',
-        favorited && 'border-primary/50 bg-primary/5 text-primary',
-        className
+        'rounded-xl transition-all flex-1 h-12 border-primary/40',
+        favorited
+          ? 'bg-primary/10 text-primary border-primary/40 hover:bg-primary/15'
+          : 'border-border',
+        className,
       )}
       disabled={pending}
       onClick={() => {
@@ -44,8 +45,12 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({ bookId, initial
       }}
       aria-label={favorited ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
     >
-      <span className="font-bold text-secondary">حفظ</span>
-      <BookmarkPlus className={cn('size-5', favorited && 'fill-primary text-primary')} />
+      <span className="font-bold">{favorited ? 'محفوظ' : 'حفظ'}</span>
+      {favorited ? (
+        <BookmarkCheck className="size-5" />
+      ) : (
+        <BookmarkPlus className="size-5" />
+      )}
     </Button>
   )
 }

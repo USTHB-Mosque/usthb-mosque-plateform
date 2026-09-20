@@ -205,23 +205,15 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
                 </TableCell>
                 <TableCell className="text-end">
                   <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <button
-                          type="button"
-                          aria-label={`خيارات ${book.title}`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-                        />
-                      }
-                    >
+                    <DropdownMenuTrigger className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none">
                       <MoreVertical className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => goToDetails(book.id)}>
+                      <DropdownMenuItem onClick={() => goToDetails(book.id)}>
                         تفاصيل الكتاب
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onSelect={() => borrowOne(book)}
+                        onClick={() => borrowOne(book)}
                         disabled={!available}
                       >
                         <Layers className="size-4" />
