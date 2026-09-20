@@ -1,5 +1,5 @@
 'use client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardHeader } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
 import { Calendar, CheckCircle2, MapPin, User } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
@@ -64,18 +64,20 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
   }
 
   return (
-    <Card className="p-6 space-y-6">
-      <CardHeader>
-        <CardTitle className="text-secondary text-2xl font-bold">التفاصيل</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6 p-0">
-        <div className="space-y-8">
+    <Card className="p-4 ring-0 border border-border">
+      <div className="flex flex-col gap-4">
+        <CardHeader className="text-xl font-bold p-0">التفاصيل</CardHeader>
+        <Separator />
+
+        <div className="flex flex-col gap-3">
           <ActivityDescriptionLine
             icon={<User />}
             title="المشرف"
-            description={`تحت إشراف ${supervisor}`}
+            description={supervisor || ''}
           />
+          <Separator />
           <ActivityDescriptionLine icon={<MapPin />} title="الموقع" description={location || ''} />
+          <Separator />
           <ActivityDescriptionLine
             icon={<Calendar />}
             title="تاريخ البدء"
@@ -88,7 +90,9 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
             }
           />
         </div>
+
         <Separator />
+
         <div>
           {isRegistered ? (
             <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
@@ -107,7 +111,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
             />
           )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   )
 }

@@ -45,7 +45,6 @@ const ActivityDetailsPage = async ({
             />
             <ActivityInformations
               longDescription={activity.longDescription}
-              benefits={activity.benefits}
             />
           </div>
 

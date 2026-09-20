@@ -34,8 +34,8 @@ const MemberActivityDetailsPage = async ({
       <div>
         <ReturnToIndex title="فهرس الأنشطة" value={activity.title} href="/user/activities" />
 
-        <div className="mt-6 flex flex-col gap-8 lg:flex-row">
-          <div className="flex flex-3 flex-col gap-8">
+        <div className="mt-6 flex flex-col gap-5 lg:flex-row">
+          <div className="flex flex-3 flex-col gap-5">
             <ActivityHeader
               title={activity.title}
               supervisor={activity.supervisor}
@@ -44,11 +44,10 @@ const MemberActivityDetailsPage = async ({
             />
             <ActivityInformations
               longDescription={activity.longDescription}
-              benefits={activity.benefits}
             />
           </div>
 
-          <div className="flex flex-1 flex-col gap-8">
+          <div className="flex flex-1 flex-col gap-5">
             <ActivityDescription
               activityId={String(activity.id)}
               supervisor={activity.supervisor}
