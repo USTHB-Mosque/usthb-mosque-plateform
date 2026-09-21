@@ -22,6 +22,16 @@ import {
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || ''
+const devExtraOrigin = process.env.NEXT_PUBLIC_DEV_ORIGIN || ''
+
+function allowedOrigins(): string[] {
+  const origins = isDevelopment ? ['http://localhost:3000'] : [serverURL]
+  if (devExtraOrigin) origins.push(devExtraOrigin)
+  return origins.filter(Boolean)
+}
+
 export default buildConfig({
   admin: {
     user: 'users',
@@ -53,9 +63,9 @@ export default buildConfig({
     BookFavorite,
     ArticleFavorite,
   ],
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
-  cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
-  csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
+  serverURL: serverURL,
+  cors: allowedOrigins(),
+  csrf: allowedOrigins(),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
