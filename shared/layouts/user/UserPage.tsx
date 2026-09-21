@@ -12,9 +12,7 @@ const UserPage: React.FC<UserPageProps> = ({ title, description, children }) => 
       <UserPageHeader title={title} />
       <div className="m-3 md:mt-0 min-h-0 flex-1 overflow-y-auto">
         <div className="min-h-full space-y-6 rounded-2xl border border-tabs-active bg-background p-3 sm:p-4 lg:p-5">
-          {description ? (
-            <p className="mb-4 text-muted-foreground">{description}</p>
-          ) : null}
+          {description ? <p className="mb-4 text-muted-foreground">{description}</p> : null}
           {children}
         </div>
       </div>

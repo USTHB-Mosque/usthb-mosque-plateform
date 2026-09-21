@@ -6,8 +6,8 @@ import { createPortal } from 'react-dom'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
 
 function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = React.useState(
-    () => typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
+  const [matches, setMatches] = React.useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
   )
 
   React.useEffect(() => {
@@ -160,7 +160,11 @@ interface CalendarWidgetProps {
   events?: CalendarEvent[]
 }
 
-function computeTodayWeekRow(today: Date, hijriToday: { day: number; month: number; year: number }, mode: CalendarMode): number {
+function computeTodayWeekRow(
+  today: Date,
+  hijriToday: { day: number; month: number; year: number },
+  mode: CalendarMode,
+): number {
   const gridIndex =
     mode === 'hijri'
       ? getHijriFirstDayOfWeek(hijriToday.year, hijriToday.month) + hijriToday.day - 2
@@ -178,11 +182,10 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isWeekMode = useMediaQuery('(max-width: 639px)')
-  const [weekIndex, setWeekIndex] = useState(
-    () =>
-      typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
-        ? computeTodayWeekRow(today, hijriToday, 'hijri')
-        : 0,
+  const [weekIndex, setWeekIndex] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
+      ? computeTodayWeekRow(today, hijriToday, 'hijri')
+      : 0,
   )
 
   const daysInMonth =
@@ -295,7 +298,11 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       const h = gregorianToHijri(date)
       return h.day === hijriToday.day && h.month === hijriToday.month && h.year === hijriToday.year
     }
-    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate()
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    )
   }
 
   const getEventsForDay = (idx: number): CalendarEvent[] => {
@@ -307,9 +314,17 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       if (calendarMode === 'hijri') {
         const eventHijri = gregorianToHijri(eventDate)
         const cellHijri = gregorianToHijri(date)
-        return eventHijri.day === cellHijri.day && eventHijri.month === cellHijri.month && eventHijri.year === cellHijri.year
+        return (
+          eventHijri.day === cellHijri.day &&
+          eventHijri.month === cellHijri.month &&
+          eventHijri.year === cellHijri.year
+        )
       }
-      return eventDate.getFullYear() === date.getFullYear() && eventDate.getMonth() === date.getMonth() && eventDate.getDate() === date.getDate()
+      return (
+        eventDate.getFullYear() === date.getFullYear() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getDate() === date.getDate()
+      )
     })
   }
 
@@ -338,7 +353,9 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   }, [])
 
   return (
-    <section className={`w-full rounded-xl border border-border pt-[21px] px-[21px] ${isWeekMode ? 'pb-[21px]' : ''}`}>
+    <section
+      className={`w-full rounded-xl border border-border pt-[21px] px-[21px] ${isWeekMode ? 'pb-[21px]' : ''}`}
+    >
       <div className="mb-3.5 flex items-center justify-between self-stretch px-1">
         <div className="flex shrink-0 items-center gap-1.5">
           <span className="text-sm text-card-foreground">اليوم:</span>
@@ -365,10 +382,18 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
             </select>
             <ChevronDown className="pointer-events-none absolute left-1.5 top-1/2 size-3.5 -translate-y-1/2 text-card-foreground" />
           </div>
-          <button onClick={goPrev} className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95" aria-label="السابق">
+          <button
+            onClick={goPrev}
+            className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95"
+            aria-label="السابق"
+          >
             <ChevronRight className="size-4 text-card-foreground" />
           </button>
-          <button onClick={goNext} className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95" aria-label="التالي">
+          <button
+            onClick={goNext}
+            className="flex items-center rounded-lg p-1 transition-colors hover:bg-primary/10 active:scale-95"
+            aria-label="التالي"
+          >
             <ChevronLeft className="size-4 text-card-foreground" />
           </button>
         </div>

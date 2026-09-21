@@ -70,7 +70,12 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
           collapsed ? 'w-[80px]' : 'w-[220px]',
         )}
       >
-        <div className={cn('flex h-20 shrink-0 items-center', collapsed ? 'justify-center' : 'pe-2 ps-5')}>
+        <div
+          className={cn(
+            'flex h-20 shrink-0 items-center',
+            collapsed ? 'justify-center' : 'pe-2 ps-5',
+          )}
+        >
           <Link href="/user/dashboard" aria-label="بوابة المستخدم">
             {collapsed ? (
               <Image
@@ -299,7 +304,9 @@ const MobileNavigation: React.FC<{
                     {userName.trim().charAt(0) || 'م'}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">{userName}</p>
+                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">
+                      {userName}
+                    </p>
                     {userEmail ? (
                       <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
                     ) : null}
