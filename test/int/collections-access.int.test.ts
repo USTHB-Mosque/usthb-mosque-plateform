@@ -13,11 +13,12 @@ import { clearNextContext } from '../lib/next-stubs'
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
 import sharp from 'sharp'
+import type { CollectionSlug } from 'payload'
 
 let payload: Payload
-let owner: any
-let otherMember: any
-let admin: any
+let owner: User
+let otherMember: User
+let admin: User
 
 beforeEach(async () => {
   payload = await getTestPayload()
@@ -34,9 +35,13 @@ afterAll(async () => {
 
 // Helpers over the Local API with `overrideAccess: false`, bound to a request
 // identity — exactly what access control sees from the app.
-async function canReadAs(user: any, collection: any, id: any): Promise<boolean> {
+async function canReadAs(
+  user: User | undefined,
+  collection: CollectionSlug,
+  id: number | string,
+): Promise<boolean> {
   try {
-    const req = user ? await boundReq(payload, user) : await boundReq(payload)
+    const req = await boundReq(payload, user)
     await payload.findByID({ collection, id, req, overrideAccess: false })
     return true
   } catch {
@@ -44,9 +49,14 @@ async function canReadAs(user: any, collection: any, id: any): Promise<boolean> 
   }
 }
 
-async function canWriteAs(user: any, collection: any, id: any, data: any = {}): Promise<boolean> {
+async function canWriteAs(
+  user: User | undefined,
+  collection: CollectionSlug,
+  id: number | string,
+  data: Record<string, unknown> = {},
+): Promise<boolean> {
   try {
-    const req = user ? await boundReq(payload, user) : await boundReq(payload)
+    const req = await boundReq(payload, user)
     await payload.update({ collection, id, data, req, overrideAccess: false })
     return true
   } catch {
@@ -88,9 +98,13 @@ async function createAs(user: any, collection: any, data: any): Promise<any> {
   return payload.create({ collection, data, req, overrideAccess: false })
 }
 
-async function canDeleteAs(user: any, collection: any, id: any): Promise<boolean> {
+async function canDeleteAs(
+  user: User | undefined,
+  collection: CollectionSlug,
+  id: number | string,
+): Promise<boolean> {
   try {
-    const req = user ? await boundReq(payload, user) : await boundReq(payload)
+    const req = await boundReq(payload, user)
     await payload.delete({ collection, id, req, overrideAccess: false })
     return true
   } catch {
@@ -102,7 +116,7 @@ describe('media access (regression cover for #90)', () => {
   it('keeps private documents readable only by owner and admin', async () => {
     const media = await createTestMedia(payload, { isPrivate: true, owner: owner.id })
 
-    expect(await canReadAs(null, 'media', media.id)).toBe(false)
+    expect(await canReadAs(undefined, 'media', media.id)).toBe(false)
     expect(await canReadAs(owner, 'media', media.id)).toBe(true)
     expect(await canReadAs(otherMember, 'media', media.id)).toBe(false)
     expect(await canReadAs(admin, 'media', media.id)).toBe(true)
@@ -111,7 +125,7 @@ describe('media access (regression cover for #90)', () => {
   it('lets everyone read public media', async () => {
     const media = await createTestMedia(payload, { isPrivate: false })
 
-    expect(await canReadAs(null, 'media', media.id)).toBe(true)
+    expect(await canReadAs(undefined, 'media', media.id)).toBe(true)
     expect(await canReadAs(owner, 'media', media.id)).toBe(true)
     expect(await canReadAs(otherMember, 'media', media.id)).toBe(true)
     expect(await canReadAs(admin, 'media', media.id)).toBe(true)
@@ -120,7 +134,7 @@ describe('media access (regression cover for #90)', () => {
   it('allows any authenticated user to create media but only admin to update or delete', async () => {
     const media = await createTestMedia(payload, { isPrivate: false, owner: owner.id })
 
-    await expect(createAs(null, 'media', { alt: 'anon', isPrivate: true })).rejects.toThrow('not allowed')
+    await expect(createAs(undefined, 'media', { alt: 'anon', isPrivate: true })).rejects.toThrow('not allowed')
     const created = await createAs(owner, 'media', { alt: 'member upload' })
     expect(created.alt).toBe('member upload')
 
@@ -160,7 +174,7 @@ describe('media access (regression cover for #90)', () => {
 
 describe('users access', () => {
   it('scopes a member to their own row for reads and updates', async () => {
-    expect(await canReadAs(null, 'users', owner.id)).toBe(false)
+    expect(await canReadAs(undefined, 'users', owner.id)).toBe(false)
     expect(await canReadAs(owner, 'users', owner.id)).toBe(true)
     expect(await canReadAs(otherMember, 'users', owner.id)).toBe(false)
     expect(await canReadAs(admin, 'users', owner.id)).toBe(true)
@@ -241,11 +255,12 @@ describe('row-scoped collections: loans, book-favorites, activity-registrations,
         overrideAccess: false,
       })
     }],
-  ])('%s row scoping', async (collection, make) => {
+  ])('%s row scoping', async (rawCollection, make) => {
+    const collection = rawCollection as CollectionSlug
     const doc = await make()
-    const id = (doc as any).id
+    const id = (doc as { id: number }).id
 
-    expect(await canReadAs(null, collection, id)).toBe(false)
+    expect(await canReadAs(undefined, collection, id)).toBe(false)
     expect(await canReadAs(owner, collection, id)).toBe(true)
     expect(await canReadAs(otherMember, collection, id)).toBe(false)
     expect(await canReadAs(admin, collection, id)).toBe(true)
@@ -265,11 +280,11 @@ describe('row-scoped collections: loans, book-favorites, activity-registrations,
       overrideAccess: true,
     })
 
-    expect(await canReadAs(null, 'reviews', review.id)).toBe(true)
+    expect(await canReadAs(undefined, 'reviews', review.id)).toBe(true)
     expect(await canReadAs(otherMember, 'reviews', review.id)).toBe(true)
 
     expect(await canCreateAs(otherMember, 'reviews', { user: otherMember.id, book: book.id, rating: 5, comment: 'fine' })).toBe(true)
-    expect(await canCreateAs(null, 'reviews', { user: null, book: book.id, rating: 5, comment: 'anon' })).toBe(false)
+    expect(await canCreateAs(undefined, 'reviews', { user: null, book: book.id, rating: 5, comment: 'anon' })).toBe(false)
 
     // Even the review owner cannot edit or delete: admin-only.
     expect(await canWriteAs(owner, 'reviews', review.id, { rating: 5 })).toBe(false)
@@ -294,9 +309,9 @@ describe('books, articles and activities are public read, admin write', () => {
   it('books', async () => {
     const book = await createTestBook(payload)
 
-    expect(await canReadAs(null, 'books', book.id)).toBe(true)
+    expect(await canReadAs(undefined, 'books', book.id)).toBe(true)
 
-    expect(await canCreateAs(null, 'books', { title: 'anon', author: 'x', type: 'other', shortDescription: 'x' })).toBe(false)
+    expect(await canCreateAs(undefined, 'books', { title: 'anon', author: 'x', type: 'other', shortDescription: 'x' })).toBe(false)
     expect(await canCreateAs(otherMember, 'books', { title: 'member', author: 'x', type: 'other', shortDescription: 'x' })).toBe(false)
     expect(await canCreateAs(admin, 'books', { title: 'admin', author: 'x', type: 'other', shortDescription: 'x' })).toBe(true)
 
@@ -308,7 +323,7 @@ describe('books, articles and activities are public read, admin write', () => {
   it('articles', async () => {
     const article = await createTestArticle(payload)
 
-    expect(await canReadAs(null, 'articles', article.id)).toBe(true)
+    expect(await canReadAs(undefined, 'articles', article.id)).toBe(true)
 
     expect(await canCreateAs(otherMember, 'articles', {
       title: 'member',
@@ -324,7 +339,7 @@ describe('books, articles and activities are public read, admin write', () => {
   it('activities', async () => {
     const activity = await createTestActivity(payload)
 
-    expect(await canReadAs(null, 'activities', activity.id)).toBe(true)
+    expect(await canReadAs(undefined, 'activities', activity.id)).toBe(true)
 
     expect(await canWriteAs(otherMember, 'activities', activity.id, { title: 'hijacked' })).toBe(false)
     expect(await canWriteAs(admin, 'activities', activity.id, { title: 'admin edit' })).toBe(true)

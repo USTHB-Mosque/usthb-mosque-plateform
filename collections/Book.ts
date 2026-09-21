@@ -1,6 +1,6 @@
 import { bookCategoriesConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
-import { isAdmin } from '@/utils/access-helpers'
+import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -10,9 +10,7 @@ export const Book: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: ({ req: { user } }) => isAdmin(user),
-    update: ({ req: { user } }) => isAdmin(user),
-    delete: ({ req: { user } }) => isAdmin(user),
+    ...adminWriteAccess(),
   },
   fields: [
     {

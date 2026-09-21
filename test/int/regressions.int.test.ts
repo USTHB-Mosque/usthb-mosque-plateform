@@ -98,8 +98,17 @@ describe('defect: averageRating and ratingCount are never recalculated', () => {
     expect(after.averageRating).toBe(5)
   })
 
-  it('recomputes the aggregates when a review is deleted', async () => {
+  // RED until #25: the stale seeded aggregates must not survive the delete.
+  it.fails('recomputes the aggregates when a review is deleted', async () => {
+    // Seed stale aggregates so the delete cannot pass vacuously: today the
+    // hook-less book keeps reporting the fiction the seed wrote.
     const book = await createTestBook(payload)
+    await payload.update({
+      collection: 'books',
+      id: book.id,
+      data: { ratingCount: 1, averageRating: 5 },
+      overrideAccess: true,
+    })
     const review = await payload.create({
       collection: 'reviews',
       data: { user: member.id, book: book.id, rating: 5, comment: 'great' },

@@ -1,6 +1,10 @@
 import { Client } from 'pg'
 import type { Payload } from 'payload'
 
+// The scratch database name tests run against: local runs share the running
+// Postgres (Supabase CLI) but never touch development data.
+export const TEST_DATABASE_NAME = 'mosque_test'
+
 export function testDatabaseUrl(): string {
   if (process.env.TEST_DATABASE_URL) return process.env.TEST_DATABASE_URL
 
@@ -11,10 +15,12 @@ export function testDatabaseUrl(): string {
     )
   }
 
-  // Local runs share the running Postgres (Supabase CLI) but get their own
-  // scratch database so truncating never touches development data.
-  const url = new URL(base)
-  url.pathname = '/mosque_test'
+  return deriveTestDatabaseUrl()
+}
+
+export function deriveTestDatabaseUrl(): string {
+  const url = new URL(process.env.DATABASE_URL as string)
+  url.pathname = `/${TEST_DATABASE_NAME}`
   return url.toString()
 }
 
