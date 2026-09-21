@@ -87,11 +87,11 @@ export default async function MemberDashboardPage() {
         </h2>
       </div>
 
-      {/* <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <StatCard key={stat.href} {...stat} />
         ))}
-      </div> */}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-5">
         <div className="xl:col-span-2">

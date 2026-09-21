@@ -37,7 +37,37 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         </Link>
       </header>
 
-      <div className="overflow-x-auto rounded-xl">
+      <ul className="divide-y divide-border sm:hidden">
+        <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
+          <span className="font-medium text-muted-foreground">الكتاب</span>
+          <span className="font-medium text-muted-foreground">تاريخ الأخذ</span>
+        </li>
+        {loans.length === 0 ? (
+          <li className="px-4 py-10 text-center text-muted-foreground">
+            لا توجد طلبات استعارة حالياً.
+          </li>
+        ) : (
+          loans.map((loan) => {
+            const book = loan.book as { id?: number; title?: string } | undefined
+            return (
+              <li
+                key={loan.id}
+                onClick={() => openDetails(loan)}
+                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3"
+              >
+                <span className="min-w-0 truncate font-medium text-card-foreground">
+                  {book?.title || 'كتاب'}
+                </span>
+                <span className="shrink-0 text-sm text-muted-foreground">
+                  {format(new Date(loan.loanDate), 'dd/MM/yyyy', { locale: arDZ })}
+                </span>
+              </li>
+            )
+          })
+        )}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-xl sm:block">
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-background-2">
@@ -47,7 +77,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                 تاريخ الأخذ
               </th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">حالة الطلب</th>
-              <th className="w-12 px-3 py-3 text-center" />
+              <th className="w-12 px-3 py-3 text-center sm:hidden" />
             </tr>
           </thead>
           <tbody>
@@ -76,7 +106,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                     <td className="px-4 py-3">
                       <LoanStatusBadge loan={loan} />
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-3 py-3 text-center sm:hidden">
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"

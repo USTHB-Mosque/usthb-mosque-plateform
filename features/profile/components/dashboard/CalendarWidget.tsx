@@ -5,22 +5,6 @@ import { ChevronRight, ChevronLeft, ChevronDown, RotateCcw } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { activitiesTypesConfig } from '@/utils/constants/activities'
 
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = React.useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
-  )
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(query)
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
-    mql.addEventListener('change', handler)
-    setMatches(mql.matches)
-    return () => mql.removeEventListener('change', handler)
-  }, [query])
-
-  return matches
-}
-
 const HIJRI_MONTHS = [
   'محرم',
   'صفر',
@@ -160,18 +144,6 @@ interface CalendarWidgetProps {
   events?: CalendarEvent[]
 }
 
-function computeTodayWeekRow(
-  today: Date,
-  hijriToday: { day: number; month: number; year: number },
-  mode: CalendarMode,
-): number {
-  const gridIndex =
-    mode === 'hijri'
-      ? getHijriFirstDayOfWeek(hijriToday.year, hijriToday.month) + hijriToday.day - 2
-      : getGregorianFirstDayOfWeek(today.getFullYear(), today.getMonth()) + today.getDate() - 2
-  return Math.max(0, Math.min(4, Math.floor(gridIndex / 7)))
-}
-
 const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const today = new Date()
   const hijriToday = gregorianToHijri(today)
@@ -181,12 +153,6 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   const [currentYear, setCurrentYear] = useState(hijriToday.year)
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isWeekMode = useMediaQuery('(max-width: 639px)')
-  const [weekIndex, setWeekIndex] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
-      ? computeTodayWeekRow(today, hijriToday, 'hijri')
-      : 0,
-  )
 
   const daysInMonth =
     calendarMode === 'hijri'
@@ -251,24 +217,12 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   }
 
   const goPrev = () => {
-    if (isWeekMode && weekIndex > 0) {
-      setWeekIndex(weekIndex - 1)
-      return
-    }
-    if (isWeekMode) setWeekIndex(4)
     goToPrevMonth()
   }
 
   const goNext = () => {
-    if (isWeekMode && weekIndex < 4) {
-      setWeekIndex(weekIndex + 1)
-      return
-    }
-    if (isWeekMode) setWeekIndex(0)
     goToNextMonth()
   }
-
-  const getTodayWeekRow = () => computeTodayWeekRow(today, hijriToday, calendarMode)
 
   const goToToday = () => {
     if (calendarMode === 'hijri') {
@@ -278,17 +232,12 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       setCurrentMonth(today.getMonth())
       setCurrentYear(today.getFullYear())
     }
-    setWeekIndex(getTodayWeekRow())
   }
 
   const isNavigatedAway =
     calendarMode === 'hijri'
       ? currentMonth !== hijriToday.month || currentYear !== hijriToday.year
       : currentMonth !== today.getMonth() || currentYear !== today.getFullYear()
-
-  const visibleCells = isWeekMode
-    ? calendarDays.slice(weekIndex * 7, weekIndex * 7 + 7)
-    : calendarDays
 
   const cellDate = (idx: number) => new Date(currentYear, currentMonth, 1 - firstDay + idx)
 
@@ -337,7 +286,6 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       setCurrentMonth(today.getMonth())
       setCurrentYear(today.getFullYear())
     }
-    setWeekIndex(getTodayWeekRow())
   }
 
   const handleDayMouseEnter = useCallback(
@@ -353,9 +301,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
   }, [])
 
   return (
-    <section
-      className={`w-full rounded-xl border border-border pt-[21px] px-[21px] ${isWeekMode ? 'pb-[21px]' : ''}`}
-    >
+    <section className="w-full rounded-xl border border-border pt-[21px] px-[21px] pb-[21px]">
       <div className="mb-3.5 flex items-center justify-between self-stretch px-1">
         <div className="flex shrink-0 items-center gap-1.5">
           <span className="text-sm text-card-foreground">اليوم:</span>
@@ -410,8 +356,8 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
         ))}
       </div>
 
-      <div className={`grid grid-cols-7 gap-1.5 pb-[1px] ${isWeekMode ? '' : 'mb-10'}`}>
-        {visibleCells.map((cell, idx) => {
+      <div className="grid grid-cols-7 gap-1.5 pb-[1px] mb-10">
+        {calendarDays.map((cell, idx) => {
           const todayCell = isTodayCell(idx)
           const dayEvents = getEventsForDay(idx)
           const hasActivity = dayEvents.length > 0
