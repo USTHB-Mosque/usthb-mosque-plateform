@@ -26,7 +26,15 @@ const featureBoundaryRules = FEATURES.map((feature) => ({
 const eslintConfig = [
   ...nextPlugin,
   {
-    ignores: ['.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'payload-types.ts'],
+    ignores: [
+      '.next/**',
+      'out/**',
+      'build/**',
+      'coverage/**',
+      'test/.tmp/**',
+      'next-env.d.ts',
+      'payload-types.ts',
+    ],
   },
   {
     files: ['shared/lib/redirect.ts'],

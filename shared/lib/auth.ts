@@ -83,6 +83,9 @@ export async function createSessionForUser(
   const sid = randomUUID()
   const now = new Date()
   const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
+  // Auth docs always carry the sessions array; the fallback only satisfies
+  // the optional type.
+  /* v8 ignore next */
   const activeSessions = (user.sessions ?? []).filter(
     (session) => new Date(session.expiresAt) > now,
   )

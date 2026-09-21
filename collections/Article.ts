@@ -1,4 +1,5 @@
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Article: CollectionConfig = {
@@ -9,6 +10,7 @@ export const Article: CollectionConfig = {
   },
   access: {
     read: () => true,
+    ...adminWriteAccess(),
   },
   fields: [
     {

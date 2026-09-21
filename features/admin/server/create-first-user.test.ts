@@ -100,5 +100,15 @@ describe('features/admin/server/create-first-user.ts', () => {
 
       expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({ ok: false, error: 'boom' })
     })
+
+    it('falls back to a generic Arabic message for non-Error failures', async () => {
+      fakePayload.find.mockResolvedValue({ totalDocs: 0 })
+      fakePayload.create.mockRejectedValue('not-an-error')
+
+      expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({
+        ok: false,
+        error: 'حدث خطأ',
+      })
+    })
   })
 })

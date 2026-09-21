@@ -16,7 +16,9 @@ Generic Payload/Next knowledge lives upstream — do not paste it here:
 | `pnpm supabase:start` / `pnpm supabase:stop` / `pnpm supabase:status` | Local Supabase stack (Docker)                                       |
 | `pnpm typecheck`                                                      | `tsc --noEmit` — run after every code change                        |
 | `pnpm lint`                                                           | ESLint                                                              |
-| `pnpm test`                                                           | Vitest (RTL) once; `pnpm test:watch` while TDD-ing                  |
+| `pnpm test`                                                           | Vitest — all projects once; `pnpm test:watch` while TDD-ing         |
+| `pnpm test:unit` / `pnpm test:int`                                    | One Vitest project only                                             |
+| `pnpm test:coverage`                                                  | Vitest with coverage thresholds enforced                            |
 | `pnpm format:check` / `pnpm format`                                   | Prettier check / write                                              |
 | `pnpm payload:importmap`                                              | Regenerate admin import map after adding/modifying admin components |
 | `pnpm payload:migrate-create <name>`                                  | Generate a migration from the schema diff                           |
@@ -51,10 +53,13 @@ Import rules (enforced in `eslint.config.mjs`):
 - Generate with `pnpm payload:migrate-create <name>`, review the SQL, and run `pnpm payload:migrate` against a scratch database to confirm it applies cleanly.
 - Migrations are the authoritative schema source. `pnpm build` does **not** run migrations; they are applied at deploy/start time (see ADR 0002) and can be run manually with `pnpm payload:migrate`.
 
-### Server actions ship with tests (#96)
+### Tests (#96)
 
-- Every new or changed server action under `features/*/server/` gets a test file next to it (vitest).
-- Run the single test file while working: `pnpm test <path>`; run the full suite once at the end.
+- **New server actions (`features/*/server/**`) and collection changes (`collections/**`) ship with tests in the same PR.** Integration tests boot a real Payload against a scratch Postgres via `getPayload` — do not mock Payload; access control and hooks must actually run. (Unit-style mocked tests like `features/admin/server/*.test.ts` are the exception for pure branching logic.)
+- Runner: Vitest, three projects — `*.test.{ts,tsx}` (RTL/jsdom for components and mocked server actions), `*.unit.test.ts` (pure functions, node), `*.int.test.ts` (real Payload + database). Commands: `pnpm test`, `pnpm test:unit`, `pnpm test:int`, `pnpm test:coverage`.
+- Integration tests live under `test/`, share `test/setup-integration.ts` (Next.js `headers`/`cookies` stubs, `@/payload.config` redirected to `test/payload-test.config.ts`), and truncate all tables between tests. They need a running Postgres: locally the Supabase CLI stack (a `mosque_test` scratch database is created automatically), in CI a `postgres:17` service container.
+- Coverage thresholds (100% lines/branches/functions/statements) are enforced on `shared/lib/**`, `features/*/server/**`, `collections/**` — CI fails when they are missed.
+- Never pass `user` to the Local API without `overrideAccess: false` — including inside tests.
 
 ### Payload security essentials
 

@@ -7,19 +7,19 @@ export const User: CollectionConfig = {
   slug: 'users',
   hooks: {
     afterChange: [
-      async ({ doc, req, operation }) => {
+      async ({ doc, req, operation, previousDoc }) => {
         if (operation === 'create') {
-          await logActivity(req.payload, doc.id, 'account_created')
+          await logActivity(req.payload, doc.id, 'account_created', undefined, req)
         }
-        if (operation === 'update' && doc.verificationStatus === 'verified') {
-          const previousDoc = await req.payload.findByID({
-            collection: 'users',
-            id: doc.id,
-            overrideAccess: true,
-          })
-          if (previousDoc.verificationStatus !== 'verified') {
-            await logActivity(req.payload, doc.id, 'account_verified')
-          }
+        // `previousDoc` is the row as it was before this update, so the
+        // verified transition is detected without a nested read that could
+        // only ever see the post-update state.
+        if (
+          operation === 'update' &&
+          doc.verificationStatus === 'verified' &&
+          previousDoc.verificationStatus !== 'verified'
+        ) {
+          await logActivity(req.payload, doc.id, 'account_verified', undefined, req)
         }
         return doc
       },

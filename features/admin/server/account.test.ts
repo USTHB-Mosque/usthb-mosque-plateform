@@ -71,6 +71,16 @@ describe('features/admin/server/account.ts', () => {
 
       expect(await updateAdminProfile('x')).toEqual({ ok: false, error: 'db down' })
     })
+
+    it('falls back to a generic Arabic message for non-Error failures', async () => {
+      getPayloadWithUser.mockResolvedValue({
+        user: { id: 7, role: 'admin' },
+        payload: { update: vi.fn().mockRejectedValue('not-an-error') },
+        req: {},
+      })
+
+      expect(await updateAdminProfile('x')).toEqual({ ok: false, error: 'حدث خطأ' })
+    })
   })
 
   describe('updateAdminPassword', () => {
