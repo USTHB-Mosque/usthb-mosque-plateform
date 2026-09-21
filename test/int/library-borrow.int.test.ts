@@ -3,14 +3,14 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { getTestPayload, resetDatabase, boundReq } from '../setup-integration'
 import { createTestUser, ctxFor, loginToken } from '../lib/seed'
 import { createTestBook } from '../lib/factories'
-import {
-  clearNextContext,
-  makeAuthHeaders,
-  setNextHeaders,
-} from '../lib/next-stubs'
+import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 
 import type { Payload } from 'payload'
-import { borrowBook, borrowBookLogic, getUserBookLoanState } from '@/features/library/server/borrow-book'
+import {
+  borrowBook,
+  borrowBookLogic,
+  getUserBookLoanState,
+} from '@/features/library/server/borrow-book'
 import type { User } from '@/payload-types'
 
 // One shared instance for the whole file; destroyed exactly once at the end —
@@ -36,10 +36,7 @@ describe('borrowBookLogic', () => {
     const unverified = await createTestUser(payload, { verified: false })
     const book = await createTestBook(payload, { available: 3, total: 3 })
 
-    const result = await borrowBookLogic(
-      String(book.id),
-      await ctxFor(payload, unverified),
-    )
+    const result = await borrowBookLogic(String(book.id), await ctxFor(payload, unverified))
 
     expect(result.success).toBe(false)
     expect(result.message).toBe('يجب تأكيد حسابك قبل استعارة الكتب')
@@ -118,7 +115,11 @@ describe('borrowBookLogic', () => {
     })
 
     expect(result.success).toBe(true)
-    const loan = await payload.findByID({ collection: 'loans', id: (result.loan as { id: number }).id, overrideAccess: true })
+    const loan = await payload.findByID({
+      collection: 'loans',
+      id: (result.loan as { id: number }).id,
+      overrideAccess: true,
+    })
     expect(new Date(loan.dueDate as unknown as string).getTime()).toBe(due.getTime())
     expect(new Date(loan.pickupDate as unknown as string).getTime()).toBe(pickup.getTime())
   })
@@ -138,8 +139,14 @@ describe('borrowBook (wrapper)', () => {
   })
 
   it('borrows as the cookie user', async () => {
-    const cookieMember = await createTestUser(payload, { email: 'cookie-borrow@usthb.dz', verified: true })
-    const { token } = await loginToken(payload, { email: cookieMember.email!, password: 'correct horse battery' })
+    const cookieMember = await createTestUser(payload, {
+      email: 'cookie-borrow@usthb.dz',
+      verified: true,
+    })
+    const { token } = await loginToken(payload, {
+      email: cookieMember.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
     const book = await createTestBook(payload, { available: 2, total: 2 })
 
@@ -150,7 +157,6 @@ describe('borrowBook (wrapper)', () => {
 })
 
 describe('getUserBookLoanState', () => {
-
   it('reports no active loan for anonymous callers', async () => {
     expect(await getUserBookLoanState(1)).toEqual({ hasActiveLoan: false })
   })
@@ -159,7 +165,10 @@ describe('getUserBookLoanState', () => {
     const book = await createTestBook(payload, { available: 2, total: 2 })
     await borrowBookLogic(String(book.id), await ctxFor(payload, member))
 
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
     const state = await getUserBookLoanState(book.id)
     expect(state).toEqual({ hasActiveLoan: true })
@@ -179,7 +188,10 @@ describe('getUserBookLoanState', () => {
       overrideAccess: false,
     })
 
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
     const state = await getUserBookLoanState(book.id)
     expect(state).toEqual({ hasActiveLoan: false })

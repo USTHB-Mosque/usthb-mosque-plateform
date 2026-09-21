@@ -10,7 +10,15 @@ import {
   DialogFooter,
 } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
-import { CalendarDays, ChevronRight, ChevronLeft, Clock, BookOpen, ArrowRightToLine, ArrowLeftFromLine } from 'lucide-react'
+import {
+  CalendarDays,
+  ChevronRight,
+  ChevronLeft,
+  Clock,
+  BookOpen,
+  ArrowRightToLine,
+  ArrowLeftFromLine,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import type { Loan } from '@/payload-types'
@@ -24,8 +32,18 @@ interface LoanDetailsDialogProps {
 
 const WEEKDAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
 const MONTHS = [
-  'جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان',
-  'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  'جانفي',
+  'فيفري',
+  'مارس',
+  'أفريل',
+  'ماي',
+  'جوان',
+  'جويلية',
+  'أوت',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
 ]
 
 function getDaysInMonth(year: number, month: number): number {
@@ -37,7 +55,11 @@ function getFirstDayOfMonth(year: number, month: number): number {
 }
 
 function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
 }
 
 function isDateInRange(date: Date, start: Date, end: Date) {
@@ -45,11 +67,7 @@ function isDateInRange(date: Date, start: Date, end: Date) {
   return d >= start.getTime() && d <= end.getTime()
 }
 
-const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
-  open,
-  onOpenChange,
-  loan,
-}) => {
+const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChange, loan }) => {
   const loanDate = loan?.loanDate ? new Date(loan.loanDate) : null
   const dueDate = loan?.dueDate ? new Date(loan.dueDate) : null
   const returnDate = loan?.returnDate ? new Date(loan.returnDate) : null
@@ -134,13 +152,21 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
               <div className="rounded-lg border border-stroke-grey bg-background p-3">
                 {/* Month navigation */}
                 <div className="flex items-center justify-between mb-2">
-                  <button type="button" onClick={goToPrevMonth} className="rounded p-1 hover:bg-muted">
+                  <button
+                    type="button"
+                    onClick={goToPrevMonth}
+                    className="rounded p-1 hover:bg-muted"
+                  >
                     <ChevronRight className="size-4" />
                   </button>
                   <span className="text-sm font-medium font-alyamama">
                     {MONTHS[calendarMonth]} {calendarYear}
                   </span>
-                  <button type="button" onClick={goToNextMonth} className="rounded p-1 hover:bg-muted">
+                  <button
+                    type="button"
+                    onClick={goToNextMonth}
+                    className="rounded p-1 hover:bg-muted"
+                  >
                     <ChevronLeft className="size-4" />
                   </button>
                 </div>
@@ -148,7 +174,10 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
                 {/* Weekday headers */}
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {WEEKDAYS.map((day) => (
-                    <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1">
+                    <div
+                      key={day}
+                      className="text-center text-[10px] font-medium text-muted-foreground py-1"
+                    >
                       {day}
                     </div>
                   ))}
@@ -160,14 +189,21 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
                     const isLoanStart = loanDate && isSameDay(cell.date, loanDate)
                     const isLoanEnd = dueDate && isSameDay(cell.date, dueDate)
                     const isReturnDay = returnDate && isSameDay(cell.date, returnDate)
-                    const isInRange = loanDate && dueDate && isDateInRange(cell.date, loanDate, dueDate) && cell.isCurrentMonth
+                    const isInRange =
+                      loanDate &&
+                      dueDate &&
+                      isDateInRange(cell.date, loanDate, dueDate) &&
+                      cell.isCurrentMonth
 
                     let bgClass = ''
                     if (isLoanStart) bgClass = 'bg-primary text-primary-foreground font-bold'
                     else if (isLoanEnd) bgClass = 'bg-[#FFB020] text-white font-bold'
                     else if (isReturnDay) bgClass = 'bg-[#0DE9C3] text-secondary font-bold'
                     else if (isInRange) bgClass = 'bg-primary/15 text-primary-300'
-                    else bgClass = cell.isCurrentMonth ? 'text-card-foreground' : 'text-muted-foreground/30'
+                    else
+                      bgClass = cell.isCurrentMonth
+                        ? 'text-card-foreground'
+                        : 'text-muted-foreground/30'
 
                     return (
                       <div
@@ -230,11 +266,7 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="font-alyamama"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>
         </DialogFooter>

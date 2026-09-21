@@ -19,9 +19,7 @@ const QueryClientProvider = ({ children }: QueryClientProviderProps) => {
   return (
     <BaseQueryClientProvider client={client}>
       {children}
-      {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={false} />
-      )}
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </BaseQueryClientProvider>
   )
 }

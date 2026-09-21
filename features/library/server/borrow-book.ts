@@ -53,7 +53,11 @@ export async function borrowBookLogic(
 
     const dueDate = options?.dueDate
       ? new Date(options.dueDate)
-      : (() => { const d = new Date(); d.setDate(d.getDate() + 14); return d })()
+      : (() => {
+          const d = new Date()
+          d.setDate(d.getDate() + 14)
+          return d
+        })()
 
     const loan = await payload.create({
       collection: 'loans',

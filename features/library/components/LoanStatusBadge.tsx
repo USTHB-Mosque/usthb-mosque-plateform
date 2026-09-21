@@ -6,10 +6,7 @@ import type { Loan } from '@/payload-types'
 
 export type EffectiveLoanStatus = NonNullable<Loan['status']>
 
-const statusConfig: Record<
-  EffectiveLoanStatus,
-  { label: string; className: string }
-> = {
+const statusConfig: Record<EffectiveLoanStatus, { label: string; className: string }> = {
   pending: {
     label: 'قيد الانتظار',
     className: 'bg-[#FFB020]/15 text-[#B45309]',

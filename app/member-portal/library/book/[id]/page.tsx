@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
 import BookDetailedInformation from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
@@ -10,11 +10,7 @@ import BookAvailability from '@/features/library/components/book-details/BookAva
 import { getBookFavoriteState } from '@/features/library/server/favorites'
 import { getUserBookLoanState } from '@/features/library/server/borrow-book'
 
-const MemberBookDetailsPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) => {
+const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
 
   const payload = await getPayload({ config })

@@ -55,10 +55,13 @@ export const useSearch = <T extends object>({
 
   const keys = useMemo(() => Object.keys(initialValues) as (keyof T)[], [initialValues])
 
-  const keyName = useCallback((key: keyof T): string => {
-    const name = String(key)
-    return scope ? `${scope}_${name}` : name
-  }, [scope])
+  const keyName = useCallback(
+    (key: keyof T): string => {
+      const name = String(key)
+      return scope ? `${scope}_${name}` : name
+    },
+    [scope],
+  )
 
   const parseStored = useCallback((): T => {
     const stored = storage.read()

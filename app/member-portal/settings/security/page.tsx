@@ -1,7 +1,7 @@
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 import SettingsProfileCard from '@/features/profile/components/settings/SettingsProfileCard'
 import SecuritySection from '@/features/profile/components/settings/SecuritySection'
-import UserPage from '../../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 
 export default async function SecuritySettingsPage() {
   const data = await getProfileDashboardData()

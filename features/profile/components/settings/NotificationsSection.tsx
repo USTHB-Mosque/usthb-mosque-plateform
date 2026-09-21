@@ -40,11 +40,14 @@ const notificationItems = [
   },
 ]
 
-const NotificationsSection: React.FC<NotificationsSectionProps> = ({ initialPreferences, className }) => {
+const NotificationsSection: React.FC<NotificationsSectionProps> = ({
+  initialPreferences,
+  className,
+}) => {
   const [preferences, setPreferences] = useState(initialPreferences)
   const [isPending, startTransition] = useTransition()
 
-  const handleToggle = (id: typeof notificationItems[number]['id'], checked: boolean) => {
+  const handleToggle = (id: (typeof notificationItems)[number]['id'], checked: boolean) => {
     const prev = { ...preferences }
     const next = { ...preferences, [id]: checked }
 

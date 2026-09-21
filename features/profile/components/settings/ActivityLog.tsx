@@ -1,13 +1,7 @@
 'use client'
 
 import React from 'react'
-import {
-  LogIn,
-  KeyRound,
-  UserCheck,
-  ShieldCheck,
-  UserPlus,
-} from 'lucide-react'
+import { LogIn, KeyRound, UserCheck, ShieldCheck, UserPlus } from 'lucide-react'
 import { User } from '@/payload-types'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'

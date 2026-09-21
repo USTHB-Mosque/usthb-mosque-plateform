@@ -20,9 +20,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm format:check
+
       - run: pnpm lint
 
       - run: pnpm typecheck
+
+      # Fast, database-free projects only; the integration project runs in its
+      # own job against the postgres service below.
+      - run: pnpm test --project rtl --project unit
 
   test:
     runs-on: ubuntu-latest

@@ -34,7 +34,11 @@ export const UserSidebarProvider: React.FC<React.PropsWithChildren> = ({ childre
     })
   }, [])
 
-  return <UserSidebarContext.Provider value={{ collapsed, toggle }}>{children}</UserSidebarContext.Provider>
+  return (
+    <UserSidebarContext.Provider value={{ collapsed, toggle }}>
+      {children}
+    </UserSidebarContext.Provider>
+  )
 }
 
 export function useUserSidebar(): UserSidebarContextValue {

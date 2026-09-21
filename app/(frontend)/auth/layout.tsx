@@ -4,11 +4,7 @@ import { redirect } from 'next/navigation'
 import { X } from 'lucide-react'
 import { getAuthenticatedUser } from '@/shared/lib/auth'
 
-export default async function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser({ allowAdmin: true })
   if (user) redirect(user.role === 'admin' ? '/admin' : '/user/dashboard')
 

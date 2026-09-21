@@ -23,12 +23,12 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
         <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground leading-tight">
           {title}
         </h1>
-        
+
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <Badge 
-                key={tag.id} 
+              <Badge
+                key={tag.id}
                 className="bg-primary/15 text-primary text-xs lg:text-sm px-3 py-1"
               >
                 {tag.name}
@@ -36,12 +36,12 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
             ))}
           </div>
         )}
-        
+
         <div className="flex items-center gap-2 text-sm lg:text-base">
           <User className="text-primary size-4 lg:size-5" />
           <span className="font-bold">{author}</span>
         </div>
-        
+
         {shortDescription && (
           <p className="text-muted-foreground text-sm lg:text-base leading-relaxed">
             {shortDescription}

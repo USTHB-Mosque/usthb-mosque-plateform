@@ -40,9 +40,7 @@ describe('redirectToLogin', () => {
 
     redirectToLogin()
 
-    expect(replace).toHaveBeenCalledWith(
-      '/auth/login?redirect=%2Fuser%2Fdashboard',
-    )
+    expect(replace).toHaveBeenCalledWith('/auth/login?redirect=%2Fuser%2Fdashboard')
   })
 
   it('does nothing when already inside /auth', () => {

@@ -7,14 +7,7 @@ import { CalendarDays, MoreVertical, SlidersHorizontal } from 'lucide-react'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { Activity, ActivityRegistration, Media } from '@/payload-types'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
@@ -79,7 +72,7 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
       if (status && effective !== status) return false
       if (q) {
         const activity = registration.activity as Activity | undefined
-        const typeLabel = activity ? activitiesTypesConfig[activity.type] ?? '' : ''
+        const typeLabel = activity ? (activitiesTypesConfig[activity.type] ?? '') : ''
         const hay = [activity?.title, activity?.location, typeLabel]
           .filter(Boolean)
           .join(' ')
@@ -200,7 +193,7 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                   const activityId = activity?.id
                   const start = activity?.startDate ? new Date(activity.startDate) : null
                   const typeLabel = activity
-                    ? activitiesTypesConfig[activity.type] ?? 'نشاط'
+                    ? (activitiesTypesConfig[activity.type] ?? 'نشاط')
                     : 'نشاط'
 
                   return (

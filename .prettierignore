@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+build
+coverage
+pnpm-lock.yaml
+payload-types.ts
+migrations/*.json
+tsconfig.tsbuildinfo
+supabase
+public

@@ -12,14 +12,13 @@ interface StubResponse {
 }
 
 function stubFetch(response: StubResponse = {}) {
-  const fetchMock = vi.fn(
-    () =>
-      Promise.resolve({
-        ok: response.ok ?? true,
-        status: response.status ?? 200,
-        statusText: response.statusText ?? 'OK',
-        json: () => Promise.resolve(response.json ?? { ok: true }),
-      } as unknown as Response),
+  const fetchMock = vi.fn(() =>
+    Promise.resolve({
+      ok: response.ok ?? true,
+      status: response.status ?? 200,
+      statusText: response.statusText ?? 'OK',
+      json: () => Promise.resolve(response.json ?? { ok: true }),
+    } as unknown as Response),
   )
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock

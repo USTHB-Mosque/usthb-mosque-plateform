@@ -10,13 +10,7 @@ type NotificationBellProps = {
 
 const NotificationBell: React.FC<NotificationBellProps> = ({ unreadCount = 0 }) => {
   return (
-    <Button
-      type="button"
-      size="icon"
-      variant="outline"
-      aria-label="الإشعارات"
-      className="relative"
-    >
+    <Button type="button" size="icon" variant="outline" aria-label="الإشعارات" className="relative">
       <Bell className="size-5" />
       {unreadCount > 0 ? (
         <span className="absolute -end-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">

@@ -35,12 +35,8 @@ describe('parsers', () => {
 
   it('dates parse yyyy-MM-dd when the default is a date, else fall back', () => {
     const defaults = { from: new Date(2025, 0, 1) }
-    expect(parseSearchParams({ from: '2026-03-05' }, defaults).from).toEqual(
-      new Date(2026, 2, 5),
-    )
-    expect(parseSearchParams({ from: 'not-a-date' }, defaults).from).toEqual(
-      new Date(2025, 0, 1),
-    )
+    expect(parseSearchParams({ from: '2026-03-05' }, defaults).from).toEqual(new Date(2026, 2, 5))
+    expect(parseSearchParams({ from: 'not-a-date' }, defaults).from).toEqual(new Date(2025, 0, 1))
   })
 
   it('keeps raw strings for enum-typed defaults', () => {
@@ -103,10 +99,7 @@ describe('serializeSearchParams', () => {
 
   it('serializes invalid dates to an empty string', () => {
     expect(
-      serializeSearchParams(
-        { from: new Date('not-a-date') },
-        { from: new Date(2025, 0, 1) },
-      ),
+      serializeSearchParams({ from: new Date('not-a-date') }, { from: new Date(2025, 0, 1) }),
     ).toEqual({ from: '' })
   })
 
@@ -135,8 +128,6 @@ describe('serializeSearchParams', () => {
     const serializeConfig = {
       year: { serialize: (v: number) => `y${v}` },
     }
-    expect(
-      serializeSearchParams({ year: 2027 }, initialValues, serializeConfig).year,
-    ).toBe('y2027')
+    expect(serializeSearchParams({ year: 2027 }, initialValues, serializeConfig).year).toBe('y2027')
   })
 })

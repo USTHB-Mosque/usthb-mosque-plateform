@@ -5,6 +5,7 @@
 **Vision:** A digital platform for the USTHB mosque community covering library (borrowing/waitlist/extensions/reviews), activities, articles, and notifications - with a full admin panel for management.
 
 **Guardrails (binding):**
+
 - **Design is final.** All UI must follow the completed design system/Figma. No new features beyond this spec.
 - Existing implemented pages are **polish-only** - flows stay, visuals conform to design tokens.
 - Arabic-first, RTL throughout.
@@ -13,19 +14,21 @@
 
 **Personas:**
 
-| Persona | Description |
-|---|---|
-| **Visitor** | Not logged in. Browsing landing, library catalog, activities, articles. Can search/view detail. Auth-required actions (borrow, waitlist, register, review, favorite/bookmark) -> sign-in gate + redirect back. |
-| **User (member)** | Logged-in community member. Borrow books, waitlist, extend, register for activities, review, favorite/bookmark articles & books, notifications, personal dashboard. |
-| **Admin** | Full management: loans queue, pickups, users, books, articles, activities, reviews, logs, analytics, settings. |
-| **Librarian** | v2 (documented as non-goal for v1). On-site borrowing, today's pickups. |
+| Persona           | Description                                                                                                                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Visitor**       | Not logged in. Browsing landing, library catalog, activities, articles. Can search/view detail. Auth-required actions (borrow, waitlist, register, review, favorite/bookmark) -> sign-in gate + redirect back. |
+| **User (member)** | Logged-in community member. Borrow books, waitlist, extend, register for activities, review, favorite/bookmark articles & books, notifications, personal dashboard.                                            |
+| **Admin**         | Full management: loans queue, pickups, users, books, articles, activities, reviews, logs, analytics, settings.                                                                                                 |
+| **Librarian**     | v2 (documented as non-goal for v1). On-site borrowing, today's pickups.                                                                                                                                        |
 
 **Roles & permissions model:**
+
 - `role: admin | user` on User (already in JWT). Visitor = unauthenticated.
 - **No publisher role** - admins can create/edit/delete any article, activity, or book.
 - **Verification gate:** a user is **verified** when they have a stored **verification document** (student card or registration certificate, uploaded at registration, stored in v1). **Borrowing/checkout is blocked until verified** (browsing/waitlisting allowed). Admin resolves verification state.
 
 **Scope v1 (confirmed):**
+
 - User core: notifications, loans (waitlist + extension + pickup), dashboards + calendars, articles (bookmarks, feedback, reviews), onboarding/helpers.
 - Full admin panel: dashboard, loans, users, books, articles, activities, reviews, logs, analytics, settings.
 - Landing polish (force autoplay).
@@ -36,6 +39,7 @@
 ---
 
 ## 2. Non-Goals (v1 explicitly out)
+
 - **Librarian dedicated view** - v2.
 - **On-site borrowings** (reading in musalla, not taking home) - v2.
 - **User-side audit activity log** - v2 (admin logs in scope).
@@ -55,6 +59,7 @@
 ---
 
 ## 3. Cross-Cutting UX Specs (apply to every screen)
+
 - **Component skeletons** for all async views (match final card/table layouts; shimmer in design tokens).
 - **Empty states** for tables, listings, 404, and error states - use approved illustrations + CTA.
 - **Confirmation alerts** on every destructive/mutating action (delete, cancel, accept/refuse, mark-as-returned, overrides).
@@ -104,19 +109,20 @@
 
 **Trigger matrix:**
 
-| Trigger | Audience | When |
-|---|---|---|
-| Book free/waitlist available | Waitlisted user | Copy released |
-| Request response (book) | Requesting user | approved/refused |
-| Request response (activity) | Registered user | registration accepted/rejected/quota |
-| Loan period end / near-end | Active borrower | Due date approaching (onboarding helper + alert) |
-| Overdue escalation | Borrower | past due |
-| New activity | All users | activity created/published |
-| New article | All users | article created/published |
-| Pickup reminder/no-show warning | Borrowers | pickup window |
-| Admin notifications | Admin panel | severe overdues, pending queues, request arrivals, new user count |
+| Trigger                         | Audience        | When                                                              |
+| ------------------------------- | --------------- | ----------------------------------------------------------------- |
+| Book free/waitlist available    | Waitlisted user | Copy released                                                     |
+| Request response (book)         | Requesting user | approved/refused                                                  |
+| Request response (activity)     | Registered user | registration accepted/rejected/quota                              |
+| Loan period end / near-end      | Active borrower | Due date approaching (onboarding helper + alert)                  |
+| Overdue escalation              | Borrower        | past due                                                          |
+| New activity                    | All users       | activity created/published                                        |
+| New article                     | All users       | article created/published                                         |
+| Pickup reminder/no-show warning | Borrowers       | pickup window                                                     |
+| Admin notifications             | Admin panel     | severe overdues, pending queues, request arrivals, new user count |
 
 **Email policy (proposed defaults):**
+
 - **Mandatory email:** request responses (book), extension results, overdue, pickup reminders, no-show warnings, verification result.
 - **Bulk audiences** ("new activity"/"new article" to all users): in-app + **digest email** (daily/on-demand).
 - **Opt-in defaults:** in-app ON; transactional email ON by default; bulk email OFF unless opted-in.
@@ -124,6 +130,7 @@
 **Admin bell (proposed):** severe overdues, new pending borrow/extension/verification requests, pickups due today, new users, new reviews.
 
 **Email templates:**
+
 - `verification-approved`: Welcome email with verification confirmation
 - `verification-rejection`: Rejection email with reason and re-registration instructions
 - `reservation-available`: Book available for pickup (pickup window duration)
@@ -142,54 +149,64 @@
 
 Each item tagged **New / Extend / Polish**, with data impact.
 
-### 6.1 Landing *(Polish)*
+### 6.1 Landing _(Polish)_
+
 - Hero video **auto-plays forcibly** (muted, playsinline, autoplay, no-poster-gate).
 - Based on approved Figma design.
 
-### 6.2 Notifications *(New)*
+### 6.2 Notifications _(New)_
+
 - Bell + dropdown in navbar (Visitor -> hide bell). Unread badge. Tap -> destination route (loan, article, activity). Mark-as-read.
 - List page with filters (all/unread by type). See Section 5.
 
-### 6.3 My Activities *(Extend)*
+### 6.3 My Activities _(Extend)_
+
 - Registered activities (exists in profile) + **calendar view** (New): activities mapped to dates (existing `schedules`).
 - **Dashboard calendar** (New): month grid combining activities + loan due dates (Section 6.4).
 
-### 6.4 Dashboard (user) *(New)*
+### 6.4 Dashboard (user) _(New)_
+
 - Calendar of activities & due returns.
 - Book request status cards.
 - Activity log of **own** actions (light; full user log is v2).
 
-### 6.5 Loans *(New + Extend)*
+### 6.5 Loans _(New + Extend)_
+
 - **My loans** - currently borrowed list (exists; extend with state machine badges, pickup window, return due).
 - **Extension request** (New) - button when eligible; per Section 4.
 - **Waitlist** (New) - join if no free copy; show position; auto-promotion to request on availability.
 - **Borrow-limit indicator** - show remaining concurrent loans.
 - **Verification notice** - checkout blocked with a clear "needs verification" state until verified.
 
-### 6.6 Books *(Extend)*
+### 6.6 Books _(Extend)_
+
 - **Request a non-existing book** (New) - form -> new collection `book-requests`; surfaced to admin queue + "requested books" analytics.
 - **Add review** (exists; polish to design).
 - **Bookmarks** (exists as favorites; polish to design).
 
-### 6.7 Articles *(Extend)*
+### 6.7 Articles _(Extend)_
+
 - **Info dialog** (New) - overlay with metadata (publisher, type, cover, date) on list items.
 - **Reading-feedback popup** (New) - after finishing reading: like/dislike + optional comment (feeds analytics).
 - **Add review** (New) - merged with feedback: like/dislike + optional comment (single interaction type).
 - **Sections refinement** (Polish): fill/stroke styles + indentation per approved design.
 - **Bookmark articles** (New) - mirrors book favorites; appears in Profile -> bookmarks.
 
-### 6.8 Activities *(Extend)*
+### 6.8 Activities _(Extend)_
+
 - Registration exists. **Document all flows** in Section 8 (register -> confirm -> reminder -> attended -> feedback).
 - Post-event **positive/negative feedback** (New) - small rating on detail after end date (feeds analytics).
 - Capacity indicator exposed (participant counts already tracked).
 
-### 6.9 Profile / Settings *(Extend + New)*
+### 6.9 Profile / Settings _(Extend + New)_
+
 - **Bookmarks** tab: books (exists as favorites) + articles (new).
 - **Notifications** tab: per-channel opt-in for the matrix in Section 5.
 - **Info** tab: personal data (existing account tab).
 - **Security** tab: change password (exists). **Password reset + 2FA deferred.**
 
-### 6.10 Onboarding / Helpers *(New)*
+### 6.10 Onboarding / Helpers _(New)_
+
 - **First onboarding** - books + loan flow: 3-4 step intro on first library visit (dismissible, remembers seen).
 - **Contextual helper** - when a borrowed book's return is near: explain extension possibility.
 - **Waitlist helper** - explain waitlist & auto-promotion when requesting an unavailable book.
@@ -198,7 +215,8 @@ Each item tagged **New / Extend / Polish**, with data impact.
 
 ## 7. Features - Admin View (full panel)
 
-### 7.1 Dashboard *(New)*
+### 7.1 Dashboard _(New)_
+
 - Pending-request card (borrowing / extension / account verification / severe overdues).
 - **Today's pickups** list (user, book, code, day+hour) with dropdown: mark done / reschedule.
 - Latest reviews (top 3).
@@ -206,7 +224,8 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - Today's activities log (3).
 - New-users count (recent registration).
 
-### 7.2 Loans *(New)*
+### 7.2 Loans _(New)_
+
 - Request queue (if no copy -> waitlist indicator).
 - Extension-request queue.
 - **KPIs:** total loans, this month, exceeded-time count, extension requests.
@@ -215,7 +234,8 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - **Manual add** borrowing/extension dialog - **search by name/email**, book search, take/return dates.
 - **Pickup view:** "picked / not" tags; used for no-show signalling.
 
-### 7.3 Users *(New)*
+### 7.3 Users _(New)_
+
 - KPI of user books (low priority).
 - User table; row actions (dropdown or right-click menu).
 - Previous borrowings per user (status: returned / not returned).
@@ -223,18 +243,21 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - Extension requests with **due-check logic** (queue empty -> available; else refuse).
 - **Certificate** in profile info (stored in v1) + **verification state management**.
 
-### 7.4 Books *(Extend)*
+### 7.4 Books _(Extend)_
+
 - Consistent sidebar elements (already designed).
 - Books list/CRUD; multi-copy model with counters (totalBooks/availableBooks).
 
-### 7.5 Articles *(New)*
+### 7.5 Articles _(New)_
+
 - **KPIs:** total, this month, views, interactions.
 - **Grid + list views** (list: title, description, type, date, publisher).
 - **CRUD** - any admin can edit (no publisher ownership rule).
 - Row dropdown: edit / delete / info (who, when, type, cover) / share / copy.
 - Article reading page (exists; invoke from admin).
 
-### 7.6 Activities *(New)*
+### 7.6 Activities _(New)_
+
 - **KPIs:** total, current (open), enrolled, upcoming.
 - Types: events vs "all-time" activities.
 - List + dropdown actions; **add activity dialog**.
@@ -243,26 +266,31 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - Activity info: name, description, image, date, who can participate, location, type, duration, state.
 - Detail page (exists).
 
-### 7.7 Logs *(New)*
+### 7.7 Logs _(New)_
+
 - Two partitions: **admins** (v1) + **users** (v2).
 - Required info: user, timestamp, action, date.
 - Filters: multi-user, date (value/range), action type (via filter dialog).
 
-### 7.8 Analytics *(New)*
+### 7.8 Analytics _(New)_
+
 Computed **from the DB** (Postgres aggregation) - no external service.
+
 - Article insights: reads, feedback (likes/dislikes).
 - Activity insights: registrations, positive/negative feedback.
 - Most-borrowed books; requested books; article with most interactions; categories most read; borrowings **monthly evolution**; days & hours where borrowings increase; days & hours when pickups increase.
 - Phased: basic KPIs (counts, top items) in v1, computed charts (monthly evolution, peak hours) in v1.1.
 
-### 7.9 Settings *(New)*
+### 7.9 Settings _(New)_
+
 - Admin info (name, email, pfp).
 - **Security**: change password, **2FA deferred**, logged-in devices/link device - **must verify identity first** (edit/manage as pages; verifications as dialogs).
 - **Notifications**: toggles for logs, borrowing/extension/user requests, reviews, severe overdues, daily activities.
 - **Loan configuration (New):** default loan duration + **borrow limit** (max concurrent loans).
 - **Keyboard shortcuts** (add new borrowing, etc.).
 
-### 7.10 Reviews *(New)*
+### 7.10 Reviews _(New)_
+
 - Two categories: **book reviews** and **article reviews** (merged with article feedback - single interaction type).
 - Admin actions: delete / copy.
 - KPIs (counts, avg per category).
@@ -293,6 +321,7 @@ Computed **from the DB** (Postgres aggregation) - no external service.
 ### User Registration Fields
 
 Add the following fields to the existing User collection:
+
 - `phone` (text, optional)
 - `faculty` (text, optional)
 - `studyYear` (select: 1-5, optional)
@@ -320,6 +349,7 @@ Add the following fields to the existing User collection:
 ### Privacy & Terms Pages
 
 Static pages at `/privacy` and `/terms`:
+
 - Privacy policy covering data collection, purpose, retention, and rights.
 - Terms of use covering loan rules, account responsibilities, and content moderation.
 - Both in Arabic (bilingual optional).
@@ -343,6 +373,7 @@ Static pages at `/privacy` and `/terms`:
 ## 11. Security Fixes & Technical Debt
 
 ### Security Fixes Required (from audit)
+
 1. Fix `reviewBook` action - add `req` and `overrideAccess: false`
 2. Fix `Review` collection - change `create: () => true` to authenticated only
 3. Fix login form - change `type="text"` to `type="password"` for password field
@@ -351,6 +382,7 @@ Static pages at `/privacy` and `/terms`:
 6. Fix `BookFavorite` hook - use `overrideAccess: false`
 
 ### Technical Debt to Address
+
 - Extract `isAdmin` helper to shared utility
 - Remove unused Apollo/GraphQL dependencies
 - Fix Docker Compose configuration (Postgres, not MongoDB)
@@ -361,11 +393,13 @@ Static pages at `/privacy` and `/terms`:
 ## 12. Testing Strategy
 
 ### Test Strategy
+
 - Unit tests for hooks (reservation queue logic, loan duration calculation)
 - Integration tests for server actions (verification flow, loan approval)
 - E2E tests for critical user flows (registration -> verification -> loan)
 
 ### Key Test Cases
+
 1. Registration with consent checkbox
 2. Admin approval/rejection flow
 3. Book reservation queue (FIFO order)
@@ -381,6 +415,7 @@ Static pages at `/privacy` and `/terms`:
 13. No-show handling and copy release
 
 ### Prior Art
+
 - Existing test patterns in `__tests__/` directories
 - React Query hooks tested with MSW (Mock Service Worker)
 
@@ -389,9 +424,11 @@ Static pages at `/privacy` and `/terms`:
 ## 13. Data Model
 
 ### Current Collections
+
 users, media, books, activities, articles, loans, reviews, activity-registrations, book-favorites
 
 ### Planned New Collections (v1)
+
 - `notifications` - user, type, seen, link, emailSent
 - `book-requests` - user, book details, status, admin notes
 - `loan-extensions` - loan, user, status, reason, admin response
@@ -403,16 +440,16 @@ users, media, books, activities, articles, loans, reviews, activity-registration
 
 ### Access Control Matrix
 
-| Collection | Create | Read | Update | Delete |
-|---|---|---|---|---|
-| Users | Anyone (registration) | Admin or self | Admin (verification), self (profile) | Admin only |
-| Books | Admin only | Anyone (public catalog) | Admin only | Admin only |
-| Loans | Verified users (via system) | Admin or self | Admin only | Admin only |
-| Notifications | System only (hooks) | Admin or self | Self only (mark read) | System only |
-| Reviews | Authenticated users | Anyone | Author or admin | Author or admin |
-| Book Requests | Authenticated users | Admin or self | Admin only | Admin only |
-| Activity Registrations | Authenticated users | Admin or self | Admin or self (cancel) | Admin or self |
-| Logs | System only (hooks) | Admin only | Never | Never |
+| Collection             | Create                      | Read                    | Update                               | Delete          |
+| ---------------------- | --------------------------- | ----------------------- | ------------------------------------ | --------------- |
+| Users                  | Anyone (registration)       | Admin or self           | Admin (verification), self (profile) | Admin only      |
+| Books                  | Admin only                  | Anyone (public catalog) | Admin only                           | Admin only      |
+| Loans                  | Verified users (via system) | Admin or self           | Admin only                           | Admin only      |
+| Notifications          | System only (hooks)         | Admin or self           | Self only (mark read)                | System only     |
+| Reviews                | Authenticated users         | Anyone                  | Author or admin                      | Author or admin |
+| Book Requests          | Authenticated users         | Admin or self           | Admin only                           | Admin only      |
+| Activity Registrations | Authenticated users         | Admin or self           | Admin or self (cancel)               | Admin or self   |
+| Logs                   | System only (hooks)         | Admin only              | Never                                | Never           |
 
 ---
 
@@ -420,19 +457,19 @@ users, media, books, activities, articles, loans, reviews, activity-registration
 
 **Resolved in this spec:**
 
-| ID | Decision | Resolution |
-|---|---|---|
-| Multi-copy model | Counters (totalBooks/availableBooks) | Section 9 |
-| Loan duration | Configurable in Settings (default 14 days) | Section 4 |
-| Borrow limit | Configurable max concurrent loans | Section 4 |
-| Publisher role | None - all admins edit all content | Section 1 |
-| Deployment | Docker/VPS | Section 15 |
-| Scale | Thousands of users | Section 15 |
-| Language | Arabic-only v1 | Section 2 |
-| Admin panel location | Stays under /admin | Section 15 |
-| Password reset / 2FA | Deferred | Section 2 |
-| Email provider | Nodemailer (provider TBD) | Section 5 |
-| Extension auto-approve | Auto-approve when queue empty | Section 4 |
+| ID                       | Decision                                                 | Resolution  |
+| ------------------------ | -------------------------------------------------------- | ----------- |
+| Multi-copy model         | Counters (totalBooks/availableBooks)                     | Section 9   |
+| Loan duration            | Configurable in Settings (default 14 days)               | Section 4   |
+| Borrow limit             | Configurable max concurrent loans                        | Section 4   |
+| Publisher role           | None - all admins edit all content                       | Section 1   |
+| Deployment               | Docker/VPS                                               | Section 15  |
+| Scale                    | Thousands of users                                       | Section 15  |
+| Language                 | Arabic-only v1                                           | Section 2   |
+| Admin panel location     | Stays under /admin                                       | Section 15  |
+| Password reset / 2FA     | Deferred                                                 | Section 2   |
+| Email provider           | Nodemailer (provider TBD)                                | Section 5   |
+| Extension auto-approve   | Auto-approve when queue empty                            | Section 4   |
 | Article feedback/reviews | Merged: single interaction type (like/dislike + comment) | Section 6.7 |
 
 **Remaining (must be resolved before build):**
@@ -450,41 +487,46 @@ users, media, books, activities, articles, loans, reviews, activity-registration
 ## 15. Tech Stack & Architecture
 
 ### Architecture
+
 - **Monolith**: one Next.js (App Router) process hosts the public site **and** Payload CMS in-process. REST at `/api/*`, GraphQL at `/api/graphql`, admin at **/admin** (same app).
 - **Rendering split**: public read pages = Server Components + `getPayload`; interactive pages = Client Components + TanStack Query (cookie auth).
 - **Auth**: Payload JWT cookie, `role` in JWT, role-based redirect + server-side re-checks. **Google OAuth** = only social login. **Password reset deferred.** Visitor->user gating: borrow/bookmark/register/review require sign-in (visitor is redirected, never blocked from browsing).
 
 ### Stack Table
-| Layer | Choice |
-|---|---|
-| Framework | Next.js (App Router) |
-| Runtime | Node (Docker) |
-| Language | TypeScript |
-| CMS | Payload CMS (in-process) |
-| Database | PostgreSQL 17 (local Supabase CLI / remote) |
-| Storage | Supabase S3 |
-| Data fetching | TanStack Query v5 (client) |
-| State | Zustand |
-| UI | Tailwind + shadcn/ui + Base-UI |
-| Animation | motion |
-| Forms | react-hook-form + zod |
-| Toasts | sonner |
-| Email | nodemailer (provider later) |
-| Auth | Payload auth + Google OAuth |
-| Fonts | Local Arabic fonts |
-| Package manager | pnpm |
-| Lint | ESLint |
-| Local Supabase | Supabase CLI |
+
+| Layer           | Choice                                      |
+| --------------- | ------------------------------------------- |
+| Framework       | Next.js (App Router)                        |
+| Runtime         | Node (Docker)                               |
+| Language        | TypeScript                                  |
+| CMS             | Payload CMS (in-process)                    |
+| Database        | PostgreSQL 17 (local Supabase CLI / remote) |
+| Storage         | Supabase S3                                 |
+| Data fetching   | TanStack Query v5 (client)                  |
+| State           | Zustand                                     |
+| UI              | Tailwind + shadcn/ui + Base-UI              |
+| Animation       | motion                                      |
+| Forms           | react-hook-form + zod                       |
+| Toasts          | sonner                                      |
+| Email           | nodemailer (provider later)                 |
+| Auth            | Payload auth + Google OAuth                 |
+| Fonts           | Local Arabic fonts                          |
+| Package manager | pnpm                                        |
+| Lint            | ESLint                                      |
+| Local Supabase  | Supabase CLI                                |
 
 ### Environments
+
 - **dev** `.env.local` -> local Supabase (DB :54322, S3 :54321, Studio :54323, Inbucket :54324 for email).
 - **preview/prod** `.env` -> remote Supabase; `NODE_ENV` switches CSP/headers.
 
 ### Deployment
+
 - **Docker/VPS** (multi-stage standalone image; Vercel not targeted).
 - Build = `payload migrate && next build`.
 
 ### Scale & Performance
+
 - Target **thousands** of users.
 - Notes: indexed/filtered queries, pagination on all listings, `select`/`maxDepth` limits, caching of public read queries; SSE connection pooling.
 

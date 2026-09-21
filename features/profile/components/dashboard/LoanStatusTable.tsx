@@ -43,7 +43,9 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
             <tr className="border-b border-border bg-background-2">
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">الكتاب</th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">الرمز</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">تاريخ الأخذ</th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                تاريخ الأخذ
+              </th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">حالة الطلب</th>
               <th className="w-12 px-3 py-3 text-center" />
             </tr>
@@ -67,9 +69,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                     <td className="truncate px-4 py-3 font-medium text-card-foreground">
                       {book?.title || 'كتاب'}
                     </td>
-                    <td className="truncate px-4 py-3 text-muted-foreground">
-                      {loan.id}
-                    </td>
+                    <td className="truncate px-4 py-3 text-muted-foreground">{loan.id}</td>
                     <td className="truncate px-4 py-3 text-muted-foreground">
                       {format(new Date(loan.loanDate), 'dd/MM/yyyy', { locale: arDZ })}
                     </td>

@@ -59,8 +59,12 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
           <thead>
             <tr className="border-b border-border bg-background-2">
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">النشاط</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">تاريخ بدأ النشاط</th>
-              <th className="px-4 py-3 text-right font-medium text-muted-foreground">مكان النشاط</th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                تاريخ بدأ النشاط
+              </th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                مكان النشاط
+              </th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">حالة الطلب</th>
               <th className="w-12 px-3 py-3 text-center" />
             </tr>
@@ -95,7 +99,9 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                       {activity?.location || '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
+                      >
                         {STATUS_LABELS[status]}
                       </span>
                     </td>

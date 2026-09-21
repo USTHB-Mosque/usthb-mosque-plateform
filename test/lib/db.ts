@@ -38,9 +38,7 @@ export async function ensureTestDatabase(): Promise<void> {
   const admin = new Client({ connectionString: adminDatabaseUrl(dbUrl) })
   await admin.connect()
   try {
-    const existing = await admin.query('SELECT 1 FROM pg_database WHERE datname = $1', [
-      database,
-    ])
+    const existing = await admin.query('SELECT 1 FROM pg_database WHERE datname = $1', [database])
     if (existing.rowCount === 0) {
       await admin.query(`CREATE DATABASE "${database}"`)
     }

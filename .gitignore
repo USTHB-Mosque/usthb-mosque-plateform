@@ -41,10 +41,12 @@ next-env.d.ts
 .context/
 SESSION.md
 .opencode/
+
+# agent scratch space and local tool settings
+.scratch/
+*.local.json
+
 # supabase
 supabase/.branches/
 supabase/.temp/
 supabase/snippets/
-
-# playwright screenshots
-screenshot*.cjs

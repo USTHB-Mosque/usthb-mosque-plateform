@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import { Card } from '@/shared/ui/card'
 import { getLatestUpdates } from '@/features/profile/server/latest-updates'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -179,9 +179,7 @@ const LatestUpdatesPage: React.FC = async () => {
           </section>
         </div>
       ) : (
-        <Card className="p-10 text-center text-muted-foreground">
-          تعذّر تحميل آخر التحديثات.
-        </Card>
+        <Card className="p-10 text-center text-muted-foreground">تعذّر تحميل آخر التحديثات.</Card>
       )}
     </UserPage>
   )

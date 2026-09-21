@@ -31,7 +31,10 @@ afterAll(async () => {
 
 describe('login', () => {
   it('rejects a wrong password', async () => {
-    const user = await createTestUser(payload, { email: 'login@usthb.dz', password: 'correct-pass' })
+    const user = await createTestUser(payload, {
+      email: 'login@usthb.dz',
+      password: 'correct-pass',
+    })
     const { user: logged } = await login('login@usthb.dz', 'wrong-pass')
     expect(logged).toBeUndefined()
     expect(String(user.id)).toBeTruthy()
@@ -44,7 +47,10 @@ describe('login', () => {
   })
 
   it('accepts the correct password and sets the cookie', async () => {
-    const user = await createTestUser(payload, { email: 'accept@usthb.dz', password: 'correct-pass' })
+    const user = await createTestUser(payload, {
+      email: 'accept@usthb.dz',
+      password: 'correct-pass',
+    })
     const { user: logged } = await login('accept@usthb.dz', 'correct-pass')
 
     expect(logged?.id).toBe(user.id)
@@ -104,7 +110,10 @@ describe('logout', () => {
 
 describe('payload.auth cookie hardening', () => {
   it('refuses a cookie without Origin or Sec-Fetch-Site', async () => {
-    const user = await createTestUser(payload, { email: 'origin@usthb.dz', password: 'correct-pass' })
+    const user = await createTestUser(payload, {
+      email: 'origin@usthb.dz',
+      password: 'correct-pass',
+    })
     const { token } = await loginToken(payload, { email: user.email!, password: 'correct-pass' })
 
     const response = await payload.auth({
@@ -114,7 +123,10 @@ describe('payload.auth cookie hardening', () => {
   })
 
   it('accepts the cookie with a same-origin Origin header', async () => {
-    const user = await createTestUser(payload, { email: 'origin2@usthb.dz', password: 'correct-pass' })
+    const user = await createTestUser(payload, {
+      email: 'origin2@usthb.dz',
+      password: 'correct-pass',
+    })
     const { token } = await loginToken(payload, { email: user.email!, password: 'correct-pass' })
 
     const response = await payload.auth({
@@ -126,7 +138,10 @@ describe('payload.auth cookie hardening', () => {
 
 describe('createSessionForUser', () => {
   it('mints a token payload.auth accepts, appends exactly one session and drops expired ones', async () => {
-    const user = await createTestUser(payload, { email: 'oauth@usthb.dz', password: 'correct-pass' })
+    const user = await createTestUser(payload, {
+      email: 'oauth@usthb.dz',
+      password: 'correct-pass',
+    })
     const now = new Date()
 
     await payload.update({
@@ -171,7 +186,10 @@ describe('createSessionForUser', () => {
   })
 
   it('works for a user with no sessions at all', async () => {
-    const fresh = await createTestUser(payload, { email: 'oauth-fresh@usthb.dz', password: 'correct-pass' })
+    const fresh = await createTestUser(payload, {
+      email: 'oauth-fresh@usthb.dz',
+      password: 'correct-pass',
+    })
     const { token } = await createSessionForUser(payload, fresh)
 
     const auth = await payload.auth({ headers: new Headers(makeAuthHeaders(token)) })

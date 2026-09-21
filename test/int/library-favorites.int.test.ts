@@ -41,7 +41,10 @@ describe('book favorites', () => {
     // Anonymous callers simply see an unfavorited state.
     expect(await getBookFavoriteState(book.id)).toEqual({ favorited: false })
 
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     expect(await getBookFavoriteState(book.id)).toEqual({ favorited: false })
@@ -90,7 +93,10 @@ describe('book favorites', () => {
       req,
       overrideAccess: false,
     })
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await removeBookFavorite(favorite.id)
@@ -115,7 +121,10 @@ describe('book favorites', () => {
     // No data.user and no req.user: the duplicate guard returns early and the
     // required-field validation rejects the row.
     await expect(
-      payload.create({ collection: 'book-favorites', data: { book: book.id, user: undefined as unknown as number } }),
+      payload.create({
+        collection: 'book-favorites',
+        data: { book: book.id, user: undefined as unknown as number },
+      }),
     ).rejects.toThrow()
   })
 
@@ -155,7 +164,10 @@ describe('article favorites', () => {
     // Anonymous state check for the article favorite seam.
     expect(await getArticleFavoriteState(article.id)).toEqual({ favorited: false })
 
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     expect(await getArticleFavoriteState(article.id)).toEqual({ favorited: false })
@@ -203,7 +215,10 @@ describe('article favorites', () => {
       req,
       overrideAccess: false,
     })
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await removeArticleFavorite(favorite.id)
@@ -221,7 +236,10 @@ describe('article favorites', () => {
     const article = await createTestArticle(payload)
 
     await expect(
-      payload.create({ collection: 'article-favorites', data: { article: article.id, user: undefined as unknown as number } }),
+      payload.create({
+        collection: 'article-favorites',
+        data: { article: article.id, user: undefined as unknown as number },
+      }),
     ).rejects.toThrow()
   })
 

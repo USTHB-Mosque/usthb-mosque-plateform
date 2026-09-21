@@ -6,7 +6,11 @@ import { createTestActivity } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 
 import type { Payload } from 'payload'
-import { getUserActivityRegistration, registerActivity, registerActivityLogic } from '@/features/activities/server/activities'
+import {
+  getUserActivityRegistration,
+  registerActivity,
+  registerActivityLogic,
+} from '@/features/activities/server/activities'
 import type { User } from '@/payload-types'
 
 let payload: Payload
@@ -83,7 +87,11 @@ describe('registerActivityLogic', () => {
     const result = await registerActivityLogic(String(activity.id), await ctxFor(payload, member))
 
     expect(result.success).toBe(true)
-    const after = await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'activities',
+      id: activity.id,
+      overrideAccess: true,
+    })
     expect(after.currentParticipants).toBe(2)
 
     const registrations = await payload.find({
@@ -112,7 +120,10 @@ describe('registerActivity (wrapper)', () => {
 
   it('registers as the cookie user', async () => {
     const activity = await createTestActivity(payload)
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await registerActivity(String(activity.id))
@@ -129,7 +140,10 @@ describe('getUserActivityRegistration', () => {
     const activity = await createTestActivity(payload)
     await registerActivityLogic(String(activity.id), await ctxFor(payload, member))
 
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
     expect(await getUserActivityRegistration(String(activity.id))).toEqual({ registered: true })
   })

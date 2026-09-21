@@ -1,21 +1,40 @@
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'vitest/config'
-import tsconfigPaths from 'vite-tsconfig-paths'
+
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': dirname,
+    },
+  },
   test: {
-    setupFiles: ['./test/lib/load-env.ts'],
+    globals: false,
     projects: [
       {
-        extends: true,
+        test: {
+          name: 'rtl',
+          environment: 'jsdom',
+          include: ['**/*.test.{ts,tsx}'],
+          exclude: ['**/*.unit.test.ts', '**/*.int.test.ts', 'node_modules/**', '.next/**'],
+          setupFiles: ['./vitest.setup.ts'],
+          globals: false,
+        },
+      },
+      {
         test: {
           name: 'unit',
           environment: 'node',
           include: ['**/*.unit.test.ts'],
+          setupFiles: ['./test/lib/load-env.ts'],
+          globals: false,
         },
       },
       {
-        extends: true,
         test: {
           name: 'integration',
           environment: 'node',
@@ -25,6 +44,7 @@ export default defineConfig({
           fileParallelism: false,
           testTimeout: 30_000,
           hookTimeout: 60_000,
+          globals: false,
         },
       },
     ],

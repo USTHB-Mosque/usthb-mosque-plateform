@@ -11,9 +11,7 @@ export interface AuthOptions {
   allowAdmin?: boolean
 }
 
-export async function getAuthenticatedUser(
-  opts?: AuthOptions,
-): Promise<User | undefined> {
+export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | undefined> {
   const payload = await getPayload({ config })
   const headers = await nextHeaders()
   const response = await payload.auth({ headers })
@@ -27,9 +25,7 @@ export async function getAuthenticatedUser(
   return user
 }
 
-export async function getPayloadWithUser(
-  opts?: AuthOptions,
-): Promise<{
+export async function getPayloadWithUser(opts?: AuthOptions): Promise<{
   payload: Payload
   user: User
   req: PayloadRequest
@@ -56,9 +52,7 @@ export async function requireUser(redirectTo = '/auth', opts?: AuthOptions) {
 
 export async function setPayloadTokenCookie(token: string, exp?: number) {
   const cookieStore = await nextCookies()
-  const maxAge = exp
-    ? Math.max(0, exp - Math.floor(Date.now() / 1000))
-    : TOKEN_EXPIRATION_SECONDS
+  const maxAge = exp ? Math.max(0, exp - Math.floor(Date.now() / 1000)) : TOKEN_EXPIRATION_SECONDS
 
   cookieStore.set('payload-token', token, {
     path: '/',
@@ -100,7 +94,10 @@ export async function createSessionForUser(
     collection: 'users',
     id: user.id,
     data: {
-      sessions: [...activeSessions, { id: sid, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() }],
+      sessions: [
+        ...activeSessions,
+        { id: sid, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() },
+      ],
     },
     overrideAccess: true,
   })

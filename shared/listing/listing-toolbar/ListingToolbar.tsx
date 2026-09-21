@@ -40,7 +40,12 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   filterButtonClassName,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const openFiltersDisclosure = { isOpen: filtersOpen, onOpen: () => setFiltersOpen(true), onClose: () => setFiltersOpen(false), setIsOpen: setFiltersOpen }
+  const openFiltersDisclosure = {
+    isOpen: filtersOpen,
+    onOpen: () => setFiltersOpen(true),
+    onClose: () => setFiltersOpen(false),
+    setIsOpen: setFiltersOpen,
+  }
   const visible = listingFilterSectionsVisible(filterSections)
 
   const hasQuickFilters = quickFilterIds.length > 0 || quickFilterSections.length > 0
@@ -67,10 +72,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
               size="icon-lg"
               onClick={openFiltersDisclosure.onOpen}
               aria-label="تصفية"
-              className={cn(
-                'h-10 w-10 rounded-lg',
-                filterButtonClassName ?? 'bg-background-2',
-              )}
+              className={cn('h-10 w-10 rounded-lg', filterButtonClassName ?? 'bg-background-2')}
             >
               <Funnel />
             </Button>

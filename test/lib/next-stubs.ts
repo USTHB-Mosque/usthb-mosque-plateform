@@ -43,8 +43,7 @@ export function makeAuthHeaders(token: string, origin?: string): Record<string, 
 }
 
 vi.mock('next/headers', () => ({
-  headers: () =>
-    Promise.resolve(new Headers(nextContext.headers as Record<string, string>)),
+  headers: () => Promise.resolve(new Headers(nextContext.headers as Record<string, string>)),
   cookies: () =>
     Promise.resolve({
       get: (name: string) => {

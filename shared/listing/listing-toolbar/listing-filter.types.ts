@@ -24,6 +24,8 @@ export interface ListingFilterSection {
 }
 
 /** Sections with at least one option (empty groups are ignored). */
-export function listingFilterSectionsVisible(sections: ListingFilterSection[]): ListingFilterSection[] {
+export function listingFilterSectionsVisible(
+  sections: ListingFilterSection[],
+): ListingFilterSection[] {
   return sections.filter((s) => s.options.length > 0)
 }

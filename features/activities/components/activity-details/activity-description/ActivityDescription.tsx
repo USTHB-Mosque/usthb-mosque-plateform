@@ -70,11 +70,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
         <Separator />
 
         <div className="flex flex-col gap-3">
-          <ActivityDescriptionLine
-            icon={<User />}
-            title="المشرف"
-            description={supervisor || ''}
-          />
+          <ActivityDescriptionLine icon={<User />} title="المشرف" description={supervisor || ''} />
           <Separator />
           <ActivityDescriptionLine icon={<MapPin />} title="الموقع" description={location || ''} />
           <Separator />

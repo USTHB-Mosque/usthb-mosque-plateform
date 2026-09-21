@@ -202,6 +202,7 @@ _Avoid_: Environment variable management, secrets vault
 ## Status Flows
 
 ### User Registration Flow
+
 1. User submits registration form with personal data + verification document + consent checkbox
 2. Status: `pending_verification`
 3. Admin reviews verification document, approves or rejects
@@ -209,6 +210,7 @@ _Avoid_: Environment variable management, secrets vault
 5. If rejected: status -> `rejected` (can re-upload)
 
 ### Loan State Machine Flow
+
 1. User requests loan (or auto from waitlist promotion)
 2. If copies available: auto-approve -> `approved_pickup` + pickup window
 3. If no copies: -> `waitlisted` (position in queue)
@@ -221,6 +223,7 @@ _Avoid_: Environment variable management, secrets vault
 10. Any state -> `cancelled` (per cancelability rules)
 
 ### Verification Gate
+
 - Unverified users: can browse, search, waitlist
 - Verified users: can borrow (subject to borrow limit), waitlist, extend
 - Blocked at `picked` state if not verified (admin alerted)

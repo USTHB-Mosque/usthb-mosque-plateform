@@ -1,7 +1,7 @@
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
 import ProfileFavoritesGrid from '@/features/profile/components/settings/ProfileFavoritesGrid'
 import ProfileArticleFavoritesGrid from '@/features/profile/components/settings/ProfileArticleFavoritesGrid'
-import UserPage from '../UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import BookmarksTabs from './BookmarksTabs'
 
 export default async function DashboardBookmarksPage() {

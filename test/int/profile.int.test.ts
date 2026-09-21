@@ -44,7 +44,10 @@ afterAll(async () => {
 
 describe('updateProfileFullName', () => {
   it('rejects an empty full name', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await updateProfileFullName(formData({ fullName: '   ' }))
@@ -57,7 +60,10 @@ describe('updateProfileFullName', () => {
   })
 
   it('rejects a field outside the allowlist', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await updateProfileField(formData({ role: 'admin' }), 'role')
@@ -65,26 +71,40 @@ describe('updateProfileFullName', () => {
   })
 
   it('updates the caller full name', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await updateProfileFullName(formData({ fullName: 'الاسم الجديد' }))
     expect(result).toEqual({ ok: true })
 
-    const after = await payload.findByID({ collection: 'users', id: member.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: member.id,
+      overrideAccess: true,
+    })
     expect(after.fullName).toBe('الاسم الجديد')
   })
 })
 
 describe('updateNotificationPreferences', () => {
   it('persists the preferences', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await updateNotificationPreferences({ loanRequests: false })
     expect(result).toEqual({ ok: true })
 
-    const after = await payload.findByID({ collection: 'users', id: member.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: member.id,
+      overrideAccess: true,
+    })
     expect(after.notificationPreferences).toEqual({
       loanRequests: false,
       activityRegistrations: true,
@@ -94,13 +114,20 @@ describe('updateNotificationPreferences', () => {
   })
 
   it('defaults unspecified preferences to enabled', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await updateNotificationPreferences({})
     expect(result).toEqual({ ok: true })
 
-    const after = await payload.findByID({ collection: 'users', id: member.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: member.id,
+      overrideAccess: true,
+    })
     expect(after.notificationPreferences).toEqual({
       loanRequests: true,
       activityRegistrations: true,
@@ -117,7 +144,10 @@ describe('updateNotificationPreferences', () => {
 
 describe('changePassword', () => {
   it('rejects a wrong current password', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await changePassword(
@@ -131,7 +161,10 @@ describe('changePassword', () => {
   })
 
   it('rejects a mismatched confirmation', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await changePassword(
@@ -145,7 +178,10 @@ describe('changePassword', () => {
   })
 
   it('rejects a too-short new password', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const result = await changePassword(
@@ -165,8 +201,14 @@ describe('changePassword', () => {
 
   it('revokes every session on success and leaves exactly one fresh one', async () => {
     // Two live sessions: the change-password device and a stolen one.
-    const firstLogin = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
-    const secondLogin = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const firstLogin = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
+    const secondLogin = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(secondLogin.token))
 
     const result = await changePassword(
@@ -178,12 +220,19 @@ describe('changePassword', () => {
     )
     expect(result).toEqual({ ok: true })
 
-    const after = await payload.findByID({ collection: 'users', id: member.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: member.id,
+      overrideAccess: true,
+    })
     expect(after.sessions).toHaveLength(1)
 
     // The fresh token works, the stolen ones do not.
     const fresh = await payload.auth({
-      headers: new Headers({ cookie: `payload-token=${getLastSetCookieOptions('payload-token')?.value}`, origin: 'http://localhost:3000' }),
+      headers: new Headers({
+        cookie: `payload-token=${getLastSetCookieOptions('payload-token')?.value}`,
+        origin: 'http://localhost:3000',
+      }),
     })
     expect(fresh.user?.id).toBe(member.id)
 
@@ -203,7 +252,10 @@ describe('dashboard and latest updates', () => {
   })
 
   it('collects the member dashboard data', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const data = await getProfileDashboardData()
@@ -216,7 +268,10 @@ describe('dashboard and latest updates', () => {
   })
 
   it('collects latest updates for a signed-in member', async () => {
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const data = await getLatestUpdates()

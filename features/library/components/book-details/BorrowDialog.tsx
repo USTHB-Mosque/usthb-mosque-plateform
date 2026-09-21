@@ -34,8 +34,18 @@ const timeSlotOptions = [
 
 const WEEKDAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
 const MONTHS = [
-  'جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان',
-  'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  'جانفي',
+  'فيفري',
+  'مارس',
+  'أفريل',
+  'ماي',
+  'جوان',
+  'جويلية',
+  'أوت',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
 ]
 
 function getDaysInMonth(year: number, month: number): number {
@@ -84,7 +94,13 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
   const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth)
 
   const calendarDays = useMemo(() => {
-    const cells: { day: number; date: Date; isCurrentMonth: boolean; isFriday: boolean; isPast: boolean }[] = []
+    const cells: {
+      day: number
+      date: Date
+      isCurrentMonth: boolean
+      isFriday: boolean
+      isPast: boolean
+    }[] = []
 
     const prevMonth = calendarMonth === 0 ? 11 : calendarMonth - 1
     const prevYear = calendarMonth === 0 ? calendarYear - 1 : calendarYear
@@ -93,18 +109,36 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
     for (let i = firstDay - 1; i >= 0; i--) {
       const day = daysInPrevMonth - i
       const date = new Date(prevYear, prevMonth, day)
-      cells.push({ day, date, isCurrentMonth: false, isFriday: date.getDay() === 5, isPast: date < today })
+      cells.push({
+        day,
+        date,
+        isCurrentMonth: false,
+        isFriday: date.getDay() === 5,
+        isPast: date < today,
+      })
     }
 
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(calendarYear, calendarMonth, i)
-      cells.push({ day: i, date, isCurrentMonth: true, isFriday: date.getDay() === 5, isPast: date < today })
+      cells.push({
+        day: i,
+        date,
+        isCurrentMonth: true,
+        isFriday: date.getDay() === 5,
+        isPast: date < today,
+      })
     }
 
     let nextDay = 1
     while (cells.length < 35) {
       const date = new Date(calendarYear, calendarMonth + 1, nextDay)
-      cells.push({ day: nextDay++, date, isCurrentMonth: false, isFriday: date.getDay() === 5, isPast: date < today })
+      cells.push({
+        day: nextDay++,
+        date,
+        isCurrentMonth: false,
+        isFriday: date.getDay() === 5,
+        isPast: date < today,
+      })
     }
 
     return cells
@@ -127,7 +161,9 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
   }
 
   const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
 
   const handleConfirm = () => {
     const now = new Date()
@@ -213,7 +249,10 @@ const BorrowDialog: React.FC<BorrowDialogProps> = ({
               {/* Weekday headers */}
               <div className="grid grid-cols-7 gap-1 mb-1">
                 {WEEKDAYS.map((day) => (
-                  <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1">
+                  <div
+                    key={day}
+                    className="text-center text-[10px] font-medium text-muted-foreground py-1"
+                  >
                     {day}
                   </div>
                 ))}

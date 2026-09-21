@@ -47,7 +47,11 @@ const SectionBlock: React.FC<SectionBlockProps> = ({
           className="h-full w-full rounded-[5px] object-cover"
         />
       </div>
-      <GlassCard title={cardTitle} body={cardBody} side={imagePosition === 'right' ? 'left' : 'right'} />
+      <GlassCard
+        title={cardTitle}
+        body={cardBody}
+        side={imagePosition === 'right' ? 'left' : 'right'}
+      />
     </div>
   )
 

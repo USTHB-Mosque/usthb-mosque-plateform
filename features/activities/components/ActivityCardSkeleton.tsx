@@ -9,7 +9,10 @@ interface ActivityCardSkeletonProps {
   large?: boolean
 }
 
-const ActivityCardSkeleton: React.FC<ActivityCardSkeletonProps> = ({ className, large = false }) => {
+const ActivityCardSkeleton: React.FC<ActivityCardSkeletonProps> = ({
+  className,
+  large = false,
+}) => {
   return (
     <div
       className={cn(

@@ -34,11 +34,14 @@ const AboutUsPage: React.FC = () => {
           className="w-full flex flex-col lg:flex-row items-center gap-10 px-6 py-12 md:px-16 lg:px-24 max-w-7xl mx-auto"
         >
           <div dir="rtl" className="w-full lg:w-1/2 flex flex-col items-start gap-6 text-right">
-            <h2 className="text-3xl font-bold text-secondary-500 md:text-4xl font-khalid">تاريخنا ورسالتنا</h2>
+            <h2 className="text-3xl font-bold text-secondary-500 md:text-4xl font-khalid">
+              تاريخنا ورسالتنا
+            </h2>
             <p className="text-lg leading-loose text-justify text-foreground">
-              تأسس مسجد جامعة باب الزوار ليكون منارة للعلم والإيمان، يخدم آلاف الطلاب والباحثين. نؤمن أن التكامل بين
-              العلم التجريبي والقيم الأخلاقية هو السبيل لبناء جيل قادر على مواجهة تحديات العصر، ويسعى المسجد إلى توفير
-              بيئة روحية وعلمية متكاملة داخل الحرم الجامعي.
+              تأسس مسجد جامعة باب الزوار ليكون منارة للعلم والإيمان، يخدم آلاف الطلاب والباحثين.
+              نؤمن أن التكامل بين العلم التجريبي والقيم الأخلاقية هو السبيل لبناء جيل قادر على
+              مواجهة تحديات العصر، ويسعى المسجد إلى توفير بيئة روحية وعلمية متكاملة داخل الحرم
+              الجامعي.
             </p>
 
             <dl className="flex w-full justify-between mt-4">
@@ -54,7 +57,12 @@ const AboutUsPage: React.FC = () => {
           </div>
           <div className="w-full lg:w-1/2">
             <div className="relative h-[300px] md:h-[400px] lg:h-[450px] w-full rounded-2xl overflow-hidden shadow-lg">
-              <Image src="/static/images/about-us-hero.jpg" alt="مدخل المسجد" fill className="object-cover" />
+              <Image
+                src="/static/images/about-us-hero.jpg"
+                alt="مدخل المسجد"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </motion.section>
@@ -67,15 +75,35 @@ const AboutUsPage: React.FC = () => {
           transition={{ duration: 0.8 }}
           className="w-full py-20 bg-fill-contrast px-6 md:px-16 lg:px-24 flex flex-col items-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary-500 mb-2 font-khalid">قيمنا الجوهرية</h2>
-          <p className="text-lg text-muted-foreground mb-12">المبادئ التي توجهنا في تقديم خدماتنا.</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-secondary-500 mb-2 font-khalid">
+            قيمنا الجوهرية
+          </h2>
+          <p className="text-lg text-muted-foreground mb-12">
+            المبادئ التي توجهنا في تقديم خدماتنا.
+          </p>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 w-full max-w-2xl">
             {[
-              { icon: <BookOpen size={32} />, label: 'العلم', description: 'نهتم بالمعرفة والتعلم المستمر.' },
-              { icon: <ShieldCheck size={32} />, label: 'الأمانة', description: 'نحافظ على كنوزنا وخصوصية روادنا.' },
-              { icon: <Users size={32} />, label: 'الأخوة', description: 'نرحب بالجميع في بيئة يسودها الاحترام.' },
-              { icon: <Star size={32} />, label: 'الإتقان', description: 'نسعى لتقديم أفضل الخدمات الممكنة.' },
+              {
+                icon: <BookOpen size={32} />,
+                label: 'العلم',
+                description: 'نهتم بالمعرفة والتعلم المستمر.',
+              },
+              {
+                icon: <ShieldCheck size={32} />,
+                label: 'الأمانة',
+                description: 'نحافظ على كنوزنا وخصوصية روادنا.',
+              },
+              {
+                icon: <Users size={32} />,
+                label: 'الأخوة',
+                description: 'نرحب بالجميع في بيئة يسودها الاحترام.',
+              },
+              {
+                icon: <Star size={32} />,
+                label: 'الإتقان',
+                description: 'نسعى لتقديم أفضل الخدمات الممكنة.',
+              },
             ].map((value, idx) => (
               <motion.div
                 key={idx}
@@ -119,8 +147,8 @@ const AboutUsPage: React.FC = () => {
                 <h3 className="text-2xl font-bold text-secondary-500 font-khalid">مهمتنا</h3>
               </div>
               <p className="text-lg leading-loose text-justify text-foreground">
-                تمكين طلاب جامعة باب الزوار من الوصول الميسر للمعلومات والكتب، مع ترسيخ الهوية الإسلامية والقيم
-                الحضارية من خلال القراءة والتحصيل المتنوع.
+                تمكين طلاب جامعة باب الزوار من الوصول الميسر للمعلومات والكتب، مع ترسيخ الهوية
+                الإسلامية والقيم الحضارية من خلال القراءة والتحصيل المتنوع.
               </p>
             </div>
 
@@ -139,8 +167,8 @@ const AboutUsPage: React.FC = () => {
                 <h3 className="text-2xl font-bold text-secondary-500 font-khalid">رؤيتنا</h3>
               </div>
               <p className="text-lg leading-loose text-justify text-foreground">
-                أن يصبح المسجد المركز الثقافي والعلمي الأول داخل الحرم الجامعي، ونموذجاً يحتذى به في المزاوجة بين
-                التقنية والرسالة السامية.
+                أن يصبح المسجد المركز الثقافي والعلمي الأول داخل الحرم الجامعي، ونموذجاً يحتذى به في
+                المزاوجة بين التقنية والرسالة السامية.
               </p>
             </div>
           </div>

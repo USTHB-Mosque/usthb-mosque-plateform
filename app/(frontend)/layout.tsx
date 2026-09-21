@@ -3,7 +3,8 @@ import RootHtmlShell from '@/shared/root-html-shell'
 
 export const metadata: Metadata = {
   title: 'مسجد USTHB - المنصة الرقمية',
-  description: 'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين - مكتبة، أنشطة، مقالات وإدارة الاستعارة',
+  description:
+    'المنصة الرقمية لمسجد جامعة العلوم والتكنولوجيا هواري بومدين - مكتبة، أنشطة، مقالات وإدارة الاستعارة',
   openGraph: {
     type: 'website',
     locale: 'ar_DZ',

@@ -164,7 +164,9 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) =>
         {/* Form content */}
         {activeView.item === 'password' && <PasswordForm onBack={() => setActiveView(null)} />}
         {activeView.item === 'devices' && <ConnectedDevices onBack={() => setActiveView(null)} />}
-        {activeView.item === 'activity-log' && <ActivityLog user={user} onBack={() => setActiveView(null)} />}
+        {activeView.item === 'activity-log' && (
+          <ActivityLog user={user} onBack={() => setActiveView(null)} />
+        )}
       </div>
     )
   }
@@ -201,7 +203,9 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) =>
                   {/* Button side (left in RTL) */}
                   <button
                     type="button"
-                    onClick={() => setActiveView({ section: section.title, item: item.id, label: item.label })}
+                    onClick={() =>
+                      setActiveView({ section: section.title, item: item.id, label: item.label })
+                    }
                     className="flex shrink-0 items-center bg-primary-main-15 text-primary-300 py-[3px] px-6 rounded-lg border border-solid border-white text-base font-bold font-alyamama transition-colors hover:bg-primary-main-20 cursor-pointer"
                   >
                     {item.buttonText}

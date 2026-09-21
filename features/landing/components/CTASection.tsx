@@ -9,13 +9,7 @@ const CTASection: React.FC = () => {
       className="w-full bg-[#E8F2F8] flex justify-center items-center px-6 py-16 md:px-16 lg:px-24"
     >
       <div className="relative w-full rounded-3xl overflow-hidden min-h-[320px] md:min-h-[392px]">
-        <Image
-          src="/static/images/footer.png"
-          alt=""
-          fill
-          className="object-cover"
-          priority
-        />
+        <Image src="/static/images/footer.png" alt="" fill className="object-cover" priority />
 
         <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-transparent flex flex-col items-center justify-center gap-8 md:gap-10 px-6 py-10 md:px-16">
           <div className="text-center space-y-3">

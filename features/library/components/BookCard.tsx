@@ -18,12 +18,18 @@ type LandingBookCardProps = {
 
 const defaultTags = ['قرآن', 'تفسير']
 
-const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imageClassName, href }) => {
+const LandingBookCard: React.FC<LandingBookCardProps> = ({
+  book,
+  className,
+  imageClassName,
+  href,
+}) => {
   const media = book?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const title = book?.title ?? 'مختصر تفسير ابن كثير'
   const author = book?.author ?? 'محمد بن جرير الطبري'
-  const tags = book?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
+  const tags =
+    book?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
   const destination = href ?? `/library/book/${book?.id ?? 1}`
@@ -42,7 +48,10 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
           src={imageUrl}
           alt={media?.alt || title}
           fill
-          className={cn('object-cover transition-transform duration-500 group-hover/card:scale-105', imageClassName)}
+          className={cn(
+            'object-cover transition-transform duration-500 group-hover/card:scale-105',
+            imageClassName,
+          )}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
         {isAvailable && (
@@ -91,7 +100,10 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({ book, className, imag
         </div>
 
         <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
-          <div className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey" aria-hidden="true" />
+          <div
+            className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey"
+            aria-hidden="true"
+          />
           <LandingCtaButton
             label="تصفح الكتاب"
             ariaLabel={`تصفح الكتاب: ${title}`}

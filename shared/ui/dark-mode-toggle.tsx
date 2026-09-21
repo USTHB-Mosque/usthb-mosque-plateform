@@ -30,14 +30,8 @@ const DarkModeToggle: React.FC = () => {
     >
       {mounted && (
         <>
-          <Sun
-            className={isDark ? 'hidden size-5' : 'size-5'}
-            aria-hidden="true"
-          />
-          <Moon
-            className={isDark ? 'size-5' : 'hidden size-5'}
-            aria-hidden="true"
-          />
+          <Sun className={isDark ? 'hidden size-5' : 'size-5'} aria-hidden="true" />
+          <Moon className={isDark ? 'size-5' : 'hidden size-5'} aria-hidden="true" />
         </>
       )}
     </Button>

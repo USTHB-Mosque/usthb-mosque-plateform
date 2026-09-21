@@ -44,7 +44,10 @@ describe('reviewBookLogic', () => {
     const book = await createTestBook(payload)
 
     await expect(
-      reviewBookLogic({ bookId: book.id, rating: 0, comment: 'no rating' }, await ctxFor(payload, member)),
+      reviewBookLogic(
+        { bookId: book.id, rating: 0, comment: 'no rating' },
+        await ctxFor(payload, member),
+      ),
     ).rejects.toThrow('Please provide a rating and comment')
   })
 
@@ -64,7 +67,10 @@ describe('reviewBook (wrapper)', () => {
 
   it('creates as the cookie user', async () => {
     const book = await createTestBook(payload)
-    const { token } = await loginToken(payload, { email: member.email!, password: 'correct horse battery' })
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
     setNextHeaders(makeAuthHeaders(token))
 
     const review = await reviewBook(book.id, 3, 'cookie review')

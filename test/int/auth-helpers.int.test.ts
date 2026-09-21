@@ -2,11 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { getTestPayload, resetDatabase } from '../setup-integration'
 import { createTestUser, loginToken } from '../lib/seed'
-import {
-  clearNextContext,
-  makeAuthHeaders,
-  setNextHeaders,
-} from '../lib/next-stubs'
+import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 
 import type { Payload } from 'payload'
 import { getAuthenticatedUser, getPayloadWithUser, isAdmin, requireUser } from '@/shared/lib/auth'
@@ -29,7 +25,10 @@ afterAll(async () => {
 })
 
 async function signIn(user: Pick<User, 'email'> & { email: string }): Promise<void> {
-  const { token } = await loginToken(payload, { email: user.email, password: 'correct horse battery' })
+  const { token } = await loginToken(payload, {
+    email: user.email,
+    password: 'correct horse battery',
+  })
   setNextHeaders(makeAuthHeaders(token))
 }
 

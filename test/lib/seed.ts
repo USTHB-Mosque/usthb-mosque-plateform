@@ -13,10 +13,7 @@ interface TestUserOptions {
 
 let counter = 0
 
-export async function createTestUser(
-  payload: Payload,
-  opts: TestUserOptions = {},
-): Promise<User> {
+export async function createTestUser(payload: Payload, opts: TestUserOptions = {}): Promise<User> {
   counter += 1
   const email = opts.email ?? `member${counter}@test.usthb.dz`
   const password = opts.password ?? 'correct horse battery'

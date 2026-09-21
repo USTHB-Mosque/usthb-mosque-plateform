@@ -19,9 +19,7 @@ const GlassCard: React.FC<GlassCardProps> = ({ title, body, side = 'left', style
         -bottom-8 md:-bottom-10
       `}
     >
-      <h3 className="text-lg md:text-2xl font-bold leading-loose text-secondary-500">
-        {title}
-      </h3>
+      <h3 className="text-lg md:text-2xl font-bold leading-loose text-secondary-500">{title}</h3>
       <p className="text-sm md:text-base leading-relaxed">{body}</p>
     </div>
   )

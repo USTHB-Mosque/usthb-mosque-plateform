@@ -18,8 +18,18 @@ type SettingsProfileCardProps = {
 const tabs = [
   { id: 'info' as const, label: 'المعلومات', icon: User, href: '/user/settings' },
   { id: 'security' as const, label: 'الحماية', icon: Shield, href: '/user/settings/security' },
-  { id: 'notifications' as const, label: 'الإشعارات', icon: Bell, href: '/user/settings/notifications' },
-  { id: 'shortcuts' as const, label: 'اختصارات لوحة المفاتيح', icon: Keyboard, href: '/user/settings/shortcuts' },
+  {
+    id: 'notifications' as const,
+    label: 'الإشعارات',
+    icon: Bell,
+    href: '/user/settings/notifications',
+  },
+  {
+    id: 'shortcuts' as const,
+    label: 'اختصارات لوحة المفاتيح',
+    icon: Keyboard,
+    href: '/user/settings/shortcuts',
+  },
 ]
 
 const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeTab = 'info' }) => {
@@ -50,13 +60,7 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeT
         <div className="absolute bottom-[-32px] start-7">
           <div className="relative h-[82px] w-[82px] overflow-hidden rounded-[7px] border-4 border-fill-main bg-fill-contrast shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
             {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={displayName}
-                fill
-                className="object-cover"
-                sizes="82px"
-              />
+              <Image src={avatarUrl} alt={displayName} fill className="object-cover" sizes="82px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-primary-main-15">
                 <span className="text-2xl font-bold text-primary-300 font-khalid">

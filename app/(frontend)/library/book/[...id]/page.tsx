@@ -32,10 +32,7 @@ const BookDetailsPage = async ({
   const similarBooksResult = await payload.find({
     collection: 'books',
     where: {
-      and: [
-        { type: { equals: book.type } },
-        { id: { not_equals: book.id } },
-      ],
+      and: [{ type: { equals: book.type } }, { id: { not_equals: book.id } }],
     },
     limit: 4,
     sort: '-publishDate',

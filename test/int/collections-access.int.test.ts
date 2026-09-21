@@ -134,7 +134,9 @@ describe('media access (regression cover for #90)', () => {
   it('allows any authenticated user to create media but only admin to update or delete', async () => {
     const media = await createTestMedia(payload, { isPrivate: false, owner: owner.id })
 
-    await expect(createAs(undefined, 'media', { alt: 'anon', isPrivate: true })).rejects.toThrow('not allowed')
+    await expect(createAs(undefined, 'media', { alt: 'anon', isPrivate: true })).rejects.toThrow(
+      'not allowed',
+    )
     const created = await createAs(owner, 'media', { alt: 'member upload' })
     expect(created.alt).toBe('member upload')
 
@@ -151,7 +153,11 @@ describe('media access (regression cover for #90)', () => {
     // pending user hide a document they later use to attack verification.
     expect(await canWriteAs(owner, 'media', media.id, { isPrivate: true })).toBe(false)
 
-    const after = await payload.findByID({ collection: 'media', id: media.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'media',
+      id: media.id,
+      overrideAccess: true,
+    })
     expect(after.isPrivate).toBe(false)
   })
 
@@ -204,7 +210,11 @@ describe('users access', () => {
       overrideAccess: false,
     })
 
-    const after = await payload.findByID({ collection: 'users', id: pending.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: pending.id,
+      overrideAccess: true,
+    })
     expect(after.role).toBe('user')
     expect(after.verificationStatus).toBe('pending_verification')
     expect(after.consentGiven).toBe(true)
@@ -220,7 +230,11 @@ describe('users access', () => {
       overrideAccess: true,
     })
 
-    const after = await payload.findByID({ collection: 'users', id: pending.id, overrideAccess: true })
+    const after = await payload.findByID({
+      collection: 'users',
+      id: pending.id,
+      overrideAccess: true,
+    })
     const actions = (after.activityLog ?? []).map((entry: any) => entry.action)
     expect(actions).toContain('account_verified')
     expect(actions).toContain('account_created')
@@ -229,32 +243,57 @@ describe('users access', () => {
 
 describe('row-scoped collections: loans, book-favorites, activity-registrations, reviews', () => {
   it.each([
-    ['loans', async () => {
-      const book = await createTestBook(payload)
-      return payload.create({ collection: 'loans', data: { book: book.id, user: owner.id, loanDate: new Date().toISOString(), dueDate: new Date().toISOString() }, overrideAccess: true })
-    }],
-    ['book-favorites', async () => {
-      const book = await createTestBook(payload)
-      return payload.create({
-        collection: 'book-favorites',
-        data: { user: owner.id, book: book.id },
-        req: await boundReq(payload, owner),
-        overrideAccess: false,
-      })
-    }],
-    ['activity-registrations', async () => {
-      const activity = await createTestActivity(payload)
-      return payload.create({ collection: 'activity-registrations', data: { user: owner.id, activity: activity.id }, overrideAccess: true })
-    }],
-    ['article-favorites', async () => {
-      const article = await createTestArticle(payload)
-      return payload.create({
-        collection: 'article-favorites',
-        data: { user: owner.id, article: article.id },
-        req: await boundReq(payload, owner),
-        overrideAccess: false,
-      })
-    }],
+    [
+      'loans',
+      async () => {
+        const book = await createTestBook(payload)
+        return payload.create({
+          collection: 'loans',
+          data: {
+            book: book.id,
+            user: owner.id,
+            loanDate: new Date().toISOString(),
+            dueDate: new Date().toISOString(),
+          },
+          overrideAccess: true,
+        })
+      },
+    ],
+    [
+      'book-favorites',
+      async () => {
+        const book = await createTestBook(payload)
+        return payload.create({
+          collection: 'book-favorites',
+          data: { user: owner.id, book: book.id },
+          req: await boundReq(payload, owner),
+          overrideAccess: false,
+        })
+      },
+    ],
+    [
+      'activity-registrations',
+      async () => {
+        const activity = await createTestActivity(payload)
+        return payload.create({
+          collection: 'activity-registrations',
+          data: { user: owner.id, activity: activity.id },
+          overrideAccess: true,
+        })
+      },
+    ],
+    [
+      'article-favorites',
+      async () => {
+        const article = await createTestArticle(payload)
+        return payload.create({
+          collection: 'article-favorites',
+          data: { user: owner.id, article: article.id },
+          req: await boundReq(payload, owner),
+          overrideAccess: false,
+        })
+      },
+    ],
   ])('%s row scoping', async (rawCollection, make) => {
     const collection = rawCollection as CollectionSlug
     const doc = await make()
@@ -283,8 +322,22 @@ describe('row-scoped collections: loans, book-favorites, activity-registrations,
     expect(await canReadAs(undefined, 'reviews', review.id)).toBe(true)
     expect(await canReadAs(otherMember, 'reviews', review.id)).toBe(true)
 
-    expect(await canCreateAs(otherMember, 'reviews', { user: otherMember.id, book: book.id, rating: 5, comment: 'fine' })).toBe(true)
-    expect(await canCreateAs(undefined, 'reviews', { user: null, book: book.id, rating: 5, comment: 'anon' })).toBe(false)
+    expect(
+      await canCreateAs(otherMember, 'reviews', {
+        user: otherMember.id,
+        book: book.id,
+        rating: 5,
+        comment: 'fine',
+      }),
+    ).toBe(true)
+    expect(
+      await canCreateAs(undefined, 'reviews', {
+        user: null,
+        book: book.id,
+        rating: 5,
+        comment: 'anon',
+      }),
+    ).toBe(false)
 
     // Even the review owner cannot edit or delete: admin-only.
     expect(await canWriteAs(owner, 'reviews', review.id, { rating: 5 })).toBe(false)
@@ -298,7 +351,12 @@ describe('loan defaults', () => {
     const book = await createTestBook(payload)
     const loan = await payload.create({
       collection: 'loans',
-      data: { book: book.id, user: owner.id, loanDate: undefined as unknown as string, dueDate: new Date().toISOString() },
+      data: {
+        book: book.id,
+        user: owner.id,
+        loanDate: undefined as unknown as string,
+        dueDate: new Date().toISOString(),
+      },
       overrideAccess: true,
     })
     expect(loan.loanDate).toBeTruthy()
@@ -311,9 +369,30 @@ describe('books, articles and activities are public read, admin write', () => {
 
     expect(await canReadAs(undefined, 'books', book.id)).toBe(true)
 
-    expect(await canCreateAs(undefined, 'books', { title: 'anon', author: 'x', type: 'other', shortDescription: 'x' })).toBe(false)
-    expect(await canCreateAs(otherMember, 'books', { title: 'member', author: 'x', type: 'other', shortDescription: 'x' })).toBe(false)
-    expect(await canCreateAs(admin, 'books', { title: 'admin', author: 'x', type: 'other', shortDescription: 'x' })).toBe(true)
+    expect(
+      await canCreateAs(undefined, 'books', {
+        title: 'anon',
+        author: 'x',
+        type: 'other',
+        shortDescription: 'x',
+      }),
+    ).toBe(false)
+    expect(
+      await canCreateAs(otherMember, 'books', {
+        title: 'member',
+        author: 'x',
+        type: 'other',
+        shortDescription: 'x',
+      }),
+    ).toBe(false)
+    expect(
+      await canCreateAs(admin, 'books', {
+        title: 'admin',
+        author: 'x',
+        type: 'other',
+        shortDescription: 'x',
+      }),
+    ).toBe(true)
 
     expect(await canWriteAs(otherMember, 'books', book.id, { title: 'hijacked' })).toBe(false)
     expect(await canWriteAs(admin, 'books', book.id, { title: 'admin edit' })).toBe(true)
@@ -325,13 +404,15 @@ describe('books, articles and activities are public read, admin write', () => {
 
     expect(await canReadAs(undefined, 'articles', article.id)).toBe(true)
 
-    expect(await canCreateAs(otherMember, 'articles', {
-      title: 'member',
-      author: 'x',
-      type: 'other',
-      description: 'x',
-      image: article.image,
-    })).toBe(false)
+    expect(
+      await canCreateAs(otherMember, 'articles', {
+        title: 'member',
+        author: 'x',
+        type: 'other',
+        description: 'x',
+        image: article.image,
+      }),
+    ).toBe(false)
     expect(await canWriteAs(otherMember, 'articles', article.id, { title: 'hijacked' })).toBe(false)
     expect(await canWriteAs(admin, 'articles', article.id, { title: 'admin edit' })).toBe(true)
   })
@@ -341,7 +422,9 @@ describe('books, articles and activities are public read, admin write', () => {
 
     expect(await canReadAs(undefined, 'activities', activity.id)).toBe(true)
 
-    expect(await canWriteAs(otherMember, 'activities', activity.id, { title: 'hijacked' })).toBe(false)
+    expect(await canWriteAs(otherMember, 'activities', activity.id, { title: 'hijacked' })).toBe(
+      false,
+    )
     expect(await canWriteAs(admin, 'activities', activity.id, { title: 'admin edit' })).toBe(true)
     expect(await canDeleteAs(otherMember, 'activities', activity.id)).toBe(false)
   })

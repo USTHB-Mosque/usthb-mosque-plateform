@@ -21,7 +21,8 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
   const media = article?.image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const publishDate = article?.publishDate ?? new Date().toISOString()
-  const tags = article?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
+  const tags =
+    article?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
   const title = article?.title ?? 'منارة العلم والإيمان في حياة الجامعة'
   const description =
     article?.description ??

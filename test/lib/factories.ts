@@ -76,8 +76,7 @@ export async function createTestArticle(
   payload: Payload,
   opts: { title?: string; image?: number } = {},
 ): Promise<Article> {
-  const media =
-    opts.image ?? (await createTestMedia(payload, { alt: 'article image' })).id
+  const media = opts.image ?? (await createTestMedia(payload, { alt: 'article image' })).id
   return (await payload.create({
     collection: 'articles',
     data: {

@@ -127,9 +127,7 @@ describe('exchangeGoogleCode', () => {
   it('returns null when the token response has no access_token', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(() =>
-        Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) }),
-      ),
+      vi.fn(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })),
     )
 
     expect(await exchangeGoogleCode('code')).toBeNull()
@@ -187,8 +185,7 @@ describe('exchangeGoogleCode', () => {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () =>
-          Promise.resolve({ email: 'a@b.dz', email_verified: true, name: 'A' }),
+        json: () => Promise.resolve({ email: 'a@b.dz', email_verified: true, name: 'A' }),
       })
     })
     vi.stubGlobal('fetch', fetchMock)

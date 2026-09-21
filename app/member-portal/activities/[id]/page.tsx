@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import UserPage from '@/app/member-portal/UserPage'
+import UserPage from '@/shared/layouts/user/UserPage'
 import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import ActivityHeader from '@/features/activities/components/activity-details/ActivityHeader'
 import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
@@ -9,11 +9,7 @@ import ActivityDescription from '@/features/activities/components/activity-detai
 import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
 import { getUserActivityRegistration } from '@/features/activities/server/activities'
 
-const MemberActivityDetailsPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) => {
+const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
 
   const payload = await getPayload({ config })
@@ -42,9 +38,7 @@ const MemberActivityDetailsPage = async ({
               image={activity.image}
               type={activity.type}
             />
-            <ActivityInformations
-              longDescription={activity.longDescription}
-            />
+            <ActivityInformations longDescription={activity.longDescription} />
           </div>
 
           <div className="flex flex-1 flex-col gap-5">
