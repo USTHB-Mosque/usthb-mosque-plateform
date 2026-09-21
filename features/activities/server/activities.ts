@@ -25,10 +25,8 @@ export async function registerActivityLogic(
       overrideAccess: false,
     })
 
-    if (!activityResult) {
-      return { success: false, message: 'النشاط غير موجود' }
-    }
-
+    // payload.findByID throws for a missing activity, so activityResult is
+    // always set here.
     if (!activityResult.openForRegistration) {
       return { success: false, message: 'عذراً، التسجيل مغلق لهذا النشاط' }
     }
@@ -74,6 +72,9 @@ export async function registerActivityLogic(
       overrideAccess: false,
     })
 
+    // The participant counter is system state driven by the gated logic above
+    // (registration open, deadline, capacity, no duplicate), so it intentionally
+    // bypasses the admin-only write rule on activities.
     await payload.update({
       collection: 'activities',
       id: activityId,
@@ -81,7 +82,7 @@ export async function registerActivityLogic(
         currentParticipants: (activityResult.currentParticipants || 0) + 1,
       },
       req,
-      overrideAccess: false,
+      overrideAccess: true,
     })
 
     return { success: true, message: 'تم التسجيل في النشاط بنجاح', registration }

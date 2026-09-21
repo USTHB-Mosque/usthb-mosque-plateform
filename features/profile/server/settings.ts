@@ -100,13 +100,12 @@ export async function changePassword(formData: FormData) {
     req: ctx.req,
   })
 
+  // payload.login throws on failure, so a returned result always has a token.
   const { token, exp } = await ctx.payload.login({
     collection: 'users',
     data: { email: ctx.user.email, password: next },
   })
-  if (token) {
-    await setPayloadTokenCookie(token, exp)
-  }
+  await setPayloadTokenCookie(token as string, exp)
 
   await logActivity(ctx.payload, ctx.user.id, 'password_changed')
 

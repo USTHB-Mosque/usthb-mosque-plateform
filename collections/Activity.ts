@@ -1,4 +1,5 @@
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
+import { isAdmin } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Activity: CollectionConfig = {
@@ -8,6 +9,9 @@ export const Activity: CollectionConfig = {
     defaultColumns: ['title', 'type', 'location'],
   }, access: {
     read: () => true,
+    create: ({ req: { user } }) => isAdmin(user),
+    update: ({ req: { user } }) => isAdmin(user),
+    delete: ({ req: { user } }) => isAdmin(user),
   },
   fields: [
     {

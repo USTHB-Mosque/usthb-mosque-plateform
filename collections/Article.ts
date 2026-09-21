@@ -1,4 +1,5 @@
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { isAdmin } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Article: CollectionConfig = {
@@ -9,6 +10,9 @@ export const Article: CollectionConfig = {
   },
  access: {
     read: () => true,
+    create: ({ req: { user } }) => isAdmin(user),
+    update: ({ req: { user } }) => isAdmin(user),
+    delete: ({ req: { user } }) => isAdmin(user),
   },
   fields: [
     {

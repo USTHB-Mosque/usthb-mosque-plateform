@@ -30,6 +30,8 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      "coverage/**",
+      "test/.tmp/**",
       "next-env.d.ts",
       "payload-types.ts",
     ],

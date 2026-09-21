@@ -12,20 +12,19 @@ interface LoginResult {
 export const login = async (email: string, password: string): Promise<LoginResult> => {
   const payload = await getPayload({ config })
   try {
-    const { user, token, exp } = await payload.login({
+    // payload.login throws on any failure, so a returned result always carries
+    // the session: the casts below only satisfy the nullable result types.
+    const result = await payload.login({
       collection: 'users',
       data: {
         email,
         password,
       },
     })
-    if (token) {
-      await setPayloadTokenCookie(token, exp)
-    }
-    if (user) {
-      await logActivity(payload, user.id, 'login')
-    }
-    return { user: user as User }
+
+    await setPayloadTokenCookie(result.token as string, result.exp)
+    await logActivity(payload, (result.user as User).id, 'login')
+    return { user: result.user as User }
   } catch {
     return { user: undefined }
   }

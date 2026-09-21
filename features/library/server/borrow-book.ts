@@ -18,6 +18,10 @@ export async function borrowBookLogic(
 ): Promise<BorrowBookResult> {
   const { payload, user, req } = ctx
 
+  if (user.verificationStatus !== 'verified') {
+    return { success: false, message: 'يجب تأكيد حسابك قبل استعارة الكتب' }
+  }
+
   try {
     const bookResult = await payload.findByID({
       collection: 'books',
@@ -65,6 +69,9 @@ export async function borrowBookLogic(
       overrideAccess: false,
     })
 
+    // The copy decrement is system state driven by the gated logic above
+    // (verified caller, availability, no active duplicate), so it intentionally
+    // bypasses the admin-only write rule on books.
     await payload.update({
       collection: 'books',
       id: bookId,
@@ -72,7 +79,7 @@ export async function borrowBookLogic(
         availableBooks: bookResult.availableBooks - 1,
       },
       req,
-      overrideAccess: false,
+      overrideAccess: true,
     })
 
     return { success: true, message: 'تم تقديم طلب الإعارة بنجاح', loan }

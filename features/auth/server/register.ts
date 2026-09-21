@@ -32,7 +32,8 @@ function getFileExtension(name: string): string | null {
 }
 
 function buildSafeFileKey(originalName: string): string {
-  const ext = getFileExtension(originalName) || 'pdf'
+  // Validation has already guaranteed an allowed extension.
+  const ext = getFileExtension(originalName) as string
   // Random, not derived from the user's email: a verification document's filename
   // must not be guessable, since it is served from a path an attacker could enumerate.
   return `verification-${randomUUID()}.${ext}`
@@ -126,7 +127,9 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
       })
     } catch (uploadError) {
       // The account is useless without its verification document, so do not
-      // leave an orphaned pending_verification user behind.
+      // leave an orphaned pending_verification user behind. A secondary
+      // rollback failure is swallowed so it cannot mask the upload error.
+      /* v8 ignore next */
       await payload.delete({ collection: 'users', id: user.id }).catch(() => {})
       throw uploadError
     }
@@ -139,9 +142,8 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
       },
     })
 
-    if (token) {
-      await setPayloadTokenCookie(token, exp)
-    }
+    // payload.login throws on failure, so a returned session is always complete.
+    await setPayloadTokenCookie(token as string, exp)
     return { user: user as User }
   } catch (error) {
     const msg = error instanceof Error ? error.message : ''

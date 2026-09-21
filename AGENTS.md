@@ -16,6 +16,14 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 - To validate typescript correctness after modifying code run `tsc --noEmit`
 - Generate import maps after creating or modifying components.
 
+### Tests
+
+- **New server actions (`features/*/server/**`) and collection changes (`collections/**`) ship with tests in the same PR.** Integration tests boot a real Payload against a scratch Postgres via `getPayload` — do not mock Payload; access control and hooks must actually run.
+- Runner: Vitest, two projects (`*.unit.test.ts` pure functions, `*.int.test.ts` against the database). Commands: `pnpm test`, `pnpm test:unit`, `pnpm test:int`, `pnpm test:coverage`.
+- Integration tests live under `test/`, share `test/setup-integration.ts` (Next.js `headers`/`cookies` stubs, `@/payload.config` redirected to `test/payload-test.config.ts`), and truncate all tables between tests. They need a running Postgres: locally the Supabase CLI stack (a `mosque_test` scratch database is created automatically), in CI a `postgres:17` service container.
+- Coverage thresholds (100% lines/branches/functions/statements) are enforced on `shared/lib/**`, `features/*/server/**`, `collections/**` — CI fails when they are missed.
+- Never pass `user` to the Local API without `overrideAccess: false` — including inside tests.
+
 ### Migrations
 
 - **A change under `collections/` (or `globals/`) ships with a migration in the same pull request.** CI enforces this: a PR that touches `collections/` or `globals/` without adding a file under `migrations/` fails.
