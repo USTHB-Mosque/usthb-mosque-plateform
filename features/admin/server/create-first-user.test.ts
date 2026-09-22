@@ -8,6 +8,7 @@ const fakePayload = {
 
 const getPayload = vi.fn(async (..._args: unknown[]) => fakePayload)
 const setPayloadTokenCookie = vi.fn()
+const logActivity = vi.fn()
 
 vi.mock('payload', () => ({
   getPayload: (...args: unknown[]) => getPayload(...args),
@@ -19,6 +20,10 @@ vi.mock('@/shared/lib/auth', () => ({
   setPayloadTokenCookie: (...args: unknown[]) => setPayloadTokenCookie(...args),
 }))
 
+vi.mock('@/utils/activity-log', () => ({
+  logActivity: (...args: unknown[]) => logActivity(...args),
+}))
+
 const { hasAnyUser, createFirstAdminUser } = await import('./create-first-user')
 
 describe('features/admin/server/create-first-user.ts', () => {
@@ -27,6 +32,7 @@ describe('features/admin/server/create-first-user.ts', () => {
     fakePayload.create.mockReset()
     fakePayload.login.mockReset()
     setPayloadTokenCookie.mockReset()
+    logActivity.mockReset()
   })
 
   describe('hasAnyUser', () => {

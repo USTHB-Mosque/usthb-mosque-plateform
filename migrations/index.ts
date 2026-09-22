@@ -3,6 +3,7 @@ import * as migration_20260918_102126 from './20260918_102126'
 import * as migration_20260920_092548_drop_mcp_plugin_tables from './20260920_092548_drop_mcp_plugin_tables'
 import * as migration_20260920_104333_add_article_favorites from './20260920_104333_add_article_favorites'
 import * as migration_20260920_114739_user_activity_log_hook_fix from './20260920_114739_user_activity_log_hook_fix'
+import * as migration_20260922_092238_add_first_admin_created_action from './20260922_092238_add_first_admin_created_action'
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260920_114739_user_activity_log_hook_fix.up,
     down: migration_20260920_114739_user_activity_log_hook_fix.down,
     name: '20260920_114739_user_activity_log_hook_fix',
+  },
+  {
+    up: migration_20260922_092238_add_first_admin_created_action.up,
+    down: migration_20260922_092238_add_first_admin_created_action.down,
+    name: '20260922_092238_add_first_admin_created_action',
   },
 ]

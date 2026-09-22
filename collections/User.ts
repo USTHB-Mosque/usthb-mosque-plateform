@@ -223,6 +223,7 @@ export const User: CollectionConfig = {
             { label: 'Profile Updated', value: 'profile_updated' },
             { label: 'Account Verified', value: 'account_verified' },
             { label: 'Account Created', value: 'account_created' },
+            { label: 'First Admin Created', value: 'first_admin_created' },
           ],
         },
         {
