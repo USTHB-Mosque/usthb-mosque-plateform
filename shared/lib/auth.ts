@@ -11,17 +11,10 @@ export interface AuthOptions {
   allowAdmin?: boolean
 }
 
-async function buildAuthHeaders(): Promise<Headers> {
-  const rawHeaders = await nextHeaders()
-  const authHeaders = new Headers(rawHeaders)
-  const token = (await nextCookies()).get('payload-token')?.value
-  if (token) authHeaders.set('Authorization', `JWT ${token}`)
-  return authHeaders
-}
-
 export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | undefined> {
   const payload = await getPayload({ config })
-  const response = await payload.auth({ headers: await buildAuthHeaders() })
+  const headers = await nextHeaders()
+  const response = await payload.auth({ headers })
 
   if (!response.user) return undefined
 
@@ -38,7 +31,8 @@ export async function getPayloadWithUser(opts?: AuthOptions): Promise<{
   req: PayloadRequest
 } | null> {
   const payload = await getPayload({ config })
-  const auth = await payload.auth({ headers: await buildAuthHeaders() })
+  const headers = await nextHeaders()
+  const auth = await payload.auth({ headers })
 
   if (!auth.user) return null
 
