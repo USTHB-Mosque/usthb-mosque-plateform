@@ -56,12 +56,9 @@ export const User: CollectionConfig = {
         // email does — this keeps preview links working on their per-deploy
         // URLs. The env var wins when it is configured.
         const headers = args?.req?.headers
-        const host =
-          headers?.get('x-forwarded-host') ?? headers?.get('host') ?? ''
+        const host = headers?.get('x-forwarded-host') ?? headers?.get('host') ?? ''
         const proto = headers?.get('x-forwarded-proto') ?? 'https'
-        const serverURL =
-          process.env.NEXT_PUBLIC_SERVER_URL ||
-          (host ? `${proto}://${host}` : '')
+        const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || (host ? `${proto}://${host}` : '')
         const resetURL = `${serverURL}/auth/reset/${args?.token ?? ''}`
         return `
           <div dir="rtl" style="font-family: sans-serif; text-align: right;">
