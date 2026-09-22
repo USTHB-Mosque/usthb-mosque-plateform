@@ -1,9 +1,12 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
+import type { IncomingAuthType } from 'payload'
 
 import { User } from './User'
 
-const generateEmailHTML = User.auth?.forgotPassword?.generateEmailHTML
-const generateEmailSubject = User.auth?.forgotPassword?.generateEmailSubject
+// `auth` is typed `boolean | IncomingAuthType`; the collection enables it.
+const auth = User.auth as IncomingAuthType | undefined
+const generateEmailHTML = auth?.forgotPassword?.generateEmailHTML
+const generateEmailSubject = auth?.forgotPassword?.generateEmailSubject
 
 describe('collections/User.ts forgot-password email overrides', () => {
   afterEach(() => {
