@@ -45,6 +45,25 @@ export const User: CollectionConfig = {
     verify: false,
     maxLoginAttempts: 5,
     lockTime: 600 * 1000,
+    forgotPassword: {
+      // Payload's default link points at the admin panel, which non-admin
+      // users cannot open; send them to the public reset page instead.
+      expiration: 60 * 60 * 1000,
+      generateEmailSubject: () => 'إعادة تعيين كلمة المرور',
+      generateEmailHTML: (args) => {
+        const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || ''
+        const resetURL = `${serverURL}/auth/reset/${args?.token ?? ''}`
+        return `
+          <div dir="rtl" style="font-family: sans-serif; text-align: right;">
+            <h2>إعادة تعيين كلمة المرور</h2>
+            <p>تلقينا طلباً لإعادة تعيين كلمة مرور حسابك. الرابط صالح لمدة ساعة واحدة.</p>
+            <p>
+              <a href="${resetURL}">اضغط هنا لإعادة تعيين كلمة مرورك</a>
+            </p>
+            <p>إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة بأمان.</p>
+          </div>`
+      },
+    },
   },
   admin: {
     useAsTitle: 'email',

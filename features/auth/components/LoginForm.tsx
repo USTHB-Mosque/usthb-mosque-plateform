@@ -32,6 +32,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
   const redirect = safeRedirect(searchParams.get('redirect'), '/user/dashboard')
+  const resetSucceeded = searchParams.get('reset') === 'success'
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -93,6 +94,13 @@ export default function LoginForm() {
             سجل دخولك إلى حسابك
           </p>
         </div>
+
+        {/* Reset success banner */}
+        {resetSucceeded && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-3 sm:mb-4 text-xs sm:text-sm text-center">
+            تم تغيير كلمة المرور بنجاح، سجل دخولك بكلمة المرور الجديدة
+          </div>
+        )}
 
         {/* Google OAuth Button */}
         <a
@@ -174,6 +182,13 @@ export default function LoginForm() {
                 </FormItem>
               )}
             />
+
+            {/* Forgot password link */}
+            <div className="flex justify-end">
+              <Link href="/auth/forgot" className="text-primary text-xs sm:text-sm hover:underline">
+                نسيت كلمة المرور؟
+              </Link>
+            </div>
 
             <LandingCtaButton
               type="submit"
