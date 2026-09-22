@@ -163,7 +163,13 @@ export interface User {
   };
   activityLog?:
     | {
-        action: 'login' | 'password_changed' | 'profile_updated' | 'account_verified' | 'account_created';
+        action:
+          | 'login'
+          | 'password_changed'
+          | 'profile_updated'
+          | 'account_verified'
+          | 'account_created'
+          | 'first_admin_created';
         timestamp: string;
         metadata?: string | null;
         id?: string | null;
