@@ -2,6 +2,7 @@
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { setPayloadTokenCookie } from '@/shared/lib/auth'
+import { createFirstAdmin } from './first-admin-core'
 
 interface CreateFirstUserResult {
   ok: boolean
@@ -29,25 +30,15 @@ export async function createFirstAdminUser(
   try {
     const payload = await getPayload({ config })
 
-    const existingUsers = await payload.find({
-      collection: 'users',
-      limit: 1,
-      overrideAccess: true,
-    })
+    const outcome = await createFirstAdmin(payload, email, password)
 
-    if (existingUsers.totalDocs > 0) {
+    if (outcome.kind === 'users-exist') {
       return { ok: false, error: 'المستخدمون موجودون بالفعل' }
     }
 
-    const user = await payload.create({
-      collection: 'users',
-      draft: false,
-      data: {
-        email,
-        password,
-        role: 'admin',
-      },
-    })
+    if (outcome.kind === 'error') {
+      return { ok: false, error: outcome.message }
+    }
 
     const { token } = await payload.login({
       collection: 'users',
@@ -61,9 +52,6 @@ export async function createFirstAdminUser(
     return { ok: true }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'حدث خطأ'
-    if (message.includes('duplicate')) {
-      return { ok: false, error: 'البريد الإلكتروني مستخدم بالفعل' }
-    }
     return { ok: false, error: message }
   }
 }

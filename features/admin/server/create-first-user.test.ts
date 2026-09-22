@@ -8,6 +8,7 @@ const fakePayload = {
 
 const getPayload = vi.fn(async (..._args: unknown[]) => fakePayload)
 const setPayloadTokenCookie = vi.fn()
+const logActivity = vi.fn()
 
 vi.mock('payload', () => ({
   getPayload: (...args: unknown[]) => getPayload(...args),
@@ -19,6 +20,10 @@ vi.mock('@/shared/lib/auth', () => ({
   setPayloadTokenCookie: (...args: unknown[]) => setPayloadTokenCookie(...args),
 }))
 
+vi.mock('@/utils/activity-log', () => ({
+  logActivity: (...args: unknown[]) => logActivity(...args),
+}))
+
 const { hasAnyUser, createFirstAdminUser } = await import('./create-first-user')
 
 describe('features/admin/server/create-first-user.ts', () => {
@@ -27,6 +32,7 @@ describe('features/admin/server/create-first-user.ts', () => {
     fakePayload.create.mockReset()
     fakePayload.login.mockReset()
     setPayloadTokenCookie.mockReset()
+    logActivity.mockReset()
   })
 
   describe('hasAnyUser', () => {
@@ -82,6 +88,29 @@ describe('features/admin/server/create-first-user.ts', () => {
 
       expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({ ok: true })
       expect(setPayloadTokenCookie).not.toHaveBeenCalled()
+    })
+
+    it('returns the raw error message when login fails', async () => {
+      fakePayload.find.mockResolvedValue({ totalDocs: 0 })
+      fakePayload.create.mockResolvedValue({ id: 1 })
+      fakePayload.login.mockRejectedValue(new Error('login boom'))
+
+      expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({
+        ok: false,
+        error: 'login boom',
+      })
+      expect(setPayloadTokenCookie).not.toHaveBeenCalled()
+    })
+
+    it('falls back to a generic Arabic message when login fails non-Error', async () => {
+      fakePayload.find.mockResolvedValue({ totalDocs: 0 })
+      fakePayload.create.mockResolvedValue({ id: 1 })
+      fakePayload.login.mockRejectedValue('not-an-error')
+
+      expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({
+        ok: false,
+        error: 'حدث خطأ',
+      })
     })
 
     it('maps duplicate errors to a friendly Arabic message', async () => {
