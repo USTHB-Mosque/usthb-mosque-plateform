@@ -122,15 +122,16 @@ Import rules (enforced in `eslint.config.mjs`):
 
 ## Environments
 
-| Environment       | Database             | Storage                                                              | Config file  |
-| ----------------- | -------------------- | -------------------------------------------------------------------- | ------------ |
-| **Development**   | Local Supabase (CLI) | Local Supabase S3 (via the S3 variables)                             | `.env.local` |
-| **Docker deploy** | `docker compose` DB  | Bundled MinIO (or any S3-compatible provider via the S3 variables)   | `.env`       |
-| **Vercel**        | Remote Supabase      | S3 variables if set, otherwise Vercel Blob (`BLOB_READ_WRITE_TOKEN`) | `.env`       |
+| Environment       | Database             | Storage                                                            | Config file  |
+| ----------------- | -------------------- | ------------------------------------------------------------------ | ------------ |
+| **Development**   | Local Supabase (CLI) | Local Supabase S3 (via the S3 variables)                           | `.env.local` |
+| **Docker deploy** | `docker compose` DB  | Bundled MinIO (or any S3-compatible provider via the S3 variables) | `.env`       |
+| **Vercel**        | Remote Supabase      | Vercel Blob when a token exists, else S3 variables                 | `.env`       |
 
-`storage.ts` implements this selection: S3 whenever the `S3_*` credentials are
-set (any environment), Vercel Blob only when they are absent and a Blob token
-exists. The deployment decision is self-hosting via Docker — see
+`storage.ts` implements this selection: on Vercel (any `VERCEL` env) Blob wins
+whenever `BLOB_READ_WRITE_TOKEN` is present — even if stray S3 variables are
+set — elsewhere S3 wins whenever the `S3_*` credentials are set. The
+deployment decision is self-hosting via Docker — see
 [ADR 0002](docs/adr/0002-self-hosted-docker-deployment.md).
 
 ## Deployment (Docker)

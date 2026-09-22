@@ -20,16 +20,19 @@ const originalEnv = { ...process.env }
 // NODE_ENV is typed read-only on NodeJS.ProcessEnv, so go through a writable view.
 const env = process.env as unknown as Record<string, string | undefined>
 
+const STORAGE_VARS = [
+  'NODE_ENV',
+  'VERCEL',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'BLOB_READ_WRITE_TOKEN',
+  'S3_BUCKET',
+  'S3_REGION',
+  'S3_ENDPOINT',
+]
+
 function setEnv(overrides: Record<string, string | undefined>) {
-  for (const key of [
-    'NODE_ENV',
-    'S3_ACCESS_KEY_ID',
-    'S3_SECRET_ACCESS_KEY',
-    'BLOB_READ_WRITE_TOKEN',
-    'S3_BUCKET',
-    'S3_REGION',
-    'S3_ENDPOINT',
-  ]) {
+  for (const key of STORAGE_VARS) {
     if (key in overrides) {
       env[key] = overrides[key]
     } else {
@@ -71,6 +74,33 @@ describe('getStoragePlugin', () => {
       collections: { media: true },
       token: 'blob-token',
     })
+  })
+
+  it('vercel deployments use blob even when stray S3 variables are set', () => {
+    // A Vercel project env that carries local-dev S3 values (unreachable from
+    // Vercel) must keep using Blob, exactly as before this change.
+    setEnv({
+      NODE_ENV: 'production',
+      VERCEL: '1',
+      BLOB_READ_WRITE_TOKEN: 'blob-token',
+      S3_ACCESS_KEY_ID: 'key',
+      S3_SECRET_ACCESS_KEY: 'secret',
+      S3_ENDPOINT: 'http://127.0.0.1:54321/storage/v1/s3',
+    })
+
+    expect(getStoragePlugin()).toBe('blob-plugin')
+    expect(s3StorageMock).not.toHaveBeenCalled()
+  })
+
+  it('uses s3 on a vercel deployment when no blob token exists', () => {
+    setEnv({
+      NODE_ENV: 'production',
+      VERCEL: '1',
+      S3_ACCESS_KEY_ID: 'key',
+      S3_SECRET_ACCESS_KEY: 'secret',
+    })
+
+    expect(getStoragePlugin()).toBe('s3-plugin')
   })
 
   it('throws when neither S3 credentials nor a blob token are available', () => {
