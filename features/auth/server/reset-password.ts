@@ -25,8 +25,14 @@ export const resetPassword = async (
 
     const user = result.user as unknown as User | undefined
 
+    // Activity logging is best-effort: the password already changed, so a
+    // failed log entry must not turn a successful reset into an error.
     if (user) {
-      await logActivity(payload, user.id, 'password_changed')
+      try {
+        await logActivity(payload, user.id, 'password_changed')
+      } catch {
+        // ignore — reset succeeded
+      }
     }
 
     return { ok: true }
@@ -35,6 +41,7 @@ export const resetPassword = async (
     if (message.toLowerCase().includes('invalid or has expired')) {
       return { ok: false, error: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية' }
     }
-    return { ok: false, error: message || 'حدث خطأ، حاول مرة أخرى' }
+    // Raw internals (DB errors, provider messages) must not reach the UI.
+    return { ok: false, error: 'حدث خطأ، حاول مرة أخرى' }
   }
 }

@@ -37,6 +37,13 @@ describe('features/auth/server/reset-password.ts', () => {
     expect(logActivity.mock.calls[0][2]).toBe('password_changed')
   })
 
+  it('still reports success when activity logging fails', async () => {
+    fakePayload.resetPassword.mockResolvedValue({ user: { id: 12 } })
+    logActivity.mockRejectedValue(new Error('log write failed'))
+
+    expect(await resetPassword('token-1', 'NewPass@123')).toEqual({ ok: true })
+  })
+
   it('skips activity logging when the result carries no user', async () => {
     fakePayload.resetPassword.mockResolvedValue({ user: undefined })
 
@@ -55,10 +62,13 @@ describe('features/auth/server/reset-password.ts', () => {
     })
   })
 
-  it('returns the raw error message for other failures', async () => {
+  it('returns a generic Arabic message for other failures', async () => {
     fakePayload.resetPassword.mockRejectedValue(new Error('boom'))
 
-    expect(await resetPassword('token-1', 'NewPass@123')).toEqual({ ok: false, error: 'boom' })
+    expect(await resetPassword('token-1', 'NewPass@123')).toEqual({
+      ok: false,
+      error: 'حدث خطأ، حاول مرة أخرى',
+    })
   })
 
   it('falls back to a generic Arabic message for non-Error failures', async () => {
