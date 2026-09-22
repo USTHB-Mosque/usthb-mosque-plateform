@@ -10,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': dirname,
+      // Route handlers under app/ import @payload-config; unit tests import
+      // them, so point the alias at the test config like tsconfig does.
+      '@payload-config': path.resolve(dirname, 'test/payload-test.config.ts'),
     },
   },
   test: {

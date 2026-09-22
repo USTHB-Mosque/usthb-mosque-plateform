@@ -6,23 +6,14 @@ const nextConfig: NextConfig = {
   // next dev otherwise appends a generated agent-rules block to AGENTS.md on
   // every start; AGENTS.md is hand-maintained project guidance.
   agentRules: false,
+  // Emits .next/standalone for the Docker image — but not on Vercel: Vercel's
+  // build-output handler expects the non-standalone file-tracing manifests
+  // (.next/next-server.js.nft.json) and fails with ENOENT when standalone
+  // output changes their location. VERCEL is set in every Vercel build.
+  output: process.env.VERCEL ? undefined : 'standalone',
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
-  },
-  webpack: (config) => {
-    config.resolve.fallback = { ...config.resolve.fallback, fs: false }
-
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      vars: path.resolve('node_modules/@payloadcms/ui/dist/scss/_vars.scss'),
-    }
-
-    return config
-  },
-
-  generateBuildId: async () => {
-    return `build-${Date.now()}`
   },
   images: {
     remotePatterns: [

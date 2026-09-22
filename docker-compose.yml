@@ -1,31 +1,120 @@
-version: '3'
+# One-command deployment of everything that is not Supabase (see ADR 0002):
+# the Next.js app, PostgreSQL 17, and an S3-compatible object store for media.
+#
+#   cp example.env .env   # fill in the values
+#   docker compose up --build
+#
+# Migrations run in the one-shot `migrate` service; the app waits for it to
+# finish and never starts if a migration fails. Media files are stored in the
+# MinIO `media` bucket (persisted in the `minio-data` volume), so uploads and
+# reads work out of the box. To point at any other S3-compatible provider,
+# set S3_ENDPOINT / S3_BUCKET / S3_REGION / S3_ACCESS_KEY_ID /
+# S3_SECRET_ACCESS_KEY in .env — the compose overrides are all defaults, so
+# .env wins; the bundled MinIO can then be removed from this file.
+
+x-deploy-env: &deploy-env
+  # Inside the compose network the database is reachable as `db`, not
+  # 127.0.0.1 — override whatever .env says.
+  DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-usthb_mosque}
+  # Bundled MinIO media store; every value yields to .env when set there.
+  S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+  S3_BUCKET: ${S3_BUCKET:-media}
+  S3_REGION: ${S3_REGION:-local}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-mosque}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
 
 services:
   app:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
     ports:
-      - '3000:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
-    depends_on:
-      - postgres
+      - '${APP_PORT:-3000}:3000'
     env_file:
       - .env
+    environment:
+      <<: *deploy-env
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 
-  postgres:
-    restart: always
-    image: postgres:latest
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    restart: 'no'
+    env_file:
+      - .env
+    environment:
+      <<: *deploy-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17
+    restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: usthb_mosque
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-usthb_mosque}
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-usthb_mosque}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    ports:
+      # Admin console, optional; remove if the host does not need it.
+      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: quay.io/minio/mc:latest
+    restart: 'no'
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/$${S3_BUCKET:-media}
+      "
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
+      S3_BUCKET: ${S3_BUCKET:-media}
 
 volumes:
   pgdata:
-  node_modules:
+  minio-data:
