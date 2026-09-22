@@ -95,6 +95,10 @@ const BookPreview: React.FC<BookPreviewProps> = ({
           </div>
 
           <div className="flex flex-col gap-4">
+            <h2 className="text-center text-base font-bold leading-tight text-foreground sm:text-xl lg:text-2xl xl:text-3xl">
+              {bookTitle || 'بدون عنوان'}
+            </h2>
+
             <div className="flex items-center justify-center">
               <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
             </div>

@@ -43,7 +43,7 @@ const FullDescription: React.FC<FullDescriptionProps> = ({
         <div
           dir="rtl"
           className="prose prose-lg max-w-none font-yamama text-right 
-                     prose-headings:font-khalid prose-headings:text-secondary 
+                     prose-h1:text-2xl sm:prose-h1:text-3xl prose-headings:font-khalid prose-headings:text-secondary 
                      prose-strong:text-primary prose-p:leading-relaxed"
         >
           <RichText data={longDescription} />

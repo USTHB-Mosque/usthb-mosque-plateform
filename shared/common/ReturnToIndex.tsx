@@ -11,17 +11,19 @@ interface ReturnToIndexProps {
 
 const ReturnToIndex: React.FC<ReturnToIndexProps> = ({ title, value, href }) => {
   return (
-    <div className="flex gap-3 items-center">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       {href ? (
         <Link href={href}>
-          <span className="text-2xl hover:underline">{title}</span>
+          <span className="text-lg hover:underline sm:text-2xl">{title}</span>
         </Link>
       ) : (
-        <span className="text-2xl">{title}</span>
+        <span className="text-lg sm:text-2xl">{title}</span>
       )}
 
-      <ChevronLeft className="w-4 h-4" />
-      <span className="text-primary text-2xl font-bold">{value}</span>
+      <ChevronLeft className="h-4 w-4 shrink-0" />
+      <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary sm:text-2xl">
+        {value}
+      </span>
     </div>
   )
 }

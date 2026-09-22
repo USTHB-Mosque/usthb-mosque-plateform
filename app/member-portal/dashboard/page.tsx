@@ -81,12 +81,6 @@ export default async function MemberDashboardPage() {
 
   return (
     <UserPage title="لوحة التحكم">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-regular font-khalid text-[#243245] md:text-2xl lg:text-[32px]">
-          اهلا بعودتك{data.user.fullName ? `، ${data.user.fullName}` : ''}
-        </h2>
-      </div>
-
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <StatCard key={stat.href} {...stat} />
