@@ -9,6 +9,7 @@
     "dev:preview": "NODE_ENV=preview next dev",
     "dev:full": "pnpx supabase start && next dev",
     "build": "next build",
+    "release": "payload migrate",
     "start": "next start",
     "lint": "eslint",
     "format:check": "prettier --check .",
