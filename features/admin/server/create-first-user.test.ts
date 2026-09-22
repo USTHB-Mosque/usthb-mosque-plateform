@@ -90,6 +90,29 @@ describe('features/admin/server/create-first-user.ts', () => {
       expect(setPayloadTokenCookie).not.toHaveBeenCalled()
     })
 
+    it('returns the raw error message when login fails', async () => {
+      fakePayload.find.mockResolvedValue({ totalDocs: 0 })
+      fakePayload.create.mockResolvedValue({ id: 1 })
+      fakePayload.login.mockRejectedValue(new Error('login boom'))
+
+      expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({
+        ok: false,
+        error: 'login boom',
+      })
+      expect(setPayloadTokenCookie).not.toHaveBeenCalled()
+    })
+
+    it('falls back to a generic Arabic message when login fails non-Error', async () => {
+      fakePayload.find.mockResolvedValue({ totalDocs: 0 })
+      fakePayload.create.mockResolvedValue({ id: 1 })
+      fakePayload.login.mockRejectedValue('not-an-error')
+
+      expect(await createFirstAdminUser('a@b.c', 'secret')).toEqual({
+        ok: false,
+        error: 'حدث خطأ',
+      })
+    })
+
     it('maps duplicate errors to a friendly Arabic message', async () => {
       fakePayload.find.mockResolvedValue({ totalDocs: 0 })
       fakePayload.create.mockRejectedValue(new Error('duplicate key value violates constraint'))
