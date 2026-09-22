@@ -75,7 +75,10 @@ export default buildConfig({
     transportOptions: {
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT || '465'),
-      secure: process.env.EMAIL_PORT === '465',
+      // Port 465 is implicit TLS and requires `secure: true`; the raw-env
+      // comparison left it false when EMAIL_PORT was unset, making nodemailer
+      // speak STARTTLS to a TLS-only port — Gmail closes the connection.
+      secure: parseInt(process.env.EMAIL_PORT || '465', 10) === 465,
       auth:
         process.env.EMAIL_USER && process.env.EMAIL_PASSWORD
           ? {
