@@ -4,6 +4,7 @@ import * as migration_20260920_092548_drop_mcp_plugin_tables from './20260920_09
 import * as migration_20260920_104333_add_article_favorites from './20260920_104333_add_article_favorites'
 import * as migration_20260920_114739_user_activity_log_hook_fix from './20260920_114739_user_activity_log_hook_fix'
 import * as migration_20260922_092238_add_first_admin_created_action from './20260922_092238_add_first_admin_created_action'
+import * as migration_20260922_095148_password_reset_email_config from './20260922_095148_password_reset_email_config'
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260922_092238_add_first_admin_created_action.up,
     down: migration_20260922_092238_add_first_admin_created_action.down,
     name: '20260922_092238_add_first_admin_created_action',
+  },
+  {
+    up: migration_20260922_095148_password_reset_email_config.up,
+    down: migration_20260922_095148_password_reset_email_config.down,
+    name: '20260922_095148_password_reset_email_config',
   },
 ]
