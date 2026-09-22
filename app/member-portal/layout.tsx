@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+// Auth state depends on request cookies; prerendering at build time would
+// force a database connection during the build (which the Docker build does
+// not have).
+export const dynamic = 'force-dynamic'
+
 export default async function MemberPortalLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser({ allowAdmin: true })
   if (!user) redirect('/auth/login?redirect=/user/dashboard')

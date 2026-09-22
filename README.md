@@ -122,13 +122,43 @@ Import rules (enforced in `eslint.config.mjs`):
 
 ## Environments
 
-| Environment         | Database             | Storage                                              | Config file  |
-| ------------------- | -------------------- | ---------------------------------------------------- | ------------ |
-| **Development**     | Local Supabase (CLI) | Local Supabase S3                                    | `.env.local` |
-| **Non-development** | Remote Supabase      | Vercel Blob (today; revisit when the host is chosen) | `.env`       |
+| Environment       | Database             | Storage                                                              | Config file  |
+| ----------------- | -------------------- | -------------------------------------------------------------------- | ------------ |
+| **Development**   | Local Supabase (CLI) | Local Supabase S3 (via the S3 variables)                             | `.env.local` |
+| **Docker deploy** | `docker compose` DB  | Bundled MinIO (or any S3-compatible provider via the S3 variables)   | `.env`       |
+| **Vercel**        | Remote Supabase      | S3 variables if set, otherwise Vercel Blob (`BLOB_READ_WRITE_TOKEN`) | `.env`       |
 
-`storage.ts` implements this split. The deployment decision is self-hosting via
-Docker — see [ADR 0002](docs/adr/0002-self-hosted-docker-deployment.md).
+`storage.ts` implements this selection: S3 whenever the `S3_*` credentials are
+set (any environment), Vercel Blob only when they are absent and a Blob token
+exists. The deployment decision is self-hosting via Docker — see
+[ADR 0002](docs/adr/0002-self-hosted-docker-deployment.md).
+
+## Deployment (Docker)
+
+One command from a clean checkout with a filled `.env` brings up the app, its
+PostgreSQL 17 database, and an S3-compatible object store for media:
+
+```bash
+cp example.env .env   # fill in PAYLOAD_SECRET, POSTGRES_PASSWORD, ...
+docker compose up --build --detach
+```
+
+- **App** — http://localhost:3000 (set `APP_PORT` to change the host port),
+  admin panel at `/admin`.
+- **Migrations** — run once in the `migrate` service before the app starts;
+  the app never comes up if a migration fails.
+- **Media** — stored in the MinIO `media` bucket (volume `minio-data`), served
+  through `/api/media/file/**` so collection access control applies. To use a
+  different S3-compatible provider instead, set the `S3_*` variables in `.env`
+  to its values — every compose storage override yields to `.env`, and the
+  bundled MinIO services can be removed from `docker-compose.yml` once
+  nothing uses them.
+- **Health** — `/api/health` returns 503 when the database is unreachable.
+
+Variables required to deploy (all others in `example.env` are optional
+features): `PAYLOAD_SECRET`, `POSTGRES_PASSWORD` (compose-only), `S3_ACCESS_KEY_ID`,
+`S3_SECRET_ACCESS_KEY` (bundled MinIO defaults: `mosque` / `mosque-secret` —
+change them), and `EMAIL_*` / `GOOGLE_CLIENT_*` if those features are used.
 
 ## Contributing
 

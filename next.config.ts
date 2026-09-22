@@ -6,23 +6,12 @@ const nextConfig: NextConfig = {
   // next dev otherwise appends a generated agent-rules block to AGENTS.md on
   // every start; AGENTS.md is hand-maintained project guidance.
   agentRules: false,
+  // Emits .next/standalone for the Docker image. Vercel deployments ignore
+  // this option entirely, so it is safe in every environment.
+  output: 'standalone',
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
-  },
-  webpack: (config) => {
-    config.resolve.fallback = { ...config.resolve.fallback, fs: false }
-
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      vars: path.resolve('node_modules/@payloadcms/ui/dist/scss/_vars.scss'),
-    }
-
-    return config
-  },
-
-  generateBuildId: async () => {
-    return `build-${Date.now()}`
   },
   images: {
     remotePatterns: [

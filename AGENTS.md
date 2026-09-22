@@ -69,14 +69,16 @@ Import rules (enforced in `eslint.config.mjs`):
 
 ## Environment reality
 
-| Environment     | Database                                    | Storage                                               | Config file  |
-| --------------- | ------------------------------------------- | ----------------------------------------------------- | ------------ |
-| Development     | Local Supabase (CLI)                        | Local Supabase S3 (`@payloadcms/storage-s3`)          | `.env.local` |
-| Non-development | Remote Supabase (`@payloadcms/db-postgres`) | Vercel Blob (`@payloadcms/storage-vercel-blob`) today | `.env`       |
+| Environment   | Database                                    | Storage                                                                | Config file  |
+| ------------- | ------------------------------------------- | ---------------------------------------------------------------------- | ------------ |
+| Development   | Local Supabase (CLI)                        | Local Supabase S3 (`@payloadcms/storage-s3`)                           | `.env.local` |
+| Docker deploy | `docker compose` PostgreSQL 17              | Bundled MinIO or any S3-compatible (`@payloadcms/storage-s3`)          | `.env`       |
+| Vercel        | Remote Supabase (`@payloadcms/db-postgres`) | S3 if configured, else Vercel Blob (`@payloadcms/storage-vercel-blob`) | `.env`       |
 
-`storage.ts` implements this split — do not claim otherwise in docs. Self-hosting
-via Docker is the deployment decision (ADR 0002); the Vercel Blob branch is on
-the list to revisit when the host is chosen (#76).
+`storage.ts` selects by environment variables: S3 whenever `S3_ACCESS_KEY_ID`/
+`S3_SECRET_ACCESS_KEY` are set (any environment), Vercel Blob only when they
+are absent and `BLOB_READ_WRITE_TOKEN` exists. Self-hosting via Docker is the
+deployment decision (ADR 0002).
 
 ## Gotchas worth an hour each
 
