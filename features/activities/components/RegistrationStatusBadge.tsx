@@ -6,18 +6,24 @@ import type { Activity, ActivityRegistration } from '@/payload-types'
 
 export type EffectiveRegistrationStatus = 'registered' | 'attended' | 'passed'
 
-const statusConfig: Record<EffectiveRegistrationStatus, { label: string; className: string }> = {
+export const statusConfig: Record<
+  EffectiveRegistrationStatus,
+  { label: string; className: string; dotClassName: string }
+> = {
   registered: {
     label: 'مسجّل',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
+    dotClassName: 'bg-[#0AAFC2]',
   },
   attended: {
     label: 'تم الحضور',
     className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
+    dotClassName: 'bg-emerald-500',
   },
   passed: {
     label: 'مكتمل',
     className: 'bg-muted text-muted-foreground',
+    dotClassName: 'bg-muted-foreground/30',
   },
 }
 

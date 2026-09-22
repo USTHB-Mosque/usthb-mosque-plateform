@@ -191,7 +191,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
     }
 
     let nextDay = 1
-    while (cells.length < 35) {
+    while (cells.length < 42) {
       cells.push({ day: nextDay++, nextMonth: true })
     }
 
@@ -356,7 +356,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5 pb-[1px] mb-10">
+      <div className="grid grid-cols-7 gap-1.5 pb-[1px]">
         {calendarDays.map((cell, idx) => {
           const todayCell = isTodayCell(idx)
           const dayEvents = getEventsForDay(idx)

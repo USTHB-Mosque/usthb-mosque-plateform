@@ -25,6 +25,7 @@ import { activitiesTypesConfig } from '@/utils/constants/activities'
 import RegistrationStatusBadge, {
   getEffectiveRegistrationStatus,
   isPastRegistration,
+  statusConfig,
 } from './RegistrationStatusBadge'
 
 type RegistrationsFilters = {
@@ -173,7 +174,74 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
         </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="overflow-hidden rounded-lg border border-border bg-card lg:hidden">
+            <ul className="divide-y divide-border">
+              <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
+                <span className="min-w-0 max-w-[128px] flex-1 font-medium text-muted-foreground">
+                  النشاط
+                </span>
+                <span className="w-[84px] shrink-0 text-center font-medium text-muted-foreground">
+                  التصنيف
+                </span>
+                <span className="w-[92px] shrink-0 font-medium text-muted-foreground">
+                  تاريخ النشاط
+                </span>
+                <span className="size-2.5 shrink-0" />
+              </li>
+              {pageItems.map((registration) => {
+                const activity = registration.activity as Activity | undefined
+                const activityId = activity?.id
+                const status = getEffectiveRegistrationStatus(registration)
+                const config = statusConfig[status]
+                const start = activity?.startDate ? new Date(activity.startDate) : null
+                const typeLabel = activity
+                  ? (activitiesTypesConfig[activity.type] ?? 'نشاط')
+                  : 'نشاط'
+                return (
+                  <li
+                    key={registration.id}
+                    onClick={() => router.push(`/user/activities/${activityId}`)}
+                    className="flex cursor-pointer items-center justify-between gap-3 bg-background px-4 py-3"
+                  >
+                    <div className="min-w-0 max-w-[128px] flex-1">
+                      <span className="block truncate font-medium text-card-foreground">
+                        {activity?.title || '—'}
+                      </span>
+                      {activity?.shortDescription ? (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {activity.shortDescription}
+                        </span>
+                      ) : null}
+                    </div>
+                    <span className="flex h-6 w-[84px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#0de9c3]/15 px-1 text-xs whitespace-nowrap text-primary-300">
+                      {typeLabel}
+                    </span>
+                    <span className="w-[92px] shrink-0 text-start text-sm text-muted-foreground">
+                      {start ? format(start, 'd MMM yyyy', { locale: arDZ }) : 'غير محدد'}
+                    </span>
+                    <span
+                      className={`size-2.5 shrink-0 rounded-full ${config.dotClassName}`}
+                      title={config.label}
+                      aria-label={config.label}
+                    />
+                  </li>
+                )
+              })}
+            </ul>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border bg-background-2 px-4 py-3">
+              {Object.values(statusConfig).map((config) => (
+                <span
+                  key={config.label}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                >
+                  <span className={`size-2.5 shrink-0 rounded-full ${config.dotClassName}`} />
+                  {config.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden overflow-hidden rounded-lg border border-border bg-card lg:block">
             <Table>
               <TableHeader>
                 <TableRow>

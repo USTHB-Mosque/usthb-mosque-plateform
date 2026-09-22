@@ -77,6 +77,7 @@ const LibraryPage: React.FC = () => {
     <ListingContent>
       <ListingToolbar
         onApplyFilters={() => setValue('page', 1)}
+        quickFiltersClassName="hidden lg:flex"
         quickFilterSections={[
           {
             id: 'types-quick',
@@ -111,7 +112,7 @@ const LibraryPage: React.FC = () => {
             options: bookAuthorsConfigArray,
             value: values.authors || [],
             onChange: (v) => setValue('authors', v as string[]),
-            buttonClassName: 'flex-1',
+            buttonClassName: 'md:flex-1',
             resetValue: [],
           },
           {

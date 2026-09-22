@@ -87,7 +87,7 @@ const ListingFiltersDialog: React.FC<ListingFiltersDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-5xl sm:max-w-5xl flex max-h-[85vh] flex-col gap-4"
+        className="max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] md:max-w-[calc(100%-4rem)] lg:max-w-5xl flex max-h-[85vh] flex-col gap-4"
       >
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
