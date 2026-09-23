@@ -1,10 +1,14 @@
+import type { Config as PayloadConfig } from 'payload'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@payloadcms/storage-s3', () => ({
   s3Storage: vi.fn(() => 's3-plugin'),
 }))
+
+// The vercel-blob plugin returns an inner config plugin; getStoragePlugin
+// wraps it (withPrivateBlobAccess) so the result is a new async plugin.
 vi.mock('@payloadcms/storage-vercel-blob', () => ({
-  vercelBlobStorage: vi.fn(() => 'blob-plugin'),
+  vercelBlobStorage: vi.fn(() => (config: PayloadConfig) => config),
 }))
 
 import { getStoragePlugin } from '@/storage'
@@ -29,6 +33,7 @@ const STORAGE_VARS = [
   'S3_BUCKET',
   'S3_REGION',
   'S3_ENDPOINT',
+  'STORAGE_VERCEL_BLOB_BASE_URL',
 ]
 
 function setEnv(overrides: Record<string, string | undefined>) {
@@ -66,17 +71,25 @@ describe('getStoragePlugin', () => {
     }
   })
 
-  it('falls back to vercel blob when no S3 credentials but a blob token exists', () => {
+  it('falls back to vercel blob with private access when no S3 credentials but a token exists', async () => {
     setEnv({ NODE_ENV: 'production', BLOB_READ_WRITE_TOKEN: 'blob-token' })
 
-    expect(getStoragePlugin()).toBe('blob-plugin')
-    expect(vercelBlobStorageMock).toHaveBeenCalledWith({
-      collections: { media: true },
-      token: 'blob-token',
-    })
+    const plugin = getStoragePlugin()
+    expect(vercelBlobStorageMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        access: 'private',
+        collections: { media: true },
+        token: 'blob-token',
+      }),
+    )
+
+    const result = await (plugin as (config: PayloadConfig) => Promise<PayloadConfig>)(
+      {} as PayloadConfig,
+    )
+    expect(result).toEqual({})
   })
 
-  it('vercel deployments use blob even when stray S3 variables are set', () => {
+  it('vercel deployments use private blob even when stray S3 variables are set', async () => {
     // A Vercel project env that carries local-dev S3 values (unreachable from
     // Vercel) must keep using Blob, exactly as before this change.
     setEnv({
@@ -88,8 +101,13 @@ describe('getStoragePlugin', () => {
       S3_ENDPOINT: 'http://127.0.0.1:54321/storage/v1/s3',
     })
 
-    expect(getStoragePlugin()).toBe('blob-plugin')
+    const plugin = getStoragePlugin()
+    expect(vercelBlobStorageMock).toHaveBeenCalledWith(
+      expect.objectContaining({ access: 'private' }),
+    )
     expect(s3StorageMock).not.toHaveBeenCalled()
+
+    await (plugin as (config: PayloadConfig) => Promise<PayloadConfig>)({} as PayloadConfig)
   })
 
   it('uses s3 on a vercel deployment when no blob token exists', () => {
@@ -101,6 +119,35 @@ describe('getStoragePlugin', () => {
     })
 
     expect(getStoragePlugin()).toBe('s3-plugin')
+  })
+
+  it('swaps the media staticHandler for the private-store variant', async () => {
+    setEnv({
+      NODE_ENV: 'production',
+      VERCEL: '1',
+      BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_abc123def456_zyx987wvu654',
+    })
+
+    const firstHandler = vi.fn(() => null)
+    const lastHandler = vi.fn(() => null)
+    const config = {
+      collections: [
+        { slug: 'media', upload: { handlers: [firstHandler, lastHandler] } },
+        { slug: 'other', upload: { handlers: [lastHandler] } },
+      ],
+    } as unknown as PayloadConfig
+
+    const result = await getStoragePlugin()(config)
+    const media = result.collections?.find((c) => c.slug === 'media')
+    const other = result.collections?.find((c) => c.slug === 'other')
+    const handlers = media && typeof media.upload === 'object' ? media.upload.handlers : undefined
+
+    expect(handlers?.[0]).toBe(firstHandler)
+    expect(handlers?.[1]).not.toBe(lastHandler)
+    expect(handlers?.[1]).not.toBe(firstHandler)
+    // Untargeted collections keep their handlers untouched.
+    const otherHandlers = other && typeof other.upload === 'object' ? other.upload.handlers : []
+    expect(otherHandlers?.[0]).toBe(lastHandler)
   })
 
   it('throws when neither S3 credentials nor a blob token are available', () => {

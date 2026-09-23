@@ -37,6 +37,9 @@ importers:
       '@payloadcms/next':
         specifier: ^3.88.0
         version: 3.88.0(@types/react@19.2.13)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.3.2(@babel/core@7.29.0)(@types/node@20.19.33)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.97.3))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      '@payloadcms/plugin-cloud-storage':
+        specifier: 3.88.0
+        version: 3.88.0(@types/react@19.2.13)(monaco-editor@0.55.1)(next@16.3.2(@babel/core@7.29.0)(@types/node@20.19.33)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.97.3))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       '@payloadcms/richtext-lexical':
         specifier: ^3.88.0
         version: 3.88.0(@faceless-ui/modal@3.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@payloadcms/next@3.88.0(@types/react@19.2.13)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.3.2(@babel/core@7.29.0)(@types/node@20.19.33)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.97.3))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(@types/react@19.2.13)(bufferutil@4.1.0)(monaco-editor@0.55.1)(next@16.3.2(@babel/core@7.29.0)(@types/node@20.19.33)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.97.3))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(yjs@13.6.29)
@@ -61,6 +64,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.95.2
         version: 5.95.2(react@19.2.0)
+      '@vercel/blob':
+        specifier: 2.3.1
+        version: 2.3.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
