@@ -11,10 +11,11 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from '@/features/notifications/server/mark-notifications-read'
-import { NOTIFICATION_TYPES } from '@/utils/notifications'
-import { type NotificationType } from '@/features/notifications/types'
-
-const NOTIFICATIONS_PAGE = '/user/notifications'
+import {
+  NOTIFICATION_TYPES,
+  NOTIFICATIONS_PAGE,
+  type NotificationType,
+} from '@/utils/notifications'
 
 type NotificationsListProps = {
   data: NotificationsPage
@@ -48,7 +49,12 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
     return query ? `${NOTIFICATIONS_PAGE}?${query}` : NOTIFICATIONS_PAGE
   }
 
-  const markRead = (id: number, link: string | null) => {
+  const markRead = (id: number, seen: boolean, link: string | null) => {
+    // Already-read rows only navigate — no redundant write.
+    if (seen) {
+      router.push(link ?? NOTIFICATIONS_PAGE)
+      return
+    }
     startTransition(async () => {
       const result = await markNotificationRead(id)
       if (result.ok) router.push(link ?? NOTIFICATIONS_PAGE)
@@ -114,7 +120,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
             <button
               key={item.id}
               type="button"
-              onClick={() => markRead(item.id, item.link)}
+              onClick={() => markRead(item.id, item.seen, item.link)}
               className={cn(
                 'flex w-full flex-col items-start gap-1 px-5 py-4 text-start transition-colors hover:bg-black/5',
                 index !== data.notifications.length - 1 && 'border-b border-stroke-grey',

@@ -3,8 +3,6 @@ import { getNotifications } from '@/features/notifications'
 import NotificationsList from '@/features/notifications/components/NotificationsList'
 import { NOTIFICATION_TYPES, type NotificationType } from '@/utils/notifications'
 
-const NOTIFICATIONS_PAGE = '/user/notifications'
-
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 function readSeen(value: string | string[] | undefined): 'all' | 'unread' {

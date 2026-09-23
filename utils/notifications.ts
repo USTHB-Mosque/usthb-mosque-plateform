@@ -16,6 +16,9 @@ export const NOTIFICATION_TYPES = [
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]['value']
 
+/** Deep route of the notifications inbox, used by the bell and the list page. */
+export const NOTIFICATIONS_PAGE = '/user/notifications'
+
 /**
  * Keys of `user.notificationPreferences` — the four Figma email toggles from
  * Settings/notifications (2228:35550). They gate email only; in-app

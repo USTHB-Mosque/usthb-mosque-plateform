@@ -13,12 +13,20 @@ export type CreateNotificationArgs = {
   email?: boolean
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 function buildEmailHtml(title: string, message: string, link?: string): string {
   return `
     <div dir="rtl" style="font-family: sans-serif; text-align: right;">
-      <h2>${title}</h2>
-      <p>${message}</p>
-      ${link ? `<p><a href="${link}">عرض التفاصيل في بوابة الجامعة</a></p>` : ''}
+      <h2>${escapeHtml(title)}</h2>
+      <p>${escapeHtml(message)}</p>
+      ${link ? `<p><a href="${escapeHtml(link)}">عرض التفاصيل في بوابة الجامعة</a></p>` : ''}
       <p>مسجد الجامعة USTHB</p>
     </div>`
 }
@@ -40,6 +48,11 @@ function buildEmailHtml(title: string, message: string, link?: string): string {
 export async function createNotification(args: CreateNotificationArgs): Promise<Notification> {
   const { req, user, type, title, message, link, email } = args
 
+  // The row write joins the caller's transaction; the email goes out inside
+  // that window, before the caller commits. If the caller rolls back after a
+  // successful email, the recipient gets a mail for an event that never
+  // persisted — accepted trade-off: emails carry no secret state, and sending
+  // after an unknown-time commit is not possible from inside the helper.
   const notification = (await req.payload.create({
     collection: 'notifications',
     data: { user, type, title, message, link },
@@ -69,8 +82,10 @@ export async function createNotification(args: CreateNotificationArgs): Promise<
       subject: title,
       html: buildEmailHtml(title, message, link),
     })
-  } catch {
-    // Email failure must not roll back the notification (#17).
+  } catch (error) {
+    // Email failure must not roll back the notification (#17) — but it must
+    // not vanish silently either: the row keeps `emailSent: false`.
+    console.error('[notifications] transactional email failed', error)
     return notification
   }
 

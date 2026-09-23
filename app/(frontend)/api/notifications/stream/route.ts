@@ -1,3 +1,4 @@
+import { countUnreadNotifications } from '@/features/notifications'
 import { getPayloadWithUser } from '@/shared/lib/auth'
 
 // Never cached or statically rendered: the stream is keyed to the session
@@ -26,15 +27,7 @@ export async function GET(request: Request) {
   const { payload, user, req } = ctx
   const encoder = new TextEncoder()
 
-  const readUnreadCount = async () => {
-    const result = await payload.count({
-      collection: 'notifications',
-      where: { user: { equals: user.id }, seen: { equals: false } },
-      req,
-      overrideAccess: false,
-    })
-    return result.totalDocs
-  }
+  const readUnreadCount = () => countUnreadNotifications({ payload, user, req } as typeof ctx)
 
   const stream = new ReadableStream({
     async start(controller) {

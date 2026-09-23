@@ -15,6 +15,7 @@ import {
 } from '@/shared/ui/dropdown-menu'
 import { getBellState, type BellState } from '@/features/notifications/server/get-notifications'
 import { markNotificationRead } from '@/features/notifications/server/mark-notifications-read'
+import { NOTIFICATIONS_PAGE } from '@/utils/notifications'
 
 type NotificationBellProps = {
   /** Mobile-menu variant: a plain nav-like item linking to the notifications page. */
@@ -22,7 +23,17 @@ type NotificationBellProps = {
   className?: string
 }
 
-const NOTIFICATIONS_PAGE = '/user/notifications'
+const UnreadBadge: React.FC<{ count: number; className?: string }> = ({ count, className }) =>
+  count > 0 ? (
+    <span
+      className={cn(
+        'flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-300/15 px-1.5 text-[10px] font-bold text-primary-300',
+        className,
+      )}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  ) : null
 
 const dateTimeFormatter = new Intl.DateTimeFormat('ar', {
   day: 'numeric',
@@ -65,7 +76,12 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
   }, [refresh])
 
   const markRead = React.useCallback(
-    async (id: number, link: string | null) => {
+    async (id: number, seen: boolean, link: string | null) => {
+      // Already-read rows only navigate — no redundant write, no count drift.
+      if (seen) {
+        router.push(link ?? NOTIFICATIONS_PAGE)
+        return
+      }
       setState((prev) =>
         prev
           ? {
@@ -89,12 +105,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
 
   if (!state) return null
 
-  const unreadBadge =
-    state.unreadCount > 0 ? (
-      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-300/15 px-1.5 text-[10px] font-bold text-primary-300">
-        {state.unreadCount > 99 ? '99+' : state.unreadCount}
-      </span>
-    ) : null
+  const unreadBadge = <UnreadBadge count={state.unreadCount} />
 
   if (sidebar) {
     return (
@@ -146,7 +157,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
           state.notifications.map((item) => (
             <DropdownMenuItem
               key={item.id}
-              onClick={() => void markRead(item.id, item.link)}
+              onClick={() => void markRead(item.id, item.seen, item.link)}
               className={cn(
                 'flex cursor-pointer flex-col items-start gap-0.5 rounded-md px-3 py-2.5 whitespace-normal',
                 !item.seen && 'bg-primary-main-20/40',

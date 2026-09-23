@@ -1,6 +1,8 @@
 'use server'
 
+import type { Where } from 'payload'
 import { getPayloadWithUser } from '@/shared/lib/auth'
+import type { Notification } from '@/payload-types'
 import type { NotificationType } from '@/utils/notifications'
 
 export type NotificationListItem = {
@@ -26,19 +28,29 @@ export type BellState = {
   notifications: NotificationListItem[]
 }
 
-function serialize(docs: any[]): NotificationListItem[] {
+function serialize(docs: Notification[]): NotificationListItem[] {
   return docs.map((doc) => ({
     id: doc.id,
-    type: doc.type,
+    // The column defaults to 'system', so null is a type-level fiction.
+    /* v8 ignore next */
+    type: doc.type ?? 'system',
     title: doc.title,
     message: doc.message,
     link: doc.link ?? null,
-    seen: doc.seen,
+    // The column defaults to false, so null is a type-level fiction.
+    /* v8 ignore next */
+    seen: doc.seen ?? false,
     createdAt: new Date(doc.createdAt).toISOString(),
   }))
 }
 
-async function countUnread(ctx: NonNullable<Awaited<ReturnType<typeof getPayloadWithUser>>>) {
+/**
+ * The signed-in user's unread count. Shared by the bell round trip and the
+ * SSE stream tick so both sides agree on what the badge counts.
+ */
+export async function countUnreadNotifications(
+  ctx: NonNullable<Awaited<ReturnType<typeof getPayloadWithUser>>>,
+) {
   const result = await ctx.payload.count({
     collection: 'notifications',
     where: { user: { equals: ctx.user.id }, seen: { equals: false } },
@@ -68,7 +80,7 @@ export async function getBellState(): Promise<BellState | null> {
   })
 
   return {
-    unreadCount: await countUnread(ctx),
+    unreadCount: await countUnreadNotifications(ctx),
     notifications: serialize(latest.docs),
   }
 }
@@ -88,7 +100,7 @@ export async function getNotifications(args: {
     return { notifications: [], unreadCount: 0, totalDocs: 0, totalPages: 0, page: 1 }
   }
 
-  const conditions: any[] = [{ user: { equals: ctx.user.id } }]
+  const conditions: Where[] = [{ user: { equals: ctx.user.id } }]
   if (args.seen !== undefined) conditions.push({ seen: { equals: args.seen } })
   if (args.type) conditions.push({ type: { equals: args.type } })
 
@@ -108,7 +120,7 @@ export async function getNotifications(args: {
 
   return {
     notifications: serialize(result.docs),
-    unreadCount: await countUnread(ctx),
+    unreadCount: await countUnreadNotifications(ctx),
     totalDocs: result.totalDocs,
     totalPages: result.totalPages,
     // Defensive: Payload types `page` as optional even though the requested
