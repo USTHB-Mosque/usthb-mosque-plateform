@@ -13,7 +13,7 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
-import NotificationBell from '@/shared/layouts/user/NotificationBell'
+import { NotificationBell } from '@/features/notifications'
 import ThemeSwitcher from '@/shared/ui/theme-switcher'
 import { motion } from 'motion/react'
 import type { Variants } from 'motion/react'

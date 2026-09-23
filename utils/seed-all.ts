@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { ensureStorageBucket } from './seed/ensure-bucket'
 import { seedUsers, createAdminUser } from './seed/users'
 import { seedMedias } from './seed/media'
 import { seedBooks } from './seed/book'
@@ -12,6 +13,10 @@ async function seedAll() {
   console.log('🌱 Starting seeding process...\n')
 
   try {
+    console.log('🪣 Ensuring storage bucket...')
+    await ensureStorageBucket()
+    console.log('✅ Storage bucket ready!\n')
+
     console.log('👤 Creating admin user...')
     await createAdminUser()
     console.log('✅ Admin user created!\n')

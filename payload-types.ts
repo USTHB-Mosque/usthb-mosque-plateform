@@ -77,6 +77,7 @@ export interface Config {
     'activity-registrations': ActivityRegistration;
     'book-favorites': BookFavorite;
     'article-favorites': ArticleFavorite;
+    notifications: Notification;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -439,6 +441,22 @@ export interface ArticleFavorite {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: number;
+  user: number | User;
+  type?: ('loan' | 'waitlist' | 'extension' | 'verification' | 'request' | 'activity' | 'article' | 'system') | null;
+  title: string;
+  message: string;
+  link?: string | null;
+  seen?: boolean | null;
+  emailSent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -500,6 +518,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'article-favorites';
         value: number | ArticleFavorite;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: number | Notification;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -770,6 +792,21 @@ export interface BookFavoritesSelect<T extends boolean = true> {
 export interface ArticleFavoritesSelect<T extends boolean = true> {
   user?: T;
   article?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  user?: T;
+  type?: T;
+  title?: T;
+  message?: T;
+  link?: T;
+  seen?: T;
+  emailSent?: T;
   updatedAt?: T;
   createdAt?: T;
 }

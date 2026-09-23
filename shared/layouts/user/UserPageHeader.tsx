@@ -5,7 +5,7 @@ import { PanelRight, PanelRightOpen } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import DarkModeToggle from '@/shared/ui/dark-mode-toggle'
 import SearchInput from '@/shared/ui/search-input'
-import NotificationBell from '@/shared/layouts/user/NotificationBell'
+import { NotificationBell } from '@/features/notifications'
 import { useUserSidebar } from '@/shared/layouts/user/sidebar-context'
 
 type UserPageHeaderProps = {
