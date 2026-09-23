@@ -6,6 +6,7 @@ import * as migration_20260920_114739_user_activity_log_hook_fix from './2026092
 import * as migration_20260922_092238_add_first_admin_created_action from './20260922_092238_add_first_admin_created_action'
 import * as migration_20260922_095148_password_reset_email_config from './20260922_095148_password_reset_email_config'
 import * as migration_20260922_124852_reset_email_origin_config from './20260922_124852_reset_email_origin_config'
+import * as migration_20260923_112156_add_notifications_collection from './20260923_112156_add_notifications_collection'
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260922_124852_reset_email_origin_config.up,
     down: migration_20260922_124852_reset_email_origin_config.down,
     name: '20260922_124852_reset_email_origin_config',
+  },
+  {
+    up: migration_20260923_112156_add_notifications_collection.up,
+    down: migration_20260923_112156_add_notifications_collection.down,
+    name: '20260923_112156_add_notifications_collection',
   },
 ]
