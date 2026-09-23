@@ -15,7 +15,10 @@ export default async function SecuritySettingsPage() {
 
   return (
     <UserPage title="الحماية">
-      <div dir="rtl" className="flex items-start gap-[33px] overflow-hidden">
+      <div
+        dir="rtl"
+        className="flex w-full flex-1 flex-col overflow-hidden rounded-xl border border-stroke-grey bg-background lg:border-0 lg:flex-row lg:items-start lg:gap-[33px]"
+      >
         <SettingsProfileCard user={data.user} activeTab="security" />
         <SecuritySection user={data.user} />
       </div>

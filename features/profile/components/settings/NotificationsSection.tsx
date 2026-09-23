@@ -66,7 +66,13 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
   }
 
   return (
-    <div dir="rtl" className={cn('flex flex-1 flex-col pt-6 gap-8', className)}>
+    <div
+      dir="rtl"
+      className={cn(
+        'flex flex-none flex-col px-4 pt-6 pb-6 gap-8 sm:px-6 lg:flex-1 lg:p-0',
+        className,
+      )}
+    >
       <div className="flex flex-col self-stretch gap-6">
         <div className="flex flex-col items-start self-stretch">
           <span className="text-xl font-bold font-dubai text-[#243245]">خيارات الإشعارات</span>
