@@ -22,7 +22,7 @@ import { Pagination } from '@/shared/common/Pagination'
 import EmptyData from '@/shared/common/EmptyData'
 import { useSearch } from '@/shared/hooks/use-search'
 import { getImageUrl } from '@/shared/lib/image-utils'
-import LoanStatusBadge, { getDueUrgency, getEffectiveLoanStatus } from './LoanStatusBadge'
+import { getDueUrgency, getEffectiveLoanStatus, statusConfig } from './LoanStatusBadge'
 import ExtensionDialog from './ExtensionDialog'
 import LoanDetailsDialog from './LoanDetailsDialog'
 import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
@@ -188,17 +188,69 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
         </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <Table>
+          <div className="overflow-hidden rounded-lg border border-border bg-card lg:hidden">
+            <ul className="divide-y divide-border">
+              <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
+                <span className="flex-1 font-medium text-muted-foreground">الكتاب</span>
+                <span className="w-[92px] shrink-0 font-medium text-muted-foreground">
+                  تاريخ الإعارة
+                </span>
+                <span className="w-[92px] shrink-0 font-medium text-muted-foreground">
+                  موعد الإرجاع
+                </span>
+                <span className="size-2 shrink-0" />
+              </li>
+              {pageItems.map((loan) => {
+                const book = loan.book as Book | undefined
+                const status = getEffectiveLoanStatus(loan)
+                const config = statusConfig[status]
+                const mobileLoanDate = loan.loanDate ? new Date(loan.loanDate) : null
+                const mobileDueDate = loan.returnDate
+                  ? new Date(loan.returnDate)
+                  : loan.dueDate
+                    ? new Date(loan.dueDate)
+                    : null
+                return (
+                  <li
+                    key={loan.id}
+                    onClick={() => {
+                      openLoanDetails(loan)
+                    }}
+                    className="flex cursor-pointer items-center justify-between gap-3 bg-background px-4 py-3"
+                  >
+                    <span className="min-w-0 flex-1 truncate font-medium text-card-foreground">
+                      {book?.title || '—'}
+                    </span>
+                    <span className="w-[92px] shrink-0 text-start text-sm text-muted-foreground">
+                      {mobileLoanDate
+                        ? format(mobileLoanDate, 'd MMM yyyy', { locale: arDZ })
+                        : '—'}
+                    </span>
+                    <span className="w-[92px] shrink-0 text-start text-sm text-muted-foreground">
+                      {mobileDueDate ? format(mobileDueDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
+                    </span>
+                    <span
+                      className={`size-2 shrink-0 rounded-full ${config.dotClassName}`}
+                      title={config.label}
+                      aria-label={config.label}
+                    />
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
+          <div className="hidden overflow-hidden rounded-lg border border-border bg-card lg:block">
+            <Table style={{ tableLayout: 'fixed' }}>
               <TableHeader>
                 <TableRow>
-                  <TableHead>الكتاب</TableHead>
-                  <TableHead>تاريخ الإعارة</TableHead>
-                  <TableHead>موعد الإرجاع</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="w-16 text-end">
-                    <span className="sr-only">إجراءات</span>
+                  <TableHead className="w-1/4 xl:w-1/5">الكتاب</TableHead>
+                  <TableHead className="lg:w-1/5 xl:w-1/5">تاريخ الإعارة</TableHead>
+                  <TableHead className="lg:w-1/5 xl:w-1/5">موعد الإرجاع</TableHead>
+                  <TableHead className="w-1/4 px-4 py-3 text-center lg:w-1/5 lg:text-right xl:w-1/5 xl:text-right">
+                    الحالة
                   </TableHead>
+                  <TableHead className="hidden px-3 py-3 text-center lg:table-cell lg:w-[15%] xl:w-1/5" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -259,13 +311,23 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                       <TableCell className={dueTextColor}>
                         {displayDate ? format(displayDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
                       </TableCell>
-                      <TableCell>
-                        <LoanStatusBadge loan={loan} />
+                      <TableCell className="py-3 pr-1 text-right">
+                        {(() => {
+                          const status = getEffectiveLoanStatus(loan)
+                          const config = statusConfig[status]
+                          return (
+                            <span
+                              className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-center text-xs font-medium ${config.className}`}
+                            >
+                              {config.label}
+                            </span>
+                          )
+                        })()}
                       </TableCell>
-                      <TableCell className="text-end">
+                      <TableCell className="hidden px-3 py-3 text-center lg:table-cell">
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                            className="ms-auto flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
                             onClick={(e: React.MouseEvent) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />
@@ -297,6 +359,16 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                 })}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 lg:hidden">
+            <span className="text-xs font-medium text-muted-foreground">الحالة:</span>
+            {Object.entries(statusConfig).map(([status, config]) => (
+              <span key={status} className="flex items-center gap-1.5 text-xs text-card-foreground">
+                <span className={`inline-block size-2.5 rounded-full ${config.dotClassName}`} />
+                {config.label}
+              </span>
+            ))}
           </div>
 
           {totalPages > 1 ? (

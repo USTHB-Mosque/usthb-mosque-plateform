@@ -21,7 +21,7 @@ function ReadOnlyField({
   icon: React.ElementType
 }) {
   return (
-    <div dir="rtl" className="flex flex-1 flex-col gap-1">
+    <div dir="rtl" className="flex flex-none flex-col gap-1">
       <div className="flex flex-col items-start self-stretch">
         <span className="text-base font-alyamama text-[#243245]">{label}</span>
       </div>
@@ -76,8 +76,13 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
   }
 
   return (
-    <div dir="rtl" className="flex flex-1 flex-col gap-6 pt-6">
-      <span className="text-xl font-bold font-dubai text-[#243245]">معلومات الحساب</span>
+    <div
+      dir="rtl"
+      className="flex w-full flex-none flex-col gap-4 bg-background px-4 pt-3 pb-6 sm:px-6 lg:flex-1 lg:gap-6 lg:px-0 lg:pt-6"
+    >
+      <span className="hidden text-xl font-bold font-dubai text-[#243245] lg:block">
+        معلومات الحساب
+      </span>
 
       {/* Name */}
       <ReadOnlyField label="الاسم الكامل" value={displayName} icon={User} />
@@ -86,7 +91,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
       <ReadOnlyField label="البريد الإلكتروني" value={email} icon={Mail} />
 
       {/* Phone — editable */}
-      <div className="flex flex-1 flex-col gap-1">
+      <div className="flex flex-none flex-col gap-1">
         <div className="flex flex-col items-start self-stretch">
           <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
         </div>

@@ -20,7 +20,7 @@ const BookBasicInformations: React.FC<BookBasicInformationsProps> = ({
   return (
     <Card className="p-4 lg:p-6 ring-0 border border-border">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground leading-tight">
+        <h1 className="text-base font-bold leading-tight text-foreground sm:text-xl lg:text-2xl xl:text-3xl">
           {title}
         </h1>
 

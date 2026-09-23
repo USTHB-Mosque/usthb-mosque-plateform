@@ -84,7 +84,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex w-full h-[320px] items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer ${className}`}
+      className={`group/activity relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer sm:h-[320px] sm:flex-row ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
       onClick={handleOpen}
       onKeyDown={(e) => {
@@ -93,14 +93,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
       tabIndex={0}
       role="link"
     >
-      <div className="relative h-full w-[45%] max-w-[500px] flex-none shrink-0 overflow-hidden border-e border-e-stroke-grey bg-cover bg-[50%_50%] sm:w-[40%]">
+      <div className="relative aspect-[16/9] w-full flex-none shrink-0 overflow-hidden border-b border-b-stroke-grey bg-cover bg-[50%_50%] sm:h-full sm:w-[45%] sm:max-w-[500px] sm:aspect-auto sm:border-e sm:border-b-0 sm:border-e-stroke-grey">
         {imageUrl && (
           <Image
             src={imageUrl}
             alt={media?.alt || activity.title}
             fill
             className="object-cover transition-transform duration-500 group-hover/activity:scale-105"
-            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 40vw, 500px"
+            sizes="(max-width: 639px) 100vw, (max-width: 1024px) 40vw, 500px"
           />
         )}
         <span
@@ -157,7 +157,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
           </section>
         </div>
 
-        <footer className="relative flex w-full flex-none items-center justify-between self-stretch px-2 py-0">
+        <footer className="relative mt-3 flex w-full flex-none items-center justify-between self-stretch px-2 py-0 sm:mt-0">
           <div className="inline-flex items-center gap-5">
             <button
               type="button"
@@ -185,7 +185,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
           </div>
           <Button
             variant="ghost"
-            className="cursor-pointer gap-1.5 font-alyamama text-sm text-primary-300 hover:bg-transparent hover:text-primary px-2"
+            className="hidden cursor-pointer gap-1.5 font-alyamama text-sm text-primary-300 hover:bg-transparent hover:text-primary px-2 sm:inline-flex"
             aria-label={`عرض تفاصيل النشاط: ${activity.title}`}
             onClick={handleOpen}
           >

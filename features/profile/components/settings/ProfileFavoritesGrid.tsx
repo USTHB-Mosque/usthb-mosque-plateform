@@ -36,7 +36,10 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
         if (!book?.id) return null
 
         return (
-          <div key={fav.id} className="relative group max-w-sm">
+          <div
+            key={fav.id}
+            className="relative group w-full max-w-sm justify-self-center sm:w-auto sm:justify-self-auto"
+          >
             <BookCard book={book} href={`/user/library/book/${book.id}`} />
             <Button
               size="icon"

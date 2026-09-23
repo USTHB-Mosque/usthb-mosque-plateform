@@ -55,7 +55,7 @@ export default function ArticleDetailClient({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="text-center font-khalid text-3xl font-bold text-secondary md:text-4xl">
+      <h1 className="text-center font-khalid text-2xl font-bold text-secondary md:text-3xl">
         {title}
       </h1>
 

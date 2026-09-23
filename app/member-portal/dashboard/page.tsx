@@ -87,9 +87,11 @@ export default async function MemberDashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <CalendarWidget events={calendarEvents} />
-        <BookReturnTable loans={activeLoans} className="lg:col-span-2" />
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-5">
+        <div className="xl:col-span-2">
+          <CalendarWidget events={calendarEvents} />
+        </div>
+        <BookReturnTable loans={activeLoans} className="xl:col-span-3" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

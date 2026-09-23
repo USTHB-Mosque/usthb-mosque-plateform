@@ -28,6 +28,8 @@ export interface ListingToolbarProps {
   actions?: React.ReactNode
   /** Extra classes for the فلاتر toggle button (default: visitor tone bg-background-2) */
   filterButtonClassName?: string
+  /** Extra classes for the quick-filter (suggested categories) chips row */
+  quickFiltersClassName?: string
 }
 
 const ListingToolbar: React.FC<ListingToolbarProps> = ({
@@ -38,6 +40,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
   quickFilterSections = [],
   actions,
   filterButtonClassName,
+  quickFiltersClassName,
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const openFiltersDisclosure = {
@@ -91,7 +94,12 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
         </div>
 
         {quickFilterSections.length > 0 ? (
-          <div className="flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl">
+          <div
+            className={cn(
+              'flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl',
+              quickFiltersClassName,
+            )}
+          >
             {quickFilterSections.map((section) => (
               <ListingFiltersGroup
                 key={section.id}
@@ -107,7 +115,12 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
             ))}
           </div>
         ) : !useDialog && !hasQuickFilters && visible.length === 1 ? (
-          <div className="flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl">
+          <div
+            className={cn(
+              'flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl',
+              quickFiltersClassName,
+            )}
+          >
             <ListingFiltersGroup
               options={visible[0].options}
               values={visible[0].value}

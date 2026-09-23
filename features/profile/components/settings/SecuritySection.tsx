@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Mail, Key, Smartphone, Activity, ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Mail, Key, Smartphone, Activity, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { User } from '@/payload-types'
 import ConnectedDevices from './ConnectedDevices'
@@ -147,19 +147,12 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) =>
 
   if (activeView) {
     return (
-      <div dir="rtl" className={cn('flex flex-1 flex-col pt-6 gap-6', className)}>
-        {/* Breadcrumb title */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveView(null)}
-            className="text-xl font-bold font-dubai text-[#243245] hover:text-primary-300 transition-colors cursor-pointer"
-          >
-            {activeView.section}
-          </button>
-          <ArrowLeft className="h-5 w-5 text-grey-400" />
-          <span className="text-xl font-bold font-dubai text-primary-300">{activeView.label}</span>
-        </div>
+      <div
+        dir="rtl"
+        className={cn('flex flex-none flex-col px-4 pt-6 pb-6 gap-6 sm:px-6 lg:flex-1', className)}
+      >
+        {/* Sub-view title */}
+        <span className="text-xl font-bold font-alyamama text-[#243245]">{activeView.label}</span>
 
         {/* Form content */}
         {activeView.item === 'password' && <PasswordForm onBack={() => setActiveView(null)} />}
@@ -172,11 +165,19 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) =>
   }
 
   return (
-    <div dir="rtl" className={cn('flex flex-1 flex-col pt-6 gap-8', className)}>
+    <div
+      dir="rtl"
+      className={cn(
+        'flex flex-none flex-col px-4 pt-6 pb-6 gap-8 sm:px-6 lg:flex-1 lg:p-0',
+        className,
+      )}
+    >
       {getSections(user).map((section) => (
         <div key={section.title} className="flex flex-col self-stretch gap-6">
           <div className="flex flex-col items-start self-stretch">
-            <span className="text-xl font-bold font-dubai text-[#243245]">{section.title}</span>
+            <span className="text-xl font-bold font-alyamama text-[#243245] lg:font-dubai">
+              {section.title}
+            </span>
           </div>
           <div className="self-stretch bg-background-2 rounded-xl border border-solid border-stroke-grey">
             {section.items.map((item, index) => {
