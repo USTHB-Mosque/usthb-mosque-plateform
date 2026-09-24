@@ -20,6 +20,10 @@
     "test:unit": "vitest run --project unit",
     "test:int": "vitest run --project integration",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:dev": "E2E_DEV=1 playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
     "payload:importmap": "payload generate:importmap",
     "payload:migrate": "payload migrate",
     "payload:migrate-create": "payload migrate:create",
@@ -71,6 +75,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^10.1.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query-devtools": "^5.95.2",
