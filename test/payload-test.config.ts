@@ -16,7 +16,10 @@ import {
   BookFavorite,
   ArticleFavorite,
   Notification,
+  WaitlistEntry,
+  LoanExtension,
 } from '@/collections'
+import { Settings } from '@/globals'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -50,7 +53,10 @@ export default buildConfig({
     BookFavorite,
     ArticleFavorite,
     Notification,
+    WaitlistEntry,
+    LoanExtension,
   ],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'test-secret',
   telemetry: false,

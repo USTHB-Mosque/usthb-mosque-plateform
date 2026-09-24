@@ -1,101 +1,85 @@
 'use server'
-import config from '@/payload.config'
-import { getPayload } from 'payload'
 import { getPayloadWithUser } from '@/shared/lib/auth'
 import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
+
+import { checkRequestGates } from './loan-gates'
 
 interface BorrowBookResult {
   success: boolean
   message: string
   loan?: unknown
+  waitlisted?: boolean
 }
 
+/**
+ * The loan request transition (#19): a verified borrower under the borrow
+ * limit either takes a pending loan on a free copy or joins the book's FIFO
+ * waitlist. Nothing is reserved yet — `accept` reserves the copy.
+ */
 export async function borrowBookLogic(
   bookId: string,
   ctx: { payload: Payload; user: User; req: PayloadRequest },
-  options?: { dueDate?: string; pickupDate?: string },
+  options?: { pickupDate?: string },
 ): Promise<BorrowBookResult> {
   const { payload, user, req } = ctx
 
-  if (user.verificationStatus !== 'verified') {
-    return { success: false, message: 'يجب تأكيد حسابك قبل استعارة الكتب' }
-  }
-
   try {
-    const bookResult = await payload.findByID({
+    const book = await payload.findByID({
       collection: 'books',
       id: bookId,
       req,
       overrideAccess: false,
+      depth: 0,
     })
 
-    if (!bookResult || !bookResult.availableBooks || bookResult.availableBooks <= 0) {
-      return { success: false, message: 'عذراً، الكتاب غير متوفر حالياً' }
+    const gates = await checkRequestGates(ctx, Number(bookId))
+    if (!gates.ok) {
+      return { success: false, message: gates.message }
     }
 
-    const existingLoansResult = await payload.find({
-      collection: 'loans',
-      where: {
-        and: [
-          { user: { equals: user.id } },
-          { book: { equals: bookId } },
-          { status: { not_equals: 'returned' } },
-        ],
-      },
+    if ((book.availableBooks ?? 0) > 0) {
+      const loan = await payload.create({
+        collection: 'loans',
+        data: {
+          book: Number(bookId),
+          user: user.id,
+          status: 'pending',
+          loanDate: new Date().toISOString(),
+          ...(options?.pickupDate
+            ? { pickupDate: new Date(options.pickupDate).toISOString() }
+            : {}),
+        },
+        req,
+        overrideAccess: false,
+      })
+
+      return { success: true, message: 'تم تقديم طلب الإعارة بنجاح', loan }
+    }
+
+    // No free copy: the request joins the end of the book's waitlist. The
+    // position is stamped by the collection hook (end of the queue).
+    await payload.create({
+      collection: 'waitlist-entries',
+      data: { book: Number(bookId), user: user.id, position: 0 },
       req,
       overrideAccess: false,
     })
 
-    if (existingLoansResult.docs.length > 0) {
-      return { success: false, message: 'لديك بالفعل طلب إعارة نشط لهذا الكتاب' }
+    return {
+      success: true,
+      message: 'لا توجد نسخ متاحة حالياً — تم إضافتك إلى قائمة الانتظار لهذا الكتاب',
+      waitlisted: true,
     }
-
-    const dueDate = options?.dueDate
-      ? new Date(options.dueDate)
-      : (() => {
-          const d = new Date()
-          d.setDate(d.getDate() + 14)
-          return d
-        })()
-
-    const loan = await payload.create({
-      collection: 'loans',
-      data: {
-        book: parseInt(bookId),
-        user: user.id,
-        status: 'pending',
-        loanDate: new Date().toISOString(),
-        dueDate: dueDate.toISOString(),
-        pickupDate: options?.pickupDate ? new Date(options.pickupDate).toISOString() : undefined,
-      },
-      req,
-      overrideAccess: false,
-    })
-
-    // The copy decrement is system state driven by the gated logic above
-    // (verified caller, availability, no active duplicate), so it intentionally
-    // bypasses the admin-only write rule on books.
-    await payload.update({
-      collection: 'books',
-      id: bookId,
-      data: {
-        availableBooks: bookResult.availableBooks - 1,
-      },
-      req,
-      overrideAccess: true,
-    })
-
-    return { success: true, message: 'تم تقديم طلب الإعارة بنجاح', loan }
   } catch (error) {
-    console.error('Error borrowing book:', error)
+    console.error('Error requesting a loan:', error)
     return { success: false, message: 'حدث خطأ أثناء تقديم طلب الإعارة' }
   }
 }
 
 export const borrowBook = async (
   bookId: string,
-  options?: { dueDate?: string; pickupDate?: string },
+  options?: { pickupDate?: string },
 ): Promise<BorrowBookResult> => {
   const ctx = await getPayloadWithUser()
 
@@ -108,7 +92,7 @@ export const borrowBook = async (
 
 export async function getUserBookLoanState(bookId: number) {
   const ctx = await getPayloadWithUser()
-  if (!ctx) return { hasActiveLoan: false }
+  if (!ctx) return { hasActiveLoan: false, waitlisted: false }
 
   const existing = await ctx.payload.find({
     collection: 'loans',
@@ -116,7 +100,7 @@ export async function getUserBookLoanState(bookId: number) {
       and: [
         { user: { equals: ctx.user.id } },
         { book: { equals: bookId } },
-        { status: { not_equals: 'returned' } },
+        { status: { in: ['pending', 'accepted', 'picked_up'] } },
       ],
     },
     limit: 1,
@@ -124,5 +108,17 @@ export async function getUserBookLoanState(bookId: number) {
     overrideAccess: false,
   })
 
-  return { hasActiveLoan: Boolean(existing.docs[0]) }
+  const waitlisted = await ctx.payload.count({
+    collection: 'waitlist-entries',
+    where: {
+      and: [{ user: { equals: ctx.user.id } }, { book: { equals: bookId } }],
+    },
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  return {
+    hasActiveLoan: Boolean(existing.docs[0]),
+    waitlisted: waitlisted.totalDocs > 0,
+  }
 }

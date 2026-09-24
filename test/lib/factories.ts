@@ -1,7 +1,7 @@
 import type { Payload } from 'payload'
 import sharp from 'sharp'
 
-import type { Activity, Article, Book, Media, Review } from '@/payload-types'
+import type { Activity, Article, Book, Loan, Media, Review, User } from '@/payload-types'
 
 const minimalRichText = {
   root: {
@@ -141,4 +141,42 @@ export async function createTestReview(
     },
     overrideAccess: true,
   })) as Review
+}
+
+/**
+ * Creates a loan row directly in any state. The create guard hooks only gate
+ * member-facing creates (no `user` is attached here), so this is free to
+ * produce seeds for a specific transition under test.
+ */
+export async function createTestLoan(
+  payload: Payload,
+  opts: {
+    book: number
+    user: number
+    status?: Loan['status']
+    loanDate?: string
+    pickupDate?: string
+    pickupHour?: string
+    pickupCode?: string
+    dueDate?: string
+    returnDate?: string
+    refusalReason?: string
+  },
+): Promise<Loan> {
+  return (await payload.create({
+    collection: 'loans',
+    data: {
+      book: opts.book,
+      user: opts.user,
+      status: opts.status ?? 'pending',
+      loanDate: opts.loanDate ?? new Date().toISOString(),
+      ...(opts.pickupDate ? { pickupDate: opts.pickupDate } : {}),
+      ...(opts.pickupHour ? { pickupHour: opts.pickupHour } : {}),
+      ...(opts.pickupCode ? { pickupCode: opts.pickupCode } : {}),
+      ...(opts.dueDate ? { dueDate: opts.dueDate } : {}),
+      ...(opts.returnDate ? { returnDate: opts.returnDate } : {}),
+      ...(opts.refusalReason ? { refusalReason: opts.refusalReason } : {}),
+    },
+    overrideAccess: true,
+  })) as Loan
 }

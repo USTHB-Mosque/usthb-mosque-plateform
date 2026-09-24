@@ -7,28 +7,41 @@ const statusConfig: Record<string, { label: string; className: string; dotClassN
     className: 'bg-[#FFB020]/15 text-[#B45309]',
     dotClassName: 'bg-[#B45309]',
   },
-  approved: {
-    label: 'موافق عليه',
+  accepted: {
+    label: 'مقبول',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
     dotClassName: 'bg-[#0AAFC2]',
+  },
+  picked_up: {
+    label: 'تم الأخذ',
+    className: 'bg-[#228BE6]/15 text-[#1864AB]',
+    dotClassName: 'bg-[#228BE6]',
+  },
+  returned: {
+    label: 'تم الإرجاع',
+    className: 'bg-muted text-muted-foreground',
+    dotClassName: 'bg-muted-foreground/60',
+  },
+  refused: {
+    label: 'مرفوض',
+    className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
+    dotClassName: 'bg-[#C0392B]',
   },
   overdue: {
     label: 'متأخر',
     className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
     dotClassName: 'bg-[#C0392B]',
   },
-  returned: {
-    label: 'مُعاد',
-    className: 'bg-muted text-muted-foreground',
-    dotClassName: 'bg-muted-foreground/60',
-  },
 }
 
 export function getEffectiveStatus(loan: Loan): string {
   const status = loan.status
-  if (status === 'returned' || status === 'overdue' || status === 'pending') return status
-  const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
-  if (status === 'approved' && due < Date.now()) return 'overdue'
+  if (status === 'returned' || status === 'refused' || status === 'pending') return status
+  if (status === 'picked_up') {
+    // Overdue is derived from `dueDate`, never stored (#19).
+    const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
+    return due < Date.now() ? 'overdue' : 'picked_up'
+  }
   return status ?? 'pending'
 }
 

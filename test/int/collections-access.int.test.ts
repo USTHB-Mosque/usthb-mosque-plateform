@@ -241,24 +241,8 @@ describe('users access', () => {
   })
 })
 
-describe('row-scoped collections: loans, book-favorites, activity-registrations, reviews', () => {
+describe('row-scoped collections: book-favorites, activity-registrations, reviews', () => {
   it.each([
-    [
-      'loans',
-      async () => {
-        const book = await createTestBook(payload)
-        return payload.create({
-          collection: 'loans',
-          data: {
-            book: book.id,
-            user: owner.id,
-            loanDate: new Date().toISOString(),
-            dueDate: new Date().toISOString(),
-          },
-          overrideAccess: true,
-        })
-      },
-    ],
     [
       'book-favorites',
       async () => {
@@ -346,20 +330,43 @@ describe('row-scoped collections: loans, book-favorites, activity-registrations,
   })
 })
 
-describe('loan defaults', () => {
-  it('defaults loanDate to now when not provided', async () => {
+describe('loans: row-scoped read, admin-only writes (#19)', () => {
+  async function makeLoan(): Promise<{ id: number }> {
     const book = await createTestBook(payload)
-    const loan = await payload.create({
+    return payload.create({
       collection: 'loans',
       data: {
         book: book.id,
         user: owner.id,
-        loanDate: undefined as unknown as string,
-        dueDate: new Date().toISOString(),
+        loanDate: new Date().toISOString(),
       },
       overrideAccess: true,
     })
-    expect(loan.loanDate).toBeTruthy()
+  }
+
+  it('row scoping', async () => {
+    const loan = await makeLoan()
+
+    expect(await canReadAs(undefined, 'loans', loan.id)).toBe(false)
+    expect(await canReadAs(owner, 'loans', loan.id)).toBe(true)
+    expect(await canReadAs(otherMember, 'loans', loan.id)).toBe(false)
+    expect(await canReadAs(admin, 'loans', loan.id)).toBe(true)
+
+    // Loans move only through the admin transitions: even the owner cannot
+    // edit or delete their row.
+    expect(await canWriteAs(owner, 'loans', loan.id, {})).toBe(false)
+    expect(await canWriteAs(otherMember, 'loans', loan.id, {})).toBe(false)
+    expect(await canWriteAs(admin, 'loans', loan.id, {})).toBe(true)
+    expect(await canDeleteAs(owner, 'loans', loan.id)).toBe(false)
+    expect(await canDeleteAs(otherMember, 'loans', loan.id)).toBe(false)
+    expect(await canDeleteAs(admin, 'loans', loan.id)).toBe(true)
+  })
+
+  it('members may create their own pending request', async () => {
+    const book = await createTestBook(payload)
+
+    expect(await canCreateAs(owner, 'loans', { book: book.id, user: owner.id })).toBe(true)
+    expect(await canCreateAs(undefined, 'loans', { book: book.id, user: owner.id })).toBe(false)
   })
 })
 

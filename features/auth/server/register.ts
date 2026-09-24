@@ -17,6 +17,7 @@ interface RegisterParams {
   fullName: string
   phone?: string
   faculty?: string
+  speciality?: string
   studyYear?: string
   verificationDocument: File
   consentGiven: boolean
@@ -46,6 +47,7 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
     fullName,
     phone,
     faculty,
+    speciality,
     studyYear,
     verificationDocument,
     consentGiven,
@@ -92,6 +94,7 @@ export const register = async (params: RegisterParams): Promise<RegisterResult> 
         fullName,
         phone,
         faculty,
+        speciality,
         studyYear: studyYear as '1' | '2' | '3' | '4' | '5' | undefined,
         role: 'user',
         verificationStatus: 'pending_verification',

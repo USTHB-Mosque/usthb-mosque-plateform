@@ -2,6 +2,7 @@ import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 import { logActivity } from '@/utils/activity-log'
+import { userSituationsConfigArray } from '@/utils/constants/users'
 
 export const User: CollectionConfig = {
   slug: 'users',
@@ -105,9 +106,23 @@ export const User: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'speciality',
+      type: 'text',
+    },
+    {
       name: 'studyYear',
       type: 'select',
       options: ['1', '2', '3', '4', '5'],
+    },
+    {
+      // Library-card identity shown in the admin users table (#19).
+      name: 'cardId',
+      type: 'text',
+    },
+    {
+      name: 'situation',
+      type: 'select',
+      options: userSituationsConfigArray,
     },
     {
       name: 'sub',

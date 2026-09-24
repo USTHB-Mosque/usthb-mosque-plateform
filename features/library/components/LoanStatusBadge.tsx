@@ -4,7 +4,11 @@ import React from 'react'
 import { Badge } from '@/shared/ui/badge'
 import type { Loan } from '@/payload-types'
 
-export type EffectiveLoanStatus = NonNullable<Loan['status']>
+import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
+
+/** The five stored states plus `overdue`, which is derived from `dueDate`. */
+export type EffectiveLoanStatus =
+  'pending' | 'accepted' | 'picked_up' | 'returned' | 'refused' | 'overdue'
 
 export const statusConfig: Record<
   EffectiveLoanStatus,
@@ -15,36 +19,52 @@ export const statusConfig: Record<
     className: 'bg-[#FFB020]/15 text-[#B45309]',
     dotClassName: 'bg-[#B45309]',
   },
-  approved: {
-    label: 'موافق عليه',
+  accepted: {
+    label: 'مقبول',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
     dotClassName: 'bg-[#0AAFC2]',
+  },
+  picked_up: {
+    label: 'تم الأخذ',
+    className: 'bg-[#228BE6]/15 text-[#1864AB]',
+    dotClassName: 'bg-[#228BE6]',
+  },
+  returned: {
+    label: 'تم الإرجاع',
+    className: 'bg-muted text-muted-foreground',
+    dotClassName: 'bg-muted-foreground/30',
+  },
+  refused: {
+    label: 'مرفوض',
+    className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
+    dotClassName: 'bg-[#C0392B]',
   },
   overdue: {
     label: 'متأخر',
     className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
     dotClassName: 'bg-[#C0392B]',
   },
-  returned: {
-    label: 'مُعاد',
-    className: 'bg-muted text-muted-foreground',
-    dotClassName: 'bg-muted-foreground/30',
-  },
 }
 
 export function getEffectiveLoanStatus(loan: Loan): EffectiveLoanStatus {
-  if (loan.status === 'returned' || loan.status === 'overdue' || loan.status === 'pending') {
-    return loan.status
+  const status = loan.status
+  if (status === 'returned' || status === 'refused' || status === 'pending') return status
+  if (status === 'picked_up') {
+    // Overdue is derived from `dueDate`, never stored (#19).
+    const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
+    return due < Date.now() ? 'overdue' : 'picked_up'
   }
-  const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
-  if (loan.status === 'approved' && due < Date.now()) return 'overdue'
-  return loan.status ?? 'pending'
+  return status ?? 'pending'
+}
+
+export function isLoanActive(loan: Loan): boolean {
+  return ACTIVE_LOAN_STATUSES.includes(loan.status as never)
 }
 
 export function getDueUrgency(loan: Loan): 'overdue' | 'soon' | 'ok' {
   const status = getEffectiveLoanStatus(loan)
   if (status === 'overdue') return 'overdue'
-  if (status === 'returned') return 'ok'
+  if (status === 'returned' || status === 'refused') return 'ok'
   const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
   if (due - Date.now() <= 3 * 24 * 60 * 60 * 1000) return 'soon'
   return 'ok'

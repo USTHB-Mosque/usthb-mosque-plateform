@@ -8,6 +8,7 @@ import CalendarWidget from '@/features/profile/components/dashboard/CalendarWidg
 import ActivityStatusTable from '@/features/profile/components/dashboard/ActivityStatusTable'
 import LoanStatusTable from '@/features/profile/components/dashboard/LoanStatusTable'
 import { getImageUrl } from '@/shared/lib/image-utils'
+import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
 
 function isUpcomingRegistration(registration: ActivityRegistration): boolean {
   if (registration.attended) return false
@@ -28,8 +29,8 @@ export default async function MemberDashboardPage() {
     )
   }
 
-  const activeLoans = data.loans.filter(
-    (loan) => loan.status === 'pending' || loan.status === 'approved' || loan.status === 'overdue',
+  const activeLoans = data.loans.filter((loan) =>
+    ACTIVE_LOAN_STATUSES.includes(loan.status as never),
   )
   const upcomingRegistrations = data.registrations.filter(isUpcomingRegistration)
 

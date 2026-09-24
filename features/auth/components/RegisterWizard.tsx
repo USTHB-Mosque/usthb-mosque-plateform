@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Input } from '@/shared/ui/input'
 import { PasswordInput } from '@/shared/ui/password-input'
 import { Button } from '@/shared/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { useAuthFormStore } from '@/features/auth/store'
 import { register } from '@/features/auth/server/register'
@@ -37,6 +38,7 @@ const step1Schema = z.object({
 const step2Schema = z.object({
   state: z.string().min(1, { message: 'الولاية مطلوبة' }),
   speciality: z.string().min(1, { message: 'التخصص مطلوب' }),
+  studyYear: z.string().optional(),
   schoolCertificate: z.any().optional(),
 })
 
@@ -89,6 +91,7 @@ export default function RegisterWizard() {
     defaultValues: {
       state: formData.state,
       speciality: formData.speciality,
+      studyYear: formData.studyYear,
     },
   })
 
@@ -113,6 +116,7 @@ export default function RegisterWizard() {
   const handleNextStep2 = (values: Step2Values) => {
     useAuthFormStore.getState().setField('state', values.state)
     useAuthFormStore.getState().setField('speciality', values.speciality)
+    useAuthFormStore.getState().setField('studyYear', values.studyYear ?? '')
     setErrorSteps((prev) => prev.filter((s) => s !== 2))
     setStep(3)
   }
@@ -136,6 +140,8 @@ export default function RegisterWizard() {
         fullName: `${store.firstName} ${store.lastName}`,
         phone: store.phoneNumber || undefined,
         faculty: store.state || undefined,
+        speciality: store.speciality || undefined,
+        studyYear: store.studyYear || undefined,
         verificationDocument: store.schoolCertificate,
         consentGiven: values.consentGiven,
       })
@@ -354,6 +360,32 @@ export default function RegisterWizard() {
                         className="h-10 sm:h-11 text-xs sm:text-sm"
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={formStep2.control}
+                name="studyYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-xs sm:text-sm">
+                      السنة الدراسية
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                      <FormControl>
+                        <SelectTrigger className="h-10 sm:h-11 w-full text-xs sm:text-sm">
+                          <SelectValue placeholder="اختر السنة" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {['1', '2', '3', '4', '5'].map((year) => (
+                          <SelectItem key={year} value={year}>
+                            السنة {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

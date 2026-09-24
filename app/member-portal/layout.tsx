@@ -4,6 +4,7 @@ import UserSidebar from '@/shared/layouts/user/UserSidebar'
 import RootHtmlShell from '@/shared/root-html-shell'
 import { getAuthenticatedUser } from '@/shared/lib/auth'
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
+import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
 
 export const metadata: Metadata = {
   title: 'بوابة المستخدم',
@@ -21,7 +22,9 @@ export default async function MemberPortalLayout({ children }: { children: React
   if (user.role === 'admin') redirect('/admin')
 
   const dashboard = await getProfileDashboardData()
-  const activeLoans = dashboard?.loans.filter((loan) => loan.status !== 'returned').length ?? 0
+  const activeLoans =
+    dashboard?.loans.filter((loan) => ACTIVE_LOAN_STATUSES.includes(loan.status as never)).length ??
+    0
 
   return (
     <RootHtmlShell>
