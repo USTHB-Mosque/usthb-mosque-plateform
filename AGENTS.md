@@ -10,20 +10,22 @@ Generic Payload/Next knowledge lives upstream — do not paste it here:
 
 ## Commands
 
-| Command                                                               | What it does                                                        |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `pnpm dev`                                                            | Next dev server (start Supabase first)                              |
-| `pnpm supabase:start` / `pnpm supabase:stop` / `pnpm supabase:status` | Local Supabase stack (Docker)                                       |
-| `pnpm typecheck`                                                      | `tsc --noEmit` — run after every code change                        |
-| `pnpm lint`                                                           | ESLint                                                              |
-| `pnpm test`                                                           | Vitest — all projects once; `pnpm test:watch` while TDD-ing         |
-| `pnpm test:unit` / `pnpm test:int`                                    | One Vitest project only                                             |
-| `pnpm test:coverage`                                                  | Vitest with coverage thresholds enforced                            |
-| `pnpm format:check` / `pnpm format`                                   | Prettier check / write                                              |
-| `pnpm payload:importmap`                                              | Regenerate admin import map after adding/modifying admin components |
-| `pnpm payload:migrate-create <name>`                                  | Generate a migration from the schema diff                           |
-| `pnpm payload:migrate`                                                | Apply migrations (run against a scratch DB to verify)               |
-| `pnpm seed`                                                           | Seed the local database (`utils/seed-all.ts`)                       |
+| Command                                                               | What it does                                                             |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `pnpm dev`                                                            | Next dev server (start Supabase first)                                   |
+| `pnpm supabase:start` / `pnpm supabase:stop` / `pnpm supabase:status` | Local Supabase stack (Docker)                                            |
+| `pnpm typecheck`                                                      | `tsc --noEmit` — run after every code change                             |
+| `pnpm lint`                                                           | ESLint                                                                   |
+| `pnpm test`                                                           | Vitest — all projects once; `pnpm test:watch` while TDD-ing              |
+| `pnpm test:unit` / `pnpm test:int`                                    | One Vitest project only                                                  |
+| `pnpm test:coverage`                                                  | Vitest with coverage thresholds enforced                                 |
+| `pnpm test:e2e`                                                       | Playwright e2e — canonical: migrate + build + start against `mosque_e2e` |
+| `pnpm test:e2e:dev` / `test:e2e:headed` / `test:e2e:ui`               | e2e against `next dev` on the e2e DB (authoring) / headed / UI mode      |
+| `pnpm format:check` / `pnpm format`                                   | Prettier check / write                                                   |
+| `pnpm payload:importmap`                                              | Regenerate admin import map after adding/modifying admin components      |
+| `pnpm payload:migrate-create <name>`                                  | Generate a migration from the schema diff                                |
+| `pnpm payload:migrate`                                                | Apply migrations (run against a scratch DB to verify)                    |
+| `pnpm seed`                                                           | Seed the local database (`utils/seed-all.ts`)                            |
 
 Validate with all four gates before finishing: `format:check`, `lint`, `typecheck`, `test`.
 
@@ -35,6 +37,7 @@ features/<domain>/   components/ api/ server/ types.ts fixtures.ts index.ts
 shared/              ui/ listing/ common/ layouts/ hooks/ lib/ providers/
 collections/         Payload schema
 utils/               constants shared by collections and features, seeds
+e2e/                 Playwright e2e specs (canonical run: migrate + build + start, never dev data)
 proxy.ts             Next 16 proxy (auth cookie gate only, never the security boundary)
 ```
 

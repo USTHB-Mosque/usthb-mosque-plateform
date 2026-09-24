@@ -10,3 +10,6 @@ migrations/*.json
 tsconfig.tsbuildinfo
 supabase
 public
+test-results
+playwright-report
+e2e/.auth
