@@ -318,7 +318,7 @@ export const Loan: CollectionConfig = {
     { name: 'pickupCode', type: 'text', unique: true, index: true },
     { name: 'refusalReason', type: 'text' },
     { name: 'returnDate', type: 'date' },
-// Overdue is derived from `dueDate`; this flag makes the notification fire
+    // Overdue is derived from `dueDate`; this flag makes the notification fire
     // exactly once (lazy check on read, not a scheduled job).
     { name: 'overdueNotified', type: 'checkbox', defaultValue: false },
   ],

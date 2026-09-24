@@ -248,12 +248,12 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
         onOpenChange={setExtensionOpen}
         onConfirm={async (days) => {
           if (extensionLoan) {
-            const { requestExtension } = await import('@/features/admin')
-            const result = await requestExtension(extensionLoan.id, days)
-            if (result.ok) {
-              toast.success('تم إرسال طلب التمديد')
+            const { requestLoanExtension } = await import('@/features/library')
+            const result = await requestLoanExtension(extensionLoan.id, days)
+            if (result.success) {
+              toast.success(result.message)
             } else {
-              toast.error(result.error || 'حدث خطأ')
+              toast.error(result.message)
             }
           }
           setExtensionOpen(false)

@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Clock, FileText, LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
+import { FileText, LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
@@ -18,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
-import { toast } from 'sonner'
 import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Pagination } from '@/shared/common/Pagination'
@@ -346,7 +345,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                               <FileText className="size-4" />
                               تفاصيل الإعارة
                             </DropdownMenuItem>
-{getEffectiveLoanStatus(loan) === 'picked_up' && (
+                            {getEffectiveLoanStatus(loan) === 'picked_up' && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -396,7 +395,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
       <ExtensionDialog
         open={extensionOpen}
         onOpenChange={setExtensionOpen}
-isLoading={isRequestingExtension}
+        isLoading={isRequestingExtension}
         onConfirm={(days) => {
           if (!extensionLoan) return
           const loanId = extensionLoan.id
@@ -411,7 +410,6 @@ isLoading={isRequestingExtension}
               toast.error(result.message)
             }
           })
-        }}
         }}
         bookTitle={(extensionLoan?.book as Book | undefined)?.title}
       />

@@ -189,7 +189,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {book?.isbn || '—'}
                         </td>
                         <td className="truncate px-4 py-3 text-muted-foreground">
-                          {format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ })}
+                          {loan.dueDate
+                            ? format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ })
+                            : '—'}
                         </td>
                         <td className="px-3 py-3 text-center">
                           <DropdownMenu>

@@ -11,6 +11,7 @@ import * as migration_20260922_194450_add_librarian_role_and_book_deleted_at fro
 import * as migration_20260923_112156_add_notifications_collection from './20260923_112156_add_notifications_collection'
 import * as migration_20260923_212106_loan_lifecycle_phase_1 from './20260923_212106_loan_lifecycle_phase_1'
 import * as migration_20260924_000000_book_type_has_many from './20260924_000000_book_type_has_many'
+import * as migration_20260924_000001_drop_extension_request_from_loans from './20260924_000001_drop_extension_request_from_loans'
 
 export const migrations = [
   {
@@ -77,5 +78,10 @@ export const migrations = [
     up: migration_20260924_000000_book_type_has_many.up,
     down: migration_20260924_000000_book_type_has_many.down,
     name: '20260924_000000_book_type_has_many',
+  },
+  {
+    up: migration_20260924_000001_drop_extension_request_from_loans.up,
+    down: migration_20260924_000001_drop_extension_request_from_loans.down,
+    name: '20260924_000001_drop_extension_request_from_loans',
   },
 ]

@@ -2,6 +2,18 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
+import {
+  acceptLoan,
+  markLoanReturned as libraryMarkLoanReturned,
+  refuseLoan,
+} from '@/features/library'
+
+const revalidateAdminLoans = () => {
+  revalidatePath('/admin-panel/dashboard')
+  revalidatePath('/admin-panel/loans/pending')
+  revalidatePath('/admin-panel/loans/active')
+  revalidatePath('/admin-panel/loans/overdue')
+}
 
 export async function getPendingLoans() {
   const { payload, user } = await getAdminCtx()
@@ -23,7 +35,7 @@ export async function getActiveLoans() {
 
   const result = await payload.find({
     collection: 'loans',
-    where: { status: { equals: 'approved' } },
+    where: { status: { in: ['accepted', 'picked_up'] } },
     sort: '-createdAt',
     depth: 2,
     overrideAccess: false,
@@ -33,12 +45,19 @@ export async function getActiveLoans() {
   return result.docs
 }
 
+// Overdue is derived, not stored (#19): a picked-up loan is overdue once its
+// `dueDate` passes. Refused/returned loans can never be overdue.
 export async function getOverdueLoans() {
   const { payload, user } = await getAdminCtx()
 
   const result = await payload.find({
     collection: 'loans',
-    where: { status: { equals: 'overdue' } },
+    where: {
+      and: [
+        { status: { in: ['accepted', 'picked_up'] } },
+        { dueDate: { less_than: new Date().toISOString() } },
+      ],
+    },
     sort: '-createdAt',
     depth: 2,
     overrideAccess: false,
@@ -49,72 +68,24 @@ export async function getOverdueLoans() {
 }
 
 export async function approveLoan(loanId: number) {
-  const { payload, user } = await getAdminCtx()
-
-  await payload.update({
-    collection: 'loans',
-    id: loanId,
-    data: { status: 'approved' },
-    overrideAccess: false,
-    user,
-  })
-
-  revalidatePath('/admin')
-  revalidatePath('/admin/collections/loans')
+  const result = await acceptLoan(loanId)
+  if (!result.success) return { ok: false, error: result.message }
+  revalidateAdminLoans()
   return { ok: true }
 }
 
-export async function rejectLoan(loanId: number) {
-  const { payload, user } = await getAdminCtx()
-
-  await payload.delete({
-    collection: 'loans',
-    id: loanId,
-    overrideAccess: false,
-    user,
-  })
-
-  revalidatePath('/admin')
-  revalidatePath('/admin/collections/loans')
+export async function rejectLoan(loanId: number, reason?: string) {
+  const result = await refuseLoan(loanId, reason || 'رفض الطلب من قبل الإدارة')
+  if (!result.success) return { ok: false, error: result.message }
+  revalidateAdminLoans()
   return { ok: true }
 }
 
+// The `loans` afterChange hook releases the copy and promotes the waitlist
+// head inside the same transaction; this wrapper only owns the transition.
 export async function markLoanReturned(loanId: number) {
-  const { payload, user } = await getAdminCtx()
-
-  const loan = await payload.findByID({
-    collection: 'loans',
-    id: loanId,
-    depth: 1,
-    overrideAccess: false,
-    user,
-  })
-
-  await payload.update({
-    collection: 'loans',
-    id: loanId,
-    data: {
-      status: 'returned',
-      returnDate: new Date().toISOString(),
-    },
-    overrideAccess: false,
-    user,
-  })
-
-  const book = loan.book as { id?: number; availableBooks?: number } | undefined
-  if (book?.id) {
-    await payload.update({
-      collection: 'books',
-      id: book.id,
-      data: {
-        availableBooks: (book.availableBooks || 0) + 1,
-      },
-      overrideAccess: false,
-      user,
-    })
-  }
-
-  revalidatePath('/admin')
-  revalidatePath('/admin/collections/loans')
+  const result = await libraryMarkLoanReturned(loanId)
+  if (!result.success) return { ok: false, error: result.message }
+  revalidateAdminLoans()
   return { ok: true }
 }

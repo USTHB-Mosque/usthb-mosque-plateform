@@ -9,4 +9,3 @@ export * from './server/account'
 export * from './server/create-first-user'
 
 export { bulkSoftDeleteBooks, deleteBook, softDeleteBook } from './server/books'
-export { requestExtension } from './server/extensions'

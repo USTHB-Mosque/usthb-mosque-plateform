@@ -27,21 +27,21 @@ export async function getAdminDashboardStats() {
 
     // Pending extension requests
     payload.find({
-      collection: 'loans',
-      where: { 'extensionRequest.status': { equals: 'pending' } },
+      collection: 'loan-extensions',
+      where: { status: { equals: 'pending' } },
       depth: 2,
       limit: 50,
-      sort: '-extensionRequest.requestedAt',
+      sort: '-createdAt',
       overrideAccess: false,
       user,
     }),
 
-    // Severe overdue (dueDate more than 7 days ago)
+    // Severe overdue (dueDate more than 7 days ago; overdue is derived)
     payload.find({
       collection: 'loans',
       where: {
         and: [
-          { status: { equals: 'overdue' } },
+          { status: { in: ['accepted', 'picked_up'] } },
           { dueDate: { less_than: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() } },
         ],
       },
@@ -60,12 +60,12 @@ export async function getAdminDashboardStats() {
       user,
     }),
 
-    // Upcoming book returns (approved loans, dueDate in future, sorted by dueDate)
+    // Upcoming book returns (physical copies out, dueDate in the future)
     payload.find({
       collection: 'loans',
       where: {
         and: [
-          { status: { equals: 'approved' } },
+          { status: { in: ['accepted', 'picked_up'] } },
           { dueDate: { greater_than: new Date().toISOString() } },
         ],
       },

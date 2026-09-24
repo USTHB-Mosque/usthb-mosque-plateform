@@ -18,7 +18,7 @@ export async function getAdminLibraryStats() {
     payload.find({
       collection: 'loans',
       where: {
-        or: [{ status: { equals: 'approved' } }, { status: { equals: 'overdue' } }],
+        status: { in: ['accepted', 'picked_up'] },
       },
       depth: 0,
       limit: 0,
