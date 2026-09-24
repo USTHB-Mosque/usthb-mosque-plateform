@@ -12,6 +12,7 @@ import { Badge } from '@/shared/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -268,28 +269,33 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
                       <span className="sr-only">فتح قائمة الإجراءات</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
-                      <DropdownMenuLabel>المستخدم</DropdownMenuLabel>
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/admin-panel/users/${user.id}`)}
-                      >
-                        <Eye className="size-4" />
-                        تفاصيل المستخدم
-                      </DropdownMenuItem>
-                      {status === 'pending_verification' ? (
-                        <DropdownMenuItem onClick={() => handleApprove(user.id)} disabled={pending}>
-                          <UserCheck className="size-4" />
-                          قبول المستخدم
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>المستخدم</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/admin-panel/users/${user.id}`)}
+                        >
+                          <Eye className="size-4" />
+                          تفاصيل المستخدم
                         </DropdownMenuItem>
-                      ) : null}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => handleSoftDelete(user.id)}
-                        disabled={pending}
-                      >
-                        <Trash2 className="size-4" />
-                        حذف
-                      </DropdownMenuItem>
+                        {status === 'pending_verification' ? (
+                          <DropdownMenuItem
+                            onClick={() => handleApprove(user.id)}
+                            disabled={pending}
+                          >
+                            <UserCheck className="size-4" />
+                            قبول المستخدم
+                          </DropdownMenuItem>
+                        ) : null}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleSoftDelete(user.id)}
+                          disabled={pending}
+                        >
+                          <Trash2 className="size-4" />
+                          حذف
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

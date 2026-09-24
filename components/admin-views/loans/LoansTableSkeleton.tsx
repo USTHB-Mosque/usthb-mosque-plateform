@@ -10,6 +10,9 @@ const LoansTableSkeleton: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10">
+              <Skeleton className="h-4 w-4 rounded" />
+            </TableHead>
             <TableHead>
               <Skeleton className="h-3 w-20" />
             </TableHead>
@@ -39,6 +42,9 @@ const LoansTableSkeleton: React.FC = () => {
         <TableBody>
           {Array.from({ length: 8 }).map((_, rowIndex) => (
             <TableRow key={rowIndex}>
+              <TableCell>
+                <Skeleton className="h-4 w-4 rounded" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-36" />
               </TableCell>

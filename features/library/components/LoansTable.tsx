@@ -13,6 +13,7 @@ import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -335,30 +336,32 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                             <span className="sr-only">فتح قائمة الإجراءات</span>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
-                            <DropdownMenuLabel>الإعارة</DropdownMenuLabel>
-                            <DropdownMenuItem
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation()
-                                openLoanDetails(loan)
-                              }}
-                            >
-                              <FileText className="size-4" />
-                              تفاصيل الإعارة
-                            </DropdownMenuItem>
-                            {getEffectiveLoanStatus(loan) === 'picked_up' && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={(e: React.MouseEvent) => {
-                                    e.stopPropagation()
-                                    setExtensionLoan(loan)
-                                    setExtensionOpen(true)
-                                  }}
-                                >
-                                  طلب تمديد الإعارة
-                                </DropdownMenuItem>
-                              </>
-                            )}
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>الإعارة</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={(e: React.MouseEvent) => {
+                                  e.stopPropagation()
+                                  openLoanDetails(loan)
+                                }}
+                              >
+                                <FileText className="size-4" />
+                                تفاصيل الإعارة
+                              </DropdownMenuItem>
+                              {getEffectiveLoanStatus(loan) === 'picked_up' && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={(e: React.MouseEvent) => {
+                                      e.stopPropagation()
+                                      setExtensionLoan(loan)
+                                      setExtensionOpen(true)
+                                    }}
+                                  >
+                                    طلب تمديد الإعارة
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuGroup>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

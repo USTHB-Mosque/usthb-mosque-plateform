@@ -22,6 +22,7 @@ import { Badge } from '@/shared/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -346,7 +347,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
                       {showBulkDelete ? (
-                        <>
+                        <DropdownMenuGroup>
                           <DropdownMenuLabel>الكتاب</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => onEdit?.(book)}>
                             <Pencil className="size-4" />
@@ -372,9 +373,9 @@ const BooksTable: React.FC<BooksTableProps> = ({
                             <Trash2 className="size-4" />
                             حذف
                           </DropdownMenuItem>
-                        </>
+                        </DropdownMenuGroup>
                       ) : (
-                        <>
+                        <DropdownMenuGroup>
                           <DropdownMenuLabel>الكتاب</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => goToDetails(book.id)}>
                             <Eye className="size-4" />
@@ -392,7 +393,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
                               </DropdownMenuItem>
                             </>
                           ) : null}
-                        </>
+                        </DropdownMenuGroup>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>

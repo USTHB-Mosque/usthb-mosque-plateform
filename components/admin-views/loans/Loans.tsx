@@ -5,6 +5,8 @@ import { BookOpen, Plus, Hourglass, CalendarClock, AlertTriangle } from 'lucide-
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Button } from '@/shared/ui/button'
 import ListingRenderer from '@/shared/listing/ListingRenderer'
+import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
+import { useSearch } from '@/shared/hooks/use-search'
 import EmptyData from '@/shared/common/EmptyData'
 import ErrorData from '@/shared/common/ErrorData'
 import { Pagination } from '@/shared/common/Pagination'
@@ -38,18 +40,33 @@ const LOAN_TABS: Array<{ value: LoanStatus; label: string }> = [
   { value: 'refused', label: 'مرفوض' },
 ]
 
+const OVERDUE_FILTER_OPTIONS = [
+  { value: '', label: 'الكل' },
+  { value: 'overdue', label: 'متأخر' },
+  { value: 'not-overdue', label: 'غير متأخر' },
+]
+
 const PAGE_SIZE = 20
 
 const Loans: React.FC<LoansPageProps> = ({ stats }) => {
-  const [status, setStatus] = useState<LoanStatus>('pending')
-  const [page, setPage] = useState(1)
   const [addLoanOpen, setAddLoanOpen] = useState(false)
+
+  const { searchValues, values, setValue } = useSearch({
+    initialValues: {
+      status: 'pending' as LoanStatus,
+      page: 1,
+      limit: PAGE_SIZE,
+      search: '',
+      overdue: undefined as 'overdue' | 'not-overdue' | undefined,
+    },
+    scope: 'admin-loans',
+  })
 
   const {
     data: { docs: loans = [], totalPages = 1, totalDocs = 0 } = {},
     isLoading,
     isError,
-  } = useGetAdminLoansQuery({ status, page, limit: PAGE_SIZE })
+  } = useGetAdminLoansQuery(searchValues)
 
   return (
     <div className="flex flex-col gap-6">
@@ -77,10 +94,10 @@ const Loans: React.FC<LoansPageProps> = ({ stats }) => {
       {/* Tabs + Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Tabs
-          value={status}
+          value={values.status}
           onValueChange={(v) => {
-            setStatus(v as LoanStatus)
-            setPage(1)
+            setValue('status', v as LoanStatus)
+            setValue('page', 1)
           }}
         >
           <TabsList>
@@ -101,6 +118,33 @@ const Loans: React.FC<LoansPageProps> = ({ stats }) => {
         </Button>
       </div>
 
+      {/* Toolbar */}
+      <div>
+        <ListingToolbar
+          onApplyFilters={() => setValue('page', 1)}
+          quickFilterSections={[
+            {
+              id: 'overdue-quick',
+              multiple: false,
+              options: OVERDUE_FILTER_OPTIONS,
+              value: values.overdue || '',
+              onChange: (v) =>
+                setValue('overdue', (v as 'overdue' | 'not-overdue' | '') || undefined),
+            },
+          ]}
+          searchProps={{
+            enabled: true,
+            value: searchValues.search || '',
+            onChange: (value) => {
+              setValue('search', value)
+              setValue('page', 1)
+            },
+            placeholder: 'المستفيد، الكتاب، الرمز ...',
+          }}
+          filterButtonClassName="bg-card"
+        />
+      </div>
+
       {/* Content */}
       <ListingRenderer
         isEmpty={totalDocs === 0}
@@ -111,11 +155,16 @@ const Loans: React.FC<LoansPageProps> = ({ stats }) => {
         loader={<LoansTableSkeleton />}
       >
         <div className="overflow-hidden rounded-lg border border-border bg-card">
-          <LoansTable loans={loans} activeStatus={status} />
+          <LoansTable key={values.status} loans={loans} activeStatus={values.status} />
         </div>
         {totalPages > 1 ? (
           <div className="mt-6 flex justify-center">
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} dir="rtl" />
+            <Pagination
+              page={values.page}
+              totalPages={totalPages}
+              onPageChange={(p) => setValue('page', p)}
+              dir="rtl"
+            />
           </div>
         ) : null}
       </ListingRenderer>

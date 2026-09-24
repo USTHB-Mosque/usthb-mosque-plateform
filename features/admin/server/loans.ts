@@ -5,10 +5,14 @@ import { getAdminCtx } from './ctx'
 import {
   acceptLoan,
   acceptLoanLogic,
+  markLoanPickedUp as libraryMarkLoanPickedUp,
   markLoanReturned as libraryMarkLoanReturned,
   refuseLoan,
 } from '@/features/library'
-import type { Loan } from '@/payload-types'
+import { createNotification } from '@/features/notifications'
+import { formatArabicDate } from '@/shared/lib/dates'
+import type { Payload, Where } from 'payload'
+import type { Book, Loan, User } from '@/payload-types'
 import type { LoanStatus } from '@/utils/constants/loans'
 
 const revalidateAdminLoans = () => {
@@ -74,19 +78,90 @@ export interface LoansPageResult {
   totalDocs: number
 }
 
+export interface AdminLoansQuery {
+  page?: number
+  limit?: number
+  search?: string
+  overdue?: 'overdue' | 'not-overdue'
+}
+
+// Payload cannot `contains` through relationship fields, so a free-text search
+// first resolves matching users/books to ids, then filters loans on those ids.
+async function resolveSearchMatches(
+  payload: Payload,
+  user: User,
+  search: string,
+): Promise<{ userIds: number[]; bookIds: number[] }> {
+  const [users, books] = await Promise.all([
+    payload.find({
+      collection: 'users',
+      where: {
+        or: [
+          { email: { contains: search } },
+          { fullName: { contains: search } },
+          { firstName: { contains: search } },
+          { lastName: { contains: search } },
+        ],
+      },
+      limit: 50,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    }),
+    payload.find({
+      collection: 'books',
+      where: {
+        or: [
+          { title: { contains: search } },
+          { code: { contains: search } },
+          { author: { contains: search } },
+        ],
+      },
+      limit: 50,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    }),
+  ])
+
+  return {
+    userIds: users.docs.map((doc) => doc.id),
+    bookIds: books.docs.map((doc) => doc.id),
+  }
+}
+
 export async function getLoansByStatus(
   status: LoanStatus,
-  page = 1,
-  limit = 20,
+  params: AdminLoansQuery = {},
 ): Promise<LoansPageResult> {
   const { payload, user } = await getAdminCtx()
 
+  const andFilters: Where[] = [{ status: { equals: status } }]
+
+  if (params.overdue) {
+    andFilters.push(
+      params.overdue === 'overdue'
+        ? { dueDate: { less_than: new Date().toISOString() } }
+        : { dueDate: { greater_than: new Date().toISOString() } },
+    )
+  }
+
+  if (params.search) {
+    const { userIds, bookIds } = await resolveSearchMatches(payload, user, params.search)
+    const or: Where[] = []
+    // `id: { in: [...] }` is ignored by the Postgres adapter on the primary
+    // key, so borrower matches filter on the relationship value path instead.
+    if (userIds.length > 0) or.push({ 'user.id': { in: userIds } })
+    if (bookIds.length > 0) or.push({ book: { in: bookIds } })
+    andFilters.push(or.length > 0 ? { or } : { id: { equals: -1 } })
+  }
+
   const result = await payload.find({
     collection: 'loans',
-    where: { status: { equals: status } },
+    where: { and: andFilters },
     sort: '-createdAt',
-    page,
-    limit,
+    page: params.page || 1,
+    limit: params.limit || 20,
     depth: 2,
     overrideAccess: false,
     user,
@@ -99,7 +174,11 @@ export async function getLoansByStatus(
   }
 }
 
-export async function addLoan(bookId: number, userId: number) {
+export async function addLoan(
+  bookId: number,
+  userId: number,
+  opts?: { pickupDate?: string; dueDate?: string },
+) {
   const ctx = await getAdminCtx()
 
   let book
@@ -125,6 +204,8 @@ export async function addLoan(bookId: number, userId: number) {
       user: Number(userId),
       status: 'pending',
       loanDate: new Date().toISOString(),
+      ...(opts?.pickupDate ? { pickupDate: opts.pickupDate } : {}),
+      ...(opts?.dueDate ? { dueDate: opts.dueDate } : {}),
     },
     req: ctx.req,
     overrideAccess: false,
@@ -168,5 +249,63 @@ export async function markLoanReturned(loanId: number) {
   const result = await libraryMarkLoanReturned(loanId)
   if (!result.success) return { ok: false, error: result.message }
   revalidateAdminLoans()
+  return { ok: true }
+}
+
+export async function markLoanPickedUp(loanId: number) {
+  const result = await libraryMarkLoanPickedUp(loanId)
+  if (!result.success) return { ok: false, error: result.message }
+  revalidateAdminLoans()
+  return { ok: true }
+}
+
+/**
+ * Sends an in-app notification and email reminder tailored to where the loan
+ * sits: remind an accepted borrower to pick up, or a borrower holding the
+ * book to return it before/after the due date.
+ */
+export async function sendLoanReminder(loanId: number) {
+  const ctx = await getAdminCtx()
+
+  let loan
+  try {
+    loan = (await ctx.payload.findByID({
+      collection: 'loans',
+      id: Number(loanId),
+      depth: 1,
+      req: ctx.req,
+      overrideAccess: false,
+    })) as Loan | undefined
+  } catch {
+    return { ok: false, error: 'الإعارة غير موجودة' }
+  }
+  if (!loan) return { ok: false, error: 'الإعارة غير موجودة' }
+
+  const book = (typeof loan.book === 'object' ? loan.book : undefined) as Book | undefined
+  const bookTitle = book?.title ?? ''
+
+  let title: string
+  let message: string
+  if (loan.status === 'accepted') {
+    title = 'تذكير باستلام الكتاب'
+    message = `تم تذكيرك باستلام كتاب «${bookTitle}». رمز الاستلام: ${loan.pickupCode ?? ''}. يرجى التوجه للمكتبة قبل انتهاء مدة الاستلام.`
+  } else if (loan.status === 'picked_up') {
+    title = 'تذكير بإرجاع الكتاب'
+    const due = loan.dueDate ? formatArabicDate(loan.dueDate) : ''
+    message = `تم تذكيرك بإرجاع كتاب «${bookTitle}» في الموعد المحدد${due ? ` (${due})` : ''}.`
+  } else {
+    return { ok: false, error: 'لا يمكن إرسال تذكير لهذه الحالة' }
+  }
+
+  await createNotification({
+    req: ctx.req,
+    user: (typeof loan.user === 'object' ? loan.user.id : loan.user) as number,
+    type: 'loan',
+    title,
+    message,
+    link: '/user/my-loans',
+    email: true,
+  })
+
   return { ok: true }
 }

@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -146,10 +147,12 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
         ) : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>الإشعارات</span>
-          {unreadBadge}
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex items-center justify-between">
+            <span>الإشعارات</span>
+            {unreadBadge}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {state.notifications.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-grey-500">لا توجد إشعارات</p>

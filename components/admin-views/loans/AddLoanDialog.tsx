@@ -6,12 +6,14 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Loader2, Plus, Search } from 'lucide-react'
+import { addDays, format } from 'date-fns'
 import { addLoan } from '@/features/admin/server/loans'
 import { useGetUsersQuery } from '@/features/users/api/users.queries'
 import { useGetBooksQuery } from '@/features/library/api/books.queries'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'
+import { DEFAULT_LOAN_DURATION_DAYS, MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
 import type { BookSearchParams } from '@/features/library/types'
 
 interface AddLoanDialogProps {
@@ -124,6 +126,27 @@ function SearchablePicker({
 const USER_LIMIT = 10
 const BOOK_LIMIT = 10
 
+const DUE_PRESETS = [
+  { value: 7, label: '7 أيام' },
+  { value: DEFAULT_LOAN_DURATION_DAYS, label: `${DEFAULT_LOAN_DURATION_DAYS} أيام` },
+  { value: MAX_EXTENSION_DAYS, label: `${MAX_EXTENSION_DAYS} يوم` },
+  { value: 'custom', label: 'تاريخ محدد' },
+] as const
+
+type DuePreset = (typeof DUE_PRESETS)[number]['value'] | 'custom'
+
+function toDateInput(date: Date): string {
+  return format(date, 'yyyy-MM-dd')
+}
+
+function todayInput(): string {
+  return toDateInput(new Date())
+}
+
+function dateFromInput(input: string): Date {
+  return new Date(`${input}T12:00:00`)
+}
+
 const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -132,6 +155,9 @@ const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => 
   const [bookId, setBookId] = useState<number | null>(null)
   const [userTerm, setUserTerm] = useState('')
   const [bookTerm, setBookTerm] = useState('')
+  const [pickupDate, setPickupDate] = useState(todayInput)
+  const [duePreset, setDuePreset] = useState<DuePreset>(DEFAULT_LOAN_DURATION_DAYS)
+  const [customDue, setCustomDue] = useState('')
 
   const { data: usersData, isFetching: usersLoading } = useGetUsersQuery({
     page: 1,
@@ -147,11 +173,19 @@ const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => 
   const users = useMemo(() => (usersData?.docs as PickerOption[]) ?? [], [usersData])
   const books = useMemo(() => (booksData?.docs as PickerOption[]) ?? [], [booksData])
 
+  const effectiveDueDate = useMemo(() => {
+    if (duePreset === 'custom') return customDue
+    return toDateInput(addDays(dateFromInput(pickupDate), duePreset))
+  }, [duePreset, pickupDate, customDue])
+
   const resetForm = () => {
     setUserId(null)
     setBookId(null)
     setUserTerm('')
     setBookTerm('')
+    setPickupDate(todayInput())
+    setDuePreset(DEFAULT_LOAN_DURATION_DAYS)
+    setCustomDue('')
   }
 
   const handleClose = () => {
@@ -167,9 +201,22 @@ const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => 
       toast.error('يرجى اختيار المستفيد والكتاب')
       return
     }
+    if (duePreset === 'custom') {
+      if (!customDue) {
+        toast.error('يرجى تحديد تاريخ الإرجاع')
+        return
+      }
+      if (dateFromInput(customDue) < dateFromInput(pickupDate)) {
+        toast.error('تاريخ الإرجاع يجب أن يكون بعد تاريخ الأخذ')
+        return
+      }
+    }
 
     startTransition(async () => {
-      const result = await addLoan(bookId, userId)
+      const result = await addLoan(bookId, userId, {
+        pickupDate: dateFromInput(pickupDate).toISOString(),
+        dueDate: dateFromInput(effectiveDueDate).toISOString(),
+      })
       if (result.ok) {
         toast.success('تمت إضافة الإعارة بنجاح')
         handleClose()
@@ -241,6 +288,62 @@ const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => 
                   return (b.availableBooks ?? 0) <= 0
                 }}
               />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="loan-pickup-date">تاريخ أخذ الكتاب *</Label>
+                <Input
+                  id="loan-pickup-date"
+                  type="date"
+                  dir="ltr"
+                  value={pickupDate}
+                  min={todayInput()}
+                  onChange={(e) => {
+                    setPickupDate(e.target.value || todayInput())
+                    if (duePreset !== 'custom' && customDue && e.target.value) {
+                      const newDue = toDateInput(
+                        addDays(dateFromInput(e.target.value), duePreset as number),
+                      )
+                      if (dateFromInput(customDue) < dateFromInput(newDue)) setCustomDue(newDue)
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>تاريخ الإرجاع *</Label>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {DUE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setDuePreset(preset.value)}
+                      className={cn(
+                        'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                        duePreset === preset.value
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-card text-muted-foreground hover:border-primary-200',
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                {duePreset === 'custom' ? (
+                  <Input
+                    type="date"
+                    dir="ltr"
+                    value={customDue}
+                    min={pickupDate}
+                    placeholder="تاريخ الإرجاع"
+                    onChange={(e) => setCustomDue(e.target.value)}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    تاريخ الإرجاع: <span className="font-medium">{effectiveDueDate || '—'}</span>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
