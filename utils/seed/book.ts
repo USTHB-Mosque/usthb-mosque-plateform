@@ -512,13 +512,17 @@ export const seedBooks = async () => {
   const medias = await payload.find({ collection: 'media', limit: 20 })
   const mediaIds = medias.docs.map((m) => m.id)
 
-  for (const bookData of booksData) {
+  for (const [index, bookData] of booksData.entries()) {
     const imageId = mediaIds[Math.floor(Math.random() * mediaIds.length)] || mediaIds[0]
 
     await payload.create({
       collection: 'books',
       data: {
         title: bookData.title,
+        // Shelf code (Figma: الرمز) — pickup codes are derived from it.
+        code: `مك-${String(index + 1).padStart(2, '0')}`,
+        // Per-book loan duration; falls back to the Settings global default.
+        loanDurationDays: 14,
         author: bookData.author,
         type: bookData.type,
         category: bookData.category,

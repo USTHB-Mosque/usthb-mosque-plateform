@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
+import { toast } from 'sonner'
 import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Pagination } from '@/shared/common/Pagination'
@@ -26,6 +27,7 @@ import { getDueUrgency, getEffectiveLoanStatus, statusConfig } from './LoanStatu
 import ExtensionDialog from './ExtensionDialog'
 import LoanDetailsDialog from './LoanDetailsDialog'
 import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
+import { requestLoanExtension } from '@/features/library/server/loan-extensions'
 
 type LoansFilters = {
   period: 'current' | 'past'
@@ -43,13 +45,16 @@ const PAGE_SIZE = 8
 const statusOptions = [
   { value: '', label: 'الكل' },
   { value: 'pending', label: 'قيد الانتظار' },
-  { value: 'approved', label: 'موافق عليه' },
+  { value: 'accepted', label: 'مقبول' },
+  { value: 'picked_up', label: 'تم الأخذ' },
   { value: 'overdue', label: 'متأخر' },
-  { value: 'returned', label: 'مُعاد' },
+  { value: 'returned', label: 'تم الإرجاع' },
+  { value: 'refused', label: 'مرفوض' },
 ]
 
 const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
   const router = useRouter()
+  const [isRequestingExtension, startExtensionRequest] = useTransition()
   const [extensionLoan, setExtensionLoan] = useState<Loan | null>(null)
   const [extensionOpen, setExtensionOpen] = useState(false)
   const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
@@ -341,16 +346,20 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                             >
                               تفاصيل الإعارة
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation()
-                                setExtensionLoan(loan)
-                                setExtensionOpen(true)
-                              }}
-                            >
-                              طلب تمديد الإعارة
-                            </DropdownMenuItem>
+                            {getEffectiveLoanStatus(loan) === 'picked_up' && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={(e: React.MouseEvent) => {
+                                    e.stopPropagation()
+                                    setExtensionLoan(loan)
+                                    setExtensionOpen(true)
+                                  }}
+                                >
+                                  طلب تمديد الإعارة
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -387,10 +396,21 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
       <ExtensionDialog
         open={extensionOpen}
         onOpenChange={setExtensionOpen}
+        isLoading={isRequestingExtension}
         onConfirm={(days) => {
-          console.log('Extension requested:', { loanId: extensionLoan?.id, days })
-          setExtensionOpen(false)
-          setExtensionLoan(null)
+          if (!extensionLoan) return
+          const loanId = extensionLoan.id
+          startExtensionRequest(async () => {
+            const result = await requestLoanExtension(loanId, days)
+            if (result.success) {
+              toast.success(result.message)
+              setExtensionOpen(false)
+              setExtensionLoan(null)
+              router.refresh()
+            } else {
+              toast.error(result.message)
+            }
+          })
         }}
         bookTitle={(extensionLoan?.book as Book | undefined)?.title}
       />

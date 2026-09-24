@@ -1,10 +1,15 @@
 'use server'
 
 import { getPayloadWithUser } from '@/shared/lib/auth'
+import { syncOverdueLoans } from '@/features/library'
 
 export async function getProfileDashboardData() {
   const ctx = await getPayloadWithUser()
   if (!ctx) return null
+
+  // Lazy overdue check on read (#19): stamp + notify exactly once before the
+  // loans are fetched, so the member sees fresh derived overdue states.
+  await syncOverdueLoans(ctx)
 
   const fullUser = await ctx.payload.findByID({
     collection: 'users',

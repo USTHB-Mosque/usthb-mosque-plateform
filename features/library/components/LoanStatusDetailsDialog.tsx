@@ -14,7 +14,7 @@ import { ArrowRightToLine, Clock, XCircle, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import type { Loan } from '@/payload-types'
-import LoanStatusBadge from './LoanStatusBadge'
+import LoanStatusBadge, { getEffectiveLoanStatus } from './LoanStatusBadge'
 import { toast } from 'sonner'
 
 interface LoanStatusDetailsDialogProps {
@@ -96,7 +96,7 @@ const LoanStatusDetailsDialog: React.FC<LoanStatusDetailsDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>
-          {onCancel && loan?.status !== 'returned' && loan?.status !== 'overdue' && (
+          {onCancel && (!loan || getEffectiveLoanStatus(loan) !== 'returned') && (
             <Button
               variant="destructive"
               onClick={handleCancel}

@@ -18,7 +18,10 @@ import {
   BookFavorite,
   ArticleFavorite,
   Notification,
+  WaitlistEntry,
+  LoanExtension,
 } from './collections'
+import { Settings } from './globals'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,7 +57,10 @@ export default buildConfig({
     BookFavorite,
     ArticleFavorite,
     Notification,
+    WaitlistEntry,
+    LoanExtension,
   ],
+  globals: [Settings],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

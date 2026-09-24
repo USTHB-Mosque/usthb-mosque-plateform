@@ -105,6 +105,24 @@ describe('register', () => {
     expect(cookie?.value).toBeTruthy()
   })
 
+  it('stores the academic profile the form collects (#19)', async () => {
+    const { user, error } = await register({
+      email: 'speciality@usthb.dz',
+      password: 'Str0ngPass!123',
+      fullName: 'Speciality Student',
+      faculty: 'Alger',
+      speciality: 'Génie Civil',
+      studyYear: '3',
+      consentGiven: true,
+      verificationDocument: await pngFile(),
+    })
+
+    expect(error).toBeUndefined()
+    expect(user?.faculty).toBe('Alger')
+    expect(user?.speciality).toBe('Génie Civil')
+    expect(user?.studyYear).toBe('3')
+  })
+
   it('rejects registration without consent', async () => {
     const { user, error } = await register({
       email: 'no-consent@usthb.dz',

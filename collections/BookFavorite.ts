@@ -55,7 +55,9 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
-          overrideAccess: false,
+          // Internal invariant check: who may create is still gated by the
+          // collection's create access, so this read bypasses row scoping.
+          overrideAccess: true,
         })
         if (dup.totalDocs > 0) {
           throw new APIError('هذا الكتاب موجود بالفعل في المفضلة', 400)

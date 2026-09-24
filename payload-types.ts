@@ -78,6 +78,8 @@ export interface Config {
     'book-favorites': BookFavorite;
     'article-favorites': ArticleFavorite;
     notifications: Notification;
+    'waitlist-entries': WaitlistEntry;
+    'loan-extensions': LoanExtension;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -96,6 +98,8 @@ export interface Config {
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'waitlist-entries': WaitlistEntriesSelect<false> | WaitlistEntriesSelect<true>;
+    'loan-extensions': LoanExtensionsSelect<false> | LoanExtensionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -105,8 +109,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -146,7 +154,10 @@ export interface User {
   lastName?: string | null;
   phone?: string | null;
   faculty?: string | null;
+  speciality?: string | null;
   studyYear?: ('1' | '2' | '3' | '4' | '5') | null;
+  cardId?: string | null;
+  situation?: ('student' | 'doctoral' | 'teacher' | 'staff') | null;
   sub?: string | null;
   role: 'admin' | 'user';
   profilePicture?: (number | null) | Media;
@@ -228,6 +239,8 @@ export interface Media {
 export interface Book {
   id: number;
   title: string;
+  code?: string | null;
+  loanDurationDays?: number | null;
   author: string;
   type:
     | 'aqidah'
@@ -384,11 +397,15 @@ export interface Loan {
   id: number;
   book: number | Book;
   user: number | User;
-  status?: ('pending' | 'approved' | 'returned' | 'overdue') | null;
+  status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused') | null;
   loanDate: string;
-  dueDate: string;
+  dueDate?: string | null;
   pickupDate?: string | null;
+  pickupHour?: string | null;
+  pickupCode?: string | null;
+  refusalReason?: string | null;
   returnDate?: string | null;
+  overdueNotified?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -452,6 +469,35 @@ export interface Notification {
   link?: string | null;
   seen?: boolean | null;
   emailSent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waitlist-entries".
+ */
+export interface WaitlistEntry {
+  id: number;
+  book: number | Book;
+  user: number | User;
+  position: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loan-extensions".
+ */
+export interface LoanExtension {
+  id: number;
+  loan: number | Loan;
+  user: number | User;
+  status?: ('pending' | 'approved' | 'refused') | null;
+  days: number;
+  reason?: string | null;
+  adminResponse?: string | null;
+  originalDueDate?: string | null;
+  newDueDate?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -522,6 +568,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notifications';
         value: number | Notification;
+      } | null)
+    | ({
+        relationTo: 'waitlist-entries';
+        value: number | WaitlistEntry;
+      } | null)
+    | ({
+        relationTo: 'loan-extensions';
+        value: number | LoanExtension;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -575,7 +629,10 @@ export interface UsersSelect<T extends boolean = true> {
   lastName?: T;
   phone?: T;
   faculty?: T;
+  speciality?: T;
   studyYear?: T;
+  cardId?: T;
+  situation?: T;
   sub?: T;
   role?: T;
   profilePicture?: T;
@@ -646,6 +703,8 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface BooksSelect<T extends boolean = true> {
   title?: T;
+  code?: T;
+  loanDurationDays?: T;
   author?: T;
   type?: T;
   category?: T;
@@ -748,7 +807,11 @@ export interface LoansSelect<T extends boolean = true> {
   loanDate?: T;
   dueDate?: T;
   pickupDate?: T;
+  pickupHour?: T;
+  pickupCode?: T;
+  refusalReason?: T;
   returnDate?: T;
+  overdueNotified?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -812,6 +875,33 @@ export interface NotificationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waitlist-entries_select".
+ */
+export interface WaitlistEntriesSelect<T extends boolean = true> {
+  book?: T;
+  user?: T;
+  position?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loan-extensions_select".
+ */
+export interface LoanExtensionsSelect<T extends boolean = true> {
+  loan?: T;
+  user?: T;
+  status?: T;
+  days?: T;
+  reason?: T;
+  adminResponse?: T;
+  originalDueDate?: T;
+  newDueDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -849,6 +939,28 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  defaultLoanDurationDays?: number | null;
+  borrowLimit?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  defaultLoanDurationDays?: T;
+  borrowLimit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

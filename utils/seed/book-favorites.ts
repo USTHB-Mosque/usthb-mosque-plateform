@@ -25,6 +25,9 @@ export const createBookFavorite = async (bookIds: number[], userIds: number[]) =
           user: userId,
           book: bookId,
         },
+        // Seed-side system write: the collection's create access requires a
+        // signed-in user, which a seeder has none of.
+        overrideAccess: true,
       })
 
       return favorite

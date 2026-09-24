@@ -19,6 +19,18 @@ export const Book: CollectionConfig = {
       required: true,
     },
     {
+      // Shelf code (Figma: الرمز); pickup codes are derived from it.
+      name: 'code',
+      type: 'text',
+    },
+    {
+      // Per-book loan duration (Figma: مدة الاعارة بالأيام); falls back to the
+      // Settings global default when unset.
+      name: 'loanDurationDays',
+      type: 'number',
+      min: 1,
+    },
+    {
       name: 'author',
       type: 'text',
       required: true,

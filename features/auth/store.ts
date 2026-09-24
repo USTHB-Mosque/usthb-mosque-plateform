@@ -9,6 +9,7 @@ interface AuthFormState {
   phoneNumber: string
   state: string
   speciality: string
+  studyYear: string
   schoolCertificate: File | null
   email: string
   password: string
@@ -26,6 +27,7 @@ const initialState = {
   phoneNumber: '',
   state: '',
   speciality: '',
+  studyYear: '',
   schoolCertificate: null as File | null,
   email: '',
   password: '',

@@ -7,6 +7,7 @@ import * as migration_20260922_092238_add_first_admin_created_action from './202
 import * as migration_20260922_095148_password_reset_email_config from './20260922_095148_password_reset_email_config'
 import * as migration_20260922_124852_reset_email_origin_config from './20260922_124852_reset_email_origin_config'
 import * as migration_20260923_112156_add_notifications_collection from './20260923_112156_add_notifications_collection'
+import * as migration_20260923_212106_loan_lifecycle_phase_1 from './20260923_212106_loan_lifecycle_phase_1'
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260923_112156_add_notifications_collection.up,
     down: migration_20260923_112156_add_notifications_collection.down,
     name: '20260923_112156_add_notifications_collection',
+  },
+  {
+    up: migration_20260923_212106_loan_lifecycle_phase_1.up,
+    down: migration_20260923_212106_loan_lifecycle_phase_1.down,
+    name: '20260923_212106_loan_lifecycle_phase_1',
   },
 ]
