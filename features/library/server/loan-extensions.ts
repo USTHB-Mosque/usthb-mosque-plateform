@@ -241,24 +241,22 @@ export async function decideLoanExtensionLogic(
   }
 }
 
-export const requestLoanExtension = (
+export async function requestLoanExtension(
   loanId: number | string,
   days: number,
   reason?: string,
-): Promise<LoanExtensionActionResult> =>
-  (async () => {
-    const ctx = await getPayloadWithUser()
-    if (!ctx) return { success: false, message: NOT_LOGGED_IN }
-    return requestLoanExtensionLogic(loanId, days, ctx, reason)
-  })()
+): Promise<LoanExtensionActionResult> {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { success: false, message: NOT_LOGGED_IN }
+  return requestLoanExtensionLogic(loanId, days, ctx, reason)
+}
 
-export const decideLoanExtension = (
+export async function decideLoanExtension(
   extensionId: number | string,
   decision: 'approved' | 'refused',
   adminResponse?: string,
-): Promise<LoanExtensionActionResult> =>
-  (async () => {
-    const ctx = await getPayloadWithUser({ allowAdmin: true })
-    if (!ctx) return { success: false, message: NOT_LOGGED_IN }
-    return decideLoanExtensionLogic(extensionId, decision, ctx, adminResponse)
-  })()
+): Promise<LoanExtensionActionResult> {
+  const ctx = await getPayloadWithUser({ allowAdmin: true })
+  if (!ctx) return { success: false, message: NOT_LOGGED_IN }
+  return decideLoanExtensionLogic(extensionId, decision, ctx, adminResponse)
+}

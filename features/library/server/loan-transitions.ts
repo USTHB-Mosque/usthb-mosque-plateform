@@ -219,14 +219,18 @@ async function withAdminCtx(
   return run(ctx)
 }
 
-export const acceptLoan = (loanId: number | string) =>
-  withAdminCtx((ctx) => acceptLoanLogic(loanId, ctx))
+export async function acceptLoan(loanId: number | string) {
+  return withAdminCtx((ctx) => acceptLoanLogic(loanId, ctx))
+}
 
-export const refuseLoan = (loanId: number | string, reason: string) =>
-  withAdminCtx((ctx) => refuseLoanLogic(loanId, reason, ctx))
+export async function refuseLoan(loanId: number | string, reason: string) {
+  return withAdminCtx((ctx) => refuseLoanLogic(loanId, reason, ctx))
+}
 
-export const markLoanPickedUp = (loanId: number | string) =>
-  withAdminCtx((ctx) => markLoanPickedUpLogic(loanId, ctx))
+export async function markLoanPickedUp(loanId: number | string) {
+  return withAdminCtx((ctx) => markLoanPickedUpLogic(loanId, ctx))
+}
 
-export const markLoanReturned = (loanId: number | string) =>
-  withAdminCtx((ctx) => markLoanReturnedLogic(loanId, ctx))
+export async function markLoanReturned(loanId: number | string) {
+  return withAdminCtx((ctx) => markLoanReturnedLogic(loanId, ctx))
+}

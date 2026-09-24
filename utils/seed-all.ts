@@ -54,6 +54,9 @@ async function seedAll() {
     console.log('✅ Activity Registrations seeded!\n')
 
     console.log('🎉 All seeding completed successfully!')
+    // Payload's DB pool and S3 client keep the event loop alive after the
+    // work is done, so exit explicitly like the failure path does.
+    process.exit(0)
   } catch (error) {
     console.error('❌ Seeding failed:', error)
     process.exit(1)
