@@ -81,19 +81,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     {
       label: 'طلبات الإعارة قيد الانتظار',
       value: stats.pendingLoans,
-      href: '/admin-panel/loans/pending',
+      href: '/admin-panel/loans',
       trend: '+145%',
     },
     {
       label: 'طلبات تمديد قيد الانتظار',
       value: stats.pendingExtensions,
-      href: '/admin-panel/loans/pending',
+      href: '/admin-panel/loans',
       trend: '+145%',
     },
     {
       label: 'عدد التأخيرات الشهرية في الإرجاع',
       value: stats.severeOverdue,
-      href: '/admin-panel/loans/overdue',
+      href: '/admin-panel/loans',
       trend: '+145%',
     },
     {
@@ -136,10 +136,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <section className="rounded-2xl border border-border p-4 sm:p-5 lg:col-span-2">
           <header className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-card-foreground">استلامات الكتب القادمة</h2>
-            <Link
-              href="/admin-panel/loans/active"
-              className="text-xs text-primary-300 hover:underline"
-            >
+            <Link href="/admin-panel/loans" className="text-xs text-primary-300 hover:underline">
               عرض الكل
             </Link>
           </header>
