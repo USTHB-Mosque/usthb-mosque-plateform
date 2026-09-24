@@ -4,7 +4,7 @@ import { getTestPayload, resetDatabase, boundReq } from '../setup-integration'
 import { createTestUser, ctxFor, loginToken } from '../lib/seed'
 import { createTestBook, createTestLoan } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
-import { SKIP_LOAN_LIFECYCLE } from '@/collections/Loan'
+import { SKIP_LOAN_LIFECYCLE } from '@/utils/constants/loans'
 
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'

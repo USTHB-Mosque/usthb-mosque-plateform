@@ -1,9 +1,7 @@
 'use server'
-import { getPayloadWithUser } from '@/shared/lib/auth'
-import type { Payload, PayloadRequest } from 'payload'
-import type { User } from '@/payload-types'
+import { getPayloadWithUser, type ActionCtx } from '@/shared/lib/auth'
 
-import { checkRequestGates } from './loan-gates'
+import { checkRequestGates } from '@/shared/lib/loan-gates'
 
 interface BorrowBookResult {
   success: boolean
@@ -19,7 +17,7 @@ interface BorrowBookResult {
  */
 export async function borrowBookLogic(
   bookId: string,
-  ctx: { payload: Payload; user: User; req: PayloadRequest },
+  ctx: ActionCtx,
   options?: { pickupDate?: string },
 ): Promise<BorrowBookResult> {
   const { payload, user, req } = ctx

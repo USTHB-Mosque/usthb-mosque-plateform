@@ -1,10 +1,11 @@
 'use server'
-import { getPayloadWithUser, isAdmin } from '@/shared/lib/auth'
-import type { Payload, PayloadRequest } from 'payload'
+import { getPayloadWithUser, isAdmin, type ActionCtx } from '@/shared/lib/auth'
+import type { Payload } from 'payload'
 import type { Loan, User } from '@/payload-types'
 
 import { createNotification } from '@/features/notifications'
-import { PROMOTED_USER_ID } from '@/collections/Loan'
+import { PROMOTED_USER_ID } from '@/utils/constants/loans'
+import { formatArabicDate } from '@/shared/lib/dates'
 
 export interface LoanActionResult {
   success: boolean
@@ -16,26 +17,10 @@ const NOT_LOGGED_IN = 'يجب تسجيل الدخول أولاً'
 const NOT_ADMIN = 'غير مصرح لك بتنفيذ هذا الإجراء'
 const GENERIC_ERROR = 'حدث خطأ أثناء تحديث حالة الإعارة'
 
-function formatArabicDate(value?: string | null): string {
-  /* v8 ignore next 2 -- the schedule is always stamped before a notification */
-  if (!value) return ''
-  const date = new Date(value)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  return `${day}/${month}/${date.getFullYear()}`
-}
-
-export interface TransitionCtx {
-  payload: Payload
-  user: User
-  req: PayloadRequest
-}
+export type TransitionCtx = ActionCtx
 
 /** Reads the loan and its book title for a transition's checks and messages. */
-async function readLoanAndBook(
-  ctx: TransitionCtx,
-  loanId: number | string,
-): Promise<{ loan: Loan; bookTitle: string }> {
+async function readLoanAndBook(ctx: TransitionCtx, loanId: number | string) {
   const loan = (await ctx.payload.findByID({
     collection: 'loans',
     id: loanId,

@@ -1,22 +1,15 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
-import { ACTIVE_LOAN_STATUSES, RESERVED_LOAN_STATUSES } from '@/utils/constants/loans'
+import {
+  ACTIVE_LOAN_STATUSES,
+  IS_WAITLIST_PROMOTION,
+  PROMOTED_USER_ID,
+  RESERVED_LOAN_STATUSES,
+  SKIP_LOAN_LIFECYCLE,
+} from '@/utils/constants/loans'
 import { getLoanSettings } from '@/shared/lib/settings'
-import { checkRequestGates } from '@/features/library/server/loan-gates'
-
-/** Set on `req.context` / an operation's `context` to keep the lifecycle hook
- * from re-entering itself when it writes back to `loans` (#19). */
-export const SKIP_LOAN_LIFECYCLE = 'skipLoanLifecycle'
-/** Marks a loan create as a waitlist promotion, bypassing the request gates. */
-export const IS_WAITLIST_PROMOTION = 'isWaitlistPromotion'
-/** Written by the lifecycle hook so the caller knows who was promoted. */
-export const PROMOTED_USER_ID = 'promotedUserId'
-
-function addDays(date: Date, days: number): Date {
-  const next = new Date(date)
-  next.setDate(next.getDate() + days)
-  return next
-}
+import { addDays } from '@/shared/lib/dates'
+import { checkRequestGates } from '@/shared/lib/loan-gates'
 
 function formatHour(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0')

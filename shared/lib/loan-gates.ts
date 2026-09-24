@@ -1,15 +1,8 @@
-import type { Payload, PayloadRequest } from 'payload'
-import type { User } from '@/payload-types'
 import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
 import { getLoanSettings } from '@/shared/lib/settings'
+import type { ActionCtx } from '@/shared/lib/auth'
 
 export type GateResult = { ok: true } | { ok: false; message: string }
-
-export interface RequestGatesCtx {
-  payload: Payload
-  user: User
-  req: PayloadRequest
-}
 
 /**
  * The request gates every loan request must pass (#19), shared by the
@@ -18,7 +11,7 @@ export interface RequestGatesCtx {
  * cannot bypass them). Order matters: verification first, then the borrow
  * budget, then the per-book duplicates.
  */
-export async function checkRequestGates(ctx: RequestGatesCtx, bookId: number): Promise<GateResult> {
+export async function checkRequestGates(ctx: ActionCtx, bookId: number): Promise<GateResult> {
   const { payload, user, req } = ctx
 
   if (user.verificationStatus !== 'verified') {

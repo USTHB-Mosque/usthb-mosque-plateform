@@ -1,12 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
-
-function addDays(date: Date, days: number): Date {
-  const next = new Date(date)
-  next.setDate(next.getDate() + days)
-  return next
-}
+import { addDays } from '@/shared/lib/dates'
 
 /**
  * Loan extension requests (#19). A member requests an extension on a loan they

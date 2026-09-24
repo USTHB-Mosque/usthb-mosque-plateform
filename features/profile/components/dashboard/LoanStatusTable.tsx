@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { MoreHorizontal, Eye, XCircle } from 'lucide-react'
-import LoanStatusBadge, { getEffectiveStatus, statusConfig } from './LoanStatusBadgeInline'
+import { getEffectiveLoanStatus, statusConfig } from '@/features/library'
+import LoanStatusBadge from './LoanStatusBadgeInline'
 import type { Loan } from '@/payload-types'
 import {
   DropdownMenu,
@@ -50,8 +51,8 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         ) : (
           loans.map((loan) => {
             const book = loan.book as { id?: number; title?: string } | undefined
-            const status = getEffectiveStatus(loan)
-            const config = statusConfig[status] ?? statusConfig.pending
+            const status = getEffectiveLoanStatus(loan)
+            const config = statusConfig[status]
             return (
               <li
                 key={loan.id}
@@ -122,8 +123,8 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                     </td>
                     <td className="py-3 pl-3 pr-1 text-left xl:px-0 xl:text-right">
                       {(() => {
-                        const status = getEffectiveStatus(loan)
-                        const config = statusConfig[status] ?? statusConfig.pending
+                        const status = getEffectiveLoanStatus(loan)
+                        const config = statusConfig[status]
                         return (
                           <>
                             <span

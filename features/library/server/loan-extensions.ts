@@ -1,10 +1,10 @@
 'use server'
-import { getPayloadWithUser, isAdmin } from '@/shared/lib/auth'
-import type { Payload, PayloadRequest } from 'payload'
-import type { Loan, LoanExtension, User } from '@/payload-types'
+import { getPayloadWithUser, isAdmin, type ActionCtx } from '@/shared/lib/auth'
+import type { Loan, LoanExtension } from '@/payload-types'
 
 import { createNotification } from '@/features/notifications'
 import { MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
+import { formatArabicDate } from '@/shared/lib/dates'
 
 export interface LoanExtensionActionResult {
   success: boolean
@@ -17,20 +17,7 @@ const NOT_LOGGED_IN = 'يجب تسجيل الدخول أولاً'
 const NOT_ADMIN = 'غير مصرح لك بتنفيذ هذا الإجراء'
 const GENERIC_ERROR = 'حدث خطأ أثناء معالجة طلب التمديد'
 
-export interface ExtensionCtx {
-  payload: Payload
-  user: User
-  req: PayloadRequest
-}
-
-function formatArabicDate(value?: string | null): string {
-  /* v8 ignore next 2 -- both due dates are stamped before a notification */
-  if (!value) return ''
-  const date = new Date(value)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  return `${day}/${month}/${date.getFullYear()}`
-}
+export type ExtensionCtx = ActionCtx
 
 /**
  * Requests an extension on a loan the caller holds (#19). When the book's
@@ -42,7 +29,7 @@ function formatArabicDate(value?: string | null): string {
 export async function requestLoanExtensionLogic(
   loanId: number | string,
   days: number,
-  ctx: { payload: Payload; user: User; req: PayloadRequest },
+  ctx: ActionCtx,
   reason?: string,
 ): Promise<LoanExtensionActionResult> {
   try {
@@ -166,7 +153,7 @@ export async function requestLoanExtensionLogic(
 export async function decideLoanExtensionLogic(
   extensionId: number | string,
   decision: 'approved' | 'refused',
-  ctx: { payload: Payload; user: User; req: PayloadRequest },
+  ctx: ActionCtx,
   adminResponse?: string,
 ): Promise<LoanExtensionActionResult> {
   if (!isAdmin(ctx.user)) return { success: false, message: NOT_ADMIN }

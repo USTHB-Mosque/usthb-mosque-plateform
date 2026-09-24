@@ -11,6 +11,17 @@ export interface AuthOptions {
   allowAdmin?: boolean
 }
 
+/**
+ * The `{ payload, user, req }` context every server action passes around —
+ * exactly what `getPayloadWithUser` builds and what integration tests build
+ * with `ctxFor`.
+ */
+export interface ActionCtx {
+  payload: Payload
+  user: User
+  req: PayloadRequest
+}
+
 export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | undefined> {
   const payload = await getPayload({ config })
   const headers = await nextHeaders()
@@ -25,11 +36,7 @@ export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | u
   return user
 }
 
-export async function getPayloadWithUser(opts?: AuthOptions): Promise<{
-  payload: Payload
-  user: User
-  req: PayloadRequest
-} | null> {
+export async function getPayloadWithUser(opts?: AuthOptions): Promise<ActionCtx | null> {
   const payload = await getPayload({ config })
   const headers = await nextHeaders()
   const auth = await payload.auth({ headers })

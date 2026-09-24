@@ -48,19 +48,19 @@ _Avoid_: Copy tracking, barcode system
 ## Loan Lifecycle
 
 **Loan**:
-A physical book borrowing. Goes through a 10-state lifecycle. The book is picked up at the mosque - loans are physical, not digital.
-_Aavoid_: Borrowing, checkout (too e-commerce)
+A physical book borrowing. Moves through five stored states; overdue is derived from `dueDate`. The book is picked up at the mosque - loans are physical, not digital.
+_Avoid_: Borrowing, checkout (too e-commerce)
 
 **Loan State**:
-10 states: `requested`, `waitlisted`, `approved_pickup`, `picked`, `on_site` (v2), `extension_requested`, `returned`, `overdue`, `no_show`, `cancelled`.
-_Avoid_: Loan status (use "state" for the full machine, "status" only for simple flags)
+Five stored states (phase 1, #19, Figma Borrowings): `pending` (قيد الانتظار, the fresh request), `accepted` (مقبول, copy reserved), `picked_up` (تم الأخذ, due date stamped), `returned` (تم الإرجاع), `refused` (مرفوض). Overdue is NOT stored: a `picked_up` loan past its `dueDate` reads as overdue by derivation (`getEffectiveLoanStatus`), and the borrower is notified once (`overdueNotified` flag) by a lazy check on read — no scheduled job.
+_Avoid_: A stored "overdue" state; "requested/approved_pickup/no_show/cancelled" (older 10-state machine, deferred)
 
 **Waitlist**:
-Integrated into the loan state machine as the `waitlisted` state. NOT a separate collection. When a copy is released, the next waitlisted user is promoted to `approved_pickup`.
-_Avoid_: Reservation queue, reservation (the old SPEC had a separate Reservation collection - this is eliminated)
+A separate FIFO collection, `waitlist-entries` (book, user, position), per issue #19 — this supersedes the earlier "no separate collection" note. A request with no free copy joins the end of the queue (`position` stamped server-side); marking a loan returned releases the copy and promotes the first waiter (who does not already hold an active loan) into a fresh `pending` loan, then resequences the remaining positions.
+_Avoid_: Reservation queue, reservation
 
 **Pickup Window**:
-Configurable time window after `approved_pickup` during which the user must collect the book. If expired -> `no_show`. Admin can reschedule.
+Configurable time window after `accepted` during which the user must collect the book. If expired -> `refused`. Admin can reschedule.
 _Avoid_: Collection window, pickup deadline
 
 **Extension**:
@@ -211,16 +211,14 @@ _Avoid_: Environment variable management, secrets vault
 
 ### Loan State Machine Flow
 
-1. User requests loan (or auto from waitlist promotion)
-2. If copies available: auto-approve -> `approved_pickup` + pickup window
-3. If no copies: -> `waitlisted` (position in queue)
-4. User collects at mosque -> admin marks `picked` -> `picked` (due date set from config)
-5. Due date approaches -> reminder notification
-6. Past due date -> `overdue` (suspension + alerts)
-7. Book returned -> `returned` (copy released, next in waitlist notified)
-8. If pickup window expires -> `no_show` (copy released, user warned)
-9. User can request extension -> `extension_requested` (auto-approve if queue empty, else admin decides)
-10. Any state -> `cancelled` (per cancelability rules)
+1. Member requests a loan: verified, under the borrow limit, no active loan or queued row for the book
+2. A free copy gives a `pending` loan; no free copy joins the end of the `waitlist-entries` queue
+3. Admin accepts a `pending` loan -> `accepted`: copy reserved, unique pickup code minted, pickup date/hour stamped, borrower notified
+4. Admin refuses -> `refused` with a mandatory reason; any reserved copy is released, borrower notified
+5. Admin marks `accepted` -> `picked_up`: due date stamped from the book duration or the Settings global
+6. Past due date -> derived overdue; borrower notified exactly once
+7. Marking returned -> `returned`: copy released, waitlist head promoted in the same transaction, promoted user notified
+8. Member requests extension on their `picked_up` loan: auto-approved when the book's queue is empty (due date moves, both dates recorded), otherwise pending for an admin; approval moves the due date and records both dates
 
 ### Verification Gate
 

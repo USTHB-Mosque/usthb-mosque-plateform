@@ -75,7 +75,7 @@ export const User: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email', 'role', 'verificationStatus'],
+    defaultColumns: ['email', 'role', 'verificationStatus', 'cardId', 'situation'],
   },
   fields: [
     {
