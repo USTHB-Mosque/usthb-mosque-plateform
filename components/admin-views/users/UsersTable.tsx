@@ -21,6 +21,8 @@ import {
 import BulkActionsBar from '@/shared/common/BulkActionsBar'
 import { softDeleteUser } from '@/features/admin/server/users'
 import { approveUser } from '@/features/admin/server/verification'
+import { usersKeys } from '@/features/users/api/users.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/utils'
 
 type UsersTableProps = {
@@ -81,6 +83,7 @@ function TableCheckbox({
 
 const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
 
@@ -105,6 +108,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
     startTransition(async () => {
       await softDeleteUser(userId)
       toast.success('تم حذف المستخدم')
+      queryClient.invalidateQueries({ queryKey: usersKeys.root })
       router.refresh()
     })
   }
@@ -114,6 +118,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
       const result = await approveUser(userId)
       if (result.ok) {
         toast.success('تم قبول المستخدم')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       }
     })
@@ -140,6 +145,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
       if (done > 0) {
         toast.success(`تم قبول ${done} ${done === 1 ? 'مستخدم' : 'مستخدمين'}`)
         setSelected(new Set())
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       }
     })
@@ -153,6 +159,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
       }
       toast.success(`تم حذف ${ids.length} ${ids.length === 1 ? 'مستخدم' : 'مستخدمين'}`)
       setSelected(new Set())
+      queryClient.invalidateQueries({ queryKey: usersKeys.root })
       router.refresh()
     })
   }

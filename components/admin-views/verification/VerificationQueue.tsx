@@ -10,6 +10,8 @@ import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import type { User, Media } from '@/payload-types'
 import { approveUser, rejectUser } from '@/features/admin/server/verification'
+import { usersKeys } from '@/features/users/api/users.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -20,6 +22,7 @@ interface VerificationQueueProps {
 
 const VerificationQueue: React.FC<VerificationQueueProps> = ({ initialUsers }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const users = initialUsers ?? []
   const [pending, startTransition] = useTransition()
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
@@ -30,6 +33,7 @@ const VerificationQueue: React.FC<VerificationQueueProps> = ({ initialUsers }) =
     startTransition(async () => {
       await approveUser(userId)
       toast.success('تم قبول المستخدم')
+      queryClient.invalidateQueries({ queryKey: usersKeys.root })
       router.refresh()
     })
   }
@@ -42,6 +46,7 @@ const VerificationQueue: React.FC<VerificationQueueProps> = ({ initialUsers }) =
       setRejectDialogOpen(false)
       setRejectNote('')
       setRejectingUserId(null)
+      queryClient.invalidateQueries({ queryKey: usersKeys.root })
       router.refresh()
     })
   }

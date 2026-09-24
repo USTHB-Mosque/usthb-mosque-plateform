@@ -38,6 +38,9 @@ import {
   rejectLoan,
   sendLoanReminder,
 } from '@/features/admin/server/loans'
+import { adminLoansKeys } from '@/features/admin/api/loans.queries'
+import { booksKeys } from '@/features/library/api/books.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import type { LoanStatus } from '@/utils/constants/loans'
 import LoanConfirmDialog from './LoanConfirmDialog'
 import RejectLoanDialog from './RejectLoanDialog'
@@ -98,6 +101,7 @@ function TableCheckbox({
 
 const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [pending, startTransition] = useTransition()
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
   const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
@@ -194,6 +198,10 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
     setSelected(new Set())
     if (done > 0) {
       toast.success(`${success} — ${done} ${plural(done, 'إعارة', 'إعارتين', 'إعارات')}`)
+      queryClient.invalidateQueries({ queryKey: adminLoansKeys.root })
+      if (action === 'pickup' || action === 'return') {
+        queryClient.invalidateQueries({ queryKey: booksKeys.root })
+      }
       router.refresh()
     }
   }
@@ -209,6 +217,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
     setSelected(new Set())
     if (done > 0) {
       toast.success(`تم الرفض — ${done} ${plural(done, 'إعارة', 'إعارتين', 'إعارات')}`)
+      queryClient.invalidateQueries({ queryKey: adminLoansKeys.root })
       router.refresh()
     }
   }

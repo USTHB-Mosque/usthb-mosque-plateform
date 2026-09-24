@@ -27,6 +27,8 @@ import SettingsProfileCard from '@/features/profile/components/settings/Settings
 import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
 import { approveUser, rejectUser } from '@/features/admin/server/verification'
 import { softDeleteUser, updateUserRole } from '@/features/admin/server/users'
+import { usersKeys } from '@/features/users/api/users.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -75,6 +77,7 @@ interface UserDetailProps {
 
 const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [pending, startTransition] = useTransition()
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [rejectNote, setRejectNote] = useState('')
@@ -95,6 +98,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       const result = await approveUser(user.id)
       if (result.ok) {
         toast.success('تم قبول المستخدم')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       }
     })
@@ -107,6 +111,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
         toast.success('تم رفض المستخدم')
         setRejectDialogOpen(false)
         setRejectNote('')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       }
     })
@@ -117,6 +122,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       const result = await updateUserRole(user.id, role)
       if (result.ok) {
         toast.success('تم تحديث الدور')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       } else {
         toast.error(result.error || 'تعذر تحديث الدور')
@@ -129,6 +135,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
       const result = await softDeleteUser(user.id)
       if (result.ok) {
         toast.success('تم حذف المستخدم')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.push('/admin-panel/users')
       }
     })

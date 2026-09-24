@@ -6,6 +6,8 @@ import { Button } from '@/shared/ui/button'
 import type { BookFavorite } from '@/payload-types'
 import { BookCard } from '@/features/library'
 import { removeBookFavorite } from '@/features/library'
+import { authKeys } from '@/features/auth'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import EmptyData from '@/shared/common/EmptyData'
@@ -18,6 +20,7 @@ type ProfileFavoritesGridProps = {
 const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   if (favorites.length === 0) {
     return (
@@ -53,6 +56,7 @@ const ProfileFavoritesGrid: React.FC<ProfileFavoritesGridProps> = ({ favorites }
                   const r = await removeBookFavorite(fav.id)
                   if (r.ok) {
                     toast.success('تمت الإزالة من المفضلة')
+                    queryClient.invalidateQueries({ queryKey: authKeys.profile })
                     router.refresh()
                   } else {
                     toast.error(r.error)

@@ -15,6 +15,7 @@ type BookFormData = {
   type: Book['type']
   category: NonNullable<Book['category']>
   shortDescription: string
+  longDescription?: NonNullable<Book['longDescription']>
   publisher?: string
   language?: Book['language']
   pageCount?: number
@@ -25,7 +26,6 @@ type BookFormData = {
   availableBooks?: number
   location?: string
   image?: number
-  tags?: { name: string }[]
 }
 
 function parseBookFields(formData: FormData): BookFormData {
@@ -45,7 +45,7 @@ function parseBookFields(formData: FormData): BookFormData {
   const totalBooks = formData.get('totalBooks') as string | null
   const availableBooks = formData.get('availableBooks') as string | null
   const location = formData.get('location') as string | null
-  const tagsRaw = formData.get('tags') as string | null
+  const longDescriptionRaw = formData.get('longDescription') as string | null
 
   return {
     title,
@@ -53,6 +53,9 @@ function parseBookFields(formData: FormData): BookFormData {
     type: types as Book['type'],
     category: (category || 'religious') as NonNullable<Book['category']>,
     shortDescription,
+    longDescription: longDescriptionRaw
+      ? (JSON.parse(longDescriptionRaw) as NonNullable<Book['longDescription']>)
+      : undefined,
     publisher: publisher || undefined,
     language: (language || undefined) as Book['language'],
     pageCount: pageCount ? Number(pageCount) : undefined,
@@ -62,7 +65,6 @@ function parseBookFields(formData: FormData): BookFormData {
     totalBooks: totalBooks ? Number(totalBooks) : 0,
     availableBooks: availableBooks ? Number(availableBooks) : 0,
     location: location || undefined,
-    tags: tagsRaw ? (JSON.parse(tagsRaw) as { name: string }[]) : undefined,
   }
 }
 
@@ -116,13 +118,14 @@ export async function updateBook(bookId: number, formData: FormData) {
 
   const fields = parseBookFields(formData)
   const imageId = await uploadCoverImage(payload, formData.get('image'), user, fields.title)
+  const clearImage = formData.get('clearImage') === 'true'
 
   const book = await payload.update({
     collection: 'books',
     id: bookId,
     data: {
       ...fields,
-      image: imageId || undefined,
+      image: clearImage ? null : imageId || undefined,
     },
     req: { user },
     overrideAccess: false,

@@ -11,6 +11,7 @@ export interface AdminLoansParams {
 }
 
 export const adminLoansKeys = {
+  root: ['admin', 'loans'] as const,
   list: (params: AdminLoansParams) => ['admin', 'loans', 'list', params] as const,
 }
 

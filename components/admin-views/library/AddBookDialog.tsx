@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useTransition, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -10,11 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createBook, updateBook } from '@/features/admin/server/books'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { Loader2, BookPlus, X, ImageIcon, Check } from 'lucide-react'
+import { Loader2, X, ImageIcon, Check, Pencil } from 'lucide-react'
 import { bookTypesConfigArray, bookCategoriesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
 import type { Book, Media } from '@/payload-types'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { getImageUrl } from '@/shared/lib/image-utils'
+import { booksKeys } from '@/features/library/api/books.queries'
 import { cn } from '@/shared/lib/utils'
 
 async function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<File> {
@@ -46,6 +49,56 @@ async function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise
   })
 }
 
+// The long-description field is a Payload lexical (richText) rich editor.
+// The dialog edits it as plain text: serialize to a minimal lexical state on
+// save and flatten that state back to text for pre-fill.
+function plainTextToLexical(text: string): SerializedEditorState {
+  const paragraphs = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({
+      type: 'paragraph',
+      version: 1,
+      textFormat: 0,
+      direction: null,
+      format: '',
+      indent: 0,
+      children: [
+        { type: 'text', version: 1, detail: 0, format: 0, mode: 'normal', style: '', text: line },
+      ],
+    }))
+
+  return {
+    root: {
+      type: 'root',
+      version: 1,
+      direction: 'rtl',
+      format: '',
+      indent: 0,
+      children: paragraphs,
+    },
+  } as unknown as SerializedEditorState
+}
+
+function lexicalToPlainText(data: SerializedEditorState | null | undefined): string {
+  const parts: string[] = []
+  const walk = (node: unknown) => {
+    const n = node as { type?: string; text?: string; children?: unknown[] } | null
+    if (!n) return
+    if (n.type === 'text') parts.push(n.text ?? '')
+    else if (n.type === 'linebreak') parts.push('\n')
+    else if (Array.isArray(n.children)) for (const child of n.children) walk(child)
+  }
+  const children = (data?.root as { children?: unknown[] } | undefined)?.children ?? []
+  for (const child of children) {
+    walk(child)
+    const type = (child as { type?: string } | null)?.type
+    if (type !== 'linebreak') parts.push('\n')
+  }
+  return parts.join('').replace(/\n+$/, '')
+}
+
 interface AddBookDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -58,6 +111,7 @@ const EMPTY_FORM = {
   type: [] as string[],
   category: 'religious',
   shortDescription: '',
+  longDescription: '',
   publisher: '',
   language: '',
   pageCount: '',
@@ -67,7 +121,6 @@ const EMPTY_FORM = {
   totalBooks: '',
   availableBooks: '',
   location: '',
-  tags: '',
 }
 
 function bookToForm(book?: Book | null) {
@@ -78,6 +131,7 @@ function bookToForm(book?: Book | null) {
     type: book.type ?? [],
     category: book.category ?? 'religious',
     shortDescription: book.shortDescription ?? '',
+    longDescription: lexicalToPlainText(book.longDescription as SerializedEditorState | null),
     publisher: book.publisher ?? '',
     language: book.language ?? '',
     pageCount: book.pageCount != null ? String(book.pageCount) : '',
@@ -87,22 +141,20 @@ function bookToForm(book?: Book | null) {
     totalBooks: book.totalBooks != null ? String(book.totalBooks) : '',
     availableBooks: book.availableBooks != null ? String(book.availableBooks) : '',
     location: book.location ?? '',
-    tags: (book.tags ?? [])
-      .map((t) => t.name)
-      .filter(Boolean)
-      .join('، '),
   }
 }
 
 const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState(() => bookToForm(book))
 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [clearCover, setClearCover] = useState(false)
 
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -140,9 +192,15 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  const removeCover = () => {
+    removeImage()
+    setClearCover(true)
+  }
+
   const resetForm = () => {
     setForm(EMPTY_FORM)
     removeImage()
+    setClearCover(false)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -175,15 +233,10 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
         if (form.totalBooks) fd.set('totalBooks', form.totalBooks)
         if (form.availableBooks) fd.set('availableBooks', form.availableBooks)
         if (form.location.trim()) fd.set('location', form.location.trim())
-        if (form.tags.trim()) {
-          const tags = form.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean)
-            .map((name) => ({ name }))
-          fd.set('tags', JSON.stringify(tags))
-        }
-        if (imageFile) {
+        fd.set('longDescription', JSON.stringify(plainTextToLexical(form.longDescription)))
+        if (clearCover) {
+          fd.set('clearImage', 'true')
+        } else if (imageFile) {
           const compressed = await compressImage(imageFile)
           fd.set('image', compressed)
         }
@@ -194,6 +247,7 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
           toast.success(book ? 'تم حفظ التعديلات' : 'تم إضافة الكتاب بنجاح')
           onOpenChange(false)
           if (!book) resetForm()
+          queryClient.invalidateQueries({ queryKey: booksKeys.root })
           router.refresh()
         }
       } catch {
@@ -204,11 +258,11 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
 
   const existingCoverRaw = (book?.image as Media | undefined)?.url
   const existingCoverUrl = existingCoverRaw ? getImageUrl(existingCoverRaw) : null
-  const displayCoverUrl = imagePreview ?? existingCoverUrl
+  const displayCoverUrl = imagePreview ?? (clearCover ? null : existingCoverUrl)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl" showCloseButton={!pending}>
+      <DialogContent className="sm:max-w-5xl" showCloseButton={!pending}>
         <DialogHeader>
           <DialogTitle className="font-alyamama text-lg">
             {book ? 'تعديل الكتاب' : 'إضافة كتاب جديد'}
@@ -216,9 +270,9 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="max-h-[60vh] space-y-6 overflow-y-auto pe-2">
+          <div className="max-h-[70vh] space-y-6 overflow-y-auto pe-2">
             {/* Section 1: Image + Basic Info (image on the right in RTL) */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[160px_1fr]">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[260px_1fr]">
               {/* Image upload */}
               <input
                 ref={fileInputRef}
@@ -228,23 +282,45 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
                 onChange={handleImageChange}
               />
               {displayCoverUrl ? (
-                <div className="relative overflow-hidden rounded-xl border border-border">
-                  <img src={displayCoverUrl} alt="معاينة" className="size-full object-cover" />
+                <div className="relative min-h-[220px] overflow-hidden rounded-xl border border-border">
+                  <img
+                    src={displayCoverUrl}
+                    alt="معاينة"
+                    className="absolute inset-0 size-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-black/55 py-2 text-xs font-medium text-white transition-colors hover:bg-black/70"
+                  >
+                    <Pencil className="size-3.5" />
+                    تغيير الصورة
+                  </button>
                   {imageFile ? (
                     <button
                       type="button"
                       onClick={removeImage}
+                      aria-label="إلغاء اختيار الصورة الجديدة"
                       className="absolute top-1.5 end-1.5 flex size-6 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
                     >
                       <X className="size-3.5" />
                     </button>
-                  ) : null}
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={removeCover}
+                      aria-label="إزالة صورة الكتاب"
+                      className="absolute top-1.5 end-1.5 flex size-6 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background-2 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                  className="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background-2 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
                 >
                   <ImageIcon className="size-8 text-muted-foreground" />
                   <span className="text-center text-xs text-muted-foreground">صورة الكتاب</span>
@@ -270,33 +346,6 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
                       placeholder="اسم المؤلف"
                       required
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <Label>التصنيف *</Label>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label="التصنيف">
-                      {bookTypesConfigArray.map((t) => {
-                        const selected = form.type.includes(t.value)
-                        return (
-                          <button
-                            key={t.value}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => toggleType(t.value)}
-                            className={cn(
-                              'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors',
-                              selected
-                                ? 'border-primary-200 bg-primary-200/10 text-primary-300'
-                                : 'border-border bg-background text-muted-foreground hover:border-primary-200/50',
-                            )}
-                          >
-                            {selected ? <Check className="size-3.5" /> : null}
-                            {t.label}
-                          </button>
-                        )
-                      })}
-                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -356,15 +405,43 @@ const AddBookDialog: React.FC<AddBookDialogProps> = ({ open, onOpenChange, book 
               />
             </div>
 
-            {/* Tags */}
+            {/* Long description (الوصف الكامل) */}
             <div className="flex flex-col gap-1.5">
-              <Label>الوسوم</Label>
-              <Input
-                value={form.tags}
-                onChange={(e) => update('tags', e.target.value)}
-                placeholder="قرآن، تفسير، فقه (مفصولة بفاصلة)"
+              <Label>الوصف الكامل</Label>
+              <Textarea
+                value={form.longDescription}
+                onChange={(e) => update('longDescription', e.target.value)}
+                placeholder="وصف تفصيلي كامل للكتاب (يظهر في تبويب الوصف الكامل)"
                 dir="rtl"
+                className="min-h-40"
               />
+            </div>
+
+            {/* Category chips (moved from the top, in place of the removed tags field) */}
+            <div className="flex flex-col gap-1.5">
+              <Label>التصنيف *</Label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="التصنيف">
+                {bookTypesConfigArray.map((t) => {
+                  const selected = form.type.includes(t.value)
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleType(t.value)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors',
+                        selected
+                          ? 'border-primary-200 bg-primary-200/10 text-primary-300'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary-200/50',
+                      )}
+                    >
+                      {selected ? <Check className="size-3.5" /> : null}
+                      {t.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Section 3: Publication */}

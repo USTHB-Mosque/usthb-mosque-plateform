@@ -67,7 +67,8 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
               title={book.title}
               author={book.author}
               shortDescription={book.shortDescription}
-              tags={book.tags}
+              types={book.type}
+              code={book.code}
             />
             <BookDetailedInformation book={book} similarBooks={similarBooksResult.docs} />
           </div>

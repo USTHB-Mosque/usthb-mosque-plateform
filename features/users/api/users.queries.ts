@@ -6,6 +6,7 @@ import type { UserSearchParams } from '@/features/users/types'
 import { stringify } from 'qs-esm'
 
 export const usersKeys = {
+  root: ['users'] as const,
   list: (params?: UserSearchParams) => ['users', 'list', params] as const,
 }
 

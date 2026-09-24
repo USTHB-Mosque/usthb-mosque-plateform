@@ -7,6 +7,8 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { createAdminUser } from '@/features/admin/server/users'
+import { usersKeys } from '@/features/users/api/users.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, UserPlus } from 'lucide-react'
@@ -24,6 +26,7 @@ const ROLE_OPTIONS = [
 const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const [form, setForm] = useState({
     fullName: '',
@@ -65,6 +68,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange }) => 
         toast.success('تم إنشاء المستخدم بنجاح')
         onOpenChange(false)
         resetForm()
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
         router.refresh()
       } else {
         toast.error(result.error || 'تعذر إنشاء المستخدم')

@@ -8,8 +8,10 @@ import { Label } from '@/shared/ui/label'
 import { Loader2, Plus, Search } from 'lucide-react'
 import { addDays, format } from 'date-fns'
 import { addLoan } from '@/features/admin/server/loans'
+import { adminLoansKeys } from '@/features/admin/api/loans.queries'
 import { useGetUsersQuery } from '@/features/users/api/users.queries'
-import { useGetBooksQuery } from '@/features/library/api/books.queries'
+import { useGetBooksQuery, booksKeys } from '@/features/library/api/books.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'
@@ -150,6 +152,7 @@ function dateFromInput(input: string): Date {
 const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const [userId, setUserId] = useState<number | null>(null)
   const [bookId, setBookId] = useState<number | null>(null)
@@ -220,6 +223,8 @@ const AddLoanDialog: React.FC<AddLoanDialogProps> = ({ open, onOpenChange }) => 
       if (result.ok) {
         toast.success('تمت إضافة الإعارة بنجاح')
         handleClose()
+        queryClient.invalidateQueries({ queryKey: adminLoansKeys.root })
+        queryClient.invalidateQueries({ queryKey: booksKeys.root })
         router.refresh()
       } else {
         toast.error(result.error || 'تعذر إضافة الإعارة')

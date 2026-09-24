@@ -35,6 +35,8 @@ import { bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
 import { borrowBook } from '@/features/library/server/borrow-book'
 import { bulkSoftDeleteBooks, deleteBook, softDeleteBook } from '@/features/admin'
+import { booksKeys } from '@/features/library/api/books.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/utils'
 
 const typeLabelMap = Object.fromEntries(bookTypesConfigArray.map((t) => [t.value, t.label]))
@@ -61,6 +63,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
   onEdit,
 }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
   const [borrowing, setBorrowing] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmAction | null>(null)
@@ -125,6 +128,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
     setSelected(new Set())
     if (result.ok) {
       toast.success(`تم حذف ${result.count} ${result.count === 1 ? 'كتاب' : 'كتب'}`)
+      queryClient.invalidateQueries({ queryKey: booksKeys.root })
       router.refresh()
     } else {
       toast.error('تعذر حذف بعض الكتب')
@@ -197,6 +201,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
             next.delete(confirm.book.id)
             return next
           })
+          queryClient.invalidateQueries({ queryKey: booksKeys.root })
           router.refresh()
         } else {
           toast.error('تعذر أرشفة الكتاب')
@@ -210,6 +215,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
             next.delete(confirm.book.id)
             return next
           })
+          queryClient.invalidateQueries({ queryKey: booksKeys.root })
           router.refresh()
         } else {
           toast.error(result.error)

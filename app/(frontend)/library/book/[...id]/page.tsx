@@ -68,7 +68,8 @@ const BookDetailsPage = async ({
               title={book.title}
               author={book.author}
               shortDescription={book.shortDescription}
-              tags={book.tags}
+              types={book.type}
+              code={book.code}
             />
             <BookDetailedInformation book={book} similarBooks={similarBooksResult.docs} />
           </div>

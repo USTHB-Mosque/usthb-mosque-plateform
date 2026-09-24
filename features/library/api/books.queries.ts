@@ -6,6 +6,7 @@ import { BookSearchParams } from '@/features/library/types'
 import { stringify } from 'qs-esm'
 
 export const booksKeys = {
+  root: ['books'] as const,
   list: (params?: BookSearchParams) => ['books', 'list', params] as const,
   detail: (id: string) => ['books', 'detail', id] as const,
 }

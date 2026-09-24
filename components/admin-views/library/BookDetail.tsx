@@ -12,6 +12,8 @@ import BookAvailability from '@/features/library/components/book-details/BookAva
 import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
 import BookDetailedInformations from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
 import { softDeleteBook } from '@/features/admin/server/books'
+import { booksKeys } from '@/features/library/api/books.queries'
+import { useQueryClient } from '@tanstack/react-query'
 import AddBookDialog from './AddBookDialog'
 import { toast } from 'sonner'
 
@@ -22,6 +24,7 @@ interface BookDetailProps {
 
 const BookDetail: React.FC<BookDetailProps> = ({ book, similarBooks = [] }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [pending, startTransition] = useTransition()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -33,8 +36,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, similarBooks = [] }) => {
       const result = await softDeleteBook(book.id)
       if (result.ok) {
         toast.success('تم حذف الكتاب')
+        queryClient.invalidateQueries({ queryKey: ['books'] })
         router.push('/admin-panel/library')
-        router.refresh()
       }
     })
   }
@@ -56,20 +59,24 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, similarBooks = [] }) => {
             adminMode
             adminActions={
               <>
-                <Button className="h-12 flex-1" variant="outline" onClick={() => setEditOpen(true)}>
-                  <Pencil className="me-1 size-4" />
+                <Button
+                  className="h-14 flex-1 text-base"
+                  variant="outline"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Pencil className="me-1 size-5" />
                   تعديل
                 </Button>
                 <Button
-                  className="h-12 flex-1"
+                  className="h-14 flex-1 text-base"
                   variant="destructive"
                   onClick={() => setDeleteOpen(true)}
                   disabled={pending}
                 >
                   {pending ? (
-                    <Loader2 className="me-1 size-4 animate-spin" />
+                    <Loader2 className="me-1 size-5 animate-spin" />
                   ) : (
-                    <Trash2 className="me-1 size-4" />
+                    <Trash2 className="me-1 size-5" />
                   )}
                   حذف
                 </Button>
@@ -88,7 +95,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, similarBooks = [] }) => {
             title={book.title}
             author={book.author}
             shortDescription={book.shortDescription}
-            tags={book.tags}
+            types={book.type}
+            code={book.code}
           />
           <BookDetailedInformations book={book} similarBooks={similarBooks} />
         </div>
