@@ -33,7 +33,7 @@ const createBook = ({
   id,
   title,
   author,
-  type,
+  type: [type],
   category: BookCategory.Religious,
   tags: tags.map((name) => ({ name, id: `static-book-${id}-${name}` })),
   shortDescription,

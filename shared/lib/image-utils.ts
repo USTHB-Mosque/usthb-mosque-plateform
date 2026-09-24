@@ -4,8 +4,13 @@ export function getImageUrl(
 ): string {
   if (!mediaUrl) return fallback
 
-  // If the URL contains localhost, use fallback
-  if (mediaUrl.includes('localhost') || mediaUrl.includes('127.0.0.1')) {
+  // If the URL contains a local address or an invalid origin, use fallback
+  if (
+    mediaUrl.includes('localhost') ||
+    mediaUrl.includes('127.0.0.1') ||
+    mediaUrl.includes('undefined') ||
+    mediaUrl.includes('null')
+  ) {
     return fallback
   }
 

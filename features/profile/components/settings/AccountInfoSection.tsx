@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 
 type AccountInfoSectionProps = {
   user: UserType
+  canEditPhone?: boolean
 }
 
 function ReadOnlyField({
@@ -38,7 +39,7 @@ function ReadOnlyField({
   )
 }
 
-const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
+const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user, canEditPhone = true }) => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [pending, startTransition] = useTransition()
@@ -91,11 +92,21 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user }) => {
       <ReadOnlyField label="البريد الإلكتروني" value={email} icon={Mail} />
 
       {/* Phone — editable */}
-      <div className="flex flex-none flex-col gap-1">
+      <div className="flex flex-1 flex-col gap-1">
         <div className="flex flex-col items-start self-stretch">
           <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
         </div>
-        {editing ? (
+        {!canEditPhone ? (
+          <div
+            dir="rtl"
+            className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+          >
+            <Phone className="h-5 w-5 flex-none text-grey-400" />
+            <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+              {phone || 'غير محدد'}
+            </span>
+          </div>
+        ) : editing ? (
           <div
             dir="rtl"
             className="flex items-center gap-3 bg-fill-contrast py-2 px-4 rounded-lg border border-primary-300"

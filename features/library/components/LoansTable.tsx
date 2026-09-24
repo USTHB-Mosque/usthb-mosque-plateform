@@ -3,7 +3,8 @@
 import React, { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
+import { Clock, FileText, LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { Book, Loan, Media } from '@/payload-types'
@@ -13,6 +14,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
@@ -23,7 +25,11 @@ import { Pagination } from '@/shared/common/Pagination'
 import EmptyData from '@/shared/common/EmptyData'
 import { useSearch } from '@/shared/hooks/use-search'
 import { getImageUrl } from '@/shared/lib/image-utils'
-import { getDueUrgency, getEffectiveLoanStatus, statusConfig } from './LoanStatusBadge'
+import LoanStatusBadge, {
+  getDueUrgency,
+  getEffectiveLoanStatus,
+  statusConfig,
+} from './LoanStatusBadge'
 import ExtensionDialog from './ExtensionDialog'
 import LoanDetailsDialog from './LoanDetailsDialog'
 import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
@@ -316,37 +322,31 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                       <TableCell className={dueTextColor}>
                         {displayDate ? format(displayDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
                       </TableCell>
-                      <TableCell className="py-3 pr-1 text-right">
-                        {(() => {
-                          const status = getEffectiveLoanStatus(loan)
-                          const config = statusConfig[status]
-                          return (
-                            <span
-                              className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-center text-xs font-medium ${config.className}`}
-                            >
-                              {config.label}
-                            </span>
-                          )
-                        })()}
+                      <TableCell>
+                        <LoanStatusBadge loan={loan} />
                       </TableCell>
-                      <TableCell className="hidden px-3 py-3 text-center lg:table-cell">
+                      <TableCell className="text-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            className="ms-auto flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
+                            aria-label={`إجراءات ${book?.title || 'الإعارة'}`}
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary-300"
                             onClick={(e: React.MouseEvent) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">فتح قائمة الإجراءات</span>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
+                            <DropdownMenuLabel>الإعارة</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={(e: React.MouseEvent) => {
                                 e.stopPropagation()
                                 openLoanDetails(loan)
                               }}
                             >
+                              <FileText className="size-4" />
                               تفاصيل الإعارة
                             </DropdownMenuItem>
-                            {getEffectiveLoanStatus(loan) === 'picked_up' && (
+{getEffectiveLoanStatus(loan) === 'picked_up' && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -396,7 +396,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
       <ExtensionDialog
         open={extensionOpen}
         onOpenChange={setExtensionOpen}
-        isLoading={isRequestingExtension}
+isLoading={isRequestingExtension}
         onConfirm={(days) => {
           if (!extensionLoan) return
           const loanId = extensionLoan.id
@@ -411,6 +411,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
               toast.error(result.message)
             }
           })
+        }}
         }}
         bookTitle={(extensionLoan?.book as Book | undefined)?.title}
       />

@@ -159,7 +159,7 @@ export interface User {
   cardId?: string | null;
   situation?: ('student' | 'doctoral' | 'teacher' | 'staff') | null;
   sub?: string | null;
-  role: 'admin' | 'user';
+  role: 'admin' | 'librarian' | 'user';
   profilePicture?: (number | null) | Media;
   verificationDocument?: (number | null) | Media;
   verificationStatus?: ('pending_verification' | 'verified' | 'rejected') | null;
@@ -238,11 +238,12 @@ export interface Media {
  */
 export interface Book {
   id: number;
+  deletedAt?: string | null;
   title: string;
   code?: string | null;
   loanDurationDays?: number | null;
   author: string;
-  type:
+  type: (
     | 'aqidah'
     | 'fiqh'
     | 'hadith'
@@ -259,7 +260,8 @@ export interface Book {
     | 'engineering'
     | 'economics'
     | 'language'
-    | 'other';
+    | 'other'
+  )[];
   category?: ('religious' | 'scientific') | null;
   tags?:
     | {
@@ -702,6 +704,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "books_select".
  */
 export interface BooksSelect<T extends boolean = true> {
+  deletedAt?: T;
   title?: T;
   code?: T;
   loanDurationDays?: T;

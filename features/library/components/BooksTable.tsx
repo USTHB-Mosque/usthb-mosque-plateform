@@ -2,21 +2,38 @@
 
 import React, { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, GripVertical, Layers, Minus, MoreVertical } from 'lucide-react'
+import {
+  Archive,
+  Check,
+  Copy,
+  Eye,
+  FileDown,
+  GripVertical,
+  Layers,
+  Minus,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Book } from '@/payload-types'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import BulkActionsBar from '@/shared/common/BulkActionsBar'
 import { bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
 import { borrowBook } from '@/features/library/server/borrow-book'
+import { bulkSoftDeleteBooks, deleteBook, softDeleteBook } from '@/features/admin'
 import { cn } from '@/shared/lib/utils'
 
 const typeLabelMap = Object.fromEntries(bookTypesConfigArray.map((t) => [t.value, t.label]))
@@ -24,12 +41,29 @@ const languageLabelMap = Object.fromEntries(languagesConfigArray.map((l) => [l.v
 
 type BooksTableProps = {
   books: Book[]
+  detailHref?: (id: number) => string
+  showBorrowAction?: boolean
+  showBulkDelete?: boolean
+  onEdit?: (book: Book) => void
 }
 
-const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
+type ConfirmAction = {
+  book: Book
+  kind: 'archive' | 'delete'
+}
+
+const BooksTable: React.FC<BooksTableProps> = ({
+  books,
+  detailHref = (id) => `/user/library/book/${id}`,
+  showBorrowAction = true,
+  showBulkDelete = false,
+  onEdit,
+}) => {
   const router = useRouter()
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
   const [borrowing, setBorrowing] = useState(false)
+  const [confirm, setConfirm] = useState<ConfirmAction | null>(null)
+  const [confirmPending, setConfirmPending] = useState(false)
 
   const bookIds = useMemo(() => books.map((b) => b.id), [books])
   const allSelected = bookIds.length > 0 && bookIds.every((id) => selected.has(id))
@@ -48,7 +82,7 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
     setSelected(allSelected ? new Set() : new Set(bookIds))
   }
 
-  const goToDetails = (id: number) => router.push(`/user/library/book/${id}`)
+  const goToDetails = (id: number) => router.push(detailHref(id))
 
   const borrowOne = async (book: Book) => {
     if ((book.availableBooks ?? 0) <= 0) {
@@ -82,35 +116,142 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
     if (errors.length > 0) toast.error(errors[0])
   }
 
+  const bulkDeleteSelected = async () => {
+    setBorrowing(true)
+    const ids = Array.from(selected)
+    const result = await bulkSoftDeleteBooks(ids)
+    setBorrowing(false)
+    setSelected(new Set())
+    if (result.ok) {
+      toast.success(`تم حذف ${result.count} ${result.count === 1 ? 'كتاب' : 'كتب'}`)
+      router.refresh()
+    } else {
+      toast.error('تعذر حذف بعض الكتب')
+    }
+  }
+
+  const typeLabels = (book: Book) => (book.type ?? []).map((t) => typeLabelMap[t]).filter(Boolean)
+
+  const exportCsv = (book: Book) => {
+    const rows = [
+      [
+        'العنوان',
+        'المؤلف',
+        'التصنيف',
+        'الفئة',
+        'اللغة',
+        'الناشر',
+        'ISBN',
+        'الموقع',
+        'إجمالي الكتب',
+        'الكتب المتوفرة',
+        'الوصف المختصر',
+      ],
+      [
+        book.title,
+        book.author,
+        typeLabels(book).join('، '),
+        book.category ?? '',
+        book.language ? (languageLabelMap[book.language] ?? '') : '',
+        book.publisher ?? '',
+        book.isbn ?? '',
+        book.location ?? '',
+        String(book.totalBooks ?? 0),
+        String(book.availableBooks ?? 0),
+        book.shortDescription ?? '',
+      ],
+    ]
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`
+    const csv = '\uFEFF' + rows.map((r) => r.map(escape).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${book.title}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('تم تصدير الكتاب كملف CSV')
+  }
+
+  const copyLink = async (book: Book) => {
+    const url = new URL(detailHref(book.id), window.location.origin).href
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('تم نسخ الرابط')
+    } catch {
+      toast.error('تعذر نسخ الرابط')
+    }
+  }
+
+  const runConfirm = async () => {
+    if (!confirm) return
+    setConfirmPending(true)
+    try {
+      if (confirm.kind === 'archive') {
+        const result = await softDeleteBook(confirm.book.id)
+        if (result.ok) {
+          toast.success('تمت أرشفة الكتاب')
+          setSelected((prev) => {
+            const next = new Set(prev)
+            next.delete(confirm.book.id)
+            return next
+          })
+          router.refresh()
+        } else {
+          toast.error('تعذر أرشفة الكتاب')
+        }
+      } else {
+        const result = await deleteBook(confirm.book.id)
+        if (result.ok) {
+          toast.success('تم حذف الكتاب نهائياً')
+          setSelected((prev) => {
+            const next = new Set(prev)
+            next.delete(confirm.book.id)
+            return next
+          })
+          router.refresh()
+        } else {
+          toast.error(result.error)
+        }
+      }
+      setConfirm(null)
+    } finally {
+      setConfirmPending(false)
+    }
+  }
+
+  const bulkActions = [
+    ...(showBorrowAction
+      ? [
+          {
+            label: 'استعارة المحددة',
+            icon: Layers,
+            onClick: borrowSelected,
+            disabled: borrowing,
+          },
+        ]
+      : []),
+    ...(showBulkDelete
+      ? [
+          {
+            label: 'حذف المحددة',
+            icon: Trash2,
+            onClick: bulkDeleteSelected,
+            variant: 'destructive' as const,
+            disabled: borrowing,
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div>
-      {selected.size > 0 ? (
-        <div className="flex items-center justify-between gap-3 border-b border-border bg-primary-200/10 px-4 py-2">
-          <span className="text-sm font-medium text-[#243245]">
-            تم تحديد {selected.size} من الكتاب
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={borrowSelected}
-              disabled={borrowing}
-              className="rounded-lg"
-            >
-              استعارة المحددة
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setSelected(new Set())}
-              className="rounded-lg"
-            >
-              إلغاء التحديد
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      <BulkActionsBar
+        count={selected.size}
+        itemName="من الكتب"
+        onClear={() => setSelected(new Set())}
+        actions={bulkActions}
+      />
 
       <Table>
         <TableHeader>
@@ -161,9 +302,21 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
                 <TableCell className="text-muted-foreground">{book.author}</TableCell>
                 <TableCell className="text-muted-foreground">{book.publisher || '—'}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg">
-                    {typeLabelMap[book.type] || '—'}
-                  </Badge>
+                  <div className="flex flex-wrap gap-1">
+                    {typeLabels(book).length > 0 ? (
+                      typeLabels(book).map((label) => (
+                        <Badge
+                          key={label}
+                          variant="secondary"
+                          className="bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg"
+                        >
+                          {label}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {book.language ? languageLabelMap[book.language] || '—' : '—'}
@@ -184,17 +337,63 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
                 </TableCell>
                 <TableCell className="text-end">
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none">
+                    <DropdownMenuTrigger
+                      aria-label={`إجراءات ${book.title}`}
+                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary-300"
+                    >
                       <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">فتح قائمة الإجراءات</span>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => goToDetails(book.id)}>
-                        تفاصيل الكتاب
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => borrowOne(book)} disabled={!available}>
-                        <Layers className="size-4" />
-                        استعارة
-                      </DropdownMenuItem>
+                    <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
+                      {showBulkDelete ? (
+                        <>
+                          <DropdownMenuLabel>الكتاب</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => onEdit?.(book)}>
+                            <Pencil className="size-4" />
+                            تعديل
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => exportCsv(book)}>
+                            <FileDown className="size-4" />
+                            تصدير كملف CSV
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => copyLink(book)}>
+                            <Copy className="size-4" />
+                            نسخ الرابط
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setConfirm({ book, kind: 'archive' })}>
+                            <Archive className="size-4" />
+                            أرشفة
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setConfirm({ book, kind: 'delete' })}
+                          >
+                            <Trash2 className="size-4" />
+                            حذف
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownMenuLabel>الكتاب</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => goToDetails(book.id)}>
+                            <Eye className="size-4" />
+                            تفاصيل الكتاب
+                          </DropdownMenuItem>
+                          {showBorrowAction ? (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => borrowOne(book)}
+                                disabled={!available}
+                              >
+                                <Layers className="size-4" />
+                                استعارة
+                              </DropdownMenuItem>
+                            </>
+                          ) : null}
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -203,6 +402,43 @@ const BooksTable: React.FC<BooksTableProps> = ({ books }) => {
           })}
         </TableBody>
       </Table>
+
+      <Dialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
+        <DialogContent className="sm:max-w-md" showCloseButton={!confirmPending}>
+          <DialogHeader>
+            <DialogTitle className="font-alyamama text-lg">
+              {confirm?.kind === 'archive' ? 'أرشفة الكتاب' : 'حذف الكتاب'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {confirm?.kind === 'archive' ? (
+              <>
+                سيتم نقل «{confirm.book.title}» إلى الأرشيف مع الاحتفاظ بسجل الإعارات والتقييمات
+                المرتبطة به. يمكنك التراجع لاحقاً عبر إعادة تفعيل الكتاب.
+              </>
+            ) : confirm ? (
+              <>
+                سيتم حذف «{confirm.book.title}» نهائياً من المكتبة. لا يمكن التراجع عن هذا الإجراء.
+              </>
+            ) : null}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirm(null)} disabled={confirmPending}>
+              إلغاء
+            </Button>
+            <Button variant="destructive" onClick={runConfirm} disabled={confirmPending}>
+              {confirmPending ? (
+                <span className="me-1 size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : confirm?.kind === 'archive' ? (
+                <Archive className="me-1 size-4" />
+              ) : (
+                <Trash2 className="me-1 size-4" />
+              )}
+              {confirm?.kind === 'archive' ? 'تأكيد الأرشفة' : 'تأكيد الحذف'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

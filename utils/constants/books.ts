@@ -40,7 +40,7 @@ export const bookCategoriesConfigArray = Object.entries(bookCategoriesConfig).ma
   },
 )
 
-const bookTypesConfig: Record<string, string> = {
+export const bookTypesConfig: Record<string, string> = {
   [BookType.Aqidah]: 'عقيدة',
   [BookType.Fiqh]: 'فقه',
   [BookType.Hadith]: 'حديث',

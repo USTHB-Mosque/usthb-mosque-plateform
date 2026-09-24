@@ -82,7 +82,7 @@ const ActivityRow: React.FC<{ activity: Activity }> = ({ activity }) => {
 const BookRow: React.FC<{ book: Book }> = ({ book }) => {
   const cover = book.image as Media | undefined
   const typeLabel =
-    bookTypesConfigArray.find((config) => config.value === book.type)?.label ?? 'كتاب'
+    bookTypesConfigArray.find((config) => config.value === book.type?.[0])?.label ?? 'كتاب'
 
   return (
     <li>

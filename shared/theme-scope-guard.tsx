@@ -10,7 +10,11 @@ const isPortalPath = (path: string) =>
   path === '/member-portal' ||
   path.startsWith('/member-portal/')
 
-const isAdminPath = (path: string) => path === '/admin' || path.startsWith('/admin/')
+const isAdminPath = (path: string) =>
+  path === '/admin' ||
+  path.startsWith('/admin/') ||
+  path === '/admin-panel' ||
+  path.startsWith('/admin-panel/')
 
 const applyThemeClasses = (wantDark: boolean) => {
   const el = document.documentElement

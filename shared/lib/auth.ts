@@ -9,6 +9,7 @@ import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 
 export interface AuthOptions {
   allowAdmin?: boolean
+  acceptRoles?: User['role'][]
 }
 
 /**
@@ -31,7 +32,9 @@ export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | u
 
   const user = response.user as User
 
-  if (!opts?.allowAdmin && user.role === 'admin') return undefined
+  if (opts?.acceptRoles) {
+    if (!opts.acceptRoles.includes(user.role)) return undefined
+  } else if (!opts?.allowAdmin && user.role === 'admin') return undefined
 
   return user
 }
@@ -45,7 +48,9 @@ export async function getPayloadWithUser(opts?: AuthOptions): Promise<ActionCtx 
 
   const user = auth.user as User
 
-  if (!opts?.allowAdmin && user.role === 'admin') return null
+  if (opts?.acceptRoles) {
+    if (!opts.acceptRoles.includes(user.role)) return null
+  } else if (!opts?.allowAdmin && user.role === 'admin') return null
 
   const req = await createLocalReq({ user }, payload)
   return { payload, user, req }

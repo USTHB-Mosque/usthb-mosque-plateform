@@ -135,7 +135,7 @@ export const User: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'user',
-      options: ['admin', 'user'],
+      options: ['admin', 'librarian', 'user'],
       saveToJWT: true,
       access: {
         update: ({ req: { user } }) => isAdmin(user),
@@ -249,7 +249,11 @@ export const User: CollectionConfig = {
       maxRows: 50,
       admin: { disabled: true },
       access: {
-        read: ({ req: { user }, doc }) => user?.id === doc?.id,
+        read: ({ req: { user }, doc }) => {
+          if (!user) return false
+          if (isAdmin(user)) return true
+          return user.id === doc?.id
+        },
         create: () => false,
         update: () => false,
       },

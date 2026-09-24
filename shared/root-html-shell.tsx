@@ -1,10 +1,10 @@
 import '../app/(frontend)/globals.css'
 import React from 'react'
-import Script from 'next/script'
 import localFont from 'next/font/local'
 import QueryClientProvider from '@/shared/providers/query-client.provider'
 import ThemeProvider from '@/shared/providers/theme-provider'
 import ThemeScopeGuard from '@/shared/theme-scope-guard'
+import ThemeInitScript from '@/shared/theme-init-script'
 import { Toaster } from '@/shared/ui/sonner'
 
 const khalidArt = localFont({
@@ -88,14 +88,7 @@ const RootHtmlShell: React.FC<React.PropsWithChildren> = ({ children }) => {
       className={`${khalidArt.variable} ${alyamama.variable} ${dubai.variable} ${uthmanic.variable}`}
     >
       <head>
-        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document -- runs pre-paint in the App Router html shell */}
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=document.documentElement.classList;c.remove('light','dark');var p=window.location.pathname;var portal=p==='/user'||p.indexOf('/user/')===0||p==='/member-portal'||p.indexOf('/member-portal/')===0;var admin=p==='/admin'||p.indexOf('/admin/')===0;var t=localStorage.getItem('theme');var dark=(portal||admin)?(t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches):false;c.add(dark?'dark':'light');document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}})();`,
-          }}
-        />
+        <ThemeInitScript />
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>

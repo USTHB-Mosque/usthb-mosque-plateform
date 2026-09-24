@@ -62,7 +62,7 @@ export async function createTestBook(
     data: {
       title: opts.title ?? 'Test Book',
       author: 'Test Author',
-      type: 'aqidah',
+      type: ['aqidah'],
       category: 'religious',
       shortDescription: 'A book used by the test suite.',
       availableBooks: opts.available ?? 3,

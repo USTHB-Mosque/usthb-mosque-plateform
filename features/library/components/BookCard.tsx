@@ -7,6 +7,8 @@ import { User } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Book, Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
+import { bookTypesConfig, bookCategoriesConfig } from '@/utils/constants/books'
+import type { BookType, BookCategory } from '@/utils/constants/books'
 import LandingCtaButton from '@/shared/ui/LandingCtaButton'
 
 type LandingBookCardProps = {
@@ -15,8 +17,6 @@ type LandingBookCardProps = {
   imageClassName?: string
   href?: string
 }
-
-const defaultTags = ['قرآن', 'تفسير']
 
 const LandingBookCard: React.FC<LandingBookCardProps> = ({
   book,
@@ -28,8 +28,11 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
   const title = book?.title ?? 'مختصر تفسير ابن كثير'
   const author = book?.author ?? 'محمد بن جرير الطبري'
-  const tags =
-    book?.tags?.filter((tag) => tag.name) ?? defaultTags.map((name) => ({ name, id: name }))
+  const typeLabels = (book?.type ?? []).map((t) => bookTypesConfig[t as BookType]).filter(Boolean)
+  const categoryLabel = book?.category ? bookCategoriesConfig[book.category as BookCategory] : null
+  const tags = [...typeLabels, categoryLabel]
+    .filter(Boolean)
+    .map((name, i) => ({ name: name!, id: i }))
   const isAvailable = !book || (book.availableBooks ? book.availableBooks > 0 : true)
 
   const destination = href ?? `/library/book/${book?.id ?? 1}`
@@ -99,7 +102,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
           </div>
         </div>
 
-        <div className="relative flex w-full flex-none flex-col items-start gap-4 self-stretch">
+        <div className="relative mt-auto flex w-full flex-none flex-col items-start gap-4 self-stretch">
           <div
             className="h-px w-full self-stretch rounded-[5px] bg-stroke-grey"
             aria-hidden="true"

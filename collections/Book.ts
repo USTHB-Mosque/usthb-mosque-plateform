@@ -1,6 +1,6 @@
 import { bookCategoriesConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
-import { adminWriteAccess } from '@/utils/access-helpers'
+import { adminWriteAccess, isStaff } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -13,6 +13,18 @@ export const Book: CollectionConfig = {
     ...adminWriteAccess(),
   },
   fields: [
+    {
+      name: 'deletedAt',
+      type: 'date',
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+      access: {
+        update: ({ req: { user } }) => isStaff(user),
+      },
+    },
     {
       name: 'title',
       type: 'text',
@@ -39,6 +51,7 @@ export const Book: CollectionConfig = {
       name: 'type',
       type: 'select',
       options: bookTypesConfigArray,
+      hasMany: true,
       required: true,
     },
     {

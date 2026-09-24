@@ -11,7 +11,7 @@ export const booksKeys = {
 }
 
 export async function fetchBooks(params?: BookSearchParams) {
-  const andFilters: Where[] = []
+  const andFilters: Where[] = [{ deletedAt: { exists: false } }]
 
   if (params?.category) {
     andFilters.push({ category: { equals: params.category } })

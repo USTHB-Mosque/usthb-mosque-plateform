@@ -26,7 +26,7 @@ const booksData: BookData[] = [
   {
     title: 'صحيح البخاري',
     author: 'الإمام محمد بن إسماعيل البخاري',
-    type: 'hadith',
+    type: ['hadith'],
     category: 'religious',
     shortDescription:
       'أصح كتاب بعد كتاب الله تعالى، جمع فيه الإمام البخاري أحاديث النبي ﷺ المرفوعة معتمداً على شروطه الصارمة في التخريج.',
@@ -47,7 +47,7 @@ const booksData: BookData[] = [
   {
     title: 'صحيح مسلم',
     author: 'الإمام مسلم بن الحجاج النيسابوري',
-    type: 'hadith',
+    type: ['hadith'],
     category: 'religious',
     shortDescription:
       'الكتاب الثاني في مرتبة كتب الحديث النبوي، يضم أحاديث نبوية شريفة مصّنة بشرط الصحيح.',
@@ -68,7 +68,7 @@ const booksData: BookData[] = [
   {
     title: 'رياض الصالحين',
     author: 'الإمام يحيى بن شرف النووي',
-    type: 'hadith',
+    type: ['hadith'],
     category: 'religious',
     shortDescription:
       'من أشهر كتب الإمام النووي، جمع فيه الأحاديث النبوية المرتبطة بآداب وأخلاق المسلم.',
@@ -89,7 +89,7 @@ const booksData: BookData[] = [
   {
     title: 'العقيدة الواسطية',
     author: 'شيخ الإسلام أحمد بن عبد الحليم ابن تيمية',
-    type: 'aqidah',
+    type: ['aqidah'],
     category: 'religious',
     shortDescription: 'رسالة مختصرة في أصول الدين تشمل أركان الإيمان والتوحيد.',
     longDescription:
@@ -109,7 +109,7 @@ const booksData: BookData[] = [
   {
     title: 'زاد المعاد في هدي خير العباد',
     author: 'الإمام محمد بن أبي بكر ابن قيم الجوزية',
-    type: 'sirah',
+    type: ['sirah'],
     category: 'religious',
     shortDescription: 'كتاب في سيرة النبي ﷺ وشريعته، يشمل أحكام العبادات والمعاملات.',
     longDescription:
@@ -129,7 +129,7 @@ const booksData: BookData[] = [
   {
     title: 'تفسير السعدي',
     author: 'الإمام عبد الرحمن بن ناصر السعدي',
-    type: 'tafsir',
+    type: ['tafsir'],
     category: 'religious',
     shortDescription: 'تفسير ميسر للقرآن الكريم يسر المعاني ويوضح المرامات.',
     longDescription:
@@ -149,7 +149,7 @@ const booksData: BookData[] = [
   {
     title: 'الفقه على المذاهب الأربعة',
     author: 'الإمام عبد الرحمن الجزيري',
-    type: 'fiqh',
+    type: ['fiqh'],
     category: 'religious',
     shortDescription: 'كتاب جامع في فقه المذاهب الأربعة (الحنفي والشافعي والمالكي والحنابلة).',
     longDescription:
@@ -169,7 +169,7 @@ const booksData: BookData[] = [
   {
     title: 'الموافقات في أصول الشريعة',
     author: 'الإمام أبي إسحاق الشاطبي',
-    type: 'fiqh',
+    type: ['fiqh'],
     category: 'religious',
     shortDescription: 'من أعظم كتب أصول الفقه، يبحث في مقاصد الشريعة الإسلامية.',
     longDescription:
@@ -189,7 +189,7 @@ const booksData: BookData[] = [
   {
     title: 'الرحيق المختوم',
     author: 'الدكتور صفي الرحمن المباركفوري',
-    type: 'sirah',
+    type: ['sirah'],
     category: 'religious',
     shortDescription: 'بحث في السيرة النبوية فاز بالجائزة الأولى في مسابقة السيرة النبوية.',
     longDescription:
@@ -209,7 +209,7 @@ const booksData: BookData[] = [
   {
     title: 'أساسيات الرياضيات',
     author: 'الدكتور محمد المرسي',
-    type: 'mathematics',
+    type: ['mathematics'],
     category: 'scientific',
     shortDescription: 'كتاب تأسيسي في الرياضيات للمبتدئين يشمل العمليات الحسابية والجبر والهندسة.',
     longDescription:
@@ -229,7 +229,7 @@ const booksData: BookData[] = [
   {
     title: 'فيزياء عامة',
     author: 'الدكتور أحمد المنصور',
-    type: 'physics',
+    type: ['physics'],
     category: 'scientific',
     shortDescription: 'كتاب في الفيزياء العامة يشمل الميكانيكا والكهرباء والظواهر الطبيعية.',
     longDescription:
@@ -249,7 +249,7 @@ const booksData: BookData[] = [
   {
     title: 'مبادئ علم الأحياء',
     author: 'ليزا أوري',
-    type: 'biology',
+    type: ['biology'],
     category: 'scientific',
     shortDescription: 'كتاب مكمل في علم الأحياء يشمل التنظيم الخلوي والوراثة والتطور.',
     longDescription:
@@ -269,7 +269,7 @@ const booksData: BookData[] = [
   {
     title: 'لغة عربية للمبتدئين',
     author: 'الدكتور أحمد محمد',
-    type: 'language',
+    type: ['language'],
     category: 'scientific',
     shortDescription: 'كتاب تأسيسي في اللغة العربية للمبتدئين من غير الناطقين بالعربية.',
     longDescription: 'كتاب مبسط في اللغة العربية يشمل القواعد الأساسية والتدريبات العملية.',
@@ -288,7 +288,7 @@ const booksData: BookData[] = [
   {
     title: 'مبادئ الاقتصاد',
     author: 'ن. غريغوري مانكيو',
-    type: 'economics',
+    type: ['economics'],
     category: 'scientific',
     shortDescription: 'كتاب مرجع في الاقتصاد للطلاب الجامعيين.',
     longDescription: 'كتاب مرجعي شهير في العلوم الاقتصادية مخصص لطلاب الجامعات.',
@@ -307,7 +307,7 @@ const booksData: BookData[] = [
   {
     title: 'كيمياء عامة',
     author: 'الدكتور كريم حسن',
-    type: 'chemistry',
+    type: ['chemistry'],
     category: 'scientific',
     shortDescription: 'كتاب في الكيمياء العامة لطلاب الكيمياء.',
     longDescription: 'كتاب شامل في الكيمياء العامة لطلاب العلوم الكيميائية.',
@@ -326,7 +326,7 @@ const booksData: BookData[] = [
   {
     title: 'أساسيات الهندسة',
     author: 'سالم المكنوني',
-    type: 'engineering',
+    type: ['engineering'],
     category: 'scientific',
     shortDescription: 'كتاب أساسي في الهندسة لطلاب الهندسة.',
     longDescription: 'كتاب مرجعي في أساسيات الهندسة لطلاب الهندسة الميكانيكية والكهرباء.',
@@ -345,7 +345,7 @@ const booksData: BookData[] = [
   {
     title: 'تاريخ الإسلام',
     author: 'الإمام محمد بن أحمد الذهبي',
-    type: 'history',
+    type: ['history'],
     category: 'religious',
     shortDescription: 'كتاب جامع في تاريخ الإسلام من البعثة النبوية حتى عصر المؤلف.',
     longDescription:
@@ -365,7 +365,7 @@ const booksData: BookData[] = [
   {
     title: 'العلمانية والدين',
     author: 'الدكتور طه عبد الرحمن',
-    type: 'philosophy',
+    type: ['philosophy'],
     category: 'religious',
     shortDescription: 'دراسة نقدية للعلاقة بين العلمانية والدين في الفكر المعاصر.',
     longDescription: 'كتاب فلسفي يبحث في العلاقة بين العلمانية والدين ويقدم نقداً متكاملاً.',
@@ -384,7 +384,7 @@ const booksData: BookData[] = [
   {
     title: 'آداب الدعوة إلى الله تعالى',
     author: 'الإمام عبد الرحمن حبنكة المحمدي',
-    type: 'dawah',
+    type: ['dawah'],
     category: 'religious',
     shortDescription: 'كتاب في آداب وسائل الدعوة الإسلامية وطرقها الصحيحة.',
     longDescription:
@@ -406,14 +406,14 @@ const booksData: BookData[] = [
 function buildLongDescription(title: string, description: string): Record<string, unknown> {
   return {
     root: {
-      type: 'root',
+      type: ['root'],
       format: 'right',
       indent: 0,
       version: 1,
       direction: 'rtl',
       children: [
         {
-          type: 'heading',
+          type: ['heading'],
           tag: 'h1',
           format: 'right',
           indent: 0,
@@ -421,14 +421,14 @@ function buildLongDescription(title: string, description: string): Record<string
           children: [{ text: title, type: 'text', version: 1 }],
         },
         {
-          type: 'paragraph',
+          type: ['paragraph'],
           format: 'right',
           indent: 0,
           version: 1,
           children: [{ text: description, type: 'text', version: 1 }],
         },
         {
-          type: 'paragraph',
+          type: ['paragraph'],
           format: 'right',
           indent: 0,
           version: 1,
@@ -441,7 +441,7 @@ function buildLongDescription(title: string, description: string): Record<string
           ],
         },
         {
-          type: 'list',
+          type: ['list'],
           listType: 'bullet',
           tag: 'ul',
           format: 'right',
@@ -469,7 +469,7 @@ function buildLongDescription(title: string, description: string): Record<string
           ],
         },
         {
-          type: 'quote',
+          type: ['quote'],
           format: 'right',
           indent: 0,
           version: 1,

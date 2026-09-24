@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { MoreHorizontal, Eye, Clock } from 'lucide-react'
@@ -245,8 +246,16 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
       <ExtensionDialog
         open={extensionOpen}
         onOpenChange={setExtensionOpen}
-        onConfirm={(days) => {
-          console.log('Extension requested:', { loanId: extensionLoan?.id, days })
+        onConfirm={async (days) => {
+          if (extensionLoan) {
+            const { requestExtension } = await import('@/features/admin')
+            const result = await requestExtension(extensionLoan.id, days)
+            if (result.ok) {
+              toast.success('تم إرسال طلب التمديد')
+            } else {
+              toast.error(result.error || 'حدث خطأ')
+            }
+          }
           setExtensionOpen(false)
           setExtensionLoan(null)
         }}
