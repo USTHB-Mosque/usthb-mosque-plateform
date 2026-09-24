@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useLayoutEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 
@@ -25,22 +25,35 @@ const applyThemeClasses = (wantDark: boolean) => {
 
 const ThemeScopeGuard: React.FC = () => {
   const pathname = usePathname()
-  const { theme } = useTheme()
+  const { theme, resolvedTheme } = useTheme()
 
-  useEffect(() => {
+  // next-themes applies `dark` on hydration from the system preference with an
+  // effect that runs after this one and is not path-aware, so a one-shot
+  // application here is not enough. Force light before paint and then watch the
+  // `<html>` class attribute, reverting any `dark` a visitor page must never wear.
+  useLayoutEffect(() => {
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const html = document.documentElement
     // Visitors pages have no dark mode: always enforce light.
     const visitor = !isPortalPath(pathname) && !isAdminPath(pathname)
 
     const sync = () => {
-      const wantDark = !visitor && (theme === 'dark' || (theme === 'system' && mql.matches))
+      const wantDark =
+        !visitor && (theme === 'dark' || (theme === 'system' && resolvedTheme === 'dark'))
       applyThemeClasses(wantDark)
     }
 
     sync()
     mql.addEventListener('change', sync)
-    return () => mql.removeEventListener('change', sync)
-  }, [pathname, theme])
+
+    const observer = visitor ? new MutationObserver(sync) : null
+    observer?.observe(html, { attributes: true, attributeFilter: ['class'] })
+
+    return () => {
+      mql.removeEventListener('change', sync)
+      observer?.disconnect()
+    }
+  }, [pathname, theme, resolvedTheme])
 
   return null
 }

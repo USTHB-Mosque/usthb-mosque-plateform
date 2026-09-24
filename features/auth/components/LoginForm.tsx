@@ -50,7 +50,7 @@ export default function LoginForm() {
       } else {
         await queryClient.invalidateQueries({ queryKey: ['profile'] })
         toast.success('تم تسجيل الدخول بنجاح')
-        router.push(result.user.role === 'admin' ? '/admin' : redirect)
+        router.push(result.user.role === 'admin' ? '/admin-panel/dashboard' : redirect)
       }
     })
   }

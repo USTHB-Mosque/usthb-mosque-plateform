@@ -19,12 +19,12 @@ const AdminFirstUser: React.FC = () => {
       const [user, usersExist] = await Promise.all([getAdminUser(), hasAnyUser()])
 
       if (usersExist) {
-        router.replace('/admin/login')
+        router.replace('/auth/login')
         return
       }
 
       if (user) {
-        router.replace('/admin')
+        router.replace('/admin-panel/dashboard')
         return
       }
 
@@ -57,7 +57,7 @@ const AdminFirstUser: React.FC = () => {
       return
     }
 
-    router.push('/admin')
+    router.push('/admin-panel/dashboard')
   }
 
   if (blocked || loading) {

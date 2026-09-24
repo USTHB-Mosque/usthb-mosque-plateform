@@ -6,11 +6,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { Shield, Bell, Keyboard, Trash2, User } from 'lucide-react'
+import { LogOut, Shield, Bell, Keyboard, Trash2, User } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Media, User as UserType } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import { cn } from '@/shared/lib/utils'
+import { logout } from '@/features/auth'
+import { toast } from 'sonner'
 
 type SettingsProfileCardProps = {
   user: UserType
@@ -42,6 +44,12 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeT
   const createdAt = user.createdAt
     ? format(new Date(user.createdAt), 'dd/MM/yyyy', { locale: arDZ })
     : 'غير محدد'
+
+  const onLogout = async () => {
+    await logout()
+    toast.success('تم تسجيل الخروج بنجاح')
+    router.push('/auth/login')
+  }
 
   return (
     <div
@@ -137,6 +145,18 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeT
 
         {/* Divider */}
         <div className="mx-6 hidden h-px rounded-[5px] bg-stroke-grey lg:block" />
+
+        {/* Logout */}
+        <div className="hidden flex-col items-stretch lg:flex">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-foreground transition-colors hover:bg-red-500/10 hover:text-destructive rounded-[10px] mx-2"
+          >
+            <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
 
         {/* Delete Account */}
         <div className="hidden flex-col items-stretch lg:flex">

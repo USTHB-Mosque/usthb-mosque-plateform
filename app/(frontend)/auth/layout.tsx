@@ -11,7 +11,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser({ allowAdmin: true })
-  if (user) redirect(user.role === 'admin' ? '/admin' : '/user/dashboard')
+  if (user) {
+    redirect(user.role === 'admin' ? '/admin-panel/dashboard' : '/user/dashboard')
+  }
 
   return (
     <>
