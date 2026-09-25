@@ -143,7 +143,12 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
 
   return (
     <div dir="rtl" className="flex items-start gap-[33px] overflow-hidden">
-      <SettingsProfileCard user={user} activeTab="info" />
+      <SettingsProfileCard
+        user={user}
+        activeTab="info"
+        hrefBase="/admin-panel/settings"
+        hideDeleteAccount
+      />
 
       <div className="flex min-w-0 flex-1 flex-col gap-6">
         <AccountInfoSection user={user} canEditPhone={false} />

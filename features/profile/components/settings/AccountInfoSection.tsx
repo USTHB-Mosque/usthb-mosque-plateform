@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 type AccountInfoSectionProps = {
   user: UserType
   canEditPhone?: boolean
+  onSavePhone?: (formData: FormData) => Promise<{ ok: boolean; error?: string }>
 }
 
 function ReadOnlyField({
@@ -39,11 +40,17 @@ function ReadOnlyField({
   )
 }
 
-const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user, canEditPhone = true }) => {
+const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
+  user,
+  canEditPhone = true,
+  onSavePhone,
+}) => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+
+  const savePhone = onSavePhone ?? ((formData: FormData) => updateProfileField(formData, 'phone'))
 
   const displayName =
     user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || ''
@@ -64,7 +71,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({ user, canEditPh
     startTransition(async () => {
       const fd = new FormData()
       fd.append('phone', draft)
-      const r = await updateProfileField(fd, 'phone')
+      const r = await savePhone(fd)
       if (r.ok) {
         toast.success('تم الحفظ')
         setEditing(false)

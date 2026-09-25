@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useTransition } from 'react'
 import { Mail, Key, Smartphone, Activity, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { User } from '@/payload-types'
+import { toast } from 'sonner'
 import ConnectedDevices from './ConnectedDevices'
 import ActivityLog from './ActivityLog'
 
 type SecuritySectionProps = {
   user: User
   className?: string
+  onChangePassword?: (formData: FormData) => Promise<{ ok: boolean; error?: string }>
 }
 
 type ActiveView = null | { section: string; item: string; label: string }
@@ -58,10 +60,37 @@ function getSections(user: User) {
   ]
 }
 
-function PasswordForm({ onBack }: { onBack: () => void }) {
+function PasswordForm({
+  onBack,
+  onChangePassword,
+}: {
+  onBack: () => void
+  onChangePassword?: SecuritySectionProps['onChangePassword']
+}) {
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [pending, startTransition] = useTransition()
+
+  const handleConfirm = () => {
+    if (!onChangePassword) return
+    startTransition(async () => {
+      const fd = new FormData()
+      fd.append('currentPassword', currentPassword)
+      fd.append('newPassword', newPassword)
+      fd.append('confirmPassword', confirmPassword)
+      const result = await onChangePassword(fd)
+      if (result.ok) {
+        toast.success('تم تغيير كلمة المرور')
+        onBack()
+      } else {
+        toast.error(result.error)
+      }
+    })
+  }
 
   return (
     <div className="flex flex-col self-stretch gap-6">
@@ -73,6 +102,9 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
               <input
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="أدخل كلمة المرور الحالية"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                disabled={pending}
                 className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
                 dir="rtl"
               />
@@ -91,6 +123,9 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
               <input
                 type={showNew ? 'text' : 'password'}
                 placeholder="أدخل كلمة المرور الجديدة"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                disabled={pending}
                 className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
                 dir="rtl"
               />
@@ -109,6 +144,9 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
               <input
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="أعد إدخال كلمة المرور الجديدة"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={pending}
                 className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
                 dir="rtl"
               />
@@ -125,12 +163,15 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
             <button
               type="button"
               onClick={onBack}
+              disabled={pending}
               className="flex items-center bg-fill-contrast text-[#243245] py-2 px-6 rounded-lg border border-stroke-grey text-base font-alyamama transition-colors hover:bg-stroke-grey cursor-pointer"
             >
               إلغاء
             </button>
             <button
               type="button"
+              onClick={handleConfirm}
+              disabled={pending || !onChangePassword}
               className="flex items-center bg-primary text-fill-main py-2 px-6 rounded-lg text-base font-bold font-alyamama transition-colors hover:bg-primary-300 cursor-pointer"
             >
               تأكيد
@@ -142,7 +183,7 @@ function PasswordForm({ onBack }: { onBack: () => void }) {
   )
 }
 
-const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) => {
+const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className, onChangePassword }) => {
   const [activeView, setActiveView] = useState<ActiveView>(null)
 
   if (activeView) {
@@ -155,7 +196,9 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user, className }) =>
         <span className="text-xl font-bold font-alyamama text-[#243245]">{activeView.label}</span>
 
         {/* Form content */}
-        {activeView.item === 'password' && <PasswordForm onBack={() => setActiveView(null)} />}
+        {activeView.item === 'password' && (
+          <PasswordForm onBack={() => setActiveView(null)} onChangePassword={onChangePassword} />
+        )}
         {activeView.item === 'devices' && <ConnectedDevices onBack={() => setActiveView(null)} />}
         {activeView.item === 'activity-log' && (
           <ActivityLog user={user} onBack={() => setActiveView(null)} />

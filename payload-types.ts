@@ -173,6 +173,10 @@ export interface User {
     activityRegistrations?: boolean | null;
     loanExtensions?: boolean | null;
     loanReturnReminder?: boolean | null;
+    accountRequests?: boolean | null;
+    overdueReturns?: boolean | null;
+    newReviews?: boolean | null;
+    activityLogEvents?: boolean | null;
   };
   activityLog?:
     | {
@@ -652,6 +656,10 @@ export interface UsersSelect<T extends boolean = true> {
         activityRegistrations?: T;
         loanExtensions?: T;
         loanReturnReminder?: T;
+        accountRequests?: T;
+        overdueReturns?: T;
+        newReviews?: T;
+        activityLogEvents?: T;
       };
   activityLog?:
     | T

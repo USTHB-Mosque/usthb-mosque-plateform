@@ -17,27 +17,37 @@ import { toast } from 'sonner'
 type SettingsProfileCardProps = {
   user: UserType
   activeTab?: 'info' | 'security' | 'notifications' | 'shortcuts'
+  hrefBase?: string
+  hideDeleteAccount?: boolean
 }
 
-const tabs = [
-  { id: 'info' as const, label: 'المعلومات', icon: User, href: '/user/settings' },
-  { id: 'security' as const, label: 'الحماية', icon: Shield, href: '/user/settings/security' },
-  {
-    id: 'notifications' as const,
-    label: 'الإشعارات',
-    icon: Bell,
-    href: '/user/settings/notifications',
-  },
-  {
-    id: 'shortcuts' as const,
-    label: 'اختصارات',
-    icon: Keyboard,
-    href: '/user/settings/shortcuts',
-  },
-]
+function getTabs(hrefBase: string) {
+  return [
+    { id: 'info' as const, label: 'المعلومات', icon: User, href: hrefBase },
+    { id: 'security' as const, label: 'الحماية', icon: Shield, href: `${hrefBase}/security` },
+    {
+      id: 'notifications' as const,
+      label: 'الإشعارات',
+      icon: Bell,
+      href: `${hrefBase}/notifications`,
+    },
+    {
+      id: 'shortcuts' as const,
+      label: 'اختصارات',
+      icon: Keyboard,
+      href: `${hrefBase}/shortcuts`,
+    },
+  ]
+}
 
-const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeTab = 'info' }) => {
+const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
+  user,
+  activeTab = 'info',
+  hrefBase = '/user/settings',
+  hideDeleteAccount = false,
+}) => {
   const router = useRouter()
+  const tabs = getTabs(hrefBase)
   const profileMedia = user.profilePicture as Media | undefined
   const avatarUrl = getImageUrl(profileMedia?.url)
   const displayName = user.fullName || user.email || 'مستخدم'
@@ -159,15 +169,17 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeT
         </div>
 
         {/* Delete Account */}
-        <div className="hidden flex-col items-stretch lg:flex">
-          <button
-            type="button"
-            className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2"
-          >
-            <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
-            <span>حذف الحساب</span>
-          </button>
-        </div>
+        {!hideDeleteAccount ? (
+          <div className="hidden flex-col items-stretch lg:flex">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2"
+            >
+              <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
+              <span>حذف الحساب</span>
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   )

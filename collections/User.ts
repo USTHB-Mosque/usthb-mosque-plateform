@@ -241,6 +241,30 @@ export const User: CollectionConfig = {
           defaultValue: true,
           label: 'Loan Return Reminder',
         },
+        {
+          name: 'accountRequests',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Account Requests',
+        },
+        {
+          name: 'overdueReturns',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Overdue Returns',
+        },
+        {
+          name: 'newReviews',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'New Reviews',
+        },
+        {
+          name: 'activityLogEvents',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Activity Log Events',
+        },
       ],
     },
     {
