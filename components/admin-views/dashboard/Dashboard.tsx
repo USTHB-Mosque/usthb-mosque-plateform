@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import CalendarWidget from '@/features/profile/components/dashboard/CalendarWidget'
+import { buildCalendarEventsForLoans } from './calendar-events'
 import type { Loan, Review, Book, User } from '@/payload-types'
 
 interface AdminDashboardProps {
@@ -132,7 +133,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Calendar + Upcoming Returns — bento layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <CalendarWidget />
+        <CalendarWidget events={buildCalendarEventsForLoans(upcomingReturns)} />
         <section className="rounded-2xl border border-border p-4 sm:p-5 lg:col-span-2">
           <header className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-card-foreground">استلامات الكتب القادمة</h2>
