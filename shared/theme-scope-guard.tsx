@@ -18,9 +18,13 @@ const isAdminPath = (path: string) =>
 
 const applyThemeClasses = (wantDark: boolean) => {
   const el = document.documentElement
+  const hasLight = el.classList.contains('light')
+  const hasDark = el.classList.contains('dark')
+  const alreadyCorrect = wantDark ? hasDark && !hasLight : hasLight && !hasDark
+  el.style.colorScheme = wantDark ? 'dark' : 'light'
+  if (alreadyCorrect) return
   el.classList.remove('light', 'dark')
   el.classList.add(wantDark ? 'dark' : 'light')
-  el.style.colorScheme = wantDark ? 'dark' : 'light'
 }
 
 const ThemeScopeGuard: React.FC = () => {
