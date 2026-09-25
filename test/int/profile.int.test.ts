@@ -110,6 +110,10 @@ describe('updateNotificationPreferences', () => {
       activityRegistrations: true,
       loanExtensions: true,
       loanReturnReminder: true,
+      accountRequests: true,
+      overdueReturns: true,
+      newReviews: true,
+      activityLogEvents: true,
     })
   })
 
@@ -133,6 +137,10 @@ describe('updateNotificationPreferences', () => {
       activityRegistrations: true,
       loanExtensions: true,
       loanReturnReminder: true,
+      accountRequests: true,
+      overdueReturns: true,
+      newReviews: true,
+      activityLogEvents: true,
     })
   })
 

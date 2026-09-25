@@ -4,6 +4,8 @@ import React, { useState, useTransition } from 'react'
 import { BookmarkCheck, BookmarkPlus } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { toggleBookFavorite } from '@/features/library/server/favorites'
+import { authKeys } from '@/features/auth'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'
@@ -22,6 +24,7 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({
   const [favorited, setFavorited] = useState(initialFavorited)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   return (
     <Button
@@ -44,6 +47,7 @@ const BookFavoriteButton: React.FC<BookFavoriteButtonProps> = ({
           }
           setFavorited(r.favorited)
           toast.success(r.favorited ? 'أُضيف إلى المفضلة' : 'أُزيل من المفضلة')
+          queryClient.invalidateQueries({ queryKey: authKeys.profile })
           router.refresh()
         })
       }}

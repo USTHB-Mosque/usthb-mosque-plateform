@@ -12,6 +12,7 @@ import type {
 import { User, Calendar, Clock, Heart, Share2 } from 'lucide-react'
 import { Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
+import { cn } from '@/shared/lib/utils'
 import { toast } from 'sonner'
 
 interface ArticleDetailClientProps {
@@ -20,6 +21,7 @@ interface ArticleDetailClientProps {
   publishDate: string | null | undefined
   image: Media | number | undefined
   content: SerializedEditorState | null | undefined
+  wide?: boolean
 }
 
 function calculateReadTime(content: SerializedEditorState | null | undefined): number {
@@ -43,6 +45,7 @@ export default function ArticleDetailClient({
   publishDate,
   image,
   content,
+  wide = false,
 }: ArticleDetailClientProps) {
   const media = image as Media | undefined
   const imageUrl = getImageUrl(media?.url, '/static/images/quran.png')
@@ -54,7 +57,7 @@ export default function ArticleDetailClient({
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className={cn('mx-auto', wide ? 'max-w-6xl' : 'max-w-4xl')}>
       <h1 className="text-center font-khalid text-2xl font-bold text-secondary md:text-3xl">
         {title}
       </h1>

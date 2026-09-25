@@ -237,7 +237,7 @@ export const Loan: CollectionConfig = {
           stamps.pickupHour = formatHour(pickupAt)
         }
 
-        if (status === 'picked_up') {
+        if (status === 'picked_up' && !doc.dueDate) {
           const duration = await resolveLoanDuration(bookId, req)
           stamps.dueDate = addDays(new Date(), duration).toISOString()
         }

@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     silenceDeprecations: ['import'],
   },
   images: {
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
         protocol: 'http',
@@ -28,6 +29,18 @@ const nextConfig: NextConfig = {
         hostname: '127.0.0.1',
         port: '3000',
         pathname: '/api/media/file/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54323',
+        pathname: '/storage/v1/object/public/media/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '54323',
+        pathname: '/storage/v1/object/public/media/**',
       },
       // No direct storage bucket patterns here on purpose: media is always
       // served through /api/media/file/** so collection access control applies.

@@ -20,3 +20,11 @@ export function adminWriteAccess(): Pick<
   const adminOnly: Access = ({ req: { user } }) => isAdmin(user)
   return { create: adminOnly, update: adminOnly, delete: adminOnly }
 }
+
+export function isLibrarian(user: unknown): boolean {
+  return getUserRole(user) === 'librarian'
+}
+
+export function isStaff(user: unknown): boolean {
+  return isAdmin(user) || isLibrarian(user)
+}

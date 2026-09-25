@@ -23,7 +23,13 @@ export default defineConfig({
           name: 'rtl',
           environment: 'jsdom',
           include: ['**/*.test.{ts,tsx}'],
-          exclude: ['**/*.unit.test.ts', '**/*.int.test.ts', 'node_modules/**', '.next/**'],
+          exclude: [
+            '**/*.unit.test.ts',
+            '**/*.int.test.ts',
+            'node_modules/**',
+            '.next/**',
+            '.opencode/**',
+          ],
           setupFiles: ['./vitest.setup.ts'],
           globals: false,
         },
@@ -33,6 +39,7 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           include: ['**/*.unit.test.ts'],
+          exclude: ['node_modules/**', '.next/**', '.opencode/**'],
           setupFiles: ['./test/lib/load-env.ts'],
           globals: false,
         },
@@ -54,6 +61,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['shared/lib/**', 'features/*/server/**', 'collections/**'],
+      // These modules emit no behavior of their own; V8 otherwise reports
+      // their declarations/re-exports as uncovered executable source.
+      exclude: ['**/index.ts', '**/*.types.ts'],
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },
   },

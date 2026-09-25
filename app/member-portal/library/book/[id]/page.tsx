@@ -27,7 +27,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
   const similarBooksResult = await payload.find({
     collection: 'books',
     where: {
-      and: [{ type: { equals: book.type } }, { id: { not_equals: book.id } }],
+      and: [{ type: { in: book.type } }, { id: { not_equals: book.id } }],
     },
     limit: 4,
     sort: '-publishDate',
@@ -67,7 +67,8 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
               title={book.title}
               author={book.author}
               shortDescription={book.shortDescription}
-              tags={book.tags}
+              types={book.type}
+              code={book.code}
             />
             <BookDetailedInformation book={book} similarBooks={similarBooksResult.docs} />
           </div>

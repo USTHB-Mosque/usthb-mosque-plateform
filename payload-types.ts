@@ -80,6 +80,8 @@ export interface Config {
     notifications: Notification;
     'waitlist-entries': WaitlistEntry;
     'loan-extensions': LoanExtension;
+    logs: Log;
+    'library-cards': LibraryCard;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +102,8 @@ export interface Config {
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'waitlist-entries': WaitlistEntriesSelect<false> | WaitlistEntriesSelect<true>;
     'loan-extensions': LoanExtensionsSelect<false> | LoanExtensionsSelect<true>;
+    logs: LogsSelect<false> | LogsSelect<true>;
+    'library-cards': LibraryCardsSelect<false> | LibraryCardsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -159,7 +163,7 @@ export interface User {
   cardId?: string | null;
   situation?: ('student' | 'doctoral' | 'teacher' | 'staff') | null;
   sub?: string | null;
-  role: 'admin' | 'user';
+  role: 'admin' | 'librarian' | 'user';
   profilePicture?: (number | null) | Media;
   verificationDocument?: (number | null) | Media;
   verificationStatus?: ('pending_verification' | 'verified' | 'rejected') | null;
@@ -173,6 +177,10 @@ export interface User {
     activityRegistrations?: boolean | null;
     loanExtensions?: boolean | null;
     loanReturnReminder?: boolean | null;
+    accountRequests?: boolean | null;
+    overdueReturns?: boolean | null;
+    newReviews?: boolean | null;
+    activityLogEvents?: boolean | null;
   };
   activityLog?:
     | {
@@ -238,11 +246,12 @@ export interface Media {
  */
 export interface Book {
   id: number;
+  deletedAt?: string | null;
   title: string;
   code?: string | null;
   loanDurationDays?: number | null;
   author: string;
-  type:
+  type: (
     | 'aqidah'
     | 'fiqh'
     | 'hadith'
@@ -259,7 +268,8 @@ export interface Book {
     | 'engineering'
     | 'economics'
     | 'language'
-    | 'other';
+    | 'other'
+  )[];
   category?: ('religious' | 'scientific') | null;
   tags?:
     | {
@@ -416,7 +426,8 @@ export interface Loan {
 export interface Review {
   id: number;
   user: number | User;
-  book: number | Book;
+  book?: (number | null) | Book;
+  article?: (number | null) | Article;
   rating: number;
   comment?: string | null;
   updatedAt: string;
@@ -503,6 +514,67 @@ export interface LoanExtension {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "logs".
+ */
+export interface Log {
+  id: number;
+  actor?: (number | null) | User;
+  action:
+    | 'book_created'
+    | 'book_updated'
+    | 'book_deleted'
+    | 'book_imported'
+    | 'article_created'
+    | 'article_updated'
+    | 'article_deleted'
+    | 'activity_created'
+    | 'activity_updated'
+    | 'activity_deleted'
+    | 'review_deleted'
+    | 'loan_approved'
+    | 'loan_refused'
+    | 'loan_picked_up'
+    | 'loan_returned'
+    | 'extension_approved'
+    | 'extension_refused'
+    | 'user_verified'
+    | 'user_rejected'
+    | 'user_role_changed'
+    | 'user_deleted'
+    | 'users_imported'
+    | 'card_archived';
+  targetType?: string | null;
+  targetId?: string | null;
+  timestamp: string;
+  message: string;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "library-cards".
+ */
+export interface LibraryCard {
+  id: number;
+  cardId: string;
+  user: number | User;
+  status?: ('active' | 'archived') | null;
+  issueDate: string;
+  archivedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -576,6 +648,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'loan-extensions';
         value: number | LoanExtension;
+      } | null)
+    | ({
+        relationTo: 'logs';
+        value: number | Log;
+      } | null)
+    | ({
+        relationTo: 'library-cards';
+        value: number | LibraryCard;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -650,6 +730,10 @@ export interface UsersSelect<T extends boolean = true> {
         activityRegistrations?: T;
         loanExtensions?: T;
         loanReturnReminder?: T;
+        accountRequests?: T;
+        overdueReturns?: T;
+        newReviews?: T;
+        activityLogEvents?: T;
       };
   activityLog?:
     | T
@@ -702,6 +786,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "books_select".
  */
 export interface BooksSelect<T extends boolean = true> {
+  deletedAt?: T;
   title?: T;
   code?: T;
   loanDurationDays?: T;
@@ -822,6 +907,7 @@ export interface LoansSelect<T extends boolean = true> {
 export interface ReviewsSelect<T extends boolean = true> {
   user?: T;
   book?: T;
+  article?: T;
   rating?: T;
   comment?: T;
   updatedAt?: T;
@@ -897,6 +983,34 @@ export interface LoanExtensionsSelect<T extends boolean = true> {
   adminResponse?: T;
   originalDueDate?: T;
   newDueDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "logs_select".
+ */
+export interface LogsSelect<T extends boolean = true> {
+  actor?: T;
+  action?: T;
+  targetType?: T;
+  targetId?: T;
+  timestamp?: T;
+  message?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "library-cards_select".
+ */
+export interface LibraryCardsSelect<T extends boolean = true> {
+  cardId?: T;
+  user?: T;
+  status?: T;
+  issueDate?: T;
+  archivedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

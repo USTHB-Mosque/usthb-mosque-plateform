@@ -6,42 +6,60 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { Shield, Bell, Keyboard, Trash2, User } from 'lucide-react'
+import { LogOut, Shield, Bell, Keyboard, Trash2, User } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Media, User as UserType } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import { cn } from '@/shared/lib/utils'
+import { logout } from '@/features/auth'
+import { toast } from 'sonner'
 
 type SettingsProfileCardProps = {
   user: UserType
   activeTab?: 'info' | 'security' | 'notifications' | 'shortcuts'
+  hrefBase?: string
+  hideDeleteAccount?: boolean
 }
 
-const tabs = [
-  { id: 'info' as const, label: 'المعلومات', icon: User, href: '/user/settings' },
-  { id: 'security' as const, label: 'الحماية', icon: Shield, href: '/user/settings/security' },
-  {
-    id: 'notifications' as const,
-    label: 'الإشعارات',
-    icon: Bell,
-    href: '/user/settings/notifications',
-  },
-  {
-    id: 'shortcuts' as const,
-    label: 'اختصارات',
-    icon: Keyboard,
-    href: '/user/settings/shortcuts',
-  },
-]
+function getTabs(hrefBase: string) {
+  return [
+    { id: 'info' as const, label: 'المعلومات', icon: User, href: hrefBase },
+    { id: 'security' as const, label: 'الحماية', icon: Shield, href: `${hrefBase}/security` },
+    {
+      id: 'notifications' as const,
+      label: 'الإشعارات',
+      icon: Bell,
+      href: `${hrefBase}/notifications`,
+    },
+    {
+      id: 'shortcuts' as const,
+      label: 'اختصارات',
+      icon: Keyboard,
+      href: `${hrefBase}/shortcuts`,
+    },
+  ]
+}
 
-const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeTab = 'info' }) => {
+const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
+  user,
+  activeTab = 'info',
+  hrefBase = '/user/settings',
+  hideDeleteAccount = false,
+}) => {
   const router = useRouter()
+  const tabs = getTabs(hrefBase)
   const profileMedia = user.profilePicture as Media | undefined
   const avatarUrl = getImageUrl(profileMedia?.url)
   const displayName = user.fullName || user.email || 'مستخدم'
   const createdAt = user.createdAt
     ? format(new Date(user.createdAt), 'dd/MM/yyyy', { locale: arDZ })
     : 'غير محدد'
+
+  const onLogout = async () => {
+    await logout()
+    toast.success('تم تسجيل الخروج بنجاح')
+    router.push('/auth/login')
+  }
 
   return (
     <div
@@ -138,16 +156,30 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({ user, activeT
         {/* Divider */}
         <div className="mx-6 hidden h-px rounded-[5px] bg-stroke-grey lg:block" />
 
-        {/* Delete Account */}
+        {/* Logout */}
         <div className="hidden flex-col items-stretch lg:flex">
           <button
             type="button"
-            className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-foreground transition-colors hover:bg-red-500/10 hover:text-destructive rounded-[10px] mx-2"
           >
-            <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
-            <span>حذف الحساب</span>
+            <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+            <span>تسجيل الخروج</span>
           </button>
         </div>
+
+        {/* Delete Account */}
+        {!hideDeleteAccount ? (
+          <div className="hidden flex-col items-stretch lg:flex">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2"
+            >
+              <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
+              <span>حذف الحساب</span>
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   )

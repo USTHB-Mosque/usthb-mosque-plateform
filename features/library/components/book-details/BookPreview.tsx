@@ -23,6 +23,8 @@ interface BookPreviewProps {
   initialFavorited: boolean
   bookTitle?: string
   hasActiveLoan?: boolean
+  adminMode?: boolean
+  adminActions?: React.ReactNode
 }
 
 const BookPreview: React.FC<BookPreviewProps> = ({
@@ -34,6 +36,8 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   initialFavorited,
   bookTitle,
   hasActiveLoan = false,
+  adminMode = false,
+  adminActions,
 }) => {
   const media = image as Media
   const imageUrl = getImageUrl(media?.url)
@@ -102,45 +106,52 @@ const BookPreview: React.FC<BookPreviewProps> = ({
             <div className="flex items-center justify-center">
               <Ratings averageRating={averageRating || 0} ratingCount={ratingCount || 0} />
             </div>
-
-            {hasActiveLoan ? (
-              <div className="flex items-center justify-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
-                <CheckCircle2 className="size-5 text-[#0DE9C3]" />
-                <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
-                  لديك إعارة نشطة لهذا الكتاب
-                </span>
-              </div>
+            {adminMode ? (
+              <div className="flex flex-col gap-3">{adminActions}</div>
             ) : (
-              <Button
-                className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none"
-                onClick={handleBorrowClick}
-                disabled={isBorrowing}
-              >
-                {user ? 'احجز الآن' : 'تصفح الكتاب'}
-              </Button>
-            )}
+              <>
+                {hasActiveLoan ? (
+                  <div className="flex items-center justify-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
+                    <CheckCircle2 className="size-5 text-[#0DE9C3]" />
+                    <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
+                      لديك إعارة نشطة لهذا الكتاب
+                    </span>
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none"
+                    onClick={handleBorrowClick}
+                    disabled={isBorrowing}
+                  >
+                    {user ? 'احجز الآن' : 'تصفح الكتاب'}
+                  </Button>
+                )}
 
-            <div className="flex gap-3">
-              <BookFavoriteButton
-                bookId={bookId}
-                initialFavorited={initialFavorited}
-                className="flex-1 h-12"
-              />
-              <Button variant="outline" size="icon" onClick={onCopyLink} className="h-12 w-12">
-                <Link className="size-5" />
-              </Button>
-            </div>
+                <div className="flex gap-3">
+                  <BookFavoriteButton
+                    bookId={bookId}
+                    initialFavorited={initialFavorited}
+                    className="flex-1 h-12"
+                  />
+                  <Button variant="outline" size="icon" onClick={onCopyLink} className="h-12 w-12">
+                    <Link className="size-5" />
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Card>
 
-      <BorrowDialog
-        open={borrowDialogOpen}
-        onOpenChange={setBorrowDialogOpen}
-        onConfirm={handleBorrowConfirm}
-        isLoading={isBorrowing}
-        bookTitle={bookTitle}
-      />
+      {!adminMode && (
+        <BorrowDialog
+          open={borrowDialogOpen}
+          onOpenChange={setBorrowDialogOpen}
+          onConfirm={handleBorrowConfirm}
+          isLoading={isBorrowing}
+          bookTitle={bookTitle}
+        />
+      )}
     </>
   )
 }

@@ -6,6 +6,7 @@ import { ArticleSearchParams } from '@/features/articles/types'
 import { stringify } from 'qs-esm'
 
 export const articlesKeys = {
+  root: ['articles'] as const,
   list: (params?: ArticleSearchParams) => ['articles', 'list', params] as const,
   detail: (id: string) => ['articles', 'detail', id] as const,
 }

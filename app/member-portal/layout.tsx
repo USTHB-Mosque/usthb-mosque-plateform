@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic'
 export default async function MemberPortalLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser({ allowAdmin: true })
   if (!user) redirect('/auth/login?redirect=/user/dashboard')
-  if (user.role === 'admin') redirect('/admin')
+  if (user.role === 'admin' || user.role === 'librarian') redirect('/admin-panel/dashboard')
 
   const dashboard = await getProfileDashboardData()
   const activeLoans =
