@@ -5,6 +5,7 @@ import { getPayloadWithUser, setPayloadTokenCookie } from '@/shared/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { logoutOperation } from 'payload'
 import { logActivity } from '@/utils/activity-log'
+import { getAdminLogs } from './logs'
 
 export async function getAdminUser() {
   const ctx = await getPayloadWithUser({ allowAdmin: true })
@@ -63,6 +64,64 @@ export async function getAdminSettingsData(): Promise<{ user: User } | null> {
   })) as User
 
   return { user }
+}
+
+export async function getAdminSecurityData() {
+  const ctx = await getAdminUser()
+  if (!ctx) return null
+  const [user, logs] = await Promise.all([
+    ctx.payload.findByID({
+      collection: 'users',
+      id: ctx.user.id,
+      req: ctx.req,
+      overrideAccess: false,
+      depth: 0,
+    }),
+    getAdminLogs({ actor: ctx.user.id, limit: 50 }),
+  ])
+  return {
+    user: user as User,
+    accountLogs: logs.logs,
+    currentSessionId: (ctx.req.user as { _sid?: string } | undefined)?._sid ?? null,
+  }
+}
+
+export async function revokeAdminSession(sessionId: string, currentPassword: string) {
+  const ctx = await getAdminUser()
+  if (!ctx) return { ok: false as const, error: 'غير مصرح' }
+  if (!sessionId || !currentPassword)
+    return { ok: false as const, error: 'أدخل كلمة المرور الحالية' }
+
+  const freshUser = await ctx.payload.findByID({
+    collection: 'users',
+    id: ctx.user.id,
+    req: ctx.req,
+    overrideAccess: false,
+    depth: 0,
+  })
+  const sessions = freshUser.sessions ?? []
+  if (!sessions.some((session) => session.id === sessionId)) {
+    return { ok: false as const, error: 'الجهاز غير موجود أو تم تسجيل خروجه' }
+  }
+
+  try {
+    await ctx.payload.login({
+      collection: 'users',
+      data: { email: ctx.user.email, password: currentPassword },
+    })
+  } catch {
+    return { ok: false as const, error: 'كلمة المرور الحالية غير صحيحة' }
+  }
+
+  await ctx.payload.update({
+    collection: 'users',
+    id: ctx.user.id,
+    data: { sessions: sessions.filter((session) => session.id !== sessionId) },
+    req: ctx.req,
+    overrideAccess: true,
+  })
+  revalidatePath('/admin-panel/settings/security')
+  return { ok: true as const }
 }
 
 export async function updateAdminSettingsField(formData: FormData, field: string) {

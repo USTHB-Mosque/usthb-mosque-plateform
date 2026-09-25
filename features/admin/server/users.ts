@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction } from './logs-core'
 import type { Where } from 'payload'
 
 export { getAdminCtx }
@@ -117,6 +119,12 @@ export async function softDeleteUser(userId: number) {
   })
 
   revalidatePath('/admin-panel/users')
+  await writeLog(payload, user, {
+    action: LogAction.UserDeleted,
+    targetType: 'user',
+    targetId: userId,
+    message: `حذف عضو #${userId}`,
+  })
   return { ok: true }
 }
 
@@ -157,6 +165,12 @@ export async function createAdminUser(input: {
     })
 
     revalidatePath('/admin-panel/users')
+    await writeLog(payload, user, {
+      action: LogAction.UserRoleChanged,
+      targetType: 'user',
+      targetId: doc.id,
+      message: `أنشأ حساباً بدور ${input.role}`,
+    })
     return { ok: true, userId: doc.id }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'تعذر إنشاء المستخدم'
@@ -184,6 +198,12 @@ export async function updateUserRole(
 
     revalidatePath('/admin-panel/users')
     revalidatePath(`/admin-panel/users/${userId}`)
+    await writeLog(payload, user, {
+      action: LogAction.UserRoleChanged,
+      targetType: 'user',
+      targetId: userId,
+      message: `غيّر دور عضو #${userId} إلى ${role}`,
+    })
     return { ok: true }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'تعذر تحديث الدور'

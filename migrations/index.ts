@@ -14,6 +14,7 @@ import * as migration_20260924_000000_book_type_has_many from './20260924_000000
 import * as migration_20260924_000001_drop_extension_request_from_loans from './20260924_000001_drop_extension_request_from_loans'
 import * as migration_20260924_100000_add_admin_notification_preferences from './20260924_100000_add_admin_notification_preferences'
 import * as migration_20260925_000000_phase_2_data_layer from './20260925_000000_phase_2_data_layer'
+import * as migration_20260925_100000_phase_2_admin_screens from './20260925_100000_phase_2_admin_screens'
 
 export const migrations = [
   {
@@ -95,5 +96,10 @@ export const migrations = [
     up: migration_20260925_000000_phase_2_data_layer.up,
     down: migration_20260925_000000_phase_2_data_layer.down,
     name: '20260925_000000_phase_2_data_layer',
+  },
+  {
+    up: migration_20260925_100000_phase_2_admin_screens.up,
+    down: migration_20260925_100000_phase_2_admin_screens.down,
+    name: '20260925_100000_phase_2_admin_screens',
   },
 ]

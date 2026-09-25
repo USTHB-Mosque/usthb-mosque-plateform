@@ -409,7 +409,6 @@ export interface Loan {
   user: number | User;
   status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused') | null;
   loanDate: string;
-  createdAt: string;
   dueDate?: string | null;
   pickupDate?: string | null;
   pickupHour?: string | null;
@@ -418,6 +417,7 @@ export interface Loan {
   returnDate?: string | null;
   overdueNotified?: boolean | null;
   updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -518,7 +518,7 @@ export interface LoanExtension {
  */
 export interface Log {
   id: number;
-  actor: number | User;
+  actor?: (number | null) | User;
   action:
     | 'book_created'
     | 'book_updated'
@@ -890,7 +890,6 @@ export interface LoansSelect<T extends boolean = true> {
   user?: T;
   status?: T;
   loanDate?: T;
-  createdAt?: T;
   dueDate?: T;
   pickupDate?: T;
   pickupHour?: T;
@@ -899,6 +898,7 @@ export interface LoansSelect<T extends boolean = true> {
   returnDate?: T;
   overdueNotified?: T;
   updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

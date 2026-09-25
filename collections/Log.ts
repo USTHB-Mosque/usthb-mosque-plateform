@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { isAdmin } from '@/utils/access-helpers'
+import { isAdmin, isStaff } from '@/utils/access-helpers'
 
 export const LogAction = {
   BookCreated: 'book_created',
@@ -49,9 +49,10 @@ export const Log: CollectionConfig = {
       if (isAdmin(user)) return true
       return { actor: { equals: user.id } }
     },
-    create: ({ req: { user } }) => isAdmin(user),
-    update: ({ req: { user } }) => isAdmin(user),
-    delete: ({ req: { user } }) => isAdmin(user),
+    create: ({ req: { user } }) => isStaff(user),
+    // Audit log is append-only: rows are never edited or removed.
+    update: () => false,
+    delete: () => false,
   },
   fields: [
     {

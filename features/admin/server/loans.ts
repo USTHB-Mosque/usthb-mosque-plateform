@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction, type LogActionValue } from './logs-core'
 import {
   acceptLoan,
   acceptLoanLogic,
@@ -18,6 +20,37 @@ import type { LoanStatus } from '@/utils/constants/loans'
 const revalidateAdminLoans = () => {
   revalidatePath('/admin-panel/dashboard')
   revalidatePath('/admin-panel/loans')
+}
+
+/** Writes a loan-transition log line, resolving the book title when possible. */
+async function writeLoanLog(
+  payload: Payload,
+  user: User,
+  loanId: number,
+  action: LogActionValue,
+  describe: (title: string) => string,
+): Promise<void> {
+  let title = ''
+  try {
+    const loan = await payload.findByID({
+      collection: 'loans',
+      id: Number(loanId),
+      depth: 1,
+      overrideAccess: false,
+      user,
+    })
+    if (loan && typeof loan.book === 'object' && loan.book && 'title' in loan.book) {
+      title = (loan.book as Book).title
+    }
+  } catch {
+    // Fall through with an empty title rather than failing the transition.
+  }
+  await writeLog(payload, user, {
+    action,
+    targetType: 'loan',
+    targetId: loanId,
+    message: describe(title),
+  })
 }
 
 export interface AdminLoansStats {
@@ -226,12 +259,22 @@ export async function addLoan(
   }
 
   revalidateAdminLoans()
+  await writeLog(ctx.payload, ctx.user, {
+    action: LogAction.LoanApproved,
+    targetType: 'loan',
+    targetId: loan.id,
+    message: `قبل طلب إعارة للكتاب: ${book.title}`,
+  })
   return { ok: true, loanId: result.loanId }
 }
 
 export async function approveLoan(loanId: number) {
   const result = await acceptLoan(loanId)
   if (!result.success) return { ok: false, error: result.message }
+  const ctx = await getAdminCtx()
+  await writeLoanLog(ctx.payload, ctx.user, loanId, LogAction.LoanApproved, (title) =>
+    title ? `قبل طلب إعارة: ${title}` : `قبل طلب إعارة #${loanId}`,
+  )
   revalidateAdminLoans()
   return { ok: true }
 }
@@ -239,6 +282,10 @@ export async function approveLoan(loanId: number) {
 export async function rejectLoan(loanId: number, reason?: string) {
   const result = await refuseLoan(loanId, reason || 'رفض الطلب من قبل الإدارة')
   if (!result.success) return { ok: false, error: result.message }
+  const ctx = await getAdminCtx()
+  await writeLoanLog(ctx.payload, ctx.user, loanId, LogAction.LoanRefused, (title) =>
+    title ? `رفض طلب إعارة: ${title}` : `رفض طلب إعارة #${loanId}`,
+  )
   revalidateAdminLoans()
   return { ok: true }
 }
@@ -248,6 +295,10 @@ export async function rejectLoan(loanId: number, reason?: string) {
 export async function markLoanReturned(loanId: number) {
   const result = await libraryMarkLoanReturned(loanId)
   if (!result.success) return { ok: false, error: result.message }
+  const ctx = await getAdminCtx()
+  await writeLoanLog(ctx.payload, ctx.user, loanId, LogAction.LoanReturned, (title) =>
+    title ? `استلم كتاباً: ${title}` : `استلم إعارة #${loanId}`,
+  )
   revalidateAdminLoans()
   return { ok: true }
 }
@@ -255,6 +306,10 @@ export async function markLoanReturned(loanId: number) {
 export async function markLoanPickedUp(loanId: number) {
   const result = await libraryMarkLoanPickedUp(loanId)
   if (!result.success) return { ok: false, error: result.message }
+  const ctx = await getAdminCtx()
+  await writeLoanLog(ctx.payload, ctx.user, loanId, LogAction.LoanPickedUp, (title) =>
+    title ? `سلّم كتاباً: ${title}` : `سلّم إعارة #${loanId}`,
+  )
   revalidateAdminLoans()
   return { ok: true }
 }

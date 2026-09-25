@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getStaffCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction } from './logs-core'
 import type { Payload } from 'payload'
 import type { Article, User } from '@/payload-types'
 
@@ -113,6 +115,12 @@ export async function createArticle(formData: FormData) {
 
   revalidatePath('/admin-panel/articles')
   revalidatePath('/articles')
+  await writeLog(payload, user, {
+    action: LogAction.ArticleCreated,
+    targetType: 'article',
+    targetId: article.id,
+    message: `أضاف مقالاً: ${article.title}`,
+  })
   return { ok: true, articleId: article.id }
 }
 
@@ -135,6 +143,12 @@ export async function updateArticle(articleId: number, formData: FormData) {
 
   revalidatePath('/admin-panel/articles')
   revalidatePath(`/admin-panel/articles/${articleId}`)
+  await writeLog(payload, user, {
+    action: LogAction.ArticleUpdated,
+    targetType: 'article',
+    targetId: articleId,
+    message: `عدّل مقالاً: ${article.title}`,
+  })
   return { ok: true, articleId: article.id }
 }
 
@@ -155,6 +169,19 @@ export async function getAdminArticle(articleId: number | string) {
 export async function deleteArticle(articleId: number) {
   const { payload, user } = await getStaffCtx()
 
+  let article
+  try {
+    article = await payload.findByID({
+      collection: 'articles',
+      id: articleId,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    })
+  } catch {
+    return { ok: false as const, error: 'تعذر حذف المقال، حاول مرة أخرى.' }
+  }
+
   try {
     await payload.delete({
       collection: 'articles',
@@ -167,6 +194,12 @@ export async function deleteArticle(articleId: number) {
   }
 
   revalidatePath('/admin-panel/articles')
+  await writeLog(payload, user, {
+    action: LogAction.ArticleDeleted,
+    targetType: 'article',
+    targetId: articleId,
+    message: `حذف مقال: ${article.title}`,
+  })
   return { ok: true as const }
 }
 
@@ -183,5 +216,10 @@ export async function bulkDeleteArticles(articleIds: number[]) {
   })
 
   revalidatePath('/admin-panel/articles')
+  await writeLog(payload, user, {
+    action: LogAction.ArticleDeleted,
+    targetType: 'article',
+    message: `حذف ${result.docs.length} مقالاً`,
+  })
   return { ok: result.errors.length === 0, count: result.docs.length }
 }

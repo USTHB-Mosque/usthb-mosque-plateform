@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getStaffCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction } from './logs-core'
 import type { Payload } from 'payload'
 import type { Book, User } from '@/payload-types'
 
@@ -110,6 +112,12 @@ export async function createBook(formData: FormData) {
   })
 
   revalidatePath('/admin-panel/library')
+  await writeLog(payload, user, {
+    action: LogAction.BookCreated,
+    targetType: 'book',
+    targetId: book.id,
+    message: `أضاف كتاباً: ${fields.title}`,
+  })
   return { ok: true, bookId: book.id }
 }
 
@@ -133,6 +141,12 @@ export async function updateBook(bookId: number, formData: FormData) {
 
   revalidatePath('/admin-panel/library')
   revalidatePath(`/admin-panel/library/book/${bookId}`)
+  await writeLog(payload, user, {
+    action: LogAction.BookUpdated,
+    targetType: 'book',
+    targetId: bookId,
+    message: `عدّل كتاباً: ${fields.title}`,
+  })
   return { ok: true, bookId: book.id }
 }
 
@@ -153,6 +167,14 @@ export async function getAdminBook(bookId: number | string) {
 export async function softDeleteBook(bookId: number) {
   const { payload, user } = await getBookCtx()
 
+  const book = await payload.findByID({
+    collection: 'books',
+    id: bookId,
+    depth: 0,
+    overrideAccess: false,
+    user,
+  })
+
   await payload.update({
     collection: 'books',
     id: bookId,
@@ -162,6 +184,12 @@ export async function softDeleteBook(bookId: number) {
   })
 
   revalidatePath('/admin-panel/library')
+  await writeLog(payload, user, {
+    action: LogAction.BookDeleted,
+    targetType: 'book',
+    targetId: bookId,
+    message: `أرشف كتاباً: ${book.title}`,
+  })
   return { ok: true }
 }
 
@@ -179,11 +207,29 @@ export async function bulkSoftDeleteBooks(bookIds: number[]) {
   })
 
   revalidatePath('/admin-panel/library')
+  await writeLog(payload, user, {
+    action: LogAction.BookDeleted,
+    targetType: 'book',
+    message: `أرشف ${result.docs.length} كتاباً`,
+  })
   return { ok: result.errors.length === 0, count: result.docs.length }
 }
 
 export async function deleteBook(bookId: number) {
   const { payload, user } = await getBookCtx()
+
+  let book
+  try {
+    book = await payload.findByID({
+      collection: 'books',
+      id: bookId,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    })
+  } catch {
+    return { ok: false as const, error: 'الكتاب غير موجود' }
+  }
 
   try {
     await payload.delete({
@@ -201,5 +247,11 @@ export async function deleteBook(bookId: number) {
   }
 
   revalidatePath('/admin-panel/library')
+  await writeLog(payload, user, {
+    action: LogAction.BookDeleted,
+    targetType: 'book',
+    targetId: bookId,
+    message: `حذف نهائياً كتاب: ${book.title}`,
+  })
   return { ok: true as const }
 }

@@ -10,6 +10,8 @@ vi.mock('./ctx', () => ({
   getStaffCtx: (...args: unknown[]) => getStaffCtx(...args),
 }))
 
+vi.mock('./logs', () => ({ writeLog: vi.fn() }))
+
 const {
   getAdminActivitiesStats,
   createActivity,
@@ -245,7 +247,7 @@ describe('features/admin/server/activities.ts', () => {
   describe('deleteActivity', () => {
     it('deletes the activity', async () => {
       const deleteFn = vi.fn().mockResolvedValue({})
-      staffMock({ delete: deleteFn })
+      staffMock({ findByID: vi.fn().mockResolvedValue({ id: 7, title: 'نشاط' }), delete: deleteFn })
 
       const result = await deleteActivity(7)
 
@@ -256,7 +258,10 @@ describe('features/admin/server/activities.ts', () => {
     })
 
     it('returns a friendly error when the delete fails', async () => {
-      staffMock({ delete: vi.fn().mockRejectedValue(new Error('fk constraint')) })
+      staffMock({
+        findByID: vi.fn().mockResolvedValue({ id: 7, title: 'نشاط' }),
+        delete: vi.fn().mockRejectedValue(new Error('fk constraint')),
+      })
 
       const result = await deleteActivity(7)
 

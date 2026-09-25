@@ -2,13 +2,14 @@
 
 import React from 'react'
 import { LogIn, KeyRound, UserCheck, ShieldCheck, UserPlus } from 'lucide-react'
-import { User } from '@/payload-types'
+import { User, Log } from '@/payload-types'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 
 type ActivityLogProps = {
   user: User
   onBack: () => void
+  entries?: Log[]
 }
 
 const actionConfig: Record<string, { label: string; icon: React.ElementType }> = {
@@ -19,12 +20,14 @@ const actionConfig: Record<string, { label: string; icon: React.ElementType }> =
   account_created: { label: 'إنشاء الحساب', icon: UserPlus },
 }
 
-const ActivityLog: React.FC<ActivityLogProps> = ({ user, onBack }) => {
-  const entries = (user.activityLog ?? []) as Array<{
-    action: string
-    timestamp: string
-    metadata?: string
-  }>
+const ActivityLog: React.FC<ActivityLogProps> = ({ user, onBack, entries: suppliedEntries }) => {
+  const entries =
+    suppliedEntries ??
+    ((user.activityLog ?? []) as Array<{
+      action: string
+      timestamp: string
+      metadata?: string
+    }> as Log[])
 
   return (
     <div className="flex flex-col self-stretch gap-6">
@@ -52,8 +55,10 @@ const ActivityLog: React.FC<ActivityLogProps> = ({ user, onBack }) => {
                   <Icon className="h-5 w-5 text-primary-300" />
                 </div>
                 <div className="flex flex-col items-start gap-1">
-                  <span className="text-base font-alyamama text-[#243245]">{config.label}</span>
-                  {entry.metadata && (
+                  <span className="text-base font-alyamama text-[#243245]">
+                    {'message' in entry && entry.message ? entry.message : config.label}
+                  </span>
+                  {'metadata' in entry && typeof entry.metadata === 'string' && entry.metadata && (
                     <span className="text-sm font-alyamama text-grey-500">{entry.metadata}</span>
                   )}
                 </div>

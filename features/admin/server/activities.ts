@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getStaffCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction } from './logs-core'
 import type { Payload } from 'payload'
 import type { Activity, User } from '@/payload-types'
 
@@ -146,6 +148,12 @@ export async function createActivity(formData: FormData) {
 
   revalidatePath('/admin-panel/activities')
   revalidatePath('/activities')
+  await writeLog(payload, user, {
+    action: LogAction.ActivityCreated,
+    targetType: 'activity',
+    targetId: activity.id,
+    message: `أضاف نشاطاً: ${activity.title}`,
+  })
   return { ok: true, activityId: activity.id }
 }
 
@@ -168,6 +176,12 @@ export async function updateActivity(activityId: number, formData: FormData) {
 
   revalidatePath('/admin-panel/activities')
   revalidatePath(`/admin-panel/activities/${activityId}`)
+  await writeLog(payload, user, {
+    action: LogAction.ActivityUpdated,
+    targetType: 'activity',
+    targetId: activityId,
+    message: `عدّل نشاطاً: ${activity.title}`,
+  })
   return { ok: true, activityId: activity.id }
 }
 
@@ -188,6 +202,19 @@ export async function getAdminActivity(activityId: number | string) {
 export async function deleteActivity(activityId: number) {
   const { payload, user } = await getStaffCtx()
 
+  let activity
+  try {
+    activity = await payload.findByID({
+      collection: 'activities',
+      id: activityId,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    })
+  } catch {
+    return { ok: false as const, error: 'تعذر حذف النشاط، حاول مرة أخرى.' }
+  }
+
   try {
     await payload.delete({
       collection: 'activities',
@@ -200,6 +227,12 @@ export async function deleteActivity(activityId: number) {
   }
 
   revalidatePath('/admin-panel/activities')
+  await writeLog(payload, user, {
+    action: LogAction.ActivityDeleted,
+    targetType: 'activity',
+    targetId: activityId,
+    message: `حذف نشاط: ${activity.title}`,
+  })
   return { ok: true as const }
 }
 
@@ -216,5 +249,10 @@ export async function bulkDeleteActivities(activityIds: number[]) {
   })
 
   revalidatePath('/admin-panel/activities')
+  await writeLog(payload, user, {
+    action: LogAction.ActivityDeleted,
+    targetType: 'activity',
+    message: `حذف ${result.docs.length} نشاطاً`,
+  })
   return { ok: result.errors.length === 0, count: result.docs.length }
 }

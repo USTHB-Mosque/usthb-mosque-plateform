@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 
 import { getAdminCtx, getStaffCtx } from './ctx'
+import { writeLog } from './logs'
+import { LogAction } from './logs-core'
 import { fetchImageBuffer, parseBooksCsv, parseUsersCsv } from './csv-core'
 
 import type { BookSeed, CsvPreviewResult, UserSeed } from './csv-core'
@@ -126,6 +128,11 @@ export async function commitBooksImport(file: File): Promise<CsvCommitResult> {
   }
 
   revalidatePath('/admin-panel/library')
+  await writeLog(payload, user, {
+    action: LogAction.BookImported,
+    targetType: 'book',
+    message: `استورد ${seeds.length} كتاباً من ملف CSV`,
+  })
   return { ok: true, created: seeds.length }
 }
 
@@ -191,5 +198,10 @@ export async function commitUsersImport(file: File): Promise<CsvCommitResult> {
   }
 
   revalidatePath('/admin-panel/users')
+  await writeLog(payload, user, {
+    action: LogAction.UsersImported,
+    targetType: 'user',
+    message: `استورد ${seeds.length} عضواً من ملف CSV`,
+  })
   return { ok: true, created: seeds.length }
 }

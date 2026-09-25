@@ -14,6 +14,8 @@ import type { User } from '@/payload-types'
 import {
   changeAdminPassword,
   getAdminSettingsData,
+  getAdminSecurityData,
+  revokeAdminSession,
   updateAdminNotificationPreferences,
   updateAdminPhone,
   updateAdminSettingsField,
@@ -265,5 +267,95 @@ describe('changeAdminPassword', () => {
       data: { email: admin.email, password: 'brand-new-password' },
     })
     expect(newPasswordLogin.token).toBeTruthy()
+  })
+})
+
+describe('admin security session management', () => {
+  it('lists only this admin’s real sessions and account-log rows', async () => {
+    const first = await loginToken(payload, {
+      email: admin.email ?? '',
+      password: 'correct horse battery',
+    })
+    await loginToken(payload, {
+      email: admin.email ?? '',
+      password: 'correct horse battery',
+    })
+    setNextHeaders(makeAuthHeaders(first.token))
+    await payload.create({
+      collection: 'logs',
+      data: {
+        actor: admin.id,
+        action: 'book_created',
+        timestamp: new Date().toISOString(),
+        message: 'أضاف كتاباً',
+      },
+      overrideAccess: true,
+    })
+    const other = await createTestUser(payload, {
+      role: 'admin',
+      email: 'other-admin@settings-int.usthb.dz',
+      verified: true,
+    })
+    await payload.create({
+      collection: 'logs',
+      data: {
+        actor: other.id,
+        action: 'book_created',
+        timestamp: new Date().toISOString(),
+        message: 'سجل مشرف آخر',
+      },
+      overrideAccess: true,
+    })
+
+    const data = await getAdminSecurityData()
+    expect(data?.user.sessions?.length).toBeGreaterThanOrEqual(2)
+    expect(data?.accountLogs).toHaveLength(1)
+    expect(typeof data?.accountLogs[0].actor === 'object' && data.accountLogs[0].actor?.id).toBe(
+      admin.id,
+    )
+  })
+
+  it('requires the current password and revokes the selected session immediately', async () => {
+    const first = await loginToken(payload, {
+      email: admin.email ?? '',
+      password: 'correct horse battery',
+    })
+    const second = await loginToken(payload, {
+      email: admin.email ?? '',
+      password: 'correct horse battery',
+    })
+    setNextHeaders(makeAuthHeaders(second.token))
+    const before = await payload.findByID({
+      collection: 'users',
+      id: admin.id,
+      overrideAccess: true,
+    })
+    const firstSessionId = JSON.parse(
+      Buffer.from(first.token.split('.')[1], 'base64url').toString(),
+    ).sid
+    const targetSession = before.sessions?.find((session) => session.id === firstSessionId)
+    expect(targetSession).toBeTruthy()
+
+    await expect(revokeAdminSession(targetSession!.id, 'wrong-password')).resolves.toEqual({
+      ok: false,
+      error: 'كلمة المرور الحالية غير صحيحة',
+    })
+    await expect(revokeAdminSession(targetSession!.id, 'correct horse battery')).resolves.toEqual({
+      ok: true,
+    })
+
+    const after = await payload.findByID({
+      collection: 'users',
+      id: admin.id,
+      overrideAccess: true,
+    })
+    expect(after.sessions?.some((session) => session.id === targetSession!.id)).toBe(false)
+    const revoked = await payload.auth({
+      headers: new Headers({
+        cookie: `payload-token=${first.token}`,
+        origin: 'http://localhost:3000',
+      }),
+    })
+    expect(revoked.user).toBeNull()
   })
 })
