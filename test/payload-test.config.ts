@@ -18,6 +18,8 @@ import {
   Notification,
   WaitlistEntry,
   LoanExtension,
+  Log,
+  LibraryCard,
 } from '@/collections'
 import { Settings } from '@/globals'
 
@@ -55,6 +57,8 @@ export default buildConfig({
     Notification,
     WaitlistEntry,
     LoanExtension,
+    Log,
+    LibraryCard,
   ],
   globals: [Settings],
   editor: lexicalEditor(),

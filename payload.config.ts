@@ -20,6 +20,8 @@ import {
   Notification,
   WaitlistEntry,
   LoanExtension,
+  Log,
+  LibraryCard,
 } from './collections'
 import { Settings } from './globals'
 
@@ -59,6 +61,8 @@ export default buildConfig({
     Notification,
     WaitlistEntry,
     LoanExtension,
+    Log,
+    LibraryCard,
   ],
   globals: [Settings],
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',

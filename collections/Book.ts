@@ -59,6 +59,7 @@ export const Book: CollectionConfig = {
       type: 'select',
       options: bookCategoriesConfigArray,
       defaultValue: 'religious',
+      index: true,
     },
     {
       name: 'tags',

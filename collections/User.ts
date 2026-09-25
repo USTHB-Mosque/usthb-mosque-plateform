@@ -2,6 +2,7 @@ import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 import { logActivity } from '@/utils/activity-log'
+import { ensureLibraryCard } from '@/utils/library-cards'
 import { userSituationsConfigArray } from '@/utils/constants/users'
 
 export const User: CollectionConfig = {
@@ -11,6 +12,11 @@ export const User: CollectionConfig = {
       async ({ doc, req, operation, previousDoc }) => {
         if (operation === 'create') {
           await logActivity(req.payload, doc.id, 'account_created', undefined, req)
+          // Admins may create a user that is already verified; mint the card
+          // so it is never skipped because no status transition follows.
+          if (doc.verificationStatus === 'verified') {
+            await ensureLibraryCard(req.payload, doc.id, req)
+          }
         }
         // `previousDoc` is the row as it was before this update, so the
         // verified transition is detected without a nested read that could
@@ -21,6 +27,7 @@ export const User: CollectionConfig = {
           previousDoc.verificationStatus !== 'verified'
         ) {
           await logActivity(req.payload, doc.id, 'account_verified', undefined, req)
+          await ensureLibraryCard(req.payload, doc.id, req)
         }
         return doc
       },
