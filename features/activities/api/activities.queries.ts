@@ -6,6 +6,7 @@ import { ActivitySearchParams } from '@/features/activities/types'
 import { stringify } from 'qs-esm'
 
 export const activitiesKeys = {
+  root: ['activities'] as const,
   list: (params?: ActivitySearchParams) => ['activities', 'list', params] as const,
   detail: (id: string) => ['activities', 'detail', id] as const,
 }

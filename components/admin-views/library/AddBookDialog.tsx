@@ -19,85 +19,8 @@ import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical
 import { getImageUrl } from '@/shared/lib/image-utils'
 import { booksKeys } from '@/features/library/api/books.queries'
 import { cn } from '@/shared/lib/utils'
-
-async function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<File> {
-  return new Promise((resolve) => {
-    const img = new window.Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      let w = img.width
-      let h = img.height
-      if (w > maxWidth) {
-        h = (h * maxWidth) / w
-        w = maxWidth
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, w, h)
-      canvas.toBlob(
-        (blob) => {
-          resolve(new File([blob!], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-        },
-        'image/jpeg',
-        quality,
-      )
-    }
-    img.src = url
-  })
-}
-
-// The long-description field is a Payload lexical (richText) rich editor.
-// The dialog edits it as plain text: serialize to a minimal lexical state on
-// save and flatten that state back to text for pre-fill.
-function plainTextToLexical(text: string): SerializedEditorState {
-  const paragraphs = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => ({
-      type: 'paragraph',
-      version: 1,
-      textFormat: 0,
-      direction: null,
-      format: '',
-      indent: 0,
-      children: [
-        { type: 'text', version: 1, detail: 0, format: 0, mode: 'normal', style: '', text: line },
-      ],
-    }))
-
-  return {
-    root: {
-      type: 'root',
-      version: 1,
-      direction: 'rtl',
-      format: '',
-      indent: 0,
-      children: paragraphs,
-    },
-  } as unknown as SerializedEditorState
-}
-
-function lexicalToPlainText(data: SerializedEditorState | null | undefined): string {
-  const parts: string[] = []
-  const walk = (node: unknown) => {
-    const n = node as { type?: string; text?: string; children?: unknown[] } | null
-    if (!n) return
-    if (n.type === 'text') parts.push(n.text ?? '')
-    else if (n.type === 'linebreak') parts.push('\n')
-    else if (Array.isArray(n.children)) for (const child of n.children) walk(child)
-  }
-  const children = (data?.root as { children?: unknown[] } | undefined)?.children ?? []
-  for (const child of children) {
-    walk(child)
-    const type = (child as { type?: string } | null)?.type
-    if (type !== 'linebreak') parts.push('\n')
-  }
-  return parts.join('').replace(/\n+$/, '')
-}
+import { compressImage } from '@/utils/image-compress'
+import { lexicalToPlainText, plainTextToLexical } from '@/utils/rich-text'
 
 interface AddBookDialogProps {
   open: boolean

@@ -1,11 +1,13 @@
+import { getAdminArticlesStats } from '@/features/admin'
+import Articles from '@/components/admin-views/articles/Articles'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
-export default async function ArticlesPage() {
+export default async function AdminArticlesPage() {
+  const { stats } = await getAdminArticlesStats()
+
   return (
     <AdminPage title="المقالات">
-      <div className="flex flex-col gap-6">
-        <p className="text-sm text-muted-foreground">قريباً...</p>
-      </div>
+      <Articles stats={stats} />
     </AdminPage>
   )
 }

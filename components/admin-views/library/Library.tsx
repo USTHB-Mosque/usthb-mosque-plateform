@@ -53,7 +53,7 @@ const statCards = [
 ]
 
 const Library: React.FC<LibraryProps> = ({ stats }) => {
-  const [view, setView] = useState<CatalogView>('grid')
+  const [view, setView] = useState<CatalogView>('table')
   const [addBookOpen, setAddBookOpen] = useState(false)
   const [editingBook, setEditingBook] = useState<Book | null>(null)
 

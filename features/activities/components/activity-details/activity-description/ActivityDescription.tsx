@@ -20,6 +20,7 @@ interface ActivityDescriptionProps {
   startDate: Activity['startDate']
   openForRegistration: boolean
   isRegistered?: boolean
+  hideRegister?: boolean
 }
 
 const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
@@ -29,6 +30,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
   startDate,
   openForRegistration,
   isRegistered = false,
+  hideRegister = false,
 }) => {
   const router = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
@@ -89,24 +91,26 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
 
         <Separator />
 
-        <div>
-          {isRegistered ? (
-            <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
-              <CheckCircle2 className="size-5 text-[#0DE9C3]" />
-              <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
-                أنت مسجّل في هذا النشاط
-              </span>
-            </div>
-          ) : (
-            <LandingCtaButton
-              label={getButtonLabel()}
-              onClick={handleRegister}
-              disabled={!openForRegistration}
-              loading={isRegistering}
-              ariaLabel={getButtonLabel()}
-            />
-          )}
-        </div>
+        {!hideRegister ? (
+          <div>
+            {isRegistered ? (
+              <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
+                <CheckCircle2 className="size-5 text-[#0DE9C3]" />
+                <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
+                  أنت مسجّل في هذا النشاط
+                </span>
+              </div>
+            ) : (
+              <LandingCtaButton
+                label={getButtonLabel()}
+                onClick={handleRegister}
+                disabled={!openForRegistration}
+                loading={isRegistering}
+                ariaLabel={getButtonLabel()}
+              />
+            )}
+          </div>
+        ) : null}
       </div>
     </Card>
   )

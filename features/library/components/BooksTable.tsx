@@ -4,13 +4,11 @@ import React, { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Archive,
-  Check,
   Copy,
   Eye,
   FileDown,
   GripVertical,
   Layers,
-  Minus,
   MoreVertical,
   Pencil,
   Trash2,
@@ -31,6 +29,7 @@ import {
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import BulkActionsBar from '@/shared/common/BulkActionsBar'
+import TableCheckbox from '@/components/admin-views/shared/TableCheckbox'
 import { bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
 import { borrowBook } from '@/features/library/server/borrow-book'
@@ -447,36 +446,6 @@ const BooksTable: React.FC<BooksTableProps> = ({
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-function TableCheckbox({
-  checked,
-  partial = false,
-  label,
-  onChange,
-}: {
-  checked: boolean
-  partial?: boolean
-  label: string
-  onChange: () => void
-}) {
-  return (
-    <button
-      type="button"
-      role="checkbox"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={onChange}
-      className={cn(
-        'flex h-4 w-4 items-center justify-center rounded border transition-colors',
-        checked || partial
-          ? 'border-primary-200 bg-primary-200 text-[#243245]'
-          : 'border-muted bg-card hover:border-primary-200',
-      )}
-    >
-      {checked ? <Check className="h-3 w-3" /> : partial ? <Minus className="h-3 w-3" /> : null}
-    </button>
   )
 }
 

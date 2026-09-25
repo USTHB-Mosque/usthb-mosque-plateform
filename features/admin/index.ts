@@ -7,5 +7,7 @@ export { default as AdminAccountView } from './components/account/Account'
 
 export * from './server/account'
 export * from './server/create-first-user'
+export * from './server/articles'
+export * from './server/activities'
 
 export { bulkSoftDeleteBooks, deleteBook, softDeleteBook } from './server/books'
