@@ -212,6 +212,14 @@ describe('features/admin/server/articles.ts', () => {
   })
 
   describe('deleteArticle', () => {
+    it('returns a friendly error when the article lookup fails', async () => {
+      staffMock({ findByID: vi.fn().mockRejectedValue(new Error('missing')) })
+      await expect(deleteArticle(404)).resolves.toEqual({
+        ok: false,
+        error: expect.stringContaining('حذف'),
+      })
+    })
+
     it('deletes the article', async () => {
       const deleteFn = vi.fn().mockResolvedValue({})
       staffMock({ findByID: vi.fn().mockResolvedValue({ id: 5, title: 'مقال' }), delete: deleteFn })

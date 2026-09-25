@@ -387,6 +387,21 @@ describe('features/admin/server/loans.ts', () => {
 
       expect(result).toEqual({ ok: false, error: 'غير مصرح' })
     })
+
+    it('includes the book title in the audit entry when available', async () => {
+      acceptLoan.mockResolvedValue({ success: true })
+      const payload = {
+        ...adminCtx().payload,
+        findByID: vi.fn().mockResolvedValue({ book: { title: 'الفوائد' } }),
+      }
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+      await approveLoan(5)
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ message: 'قبل طلب إعارة: الفوائد' }),
+        }),
+      )
+    })
   })
 
   describe('rejectLoan', () => {
@@ -415,6 +430,21 @@ describe('features/admin/server/loans.ts', () => {
 
       expect(result).toEqual({ ok: false, error: 'يجب إدخال سبب الرفض' })
     })
+
+    it('includes the book title in the audit entry when available', async () => {
+      refuseLoan.mockResolvedValue({ success: true })
+      const payload = {
+        ...adminCtx().payload,
+        findByID: vi.fn().mockResolvedValue({ book: { title: 'السيرة' } }),
+      }
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+      await rejectLoan(5)
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ message: 'رفض طلب إعارة: السيرة' }),
+        }),
+      )
+    })
   })
 
   describe('markLoanReturned', () => {
@@ -436,6 +466,21 @@ describe('features/admin/server/loans.ts', () => {
       const result = await adminMarkLoanReturned(5)
 
       expect(result).toEqual({ ok: false, error: 'لا يمكن إرجاع إعارة لم تؤخذ بعد' })
+    })
+
+    it('includes the book title in the audit entry when available', async () => {
+      markLoanReturned.mockResolvedValue({ success: true })
+      const payload = {
+        ...adminCtx().payload,
+        findByID: vi.fn().mockResolvedValue({ book: { title: 'الفقه' } }),
+      }
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+      await adminMarkLoanReturned(5)
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ message: 'استلم كتاباً: الفقه' }),
+        }),
+      )
     })
   })
 

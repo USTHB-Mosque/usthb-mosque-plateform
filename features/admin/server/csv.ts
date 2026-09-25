@@ -120,7 +120,9 @@ export async function commitBooksImport(file: File): Promise<CsvCommitResult> {
     }
     if (transactionID != null) await payload.db.commitTransaction(transactionID)
   } catch (error) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
+    // This catch is only reachable after `commitTransaction`, which is called
+    // only when a transaction id exists.
+    await payload.db.rollbackTransaction(transactionID as string)
     return {
       ok: false,
       errors: errors.length > 0 ? errors : [{ row: 0, message: 'تعذر استيراد الملف' }],
@@ -190,7 +192,9 @@ export async function commitUsersImport(file: File): Promise<CsvCommitResult> {
     }
     if (transactionID != null) await payload.db.commitTransaction(transactionID)
   } catch (error) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
+    // This catch is only reachable after `commitTransaction`, which is called
+    // only when a transaction id exists.
+    await payload.db.rollbackTransaction(transactionID as string)
     return {
       ok: false,
       errors: errors.length > 0 ? errors : [{ row: 0, message: 'تعذر استيراد الملف' }],

@@ -33,7 +33,7 @@ export const logActionLabels: Record<LogActionValue, string> = {
 export interface LogInput {
   action: LogActionValue
   targetType?: string
-  targetId?: string | number
+  targetId?: string | number | null
   message: string
   metadata?: Record<string, unknown>
 }

@@ -47,6 +47,12 @@ describe('getAuthenticatedUser', () => {
     expect(await getAuthenticatedUser()).toBeUndefined()
     expect((await getAuthenticatedUser({ allowAdmin: true }))?.id).toBe(admin.id)
   })
+
+  it('supports an explicit role allow-list', async () => {
+    await signIn(member)
+    expect(await getAuthenticatedUser({ acceptRoles: ['admin'] })).toBeUndefined()
+    expect((await getAuthenticatedUser({ acceptRoles: ['user'] }))?.id).toBe(member.id)
+  })
 })
 
 describe('getPayloadWithUser', () => {
@@ -65,6 +71,12 @@ describe('getPayloadWithUser', () => {
     await signIn(admin)
     expect(await getPayloadWithUser()).toBeNull()
     expect((await getPayloadWithUser({ allowAdmin: true }))?.user.id).toBe(admin.id)
+  })
+
+  it('supports an explicit role allow-list', async () => {
+    await signIn(member)
+    expect(await getPayloadWithUser({ acceptRoles: ['admin'] })).toBeNull()
+    expect((await getPayloadWithUser({ acceptRoles: ['user'] }))?.user.id).toBe(member.id)
   })
 })
 

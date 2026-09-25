@@ -245,6 +245,14 @@ describe('features/admin/server/activities.ts', () => {
   })
 
   describe('deleteActivity', () => {
+    it('returns a friendly error when the activity lookup fails', async () => {
+      staffMock({ findByID: vi.fn().mockRejectedValue(new Error('missing')) })
+      await expect(deleteActivity(404)).resolves.toEqual({
+        ok: false,
+        error: expect.stringContaining('حذف'),
+      })
+    })
+
     it('deletes the activity', async () => {
       const deleteFn = vi.fn().mockResolvedValue({})
       staffMock({ findByID: vi.fn().mockResolvedValue({ id: 7, title: 'نشاط' }), delete: deleteFn })
