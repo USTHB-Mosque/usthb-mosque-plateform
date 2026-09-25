@@ -20,6 +20,7 @@ import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
 import { useGetBooksQuery } from '@/features/library/api/books.queries'
 import { useSearch } from '@/shared/hooks/use-search'
 import AddBookDialog from './AddBookDialog'
+import ImportBooksDialog from './ImportBooksDialog'
 import { BookSearchParams, BookCategory, BookType } from '@/features/library/types'
 import { languagesConfigArray } from '@/utils/constants/data'
 import {
@@ -55,6 +56,7 @@ const statCards = [
 const Library: React.FC<LibraryProps> = ({ stats }) => {
   const [view, setView] = useState<CatalogView>('table')
   const [addBookOpen, setAddBookOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editingBook, setEditingBook] = useState<Book | null>(null)
 
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
@@ -117,7 +119,7 @@ const Library: React.FC<LibraryProps> = ({ stats }) => {
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="lg" className="gap-2">
+          <Button variant="outline" size="lg" className="gap-2" onClick={() => setImportOpen(true)}>
             <Upload className="size-4" />
             استيراد ملف CSV
           </Button>
@@ -262,6 +264,8 @@ const Library: React.FC<LibraryProps> = ({ stats }) => {
           if (!open) setEditingBook(null)
         }}
       />
+
+      <ImportBooksDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   )
 }

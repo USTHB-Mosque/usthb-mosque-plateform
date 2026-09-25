@@ -22,6 +22,7 @@ import type { UserSearchParams } from '@/features/users/types'
 import UsersTable from './UsersTable'
 import UsersTableSkeleton from './UsersTableSkeleton'
 import AddUserDialog from './AddUserDialog'
+import ImportUsersDialog from './ImportUsersDialog'
 
 interface UsersPageProps {
   stats: {
@@ -71,6 +72,7 @@ const STUDY_YEAR_OPTIONS = [
 
 const Users: React.FC<UsersPageProps> = ({ stats }) => {
   const [addUserOpen, setAddUserOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   const { searchValues, values, setValue } = useSearch<UserSearchParams>({
     initialValues: {
@@ -133,7 +135,7 @@ const Users: React.FC<UsersPageProps> = ({ stats }) => {
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="lg" className="gap-2">
+          <Button variant="outline" size="lg" className="gap-2" onClick={() => setImportOpen(true)}>
             <Upload className="size-4" />
             استيراد ملف CSV
           </Button>
@@ -213,6 +215,8 @@ const Users: React.FC<UsersPageProps> = ({ stats }) => {
 
       {/* AddUserDialog */}
       <AddUserDialog open={addUserOpen} onOpenChange={setAddUserOpen} />
+
+      <ImportUsersDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   )
 }
