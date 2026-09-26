@@ -13,7 +13,9 @@ import { ensureE2eDatabase } from './lib/db'
 export default async function globalSetup(): Promise<void> {
   const databaseUrl = e2eDatabaseUrl()
 
-  await ensureE2eDatabase(databaseUrl)
+  // Canonical mode migrates from a clean slate — a leftover dev-mode schema
+  // push would otherwise block the migration on an interactive prompt.
+  await ensureE2eDatabase(databaseUrl, { dropExisting: !E2E_DEV })
 
   if (!E2E_DEV) {
     execSync('pnpm exec payload migrate', {
