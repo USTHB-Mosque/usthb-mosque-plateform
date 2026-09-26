@@ -1,5 +1,6 @@
 import { bookCategoriesConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
+import { adminWriteAccess, isStaff } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Book: CollectionConfig = {
@@ -9,12 +10,37 @@ export const Book: CollectionConfig = {
   },
   access: {
     read: () => true,
+    ...adminWriteAccess(),
   },
   fields: [
+    {
+      name: 'deletedAt',
+      type: 'date',
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+      access: {
+        update: ({ req: { user } }) => isStaff(user),
+      },
+    },
     {
       name: 'title',
       type: 'text',
       required: true,
+    },
+    {
+      // Shelf code (Figma: الرمز); pickup codes are derived from it.
+      name: 'code',
+      type: 'text',
+    },
+    {
+      // Per-book loan duration (Figma: مدة الاعارة بالأيام); falls back to the
+      // Settings global default when unset.
+      name: 'loanDurationDays',
+      type: 'number',
+      min: 1,
     },
     {
       name: 'author',
@@ -25,6 +51,7 @@ export const Book: CollectionConfig = {
       name: 'type',
       type: 'select',
       options: bookTypesConfigArray,
+      hasMany: true,
       required: true,
     },
     {
@@ -32,6 +59,7 @@ export const Book: CollectionConfig = {
       type: 'select',
       options: bookCategoriesConfigArray,
       defaultValue: 'religious',
+      index: true,
     },
     {
       name: 'tags',

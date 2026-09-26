@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm release && pnpm payload:importmap && pnpm bootstrap:admin && pnpm build"
+}

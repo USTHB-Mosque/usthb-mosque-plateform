@@ -1,7 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
-
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
+import { isAdmin } from '@/utils/access-helpers'
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
@@ -15,7 +14,7 @@ export const BookFavorite: CollectionConfig = {
       if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => Boolean(user?.collection === 'users'),
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
       if (isAdmin(user)) return true
@@ -47,8 +46,7 @@ export const BookFavorite: CollectionConfig = {
     beforeValidate: [
       async ({ data, req, operation }) => {
         if (operation !== 'create' || !data?.book) return
-        const userId =
-          data.user ?? (req.user?.collection === 'users' ? req.user.id : undefined)
+        const userId = data.user ?? req.user?.id
         if (!userId) return
         const dup = await req.payload.find({
           collection: 'book-favorites',
@@ -57,6 +55,8 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
+          // Internal invariant check: who may create is still gated by the
+          // collection's create access, so this read bypasses row scoping.
           overrideAccess: true,
         })
         if (dup.totalDocs > 0) {
@@ -66,7 +66,7 @@ export const BookFavorite: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, operation, req }) => {
-        if (operation === 'create' && req.user?.collection === 'users') {
+        if (operation === 'create' && req.user) {
           data.user = req.user.id
         }
       },

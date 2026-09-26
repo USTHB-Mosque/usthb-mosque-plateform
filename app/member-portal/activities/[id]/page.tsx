@@ -1,0 +1,61 @@
+import { notFound } from 'next/navigation'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
+import UserPage from '@/shared/layouts/user/UserPage'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import ActivityHeader from '@/features/activities/components/activity-details/ActivityHeader'
+import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
+import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
+import ActivitySchedule from '@/features/activities/components/activity-details/ActivitySchedule'
+import { getUserActivityRegistration } from '@/features/activities/server/activities'
+
+const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params
+
+  const payload = await getPayload({ config })
+
+  const result = await payload.find({
+    collection: 'activities',
+    where: {
+      id: { equals: id },
+    },
+  })
+  const activity = result.docs[0]
+  if (!activity) return notFound()
+
+  const { registered } = await getUserActivityRegistration(id)
+
+  return (
+    <UserPage title="تفاصيل النشاط">
+      <div>
+        <ReturnToIndex title="فهرس الأنشطة" value={activity.title} href="/user/activities" />
+
+        <div className="mt-6 flex flex-col gap-5 lg:flex-row">
+          <div className="flex flex-3 flex-col gap-5">
+            <ActivityHeader
+              title={activity.title}
+              supervisor={activity.supervisor}
+              image={activity.image}
+              type={activity.type}
+            />
+            <ActivityInformations longDescription={activity.longDescription} />
+          </div>
+
+          <div className="flex flex-1 flex-col gap-5">
+            <ActivityDescription
+              activityId={String(activity.id)}
+              supervisor={activity.supervisor}
+              location={activity.location}
+              startDate={activity.startDate}
+              openForRegistration={activity.openForRegistration || false}
+              isRegistered={registered}
+            />
+            <ActivitySchedule schedules={activity.schedules} />
+          </div>
+        </div>
+      </div>
+    </UserPage>
+  )
+}
+
+export default MemberActivityDetailsPage

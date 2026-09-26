@@ -1,4 +1,5 @@
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
+import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
 export const Activity: CollectionConfig = {
@@ -6,8 +7,10 @@ export const Activity: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'type', 'location'],
-  }, access: {
+  },
+  access: {
     read: () => true,
+    ...adminWriteAccess(),
   },
   fields: [
     {

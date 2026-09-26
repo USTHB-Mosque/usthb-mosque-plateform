@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          corepack: true
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm format:check
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      # Fast, database-free projects only; the integration project runs in its
+      # own job against the postgres service below.
+      - run: pnpm test --project rtl --project unit
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      PAYLOAD_SECRET: ci-test-secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          corepack: true
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test:coverage
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  migration-guard:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if collections changed without a migration
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          schema_changed=$(git diff --name-only "$BASE...HEAD" -- collections/ globals/ | wc -l)
+          migrations_changed=$(git diff --name-only "$BASE...HEAD" -- migrations/ | wc -l)
+          if [ "$schema_changed" -gt 0 ] && [ "$migrations_changed" -eq 0 ]; then
+            echo "::error::A PR that changes collections/ or globals/ must add a migration under migrations/. Run 'pnpm payload:migrate-create <name>' and commit the result."
+            exit 1
+          fi

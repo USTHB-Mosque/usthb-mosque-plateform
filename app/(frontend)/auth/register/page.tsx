@@ -1,7 +1,5 @@
-import React from 'react'
+import RegisterWizard from '@/features/auth/components/RegisterWizard'
 
-const RegisterPage: React.FC = () => {
-  return <div>RegisterPage</div>
+export default function RegisterPage() {
+  return <RegisterWizard />
 }
-
-export default RegisterPage

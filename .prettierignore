@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+build
+coverage
+pnpm-lock.yaml
+payload-types.ts
+app/(payload)/admin/importMap.js
+migrations/*.json
+tsconfig.tsbuildinfo
+supabase
+public
+test-results
+playwright-report
+e2e/.auth
