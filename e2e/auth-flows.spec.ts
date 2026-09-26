@@ -12,6 +12,9 @@ test('login rejects wrong credentials with an Arabic error toast', async ({ page
 })
 
 test('register wizard creates an account and lands in the member portal', async ({ page }) => {
+  // The register wizard uploads a document and runs three SSR-steps; give it
+  // headroom under parallel load in dev mode.
+  test.setTimeout(120_000)
   const email = `register-${Date.now()}@e2e.mosque`
   const password = 'E2ePassword@123'
 

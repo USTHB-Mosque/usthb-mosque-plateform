@@ -8,7 +8,7 @@ import { seedMedias } from './seed/media'
 import { seedBooks } from './seed/book'
 import { seedActivities } from './seed/activities'
 import { seedArticles } from './seed/articles'
-import { seedLoans } from './seed/loans'
+import { seedE2eFixtures } from './seed/e2e-fixtures'
 import { E2E_GOOGLE_EMAIL, E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD } from '@/e2e/lib/test-users'
 import type { Payload } from 'payload'
 
@@ -73,8 +73,8 @@ export async function seedE2e(): Promise<void> {
   console.log('📰 Seeding articles...')
   await seedArticles()
 
-  console.log('📋 Seeding loans (5)...')
-  await seedLoans(5)
+  console.log('📋 Seeding deterministic e2e fixtures (loans, full activity, favorite)...')
+  await seedE2eFixtures(payload)
 
   console.log('✅ E2E seed complete')
   await closePayload(payload)

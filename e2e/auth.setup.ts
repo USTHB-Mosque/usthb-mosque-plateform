@@ -18,12 +18,13 @@ fs.mkdirSync(path.dirname(userStorageState), { recursive: true })
 // this setup project and reuses the saved storage states.
 setup('authenticate as member', async ({ page }) => {
   await loginThroughUi(page, E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD)
-  await expect(page).toHaveURL(/\/user\/dashboard/)
+  await expect(page).toHaveURL(/\/user\/dashboard/, { timeout: 20_000 })
   await page.context().storageState({ path: userStorageState })
 })
 
 setup('authenticate as admin', async ({ page }) => {
   await loginThroughUi(page, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD)
-  await expect(page).toHaveURL(/\/admin/)
+  // The admin panel is the heaviest first compile in dev mode; give it room.
+  await expect(page).toHaveURL(/\/admin/, { timeout: 30_000 })
   await page.context().storageState({ path: adminStorageState })
 })
