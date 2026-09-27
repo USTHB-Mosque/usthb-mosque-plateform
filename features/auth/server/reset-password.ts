@@ -3,6 +3,7 @@ import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { User } from '@/payload-types'
 import { logActivity } from '@/utils/activity-log'
+import { revokeAllSessions } from '@/shared/lib/auth'
 
 export interface ResetPasswordResult {
   ok: boolean
@@ -25,9 +26,25 @@ export const resetPassword = async (
 
     const user = result.user as unknown as User | undefined
 
-    // Activity logging is best-effort: the password already changed, so a
-    // failed log entry must not turn a successful reset into an error.
     if (user) {
+      // Payload's resetPassword signs the caller in — it adds a session and
+      // revokes nothing — so without this a stolen session cookie outlives the
+      // password change and the reset achieves nothing. Revoking all sessions
+      // also discards the session Payload just minted; the flow issues no
+      // cookie of its own, so the member simply signs in again.
+      try {
+        await revokeAllSessions(payload, user)
+      } catch {
+        // The password has already changed, so reporting a plain failure would
+        // be a lie and a retry could not help. Say what actually happened.
+        return {
+          ok: false,
+          error: 'تم تغيير كلمة المرور، لكن تعذّر إنهاء الجلسات. الرجاء تسجيل الدخول من جديد.',
+        }
+      }
+
+      // Activity logging is best-effort: the password already changed, so a
+      // failed log entry must not turn a successful reset into an error.
       try {
         await logActivity(payload, user.id, 'password_changed')
       } catch {

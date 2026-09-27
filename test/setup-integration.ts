@@ -4,6 +4,7 @@ import { createLocalReq } from 'payload'
 
 import type { User } from '@/payload-types'
 import { truncateAll } from './lib/db'
+import { resetRateLimits } from '@/shared/lib/rate-limit'
 
 vi.mock('@/payload.config', async () => ({
   default: (await import('./payload-test.config')).default,
@@ -23,6 +24,15 @@ export async function getTestPayload(): Promise<Payload> {
 }
 
 export { truncateAll }
+
+/**
+ * Clears the in-process rate limiter. The buckets are module state shared by
+ * every test in a worker, so without this a throttled test leaks its exhaustion
+ * into whichever test runs next.
+ */
+export function resetRateLimitBuckets(): void {
+  resetRateLimits()
+}
 
 export async function resetDatabase(): Promise<void> {
   const payload = await getTestPayload()

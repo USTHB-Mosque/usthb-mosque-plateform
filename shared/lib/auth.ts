@@ -1,4 +1,4 @@
-import { createLocalReq, getFieldsToSign, getPayload, jwtSign } from 'payload'
+import { createLocalReq, getFieldsToSign, getPayload, jwtSign, logoutOperation } from 'payload'
 import type { Payload, PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import { headers as nextHeaders, cookies as nextCookies } from 'next/headers'
@@ -125,5 +125,27 @@ export async function createSessionForUser(
     fieldsToSign,
     secret: payload.secret,
     tokenExpiration: TOKEN_EXPIRATION_SECONDS,
+  })
+}
+
+/**
+ * Revokes every session belonging to `user`.
+ *
+ * Used wherever a credential changes: a password reset must invalidate whatever
+ * an attacker was holding, and `changePassword` has always done so. Pass `req`
+ * when the caller already has one bound to the user (the authenticated server
+ * actions); omit it on the pre-auth paths, such as a password reset, where the
+ * request has to be bound to the user by hand — Payload's `logoutOperation`
+ * rejects an anonymous one.
+ */
+export async function revokeAllSessions(
+  payload: Payload,
+  user: User,
+  req?: PayloadRequest,
+): Promise<void> {
+  await logoutOperation({
+    allSessions: true,
+    collection: payload.collections['users'],
+    req: req ?? (await createLocalReq({ user }, payload)),
   })
 }

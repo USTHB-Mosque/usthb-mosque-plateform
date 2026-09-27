@@ -1,9 +1,8 @@
 'use server'
 import type { User } from '@/payload-types'
 import { createLocalReq } from 'payload'
-import { getPayloadWithUser, setPayloadTokenCookie } from '@/shared/lib/auth'
+import { getPayloadWithUser, revokeAllSessions, setPayloadTokenCookie } from '@/shared/lib/auth'
 import { revalidatePath } from 'next/cache'
-import { logoutOperation } from 'payload'
 import { logActivity } from '@/utils/activity-log'
 import { getAdminLogs } from './logs'
 
@@ -217,11 +216,7 @@ export async function changeAdminPassword(formData: FormData) {
   // A stolen session must not survive a password change: revoke every
   // session the login check above and the old password may have left behind,
   // then issue exactly one fresh session for this device.
-  await logoutOperation({
-    allSessions: true,
-    collection: ctx.payload.collections['users'],
-    req: ctx.req,
-  })
+  await revokeAllSessions(ctx.payload, ctx.user, ctx.req)
 
   // payload.login throws on failure, so a returned result always has a token.
   const { token, exp } = await ctx.payload.login({
