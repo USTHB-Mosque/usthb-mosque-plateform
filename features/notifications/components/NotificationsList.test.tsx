@@ -91,9 +91,7 @@ describe('NotificationsList', () => {
   })
 
   it('renders relative Arabic timestamps with the absolute date as the title', () => {
-    render(
-      <NotificationsList {...listProps([item({ createdAt: NOW.toISOString() })], 'all')} />,
-    )
+    render(<NotificationsList {...listProps([item({ createdAt: NOW.toISOString() })], 'all')} />)
 
     const stamp = screen.getByText('الآن')
     expect(stamp).toBeVisible()

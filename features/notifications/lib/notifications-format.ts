@@ -1,4 +1,4 @@
-import { format, formatDistance } from 'date-fns'
+import { format, formatDistanceStrict } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 
 import type { NotificationListItem } from '@/features/notifications'
@@ -28,7 +28,7 @@ export function formatRelativeArabicTime(value: string, now: Date = new Date()):
   if (distance < MINUTE) return 'الآن'
 
   const strict = (unit: 'minute' | 'hour' | 'day') =>
-    formatDistance(date, now, { locale: arDZ, unit, addSuffix: true })
+    formatDistanceStrict(date, now, { locale: arDZ, unit, addSuffix: true })
 
   if (distance < 7 * DAY) {
     if (distance < 60 * MINUTE) return strict('minute')

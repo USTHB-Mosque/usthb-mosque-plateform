@@ -19,21 +19,22 @@ export default async function globalSetup(): Promise<void> {
   await ensureE2eDatabase(databaseUrl, { dropExisting: !E2E_DEV })
 
   if (!E2E_DEV) {
-    // The payload CLI directly — `pnpm exec` resolution once silently no-oped
-    // mid-run, so the direct bin removes that indirection.
-    execSync('node node_modules/payload/bin.js migrate', {
-      env: { ...process.env, DATABASE_URL: databaseUrl, NODE_ENV: 'production' },
-      stdio: 'inherit',
-    })
-    // Fail loudly if the migration step left the schema unapplied.
-    const client = new Client({ connectionString: databaseUrl })
-    await client.connect()
-    try {
-      await client.query('SELECT 1 FROM "payload_migrations" LIMIT 1')
-    } catch {
-      throw new Error('payload migrate applied no migrations — aborting before the seed')
-    } finally {
-      await client.end()
+    // Migrate + verify, retrying on a silent no-op: `payload migrate` has
+    // occasionally exited 0 without applying anything while the web server's
+    // build runs concurrently, so the captured output plus a schema check —
+    // not the exit code — decides whether the step landed.
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const output = execSync('node node_modules/payload/bin.js migrate', {
+        env: { ...process.env, DATABASE_URL: databaseUrl, NODE_ENV: 'production' },
+        encoding: 'utf8',
+        timeout: 240_000,
+      })
+      const tail = output.trim().split('\n').slice(-2).join(' | ')
+      console.log(`[e2e] migrate attempt ${attempt}: ${tail || '(no output)'}`)
+      if (await migrationsApplied(databaseUrl)) break
+      if (attempt === 3) {
+        throw new Error('payload migrate applied no migrations after 3 attempts — aborting')
+      }
     }
   }
 
@@ -47,6 +48,20 @@ export default async function globalSetup(): Promise<void> {
   // Imported after the env is final: seed-e2e statically boots @/payload.config.
   const { seedE2e } = await import('@/utils/seed-e2e')
   await seedE2e()
+}
+
+/** True once the migrations table has rows (schema actually applied). */
+async function migrationsApplied(databaseUrl: string): Promise<boolean> {
+  const client = new Client({ connectionString: databaseUrl })
+  await client.connect()
+  try {
+    const result = await client.query('SELECT 1 FROM "payload_migrations" LIMIT 1')
+    return result.rowCount !== null && result.rowCount > 0
+  } catch {
+    return false
+  } finally {
+    await client.end()
+  }
 }
 
 // Re-exported so nothing else hardcodes these names.

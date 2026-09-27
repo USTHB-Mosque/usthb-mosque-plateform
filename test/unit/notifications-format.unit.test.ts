@@ -31,10 +31,7 @@ describe('formatRelativeArabicTime', () => {
   })
 
   it('says منذ … دقيقة for a few minutes ago', () => {
-    const text = formatRelativeArabicTime(
-      new Date(NOW.getTime() - 5 * 60_000).toISOString(),
-      NOW,
-    )
+    const text = formatRelativeArabicTime(new Date(NOW.getTime() - 5 * 60_000).toISOString(), NOW)
     expect(text).toBe('منذ 5 دقائق')
   })
 
@@ -87,10 +84,7 @@ describe('groupNotificationsByDay', () => {
   })
 
   it('collapses an absent group', () => {
-    const groups = groupNotificationsByDay(
-      [item({ id: 1, createdAt: NOW.toISOString() })],
-      NOW,
-    )
+    const groups = groupNotificationsByDay([item({ id: 1, createdAt: NOW.toISOString() })], NOW)
     expect(groups).toHaveLength(1)
     expect(groups[0]?.key).toBe('today')
   })

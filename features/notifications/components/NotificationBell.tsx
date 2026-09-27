@@ -18,6 +18,7 @@ import { getBellState, type BellState } from '@/features/notifications/server/ge
 import { markNotificationRead } from '@/features/notifications/server/mark-notifications-read'
 import { onBellRefresh } from '@/features/notifications/lib/bell-refresh'
 import { NOTIFICATIONS_PAGE } from '@/utils/notifications'
+import { useInitialBellState } from '@/shared/layouts/user/bell-context'
 
 type NotificationBellProps = {
   /** Mobile-menu variant: a plain nav-like item linking to the notifications page. */
@@ -52,12 +53,18 @@ const dateTimeFormatter = new Intl.DateTimeFormat('ar', {
  */
 const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, className }) => {
   const router = useRouter()
-  const [state, setState] = React.useState<BellState | null>(null)
+  // The member-portal layout provides the state from the server; when no
+  // provider exists (outside that layout) the bell fetches on mount as before.
+  const serverState = useInitialBellState()
+  const [state, setState] = React.useState<BellState | null>(serverState ?? null)
   const [refetchKey, setRefetchKey] = React.useState(0)
 
   const refresh = React.useCallback(() => setRefetchKey((key) => key + 1), [])
 
   React.useEffect(() => {
+    // With a server-provided state the mount fetch is skipped — the SSE
+    // listener below drives every later refresh.
+    if (serverState !== undefined && refetchKey === 0) return
     let cancelled = false
     getBellState().then((next) => {
       if (!cancelled) setState(next)
@@ -65,7 +72,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
     return () => {
       cancelled = true
     }
-  }, [refetchKey])
+  }, [refetchKey, serverState])
 
   React.useEffect(() => {
     // The stream pushes the unread count every 30s (or on change); refetching

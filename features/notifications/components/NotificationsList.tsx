@@ -17,7 +17,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
-import type { NotificationsPage } from '@/features/notifications/server/get-notifications'
+import type {
+  NotificationListItem,
+  NotificationsPage,
+} from '@/features/notifications/server/get-notifications'
 import {
   markNotificationRead,
   markAllNotificationsRead,
