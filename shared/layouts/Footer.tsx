@@ -33,7 +33,8 @@ const Footer: React.FC = () => {
         ))}
       </ul>
 
-      <p className="text-xs text-grey-400 text-center font-dubai md:order-3 md:flex-1 md:text-start md:text-sm">
+      {/* grey-500, not grey-400: the darker token passes 4.5:1 on fill-contrast. */}
+      <p className="text-xs text-grey-500 text-center font-dubai md:order-3 md:flex-1 md:text-start md:text-sm">
         جميع الحقوق محفوظة &copy; {new Date().getFullYear()} - مسجد جامعة باب الزوار
       </p>
     </footer>

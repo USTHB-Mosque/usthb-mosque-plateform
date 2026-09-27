@@ -143,7 +143,10 @@ async function fillByLabel(page: Page, label: string, value: string): Promise<vo
   await page.getByLabel(label).first().fill(value)
 }
 
-/** Opens the named react-select field and picks an option by visible label. */
+/** Opens the named react-select field and picks an option by visible label.
+ * Handles both single selects and hasMany multi-selects (the Book's Type
+ * field became hasMany in #149): verification goes through the field's text,
+ * which covers both the single value and the removable chips. */
 async function pickSelect(page: Page, fieldLabel: string, optionLabel: string): Promise<void> {
   const field = page
     .locator('.field-type.select')
@@ -155,10 +158,7 @@ async function pickSelect(page: Page, fieldLabel: string, optionLabel: string): 
     await field.locator('.rs__control').click()
     await page.locator('.rs__option').filter({ hasText: optionLabel }).first().click()
     // Payload renders the raw select value; compare case-insensitively.
-    await expect(field.locator('.rs__single-value')).toHaveText(optionLabel, {
-      timeout: 5_000,
-      ignoreCase: true,
-    })
+    await expect(field).toContainText(optionLabel, { timeout: 5_000, ignoreCase: true })
   }).toPass({ timeout: 30_000 })
 }
 

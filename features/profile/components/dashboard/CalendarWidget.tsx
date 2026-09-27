@@ -319,6 +319,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
         <div className="flex items-center gap-2">
           <div className="relative">
             <select
+              aria-label="اختيار نوع التقويم"
               value={calendarMode}
               onChange={(e) => handleModeChange(e.target.value as CalendarMode)}
               className="appearance-none rounded-lg border border-border bg-transparent py-1 pl-6 pr-2 text-xs font-medium text-card-foreground cursor-pointer transition-colors hover:bg-primary/10 focus:outline-none focus:ring-1 focus:ring-primary"

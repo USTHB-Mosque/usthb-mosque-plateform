@@ -133,7 +133,13 @@ const BookPreview: React.FC<BookPreviewProps> = ({
                     initialFavorited={initialFavorited}
                     className="flex-1 h-12"
                   />
-                  <Button variant="outline" size="icon" onClick={onCopyLink} className="h-12 w-12">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="نسخ رابط الكتاب"
+                    onClick={onCopyLink}
+                    className="h-12 w-12"
+                  >
                     <Link className="size-5" />
                   </Button>
                 </div>

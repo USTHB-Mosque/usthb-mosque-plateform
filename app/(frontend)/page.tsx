@@ -322,7 +322,7 @@ const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-300 md:text-xl"
+              className="m-0 text-base font-bold text-primary-400 md:text-xl"
             >
               مجموعة مختارة
             </motion.h3>
@@ -384,7 +384,7 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/library"
-              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline"
+              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
             >
               عرض الفهرس الكامل
             </Link>
@@ -406,7 +406,7 @@ const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-300 md:text-xl"
+              className="m-0 text-base font-bold text-primary-400 md:text-xl"
             >
               نشاطاتنا
             </motion.h3>
@@ -444,7 +444,7 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/activities"
-              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline"
+              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
             >
               عرض الفهرس الكامل
             </Link>
@@ -466,7 +466,7 @@ const LandingPage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-300 md:text-xl"
+              className="m-0 text-base font-bold text-primary-400 md:text-xl"
             >
               فكر ومعرفة
             </motion.h3>
@@ -528,7 +528,7 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/articles"
-              className="mt-6 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline"
+              className="mt-6 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
             >
               عرض الفهرس الكامل
             </Link>

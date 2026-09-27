@@ -70,6 +70,15 @@ Import rules (enforced in `eslint.config.mjs`):
 - Always pass `req` to nested operations inside hooks — otherwise the nested op runs in a separate transaction.
 - Use a `context: { skipHooks: true }` flag to prevent infinite hook loops.
 
+### E2E (Playwright)
+
+- **Sessions are never driven through the login UI inside a spec.** `e2e/auth.setup.ts` authenticates the member and the admin once per run; specs load `e2e/lib/auth-state.ts` storage states and open a second context (`browser.newContext({ storageState: adminStorageState })`) when a journey crosses roles.
+- **Seed contract:** every run truncates and rebuilds `mosque_e2e` from scratch (`utils/seed-e2e.ts`), so ids restart at 1 — look up fixtures by email/title, never by id, and keep new fixtures deterministic in `utils/seed/e2e-fixtures.ts`.
+- Canonical mode (default) drops + migrates + seeds + builds + starts on :3100 — it is the gate; `E2E_DEV=1` reuses `next dev` for authoring only (it must never see a database whose schema was migrated from a different model state, or the push blocks on an interactive prompt).
+- Outbound SMTP is voided for e2e (`e2e/lib/env.ts` pins `EMAIL_HOST=127.0.0.1`, `EMAIL_PORT=1`): the real notification creators run unmodified and the swallowed send failure is the expected path. Never let an e2e run send real mail.
+- Administrative Local API calls inside specs/seeds (arrangement writes with no `user`) are an intentional bypass; anything asserting access behavior must go through the UI or `overrideAccess: false` with a `user`.
+- Visual baselines (`e2e/visual.spec.ts-snapshots/`) are generated only under the canonical run (`--update-snapshots=all`); date/time regions are masked because the seed's dates are relative to seed time.
+
 ## Environment reality
 
 | Environment   | Database                                    | Storage                                                                | Config file  |
