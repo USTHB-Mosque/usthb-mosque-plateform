@@ -16,6 +16,7 @@ import {
 } from '@/shared/ui/dropdown-menu'
 import { getBellState, type BellState } from '@/features/notifications/server/get-notifications'
 import { markNotificationRead } from '@/features/notifications/server/mark-notifications-read'
+import { onBellRefresh } from '@/features/notifications/lib/bell-refresh'
 import { NOTIFICATIONS_PAGE } from '@/utils/notifications'
 
 type NotificationBellProps = {
