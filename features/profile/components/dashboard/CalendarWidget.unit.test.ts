@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { gregorianToHijri } from './CalendarWidget'
+import { buildMonthGrid, FIVE_ROW_CELLS, gregorianToHijri } from './CalendarWidget'
 
 describe('gregorianToHijri', () => {
   it('converts 1 Muharram 1446 (8 July 2024)', () => {
@@ -26,5 +26,56 @@ describe('gregorianToHijri', () => {
       expect(hijri.month).toBeLessThanOrEqual(11)
       date.setDate(date.getDate() + 1)
     }
+  })
+})
+
+describe('buildMonthGrid', () => {
+  it('returns 5 rows (35 cells) for a month that fits, padding the next month', () => {
+    // March 2026: starts Sunday (firstDay 1), 31 days -> 32 real cells.
+    const grid = buildMonthGrid(1, 31, 28)
+
+    expect(grid).toHaveLength(FIVE_ROW_CELLS)
+    expect(grid[0]).toEqual({ day: 28, prevMonth: true })
+    expect(grid[1]).toEqual({ day: 1 })
+    expect(grid[31]).toEqual({ day: 31 })
+    expect(grid[32]).toEqual({ day: 1, nextMonth: true })
+    expect(grid[34]).toEqual({ day: 3, nextMonth: true })
+  })
+
+  it('returns 5 rows for a month that fills exactly 35 cells', () => {
+    // July 2026: starts Wednesday (firstDay 4), 31 days -> exactly 35 cells.
+    const grid = buildMonthGrid(4, 31, 30)
+
+    expect(grid).toHaveLength(FIVE_ROW_CELLS)
+    expect(grid.filter((cell) => cell.nextMonth)).toHaveLength(0)
+  })
+
+  it('returns 6 rows only when the month overflows 35 cells', () => {
+    // May 2026: starts Friday (firstDay 6), 31 days -> 37 real cells.
+    const grid = buildMonthGrid(6, 31, 30)
+
+    expect(grid).toHaveLength(42)
+    expect(grid[36]).toEqual({ day: 31 })
+    expect(grid.filter((cell) => cell.nextMonth)).toHaveLength(5)
+    expect(grid[37]).toEqual({ day: 1, nextMonth: true })
+    expect(grid[41]).toEqual({ day: 5, nextMonth: true })
+  })
+
+  it('never emits a partial week', () => {
+    for (let firstDay = 0; firstDay <= 6; firstDay++) {
+      for (const daysInMonth of [28, 29, 30, 31]) {
+        const grid = buildMonthGrid(firstDay, daysInMonth, 30)
+        expect(grid.length % 7).toBe(0)
+        expect(grid.length === 35 || grid.length === 42).toBe(true)
+      }
+    }
+  })
+
+  it('labels leading days backwards from the end of the previous month', () => {
+    // Starts Friday: the six leading cells are the last 6 days of April.
+    const grid = buildMonthGrid(6, 31, 30)
+
+    expect(grid.slice(0, 6).map((cell) => cell.day)).toEqual([25, 26, 27, 28, 29, 30])
+    expect(grid.slice(0, 6).every((cell) => cell.prevMonth)).toBe(true)
   })
 })

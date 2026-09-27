@@ -121,6 +121,47 @@ function getHijriFirstDayOfWeek(year: number, month: number): number {
   return (firstDay.getDay() + 1) % 7
 }
 
+export type CalendarCell = { day: number; prevMonth?: boolean; nextMonth?: boolean }
+
+/** Cells in a 5-row week grid. A month that overflows this gets a 6th row. */
+export const FIVE_ROW_CELLS = 35
+
+/**
+ * Builds the month grid: leading days from the previous month, the month
+ * itself, then trailing days from the next one.
+ *
+ * A month grid needs 5 rows to look right; only reach for a 6th when the month
+ * genuinely does not fit in 35 cells. Padding to 6 rows always would leave a
+ * dead week on screen for most months.
+ *
+ * @param firstDay       0 = Saturday … 6 = Friday (index of the 1st of the month)
+ * @param daysInMonth    length of the rendered month
+ * @param daysInPrevMonth  length of the month the leading cells come from
+ */
+export function buildMonthGrid(
+  firstDay: number,
+  daysInMonth: number,
+  daysInPrevMonth: number,
+): CalendarCell[] {
+  const cells: CalendarCell[] = []
+
+  for (let i = firstDay - 1; i >= 0; i--) {
+    cells.push({ day: daysInPrevMonth - i, prevMonth: true })
+  }
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    cells.push({ day: i })
+  }
+
+  const rows = cells.length > FIVE_ROW_CELLS ? 6 : 5
+  let nextDay = 1
+  while (cells.length < rows * 7) {
+    cells.push({ day: nextDay++, nextMonth: true })
+  }
+
+  return cells
+}
+
 // --- Component ---
 
 type CalendarMode = 'hijri' | 'gregorian'
@@ -173,8 +214,6 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
       : `${today.getDate()} ${GREGORIAN_MONTHS[today.getMonth()]} ${today.getFullYear()}`
 
   const calendarDays = useMemo(() => {
-    const cells: { day: number; prevMonth?: boolean; nextMonth?: boolean }[] = []
-
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1
     const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear
     const daysInPrevMonth =
@@ -182,20 +221,7 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
         ? getDaysInHijriMonth(prevYear, prevMonth)
         : getDaysInGregorianMonth(prevYear, prevMonth)
 
-    for (let i = firstDay - 1; i >= 0; i--) {
-      cells.push({ day: daysInPrevMonth - i, prevMonth: true })
-    }
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      cells.push({ day: i })
-    }
-
-    let nextDay = 1
-    while (cells.length < 42) {
-      cells.push({ day: nextDay++, nextMonth: true })
-    }
-
-    return cells
+    return buildMonthGrid(firstDay, daysInMonth, daysInPrevMonth)
   }, [firstDay, daysInMonth, currentMonth, currentYear, calendarMode])
 
   const goToPrevMonth = () => {

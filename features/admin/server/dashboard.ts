@@ -2,6 +2,12 @@
 
 import { getAdminCtx } from './ctx'
 
+/**
+ * The dashboard shows a short, actionable slice of the pickup queue — the
+ * members due to collect soonest. The full queue lives on the loans screen.
+ */
+const DASHBOARD_PICKUP_LIMIT = 6
+
 export async function getAdminDashboardStats() {
   const { payload, user } = await getAdminCtx()
 
@@ -11,6 +17,7 @@ export async function getAdminDashboardStats() {
     severeOverdue,
     pendingVerifications,
     upcomingReturns,
+    upcomingPickups,
     latestReviews,
     recentUsers,
   ] = await Promise.all([
@@ -76,6 +83,23 @@ export async function getAdminDashboardStats() {
       user,
     }),
 
+    // Upcoming pickups: copies reserved and waiting for the member to collect
+    // them at the mosque. `accepted` is the only state that still holds a copy
+    // the borrower has not taken yet, so a `picked_up` loan is deliberately
+    // excluded. The pickup code and slot are stamped by the lifecycle hook on
+    // the `accepted` transition (collections/Loan.ts).
+    payload.find({
+      collection: 'loans',
+      where: {
+        and: [{ status: { equals: 'accepted' } }, { pickupDate: { exists: true } }],
+      },
+      depth: 2,
+      limit: DASHBOARD_PICKUP_LIMIT,
+      sort: 'pickupDate',
+      overrideAccess: false,
+      user,
+    }),
+
     // Latest reviews
     payload.find({
       collection: 'reviews',
@@ -126,6 +150,7 @@ export async function getAdminDashboardStats() {
       pendingVerifications: pendingVerifications.totalDocs,
     },
     upcomingReturns: upcomingReturns.docs,
+    upcomingPickups: upcomingPickups.docs,
     latestReviews: latestReviews.docs,
     recentActivityLogs: allLogs,
     pendingLoansList: pendingLoans.docs,

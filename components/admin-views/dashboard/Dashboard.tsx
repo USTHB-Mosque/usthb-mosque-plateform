@@ -1,28 +1,48 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
+import { toast } from 'sonner'
 import {
   ArrowUpRight,
   Star,
   RotateCcw,
-  TrendingUp,
-  MoreHorizontal,
+  MoreVertical,
   CheckCircle,
-  CalendarClock,
+  Eye,
+  Bell,
+  PackageCheck,
+  X,
+  LogIn,
+  KeyRound,
+  UserPen,
+  BadgeCheck,
+  UserPlus,
+  Activity,
+  type LucideIcon,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { Badge } from '@/shared/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import CalendarWidget from '@/features/profile/components/dashboard/CalendarWidget'
-import { buildCalendarEventsForLoans } from './calendar-events'
+import { LoanDetailsDialog } from '@/features/library'
+import { markLoanPickedUp, sendLoanReminder, rejectLoan } from '@/features/admin/server/loans'
+import BulkActionsBar from '@/shared/common/BulkActionsBar'
+import TableCheckbox from '@/components/admin-views/shared/TableCheckbox'
+import LoanConfirmDialog from '@/components/admin-views/loans/LoanConfirmDialog'
+import RejectLoanDialog from '@/components/admin-views/loans/RejectLoanDialog'
+import { buildCalendarEvents } from './calendar-events'
+import { cn } from '@/shared/lib/utils'
 import type { Loan, Review, Book, User } from '@/payload-types'
 
 interface AdminDashboardProps {
@@ -33,6 +53,7 @@ interface AdminDashboardProps {
     pendingVerifications: number
   }
   upcomingReturns: Loan[]
+  upcomingPickups: Loan[]
   latestReviews: Review[]
   recentActivityLogs: Array<{
     action: string
@@ -43,21 +64,40 @@ interface AdminDashboardProps {
   }>
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  login: 'تسجيل دخول',
-  password_changed: 'تغيير كلمة المرور',
-  profile_updated: 'تحديث الملف الشخصي',
-  account_verified: 'تفعيل الحساب',
-  account_created: 'إنشاء حساب',
+/**
+ * The activity widget is a scan-first list: the icon chip carries the action so
+ * the eye can skip the labels, and the tones stay on the teal/neutral token
+ * scale rather than the raw Tailwind palette the old badges used.
+ */
+const ACTION_META: Record<string, { label: string; icon: LucideIcon; tone: string }> = {
+  login: { label: 'تسجيل دخول', icon: LogIn, tone: 'bg-primary-main-10 text-primary-400' },
+  password_changed: {
+    label: 'تغيير كلمة المرور',
+    icon: KeyRound,
+    tone: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  },
+  profile_updated: {
+    label: 'تحديث الملف الشخصي',
+    icon: UserPen,
+    tone: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+  },
+  account_verified: {
+    label: 'تفعيل الحساب',
+    icon: BadgeCheck,
+    tone: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  },
+  account_created: {
+    label: 'إنشاء حساب',
+    icon: UserPlus,
+    tone: 'bg-primary-main-10 text-primary-400',
+  },
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  login: 'bg-blue-100 text-blue-700',
-  password_changed: 'bg-amber-100 text-amber-700',
-  profile_updated: 'bg-purple-100 text-purple-700',
-  account_verified: 'bg-emerald-100 text-emerald-700',
-  account_created: 'bg-primary-main-15 text-primary-300',
-}
+const UNKNOWN_ACTION = {
+  label: 'حدث',
+  icon: Activity,
+  tone: 'bg-muted text-muted-foreground',
+} as const
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -72,36 +112,125 @@ function StarRating({ rating }: { rating: number }) {
   )
 }
 
+function displayNameOf(user: User | undefined): string {
+  if (!user) return '—'
+  return user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+}
+
 const AdminDashboard: React.FC<AdminDashboardProps> = ({
   stats,
-  upcomingReturns,
+  upcomingReturns = [],
+  upcomingPickups = [],
   latestReviews,
   recentActivityLogs,
 }) => {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [selected, setSelected] = useState<Set<number>>(() => new Set())
+  const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [confirm, setConfirm] = useState<{ loanIds: number[]; label: string } | null>(null)
+  const [cancel, setCancel] = useState<{ loanId: number; label: string } | null>(null)
+
+  const pickupIds = upcomingPickups.map((loan) => loan.id)
+  const allSelected = pickupIds.length > 0 && pickupIds.every((id) => selected.has(id))
+  const someSelected = !allSelected && pickupIds.some((id) => selected.has(id))
+
+  const toggle = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(pickupIds))
+  }
+
+  const openDetails = (loan: Loan) => {
+    setDetailsLoan(loan)
+    setDetailsOpen(true)
+  }
+
+  const labelFor = (loanIds: number[]) => {
+    if (loanIds.length === 1) {
+      const loan = upcomingPickups.find((l) => l.id === loanIds[0])
+      return displayNameOf(loan?.user as User | undefined)
+    }
+    return `${loanIds.length} استلامات`
+  }
+
+  const openConfirm = (loanIds: number[]) => {
+    if (loanIds.length === 0) return
+    setConfirm({ loanIds, label: labelFor(loanIds) })
+  }
+
+  const runPickup = (loanIds: number[]) => {
+    setConfirm(null)
+    setSelected(new Set())
+    startTransition(async () => {
+      let done = 0
+      for (const id of loanIds) {
+        const result = await markLoanPickedUp(id)
+        if (result.ok) done++
+        else toast.error(result.error || 'تعذر تسجيل الاستلام')
+      }
+      if (done > 0) {
+        toast.success(`تم تسجيل استلام ${done} ${done === 1 ? 'كتاب' : 'كتب'}`)
+        router.refresh()
+      }
+    })
+  }
+
+  const sendReminder = (loan: Loan) => {
+    startTransition(async () => {
+      const result = await sendLoanReminder(loan.id)
+      if (result.ok) toast.success('تم إرسال التذكير إلى المستفيد')
+      else toast.error(result.error || 'تعذر إرسال التذكير')
+    })
+  }
+
+  // An accepted loan the member never collects. The schema has no `cancelled`
+  // state, and `refuseLoan` is the transition that accepts `accepted` and
+  // releases the copy, so cancellation is a refusal with cancel wording.
+  const runCancel = async (loanId: number, reason?: string) => {
+    setCancel(null)
+    setSelected(new Set())
+    startTransition(async () => {
+      const result = await rejectLoan(loanId, reason)
+      if (result.ok) {
+        toast.success('تم إلغاء الإعارة وإرجاع الكتاب إلى الرف')
+        router.refresh()
+      } else {
+        toast.error(result.error || 'تعذر إلغاء الإعارة')
+      }
+    })
+  }
+
+  // Counts only. A trend line needs a measured month-over-month delta; until
+  // one is computed from real rows we show nothing rather than invent a number.
   const statCards = [
     {
       label: 'طلبات الإعارة قيد الانتظار',
       value: stats.pendingLoans,
       href: '/admin-panel/loans',
-      trend: '+145%',
     },
     {
       label: 'طلبات تمديد قيد الانتظار',
       value: stats.pendingExtensions,
       href: '/admin-panel/loans',
-      trend: '+145%',
     },
     {
       label: 'عدد التأخيرات الشهرية في الإرجاع',
       value: stats.severeOverdue,
       href: '/admin-panel/loans',
-      trend: '+145%',
     },
     {
       label: 'عدد الحسابات بانتظار التحقق',
       value: stats.pendingVerifications,
       href: '/admin-panel/verification',
-      trend: '+145%',
     },
   ]
 
@@ -118,11 +247,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex flex-1 flex-col gap-1">
               <span className="text-sm text-muted-foreground">{stat.label}</span>
               <span className="text-3xl font-bold text-card-foreground">{stat.value}</span>
-              <span className="flex items-center gap-1 text-xs text-primary-300">
-                <TrendingUp className="size-3" />
-                <span>{stat.trend}</span>
-                أكثر من الشهر الماضي
-              </span>
             </div>
             <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-all group-hover/card:scale-110">
               <ArrowUpRight className="size-4 transition-transform group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5" />
@@ -131,9 +255,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ))}
       </div>
 
-      {/* Calendar + Upcoming Returns — bento layout */}
+      {/* Calendar + today's pickups — bento layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <CalendarWidget events={buildCalendarEventsForLoans(upcomingReturns)} />
+        <CalendarWidget events={buildCalendarEvents(upcomingPickups, upcomingReturns)} />
         <section className="rounded-2xl border border-border p-4 sm:p-5 lg:col-span-2">
           <header className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-card-foreground">استلامات الكتب القادمة</h2>
@@ -145,69 +269,117 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
               <thead>
                 <tr className="border-b border-border bg-background-2">
+                  <th className="w-10 px-3 py-3">
+                    <span className="sr-only">تحديد</span>
+                    <TableCheckbox
+                      checked={allSelected}
+                      partial={someSelected}
+                      label="تحديد الكل"
+                      onChange={toggleAll}
+                    />
+                  </th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                     المستفيد
                   </th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">الكتاب</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">الرمز</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                    تاريخ الإستلام
+                    موقع الكتاب
                   </th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                    تاريخ الاستلام
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">الساعة</th>
                   <th className="w-12 px-3 py-3 text-center" />
                 </tr>
               </thead>
               <tbody>
-                {upcomingReturns.length === 0 ? (
+                {upcomingPickups.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
                       لا توجد استلامات قادمة
                     </td>
                   </tr>
                 ) : (
-                  upcomingReturns.map((loan) => {
+                  upcomingPickups.map((loan) => {
                     const book = loan.book as Book | undefined
-                    const user = loan.user as User | undefined
-                    const displayName =
-                      user?.fullName ||
-                      [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-                      user?.email
-
+                    const isSelected = selected.has(loan.id)
                     return (
                       <tr
                         key={loan.id}
-                        className="border-b border-border last:border-0 hover:bg-muted/40 cursor-pointer"
+                        onClick={() => openDetails(loan)}
+                        className={cn(
+                          'cursor-pointer border-b border-border last:border-0 hover:bg-muted/40',
+                          isSelected && 'bg-primary-200/5',
+                        )}
                       >
+                        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                          <TableCheckbox
+                            checked={isSelected}
+                            label={`تحديد استلام ${displayNameOf(loan.user as User | undefined)}`}
+                            onChange={() => toggle(loan.id)}
+                          />
+                        </td>
                         <td className="truncate px-4 py-3 font-medium text-card-foreground">
-                          {displayName}
+                          {displayNameOf(loan.user as User | undefined)}
                         </td>
                         <td className="truncate px-4 py-3 text-muted-foreground">
                           {book?.title || 'كتاب'}
                         </td>
                         <td className="truncate px-4 py-3 text-muted-foreground">
-                          {book?.isbn || '—'}
+                          {book?.location || '—'}
                         </td>
                         <td className="truncate px-4 py-3 text-muted-foreground">
-                          {loan.dueDate
-                            ? format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ })
+                          {loan.pickupDate
+                            ? format(new Date(loan.pickupDate), 'd MMM yyyy', { locale: arDZ })
                             : '—'}
                         </td>
-                        <td className="px-3 py-3 text-center">
+                        <td className="truncate px-4 py-3 text-muted-foreground">
+                          {loan.pickupHour || '—'}
+                        </td>
+                        <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger
-                              className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
-                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`إجراءات استلام ${displayNameOf(loan.user as User | undefined)}`}
+                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary-300"
                             >
-                              <MoreHorizontal className="size-4 text-muted-foreground" />
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">فتح قائمة الإجراءات</span>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                                <CheckCircle className="me-2 size-4" />
-                                تأكيد الاستلام
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                                <CalendarClock className="me-2 size-4" />
-                                طلب إعادة جدولة
-                              </DropdownMenuItem>
+                            {/* Mirrors the users table action menu so every row menu in
+                                the admin panel reads the same. */}
+                            <DropdownMenuContent align="end" sideOffset={6} className="min-w-44">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>الاستلام</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => openDetails(loan)}>
+                                  <Eye className="size-4" />
+                                  تفاصيل الإعارة
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openConfirm([loan.id])}>
+                                  <PackageCheck className="size-4" />
+                                  تأكيد الاستلام
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={pending}
+                                  onClick={() => sendReminder(loan)}
+                                >
+                                  <Bell className="size-4" />
+                                  تذكير بالمستلام
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  disabled={pending}
+                                  onClick={() =>
+                                    setCancel({
+                                      loanId: loan.id,
+                                      label: displayNameOf(loan.user as User | undefined),
+                                    })
+                                  }
+                                >
+                                  <X className="size-4" />
+                                  إلغاء الإعارة
+                                </DropdownMenuItem>
+                              </DropdownMenuGroup>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
@@ -221,14 +393,124 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </section>
       </div>
 
+      <BulkActionsBar
+        count={selected.size}
+        itemName="استلام"
+        onClear={() => setSelected(new Set())}
+        actions={[
+          {
+            label: 'تأكيد الاستلام',
+            icon: CheckCircle,
+            onClick: () => openConfirm(Array.from(selected)),
+          },
+        ]}
+      />
+
+      {detailsLoan ? (
+        <LoanDetailsDialog open={detailsOpen} onOpenChange={setDetailsOpen} loan={detailsLoan} />
+      ) : null}
+
+      {confirm ? (
+        <LoanConfirmDialog
+          open
+          onOpenChange={() => setConfirm(null)}
+          title="تسجيل أخذ الكتاب"
+          description={`سيتم تسجيل أخذ الكتاب «${confirm.label}» وحساب تاريخ الإرجاع ابتداءً من اليوم.`}
+          confirmLabel="تسجيل الأخذ"
+          busy={pending}
+          onConfirm={() => runPickup(confirm.loanIds)}
+        />
+      ) : null}
+
+      {cancel ? (
+        <RejectLoanDialog
+          open
+          onOpenChange={() => setCancel(null)}
+          itemLabel={cancel.label}
+          busy={pending}
+          title="إلغاء الإعارة"
+          description={`سيتم إلغاء إعارة ${cancel.label} قبل الاستلام، ويصبح الكتاب متاحاً مجدداً إلى دورته على الرف. يمكنك إضافة سبب يظهر للمستفيد.`}
+          confirmLabel="تأكيد الإلغاء"
+          placeholder="اكتب سبب الإلغاء هنا ..."
+          onConfirm={(reason) => runCancel(cancel.loanId, reason)}
+        />
+      ) : null}
+
+      {/*
+        Upcoming returns — copies the member still holds.
+        Hidden for now: the pickups table above plus the calendar already carry
+        the operational load, and the calendar marks due dates as well. The
+        `upcomingReturns` query stays in place (the calendar consumes it).
+      */}
+      {/* <section className="rounded-2xl border border-border p-4 sm:p-5">
+        <header className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-card-foreground">إرجاعات الكتب القادمة</h2>
+          <Link href="/admin-panel/loans" className="text-xs text-primary-300 hover:underline">
+            عرض الكل
+          </Link>
+        </header>
+        <div className="overflow-x-auto rounded-xl">
+          <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+            <thead>
+              <tr className="border-b border-border bg-background-2">
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">المستفيد</th>
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">الكتاب</th>
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                  تاريخ الإرجاع
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {upcomingReturns.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">
+                    لا توجد إرجاعات قادمة
+                  </td>
+                </tr>
+              ) : (
+                upcomingReturns.map((loan) => {
+                  const book = loan.book as Book | undefined
+                  return (
+                    <tr
+                      key={loan.id}
+                      className="border-b border-border last:border-0 hover:bg-muted/40"
+                    >
+                      <td className="truncate px-4 py-3 font-medium text-card-foreground">
+                        {displayNameOf(loan.user as User | undefined)}
+                      </td>
+                      <td className="truncate px-4 py-3 text-muted-foreground">
+                        {book?.title || 'كتاب'}
+                      </td>
+                      <td className="truncate px-4 py-3 text-muted-foreground">
+                        {loan.dueDate
+                          ? format(new Date(loan.dueDate), 'd MMM yyyy', { locale: arDZ })
+                          : '—'}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section> */}
+
       {/* Reviews + Activity Logs */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Latest Reviews */}
-        <Card className="ring-0 border border-border">
+        <Card className="ring-0 flex flex-col border border-border">
           <CardHeader>
-            <CardTitle className="text-base font-bold">آخر التقييمات</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-bold">آخر التقييمات</CardTitle>
+              <Link
+                href="/admin-panel/reviews"
+                className="text-xs text-primary-300 hover:underline"
+              >
+                عرض الكل
+              </Link>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="max-h-[22rem] overflow-y-auto">
             {latestReviews.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
                 <Star className="size-8 opacity-40" />
@@ -238,11 +520,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex flex-col gap-3">
                 {latestReviews.map((review) => {
                   const book = review.book as Book | undefined
-                  const user = review.user as User | undefined
-                  const displayName =
-                    user?.fullName ||
-                    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-                    user?.email
+                  const displayName = displayNameOf(review.user as User | undefined)
 
                   return (
                     <div key={review.id} className="rounded-xl border border-border p-3">
@@ -272,52 +550,62 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </Card>
 
         {/* Activity Logs Timeline */}
-        <Card className="ring-0 border border-border">
+        <Card className="ring-0 flex flex-col border border-border">
           <CardHeader>
-            <CardTitle className="text-base font-bold">آخر الأحداث المسجلة</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-bold">آخر الأحداث المسجلة</CardTitle>
+              <Link
+                href="/admin-panel/activity-log"
+                className="text-xs text-primary-300 hover:underline"
+              >
+                عرض الكل
+              </Link>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="max-h-[22rem] overflow-y-auto">
             {recentActivityLogs.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
                 <RotateCcw className="size-8 opacity-40" />
                 <p className="text-sm">لا توجد أحداث بعد</p>
               </div>
             ) : (
-              <div className="relative flex flex-col gap-0">
-                {recentActivityLogs.map((log, i) => (
-                  <div
-                    key={`${log.userEmail}-${log.timestamp}-${i}`}
-                    className="relative flex gap-3 pb-4"
-                  >
-                    {/* Vertical line */}
-                    {i < recentActivityLogs.length - 1 && (
-                      <div className="absolute start-[11px] top-6 h-full w-px bg-border" />
-                    )}
-                    {/* Dot */}
-                    <div className="relative z-10 mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-background-2 ring-2 ring-border">
-                      <div className="size-2 rounded-full bg-primary" />
-                    </div>
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold">{log.userName}</span>
-                        <Badge
-                          variant="secondary"
-                          className={`text-[10px] ${ACTION_COLORS[log.action] || 'bg-gray-100 text-gray-600'}`}
+              <ul className="flex flex-col gap-2">
+                {recentActivityLogs.map((log, i) => {
+                  const meta = ACTION_META[log.action] ?? UNKNOWN_ACTION
+                  const Icon = meta.icon
+                  return (
+                    <li key={`${log.userEmail}-${log.timestamp}-${i}`}>
+                      <div className="flex items-start gap-3 rounded-xl border border-border/60 p-3 transition-colors hover:border-border hover:bg-muted/30">
+                        <span
+                          className={cn(
+                            'flex size-8 shrink-0 items-center justify-center rounded-lg',
+                            meta.tone,
+                          )}
                         >
-                          {ACTION_LABELS[log.action] || log.action}
-                        </Badge>
+                          <Icon className="size-4" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="truncate text-sm font-semibold text-card-foreground">
+                              {log.userName}
+                            </span>
+                            <time
+                              dateTime={log.timestamp}
+                              className="shrink-0 text-[11px] tabular-nums text-muted-foreground"
+                            >
+                              {format(new Date(log.timestamp), 'd MMM · HH:mm', { locale: arDZ })}
+                            </time>
+                          </div>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            {meta.label}
+                            {log.metadata ? ` — ${log.metadata}` : ''}
+                          </p>
+                        </div>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {format(new Date(log.timestamp), 'd MMM yyyy — HH:mm', { locale: arDZ })}
-                      </p>
-                      {log.metadata && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{log.metadata}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </li>
+                  )
+                })}
+              </ul>
             )}
           </CardContent>
         </Card>

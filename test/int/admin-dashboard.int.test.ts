@@ -202,3 +202,147 @@ describe('getAdminDashboardStats KPI counts', () => {
     ])
   })
 })
+
+describe('getAdminDashboardStats upcoming pickups', () => {
+  it('lists accepted loans with their pickup code, date and hour', async () => {
+    await loginAs(admin.email ?? '')
+
+    const book = await seedBook()
+    const member = await createTestUser(payload, {
+      email: 'pickup@dashboard-int.usthb.dz',
+      verified: true,
+    })
+
+    const pickup = await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'accepted',
+        loanDate: daysFromNow(-1),
+        pickupDate: daysFromNow(2),
+        pickupHour: '14:00',
+        pickupCode: 'PICK-001',
+      },
+      overrideAccess: true,
+    })
+
+    const data = await getAdminDashboardStats()
+
+    expect(data.upcomingPickups).toHaveLength(1)
+    expect(String(data.upcomingPickups[0].id)).toBe(String(pickup.id))
+    expect(data.upcomingPickups[0].pickupCode).toBe('PICK-001')
+    expect(data.upcomingPickups[0].pickupHour).toBe('14:00')
+    expect(data.upcomingPickups[0].pickupDate).toBeTruthy()
+  })
+
+  it('sorts pickups by pickup date ascending', async () => {
+    await loginAs(admin.email ?? '')
+
+    const book = await seedBook()
+    const member = await createTestUser(payload, {
+      email: 'pickup-order@dashboard-int.usthb.dz',
+      verified: true,
+    })
+
+    const later = await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'accepted',
+        loanDate: daysFromNow(-1),
+        pickupDate: daysFromNow(6),
+        pickupCode: 'PICK-LATE',
+      },
+      overrideAccess: true,
+    })
+    const sooner = await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'accepted',
+        loanDate: daysFromNow(-1),
+        pickupDate: daysFromNow(1),
+        pickupCode: 'PICK-SOON',
+      },
+      overrideAccess: true,
+    })
+
+    const data = await getAdminDashboardStats()
+
+    expect(data.upcomingPickups.map((loan) => String(loan.id))).toEqual([
+      String(sooner.id),
+      String(later.id),
+    ])
+  })
+
+  it('excludes loans the borrower already collected and ones with no pickup date', async () => {
+    await loginAs(admin.email ?? '')
+
+    const book = await seedBook()
+    const member = await createTestUser(payload, {
+      email: 'pickup-excluded@dashboard-int.usthb.dz',
+      verified: true,
+    })
+
+    // Already collected: holds a copy but is no longer awaiting collection.
+    await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'picked_up',
+        loanDate: daysFromNow(-3),
+        pickupDate: daysFromNow(-2),
+        pickupCode: 'PICK-TOKEN',
+        dueDate: daysFromNow(9),
+      },
+      overrideAccess: true,
+    })
+    // Accepted but never stamped with a pickup slot.
+    await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'accepted',
+        loanDate: daysFromNow(-1),
+      },
+      overrideAccess: true,
+    })
+
+    const data = await getAdminDashboardStats()
+
+    expect(data.upcomingPickups).toHaveLength(0)
+  })
+
+  it('keeps a picked_up loan in the returns list, not the pickups list', async () => {
+    await loginAs(admin.email ?? '')
+
+    const book = await seedBook()
+    const member = await createTestUser(payload, {
+      email: 'pickup-vs-return@dashboard-int.usthb.dz',
+      verified: true,
+    })
+
+    await payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: member.id,
+        status: 'picked_up',
+        loanDate: daysFromNow(-3),
+        pickupDate: daysFromNow(-2),
+        dueDate: daysFromNow(4),
+      },
+      overrideAccess: true,
+    })
+
+    const data = await getAdminDashboardStats()
+
+    expect(data.upcomingPickups).toHaveLength(0)
+    expect(data.upcomingReturns).toHaveLength(1)
+  })
+})
