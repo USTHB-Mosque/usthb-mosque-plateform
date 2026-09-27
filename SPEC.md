@@ -32,7 +32,9 @@
 - User core: notifications, loans (waitlist + extension + pickup), dashboards + calendars, articles (bookmarks, feedback, reviews), onboarding/helpers.
 - Full admin panel: dashboard, loans, users, books, articles, activities, reviews, logs, analytics, settings.
 - Landing polish (force autoplay).
-- **Google OAuth** in scope; **password reset deferred** (not v1).
+- **Google OAuth** in scope.
+- **Password reset** in scope and **shipped** (#22). The old deferral was reversed once the first real
+  users arrived: forgetting a password had no recovery path except an admin editing the record.
 - Algerian data protection compliance (Law 18-07): consent, privacy policy, terms of use, soft delete.
 - Security fixes from audit.
 
@@ -45,7 +47,6 @@
 - **User-side audit activity log** - v2 (admin logs in scope).
 - **Tasks** - v2.
 - **Book damage tracking** - v2.
-- **Password reset / forgot password** - deferred.
 - **2FA** - deferred.
 - **Multi-language / i18n** - Arabic-only for v1.
 - **External analytics tools** - analytics computed from the DB only.
@@ -226,7 +227,7 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - **Bookmarks** tab: books (exists as favorites). Articles were cut - see Section 2.
 - **Notifications** tab: per-channel opt-in for the matrix in Section 5.
 - **Info** tab: personal data (existing account tab).
-- **Security** tab: change password (exists). **Password reset + 2FA deferred.**
+- **Security** tab: change password, and forgot/reset password from the login page (both exist). **2FA deferred.**
 
 ### 6.10 Onboarding / Helpers _(Undecided)_
 
@@ -528,7 +529,8 @@ disagree, this section wins. The PRD checklist is kept for its resolved answers 
 | Scale                      | Thousands of users                            | Section 15                    |
 | Language                   | Arabic-only v1                                | Section 2                     |
 | Admin panel location       | Contested - see note below                    | Section 15, see note below    |
-| Password reset / 2FA       | Deferred                                      | Section 2                     |
+| Password reset             | **Shipped** (#22) - see note below            | Section 2, Section 6.9        |
+| 2FA                        | Deferred                                      | Section 2                     |
 | Email provider             | Nodemailer (provider TBD)                     | Section 5                     |
 | Extension auto-approve     | Auto-approve when queue empty                 | Section 4                     |
 | Article feedback/reviews   | **Cut from v1** - see Section 2               | -                             |
@@ -537,6 +539,20 @@ disagree, this section wins. The PRD checklist is kept for its resolved answers 
 > served from `/admin-panel`, moved to avoid colliding with Payload's own admin. The move was deliberate
 > but was never recorded here. #65 decides: either amend this row, or move thirteen routes late in the
 > build. Until then this row is the only record that the two disagree.
+
+**Password reset, shipped (#22).** `/auth/forgot` and `/auth/reset/[token]` (note: the live paths are not
+the `/auth/reset-password?token=` shape the ticket originally specified), an Arabic reset email that derives
+its origin from `x-forwarded-host` so preview links work, and enumeration-safe responses - the forgot
+action returns an identical result whether or not the address exists. Three requirements from #22 are still
+**unmet**, so this row records what exists, not what was signed off:
+
+1. **Sessions are not revoked on reset.** Payload's `resetPassword` only calls `revokeSession` on its
+   failure path; on success it adds one new session and leaves every other session valid. A stolen session
+   cookie therefore survives a password reset, which is the exact case #22 called out. `changePassword`
+   already does this correctly via `logoutOperation({ allSessions: true })`.
+2. **No rate limiting on the forgot endpoint** - no `maxAttempts` on the Users auth config, so it is an
+   unauthenticated mail trigger.
+3. **Int tests do not cover enumeration safety or session revocation**, though #22 asked for both.
 
 ### Resolved 2026-09-26 (were blocking #153, #154, #155)
 
@@ -613,7 +629,7 @@ migration. Changing the constant and backfilling the row in a new migration cove
 
 - **Monolith**: one Next.js (App Router) process hosts the public site **and** Payload CMS in-process. REST at `/api/*`, GraphQL at `/api/graphql`, admin at **/admin** (same app).
 - **Rendering split**: public read pages = Server Components + `getPayload`; interactive pages = Client Components + TanStack Query (cookie auth).
-- **Auth**: Payload JWT cookie, `role` in JWT, role-based redirect + server-side re-checks. **Google OAuth** = only social login. **Password reset deferred.** Visitor->user gating: borrow/bookmark/register/review require sign-in (visitor is redirected, never blocked from browsing).
+- **Auth**: Payload JWT cookie, `role` in JWT, role-based redirect + server-side re-checks. **Google OAuth** = only social login. **Password reset shipped** (#22). Visitor->user gating: borrow/bookmark/register/review require sign-in (visitor is redirected, never blocked from browsing).
 
 ### Stack Table
 
