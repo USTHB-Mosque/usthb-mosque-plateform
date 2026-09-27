@@ -27,6 +27,7 @@ import {
 } from '@/features/notifications/server/mark-notifications-read'
 import { notifyBellRefresh } from '@/features/notifications/lib/bell-refresh'
 import {
+  formatAbsoluteArabicTime,
   formatRelativeArabicTime,
   groupNotificationsByDay,
 } from '@/features/notifications/lib/notifications-format'
@@ -54,10 +55,6 @@ const TYPE_ICONS: Record<NotificationType, LucideIcon> = {
   system: Bell,
 }
 
-function typeIcon(type: NotificationType): LucideIcon {
-  return TYPE_ICONS[type] ?? Bell
-}
-
 /**
  * The /user/notifications inbox (#17): all/unread + type filters via URL
  * search params, day grouping with Arabic relative timestamps, mark as read
@@ -67,6 +64,9 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = React.useTransition()
+  // One stamp per mount: SSR and the hydrating client each render a stable,
+  // self-consistent list (suppressing the sub-minute الـآن boundary drift).
+  const now = React.useMemo(() => new Date(), [])
 
   const buildHref = (overrides: { seen?: string; type?: string; page?: number }) => {
     const next = new URLSearchParams(searchParams.toString())
@@ -103,7 +103,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
     })
   }
 
-  const groups = groupNotificationsByDay(data.notifications)
+  const groups = groupNotificationsByDay(data.notifications, now)
 
   return (
     <div dir="rtl" className="flex w-full flex-col gap-4">
@@ -135,7 +135,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2" aria-label="تصفية حسب النوع">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="تصفية حسب النوع">
         <Button
           variant={type === undefined ? 'default' : 'outline'}
           size="sm"
@@ -193,9 +193,10 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
                       </span>
                       <span
                         className="text-[11px] text-grey-400"
-                        title={new Date(item.createdAt).toLocaleString('ar')}
+                        title={formatAbsoluteArabicTime(item.createdAt)}
+                        suppressHydrationWarning
                       >
-                        {formatRelativeArabicTime(item.createdAt)}
+                        {formatRelativeArabicTime(item.createdAt, now)}
                       </span>
                     </span>
                     <span className="text-sm text-grey-500">{item.message}</span>

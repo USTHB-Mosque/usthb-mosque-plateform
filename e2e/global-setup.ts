@@ -21,8 +21,8 @@ export default async function globalSetup(): Promise<void> {
   if (!E2E_DEV) {
     // Migrate + verify, retrying on a silent no-op: `payload migrate` has
     // occasionally exited 0 without applying anything while the web server's
-    // build runs concurrently, so the captured output plus a schema check —
-    // not the exit code — decides whether the step landed.
+    // build runs concurrently. Only the schema check decides whether the
+    // step landed — the exit code and output cannot be trusted.
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const output = execSync('node node_modules/payload/bin.js migrate', {
         env: { ...process.env, DATABASE_URL: databaseUrl, NODE_ENV: 'production' },

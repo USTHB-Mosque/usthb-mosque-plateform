@@ -18,7 +18,7 @@ import { getBellState, type BellState } from '@/features/notifications/server/ge
 import { markNotificationRead } from '@/features/notifications/server/mark-notifications-read'
 import { onBellRefresh } from '@/features/notifications/lib/bell-refresh'
 import { NOTIFICATIONS_PAGE } from '@/utils/notifications'
-import { useInitialBellState } from '@/shared/layouts/user/bell-context'
+import { useInitialBellState } from './bell-context'
 
 type NotificationBellProps = {
   /** Mobile-menu variant: a plain nav-like item linking to the notifications page. */
@@ -79,10 +79,14 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
     // the full state keeps the dropdown in sync with server data.
     const source = new EventSource('/api/notifications/stream')
     source.addEventListener('unread', refresh)
+    // The inbox nudges the bell on mark-read so the badge drops immediately
+    // instead of waiting for the next tick.
     return () => {
       source.close()
     }
   }, [refresh])
+
+  React.useEffect(() => onBellRefresh(refresh), [refresh])
 
   const markRead = React.useCallback(
     async (id: number, seen: boolean, link: string | null) => {

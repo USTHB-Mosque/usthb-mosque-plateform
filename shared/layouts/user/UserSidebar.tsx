@@ -13,7 +13,7 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
-import { BellStateProvider } from '@/shared/layouts/user/bell-context'
+import { BellStateProvider } from '@/features/notifications'
 import { NotificationBell } from '@/features/notifications'
 import type { BellState } from '@/features/notifications'
 import ThemeSwitcher from '@/shared/ui/theme-switcher'

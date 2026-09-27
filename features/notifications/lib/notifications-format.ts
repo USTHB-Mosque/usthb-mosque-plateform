@@ -1,7 +1,7 @@
 import { format, formatDistanceStrict } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 
-import type { NotificationListItem } from '@/features/notifications'
+import type { NotificationListItem } from '@/features/notifications/server/get-notifications'
 
 /**
  * Notification display helpers: Arabic relative timestamps and day grouping
@@ -30,13 +30,18 @@ export function formatRelativeArabicTime(value: string, now: Date = new Date()):
   const strict = (unit: 'minute' | 'hour' | 'day') =>
     formatDistanceStrict(date, now, { locale: arDZ, unit, addSuffix: true })
 
-  if (distance < 7 * DAY) {
-    if (distance < 60 * MINUTE) return strict('minute')
+  if (distance < RELATIVE_WINDOW_DAYS * DAY) {
+    if (distance < HOUR) return strict('minute')
     if (distance < DAY) return strict('hour')
     return strict('day')
   }
 
   return format(date, 'd MMMM yyyy', { locale: arDZ })
+}
+
+/** The absolute Arabic date-time stamp, shared by the hover title. */
+export function formatAbsoluteArabicTime(value: string): string {
+  return format(new Date(value), 'd MMMM yyyy، HH:mm', { locale: arDZ })
 }
 
 export type DayGroupKey = 'today' | 'yesterday' | 'older'
@@ -46,9 +51,9 @@ export type NotificationDayGroup = {
   items: NotificationListItem[]
 }
 
-/** Calendar-day comparison in the viewer's local time. */
-function dayIndex(value: Date): number {
-  return Math.floor(value.getTime() / DAY)
+/** Local calendar-day ordinal — groups follow the viewer's clock, not UTC. */
+function localDayIndex(value: Date): number {
+  return value.getFullYear() * 12_000 + value.getMonth() * 100 + value.getDate()
 }
 
 /**
@@ -59,7 +64,7 @@ export function groupNotificationsByDay(
   items: NotificationListItem[],
   now: Date = new Date(),
 ): NotificationDayGroup[] {
-  const todayIndex = dayIndex(now)
+  const todayIndex = localDayIndex(now)
 
   const groups: NotificationDayGroup[] = [
     { key: 'today', label: 'اليوم', items: [] },
@@ -68,7 +73,7 @@ export function groupNotificationsByDay(
   ]
 
   for (const item of items) {
-    const groupIndex = todayIndex - dayIndex(new Date(item.createdAt))
+    const groupIndex = todayIndex - localDayIndex(new Date(item.createdAt))
     const bucket = groupIndex <= 0 ? 0 : groupIndex === 1 ? 1 : 2
     groups[bucket]?.items.push(item)
   }

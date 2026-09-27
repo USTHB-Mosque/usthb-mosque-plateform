@@ -3,25 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   formatRelativeArabicTime,
   groupNotificationsByDay,
-  type DayGroupKey,
 } from '@/features/notifications/lib/notifications-format'
-import type { NotificationListItem } from '@/features/notifications'
-
-// A fixed "now" so every branch is deterministic: 2026-09-27 15:00 local time.
-const NOW = new Date('2026-09-27T15:00:00')
-
-function item(overrides: Partial<NotificationListItem> = {}): NotificationListItem {
-  return {
-    id: 1,
-    type: 'system',
-    title: 'إشعار',
-    message: 'رسالة',
-    link: null,
-    seen: false,
-    createdAt: NOW.toISOString(),
-    ...overrides,
-  }
-}
+import { FIXTURE_NOW as NOW, makeNotificationItem as item } from '@/features/notifications/fixtures'
 
 describe('formatRelativeArabicTime', () => {
   it('says الآن for anything under a minute', () => {
@@ -74,7 +57,7 @@ describe('groupNotificationsByDay', () => {
       NOW,
     )
 
-    expect(groups.map((group) => group.key)).toEqual<DayGroupKey[]>(['today', 'yesterday', 'older'])
+    expect(groups.map((group) => group.key)).toEqual(['today', 'yesterday', 'older'])
     expect(groups[0]?.label).toBe('اليوم')
     expect(groups[1]?.label).toBe('أمس')
     expect(groups[2]?.label).toBe('أقدم')

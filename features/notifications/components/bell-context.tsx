@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 
-import type { BellState } from '@/features/notifications'
+import type { BellState } from '@/features/notifications/server/get-notifications'
 
 /**
  * The bell's initial state, fetched on the server by the member-portal layout
