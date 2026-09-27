@@ -64,16 +64,20 @@ const SectionBlock: React.FC<SectionBlockProps> = ({
         <dl className="flex gap-8 md:gap-10">
           {stats.map((stat, i) => (
             <div key={i} className="flex flex-col">
-              <dd className="text-xl font-bold text-primary-300 md:text-2xl">{stat.value}</dd>
+              {/* primary-400 keeps the brand hue while passing the 3:1
+                  large-text contrast rule on this light background. */}
+              <dd className="text-xl font-bold text-primary-400 md:text-2xl">{stat.value}</dd>
               <dt className="text-sm font-bold md:text-base">{stat.label}</dt>
             </div>
           ))}
         </dl>
       )}
 
+      {/* primary-500: the 16px label needs 4.5:1, which the lighter brand
+            teals cannot reach on this background. */}
       <a
         href={ctaHref}
-        className="flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-sm font-bold leading-loose text-primary-300 no-underline md:text-base"
+        className="flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-sm font-bold leading-loose text-primary-500 no-underline md:text-base"
       >
         {ctaLabel}
         <ArrowLeft size={16} />

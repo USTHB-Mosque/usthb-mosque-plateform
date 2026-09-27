@@ -174,6 +174,7 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                     <td className="px-3 py-3 text-center hidden xl:table-cell xl:px-0">
                       <DropdownMenu>
                         <DropdownMenuTrigger
+                          aria-label={'إجراءات التسجيل'}
                           className="ms-auto flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none"
                           onClick={(e) => e.stopPropagation()}
                         >

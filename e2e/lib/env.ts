@@ -44,6 +44,12 @@ export function e2eServerEnv(): Record<string, string> {
   }
   env.DATABASE_URL = e2eDatabaseUrl()
   env.S3_BUCKET = E2E_BUCKET
+  // The prod notification creators run with `email: true`; e2e routes SMTP at
+  // a dead local port so the real code path is exercised (createNotification
+  // swallows the send failure and stamps `emailSent: false`) while no mail
+  // ever leaves the machine.
+  env.EMAIL_HOST = '127.0.0.1'
+  env.EMAIL_PORT = '1'
   // NEXT_PUBLIC_* values are inlined into the client bundle at build time —
   // the stale localhost:3000 from .env.local would send browser fetches to a
   // dead port, so both public URLs point at the e2e server.

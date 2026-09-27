@@ -16,7 +16,8 @@ async function openMemberBook(page: Page, title: string): Promise<void> {
   // hydration, so retry the whole switch-then-open chain.
   await expect(async () => {
     await page.getByRole('button', { name: 'عرض جدول' }).click({ timeout: 5_000 })
-    await page.getByRole('button', { name: title }).click({ timeout: 5_000 })
+    // exact: the row's actions dropdown also carries the book name.
+    await page.getByRole('button', { name: title, exact: true }).click({ timeout: 5_000 })
     await expect(page).toHaveURL(/\/user\/library\/book\/\d+/, { timeout: 10_000 })
   }).toPass({ timeout: 90_000 })
 }

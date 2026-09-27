@@ -123,7 +123,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
               aria-label="تصنيفات النشاط"
             >
               <span className="relative inline-flex h-7 flex-none items-center justify-center gap-2.5 rounded-lg bg-primary-main-15 px-3 py-1">
-                <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-300">
+                {/* primary-500: the small chip label needs 4.5:1. */}
+                <span className="relative flex w-fit items-center justify-center whitespace-nowrap text-center font-alyamama text-sm font-normal leading-[14px] tracking-[0.14px] text-primary-500">
                   {typeLabel}
                 </span>
               </span>

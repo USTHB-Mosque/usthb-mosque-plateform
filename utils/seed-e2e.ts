@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
@@ -76,8 +78,39 @@ export async function seedE2e(): Promise<void> {
   console.log('📋 Seeding deterministic e2e fixtures (loans, full activity, favorite)...')
   await seedE2eFixtures(payload)
 
+  await writeFixtureManifest(payload)
+
   console.log('✅ E2E seed complete')
   await closePayload(payload)
+}
+
+// Titles -> current ids, written where the specs read them. The seed contract
+// says fixtures are looked up by title, never by hard-coded id; specs that
+// need a direct URL (a11y, visual) resolve through this manifest instead.
+async function writeFixtureManifest(payload: Payload): Promise<void> {
+  const idByTitle = async (collection: 'books' | 'articles', title: string): Promise<number> => {
+    const { docs } = await payload.find({
+      collection,
+      where: { title: { equals: title } },
+      limit: 1,
+    })
+    if (!docs[0]) throw new Error(`E2e seed: fixture lookup failed for ${collection}: ${title}`)
+    return docs[0].id
+  }
+
+  const manifest = {
+    books: {
+      'تفسير السعدي': await idByTitle('books', 'تفسير السعدي'),
+    },
+    articles: {
+      'فضائل المسجد وأثره في حياة الطالب': await idByTitle(
+        'articles',
+        'فضائل المسجد وأثره في حياة الطالب',
+      ),
+    },
+  }
+  fs.writeFileSync(path.resolve('e2e/.fixtures.json'), JSON.stringify(manifest))
+  console.log('📝 Wrote e2e/.fixtures.json (title -> id lookups)')
 }
 
 // Payload's pool keeps the Node process alive; release it once seeding is done.

@@ -21,7 +21,9 @@ const ReturnToIndex: React.FC<ReturnToIndexProps> = ({ title, value, href }) => 
       )}
 
       <ChevronLeft className="h-4 w-4 shrink-0" />
-      <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary sm:text-2xl">
+      {/* primary-400 passes the 3:1 large-text contrast rule; the brand's
+          lightest teal does not. */}
+      <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary-400 sm:text-2xl">
         {value}
       </span>
     </div>

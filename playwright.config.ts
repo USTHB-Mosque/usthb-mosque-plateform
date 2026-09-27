@@ -12,6 +12,15 @@ export default defineConfig({
   retries: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   globalSetup: './e2e/global-setup.ts',
+  // Visual baselines are generated under the canonical (production build)
+  // run only; disabled animations and hidden carets keep the pixels stable.
+  expect: {
+    toHaveScreenshot: {
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.02,
+    },
+  },
   use: {
     baseURL: E2E_BASE_URL,
     trace: 'retain-on-failure',
@@ -42,8 +51,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'chromium',
+      // Visual shots read the untouched seed state, so they run right after
+      // setup and before every journey spec that writes to the database.
+      name: 'visual',
+      testMatch: /visual\.spec\.ts/,
       dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium',
+      testIgnore: /visual\.spec\.ts/,
+      dependencies: ['setup', 'visual'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
