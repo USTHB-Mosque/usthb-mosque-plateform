@@ -1,5 +1,12 @@
 # Open Decisions — Review Checklist (Design Team)
 
+> **Superseded as a decision register, 2026-09-26.** The merged specification is `SPEC.md`, and its
+> Section 14 is now the single register of record. The IDs in this file do **not** line up with it: this
+> file's `D4` is article reviews, `D5` is activity overflow, `D7` is the multi-copy model, and
+> cancelability is `D8` - whereas SPEC's `D4` is activity overflow and `D7` is the borrow-limit default.
+> **Do not resolve anything from this file.** It is kept for the ✅ resolved answers below, and because the
+> question lists record options the design team considered. Where the two disagree, SPEC Section 14 wins.
+
 **Companion to:** `docs/PRD.md` (§10 Open Decisions)
 
 **Purpose:** Each item below must be answered before build starts. Answers unlock P0 (loan state machine, notifications, multi-copy model, book-requests) and unblock the admin panel. Add a decision date + owner column.
