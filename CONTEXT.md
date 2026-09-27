@@ -28,7 +28,7 @@ Three-state field on User: `pending_verification`, `verified`, `rejected`. Admin
 _Avoid_: Account status, approval state
 
 **Verified User**:
-A user whose verification document has been approved by an admin. Verified users can borrow books (subject to borrow limit). Unverified users can browse and waitlist but cannot reach the `picked` loan state.
+A user whose verification document has been approved by an admin. Verified users can borrow books (subject to borrow limit). Unverified users can browse and waitlist but cannot reach the `picked_up` loan state.
 _Avoid_: Approved user, confirmed user
 
 ## Books & Copies
@@ -68,7 +68,7 @@ A request to extend the loan due date. Auto-approved when the waitlist is empty;
 _Avoid_: Renewal, prolongation
 
 **Borrow Limit**:
-Configurable maximum number of concurrent loans per user. Default proposed: 3. Enforced as a precondition for loan requests.
+Configurable maximum number of concurrent loans per user. Default: 3. Enforced as a precondition for loan requests.
 _Avoid_: Loan cap, borrowing limit
 
 **Suspension**:
@@ -110,18 +110,23 @@ Admin-created content published on the platform. Users cannot create articles. H
 _Avoid_: Post, blog entry
 
 **Article Feedback**:
-Like/dislike + optional comment on an article. Merged with article reviews into a single interaction type. Feeds analytics.
+Like/dislike + optional comment on an article. **Cut from v1** - not in the approved design, so it is not
+being built. Kept here because the term is still used in older design notes. It was _not_ merged into
+article reviews: an article can be reviewed (see Review), which is a different, live interaction.
 _Avoid_: Article review (use "feedback" - the like/dislike model is not a star rating)
 
 **Article Bookmark**:
-Saved article for later reading. Mirrors book favorites. Appears in Profile -> bookmarks.
+Saved article for later reading. Mirrors book favorites. Appears in Profile -> bookmarks. The storage
+collection exists and bookmarks are readable and removable, but the **member-facing toggle on the article
+is cut from v1** - not in the approved design.
 _Aavoid_: Save, reading list
 
 ## Reviews
 
 **Review**:
-Star rating (1-5) + comment on a book. Only on books the user has loaned. Separate from article feedback (which is like/dislike).
-_Avoid_: Rating, feedback (keep "review" for the formal star+comment on books)
+Star rating (1-5) + comment, on a **book or an article** - the target is one or the other, never both.
+On a book it is only allowed for a book the user has loaned. Distinct from the cut Article Feedback above.
+_Avoid_: Rating, feedback (keep "review" for the formal star+comment)
 
 ## Admin Panels
 
@@ -180,9 +185,8 @@ _Avoid_: Environment variable management, secrets vault
 
 - **User** -> has many **Loans** (lifetime)
 - **User** -> has many **Notifications**
-- **User** -> has many **Reviews** (books only)
-- **User** -> has many **Article Bookmarks**
-- **User** -> has many **Article Feedback**
+- **User** -> has many **Reviews** (a book **or** an article, never both)
+- **User** -> has many **Article Bookmarks** (stored; the member-facing toggle is cut)
 - **User** -> has many **Activity Registrations**
 - **User** -> has many **Activity Feedback**
 - **User** -> has many **Book Requests**
@@ -193,8 +197,7 @@ _Avoid_: Environment variable management, secrets vault
 - **Loan** -> may have **Loan Extension** requests
 - **Activity** -> has many **Activity Registrations**
 - **Activity** -> has many **Activity Feedback**
-- **Article** -> has many **Article Feedback**
-- **Article** -> has many **Article Bookmarks**
+- **Article** -> has many **Article Bookmarks** (stored; toggle is cut)
 - **Admin** -> creates **Articles**, **Activities**, **Books**
 - **Admin** -> verifies **Users**
 - **Admin** -> manages **Loans** (approve, mark picked, mark returned)
@@ -224,4 +227,4 @@ _Avoid_: Environment variable management, secrets vault
 
 - Unverified users: can browse, search, waitlist
 - Verified users: can borrow (subject to borrow limit), waitlist, extend
-- Blocked at `picked` state if not verified (admin alerted)
+- Blocked at `picked_up` state if not verified (admin alerted)

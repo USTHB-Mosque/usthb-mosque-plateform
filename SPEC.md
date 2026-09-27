@@ -17,7 +17,7 @@
 | Persona           | Description                                                                                                                                                                                                    |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Visitor**       | Not logged in. Browsing landing, library catalog, activities, articles. Can search/view detail. Auth-required actions (borrow, waitlist, register, review, favorite/bookmark) -> sign-in gate + redirect back. |
-| **User (member)** | Logged-in community member. Borrow books, waitlist, extend, register for activities, review, favorite/bookmark articles & books, notifications, personal dashboard.                                            |
+| **User (member)** | Logged-in community member. Borrow books, waitlist, extend, register for activities, review, favorite books, notifications, personal dashboard.                                                                |
 | **Admin**         | Full management: loans queue, pickups, users, books, articles, activities, reviews, logs, analytics, settings.                                                                                                 |
 | **Librarian**     | v2 (documented as non-goal for v1). On-site borrowing, today's pickups.                                                                                                                                        |
 
@@ -56,6 +56,26 @@
 - **ANPDP declaration** - legal process outside technical scope.
 - Any feature not in this document, or any new visual element not in the approved design.
 
+### Cut from v1 (not in the approved design)
+
+Removed by the design team, not deferred to v2. Section 1 makes the design final, so these must not be
+built even though earlier drafts of this spec asked for them:
+
+- **Article Bookmark** - the member-facing toggle on an article. The `article-favorites` collection, the
+  server action and the Profile bookmarks tab all exist and are readable and removable; only the
+  _create_ affordance on the article page is cut. The dead heart control on the article detail should be
+  **removed**, not wired up (#157).
+- **Article Feedback** - the like/dislike + optional comment interaction, and the "finishing reading"
+  trigger that would have prompted it (D3, Section 14).
+
+**Not cut, despite sitting next to them:** an Article as a **Review** target is live and in scope for admin
+review management (Section 7.10). What is obsolete is the earlier framing that merged a like/dislike
+feedback into a formal Review - not the article review relation itself.
+
+**Still undecided, not cut:** Onboarding / helpers (Section 6.10). No approved design was found for it.
+It needs a design decision, not a build - do not treat it as either in scope or removed until that call is
+made.
+
 ---
 
 ## 3. Cross-Cutting UX Specs (apply to every screen)
@@ -71,31 +91,34 @@
 
 ## 4. Loan Lifecycle State Machine (the heart)
 
-**Real-world flow (confirmed):** loans are **physical** - the book is picked up at the mosque. Flow: verified user requests -> (auto-approve if a copy is free) -> reservation + **pickup window** -> user collects at the mosque -> admin marks `picked` -> due date from a **configurable duration** -> admin marks `returned`. Extensions go through admin, with auto-approval when the queue is empty.
+**Real-world flow (confirmed):** loans are **physical** - the book is picked up at the mosque. Flow: verified user requests -> admin accepts -> copy reserved + **pickup window** -> user collects at the mosque -> admin marks `picked_up` -> due date from a **configurable duration** -> admin marks `returned`. Extensions go through admin, with auto-approval when the queue is empty.
 
-**States:**
+**Stored states (5):** the `loans` collection stores exactly these five.
 
-1. `requested` (book req created; queued if no copies; user notified of state)
-2. `waitlisted` (no copy available at request time; position in queue)
-3. `approved_pickup` (copy reserved + pickup window set; "accepted borrowings" tag)
-4. `picked` (user collected the book; loan active; due date set from config)
-5. `on_site` (v2)
-6. `extension_requested` (user asks to extend)
-7. `returned` (book returned; copy released -> next waitlist notified)
-8. `overdue` (past due date without return/extension; escalation)
-9. `no_show` (pickup window missed; reservation released, user warned)
-10. `cancelled` (request/registration cancelled by user or admin)
+1. `pending` (fresh request awaiting an admin decision; the "accepted borrowings" queue)
+2. `accepted` (copy reserved, pickup code minted, pickup slot + **pickup window** set)
+3. `picked_up` (user collected the book; loan active; due date stamped)
+4. `returned` (book returned; copy released -> next waitlisted member promoted + notified)
+5. `refused` (admin declined, or the pickup window expired; a reason is always recorded)
+
+**Deliberately not a stored state:**
+
+- **Waitlist** - a separate FIFO collection (`waitlist-entries`: book, user, position). A request with no free copy joins the queue instead of creating a Loan.
+- **Extension request** - a separate collection (`loan-extensions`). The Loan stays `picked_up` throughout, so an extension can never itself go overdue or be picked up.
+- **Overdue** - **derived, never stored.** A `picked_up` Loan past its `dueDate` reads as overdue via `getEffectiveLoanStatus`. The borrower is notified exactly once through an `overdueNotified` flag, on a lazy check at read time rather than a scheduled job. Accepted trade-off: a member who never opens the portal is not notified.
+- **No-show** - a `refused` Loan whose reason is window expiry. A separate state would only have duplicated `refused`.
+- **`on_site`, `cancelled`** - v2, see Section 2.
 
 **Key transitions & system actions (locked rules):**
 
-- **Request & approval:** preconditions to request - user is **verified** AND **under the configurable borrow limit** (max concurrent loans). If `availableBooks > 0` -> **auto-approve** -> `approved_pickup` + pickup window + notification. If `availableBooks === 0` -> `waitlisted` + position shown + notification on promotion.
-- **Pickup window:** if the window expires without pickup -> auto `no_show`, release copy to the waitlist, warn user (threshold -> D2). Admin dropdown actions: **mark done / reschedule**. Needs a **pickup list view** ("picked and not" tags) - see Section 7.2.
-- **Due date & return:** loan duration **configurable** in Settings (default 14 days). Admin marks `returned` -> `availableBooks + 1` -> notify next waitlisted member that the book is free.
-- **Overdue:** auto **email + in-app alert** "borrowing duration is over". **Suspension of new loans** until book is returned. If waitlist non-empty -> **request return**; else -> **suggest extension**.
-- **Extension:** user requests -> **auto-approve when the queue is empty**; else admin approves/refuses with a reason.
-- **Cancelability:** every operation (loan req, extension, registration, pickup) has explicit cancel rules (to be defined - see D6 in Section 14).
+- **Request & approval:** preconditions to request - user is **verified** AND **under the configurable borrow limit** AND has no active Loan or queued row for the book. If `availableBooks > 0` -> a `pending` Loan is created for an **admin to accept**. It is **not** auto-approved: v1 ships a request queue (Section 7.2), and acceptance is where the duplicate-loan check and the mandatory refusal reason live. If `availableBooks === 0` -> join the waitlist with a server-stamped position, notified on promotion.
+- **Pickup window:** see **D1** in Section 14. Admin dropdown actions: **mark done / reschedule**. Needs a **pickup list view** ("picked and not" tags) - see Section 7.2.
+- **Due date & return:** loan duration **configurable** in Settings (default 14 days), overridable per book. Admin marks `returned` -> `availableBooks + 1` -> the waitlist head is promoted in the same transaction and notified.
+- **Overdue:** auto **email + in-app alert** "borrowing duration is over", exactly once. **Suspension of new loans** until the book is returned. If the waitlist is non-empty -> **request return**; else -> **suggest extension**.
+- **Extension:** user requests -> **auto-approve when the queue is empty**; else admin approves/refuses with a reason. Eligibility, caps and the total-duration bound are in **D5**.
+- **Cancelability:** every operation (Loan request, extension, registration, pickup) has explicit cancel rules - see **D6** in Section 14.
 
-**Verification tie-in:** unverified users can request/waitlist but **cannot reach `picked`**; admin is alerted to verify before pickup.
+**Verification tie-in:** unverified users can request/waitlist but **cannot reach `picked_up`**; admin is alerted to verify before pickup. Shipped behaviour blocks one state earlier, at request time; corrected in #153.
 
 ---
 
@@ -184,13 +207,13 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - **Add review** (exists; polish to design).
 - **Bookmarks** (exists as favorites; polish to design).
 
-### 6.7 Articles _(Extend)_
+### 6.7 Articles _(Polish)_
 
-- **Info dialog** (New) - overlay with metadata (publisher, type, cover, date) on list items.
-- **Reading-feedback popup** (New) - after finishing reading: like/dislike + optional comment (feeds analytics).
-- **Add review** (New) - merged with feedback: like/dislike + optional comment (single interaction type).
+- **Info dialog** (New) - overlay with metadata (publisher, type, cover, date) on list items. Needs a
+  `publisher` field on Article, which does not exist yet.
 - **Sections refinement** (Polish): fill/stroke styles + indentation per approved design.
-- **Bookmark articles** (New) - mirrors book favorites; appears in Profile -> bookmarks.
+- ~~Reading-feedback popup~~, ~~Add review (like/dislike)~~, ~~Bookmark articles~~ - **cut**, see Section 2.
+  Check the approved design before building the info dialog too.
 
 ### 6.8 Activities _(Extend)_
 
@@ -200,12 +223,15 @@ Each item tagged **New / Extend / Polish**, with data impact.
 
 ### 6.9 Profile / Settings _(Extend + New)_
 
-- **Bookmarks** tab: books (exists as favorites) + articles (new).
+- **Bookmarks** tab: books (exists as favorites). Articles were cut - see Section 2.
 - **Notifications** tab: per-channel opt-in for the matrix in Section 5.
 - **Info** tab: personal data (existing account tab).
 - **Security** tab: change password (exists). **Password reset + 2FA deferred.**
 
-### 6.10 Onboarding / Helpers _(New)_
+### 6.10 Onboarding / Helpers _(Undecided)_
+
+No approved design was found for these. They are not cut and not in scope - they need a design decision
+first (see Section 2). Listed so the requirement is not silently lost:
 
 - **First onboarding** - books + loan flow: 3-4 step intro on first library visit (dismissible, remembers seen).
 - **Contextual helper** - when a borrowed book's return is near: explain extension possibility.
@@ -276,9 +302,9 @@ Each item tagged **New / Extend / Polish**, with data impact.
 
 Computed **from the DB** (Postgres aggregation) - no external service.
 
-- Article insights: reads, feedback (likes/dislikes).
+- Article insights: reads. There is **no** likes/dislikes counter - that interaction is cut (Section 2).
 - Activity insights: registrations, positive/negative feedback.
-- Most-borrowed books; requested books; article with most interactions; categories most read; borrowings **monthly evolution**; days & hours where borrowings increase; days & hours when pickups increase.
+- Most-borrowed books; requested books; article with most reads and reviews; categories most read; borrowings **monthly evolution**; days & hours where borrowings increase; days & hours when pickups increase.
 - Phased: basic KPIs (counts, top items) in v1, computed charts (monthly evolution, peak hours) in v1.1.
 
 ### 7.9 Settings _(New)_
@@ -291,7 +317,9 @@ Computed **from the DB** (Postgres aggregation) - no external service.
 
 ### 7.10 Reviews _(New)_
 
-- Two categories: **book reviews** and **article reviews** (merged with article feedback - single interaction type).
+- Two categories: **book reviews** and **article reviews**, one interaction type - a star rating plus a
+  comment, on a `book` XOR `article` target. The earlier framing that merged a like/dislike _feedback_ into
+  this is obsolete; article reviews stand on their own (Section 2).
 - Admin actions: delete / copy.
 - KPIs (counts, avg per category).
 
@@ -404,15 +432,21 @@ Static pages at `/privacy` and `/terms`:
 2. Admin approval/rejection flow
 3. Book reservation queue (FIFO order)
 4. Loan duration calculation (configurable, default 14 days)
-5. Reservation expiry (pickup window)
+5. Reservation expiry (pickup window) - **gated on #153.** The D1 window is not implemented, so this is
+   pending, not unsatisfiable. Assert: window expires -> `refused` with the expiry reason, copy released,
+   waitlist head promoted, borrower warned, no-show counter incremented.
 6. Overdue detection and suspension
 7. Notification creation on status changes
 8. Soft delete with 30-day retention
 9. Access control enforcement (users can't approve loans)
-10. Loan state machine transitions (all 10 states)
+10. Loan state machine transitions - **all five stored states** (`pending`, `accepted`, `picked_up`,
+    `returned`, `refused`) plus derived overdue. The waitlist and the extension request are separate
+    collections and are covered by cases 3, 11 and 12; `overdue` is covered by case 6. The original
+    "all 10 states" wording is withdrawn - see Section 2 and Section 4.
 11. Extension auto-approve when queue empty
 12. Waitlist auto-promotion on copy release
-13. No-show handling and copy release
+13. No-show handling and copy release - **gated on #153**, same reason as case 5. Assert the D2 threshold:
+    two no-shows suspend borrowing and only borrowing, until an admin lifts it.
 
 ### Prior Art
 
@@ -425,18 +459,33 @@ Static pages at `/privacy` and `/terms`:
 
 ### Current Collections
 
-users, media, books, activities, articles, loans, reviews, activity-registrations, book-favorites
+`users`, `media`, `books`, `activities`, `articles`, `loans`, `reviews`, `activity-registrations`,
+`book-favorites`, `article-favorites`, `waitlist-entries`, `loan-extensions`, `notifications`, `logs`,
+`library-cards`
 
-### Planned New Collections (v1)
+Note that the waitlist and the extension request are **separate collections**, not Loan states (Section 4).
 
-- `notifications` - user, type, seen, link, emailSent
-- `book-requests` - user, book details, status, admin notes
-- `loan-extensions` - loan, user, status, reason, admin response
-- `logs` - actor, action, target, timestamp, metadata
-- `analytics-events` - event type, entity, user, timestamp
-- `article-bookmarks` - user, article
-- `article-feedback` - user, article, sentiment (like/dislike), comment
-- `activity-feedback` - user, activity, sentiment (positive/negative)
+### Outstanding Collections (v1)
+
+- `book-requests` - user, title, author, description, status (`pending`/`approved`/`rejected`), admin note.
+  #152. A request for a book outside the catalog; the counter to the waitlist, not a sibling of it.
+- `activity-feedback` - user, activity, sentiment (`positive`/`negative`), comment; one per user per
+  activity. #155. Feeds the Activity analytics in Section 7.8.
+- `analytics-events` - event type, entity, user, timestamp. #156. Backs Article reads and interactions,
+  which have no counter today.
+
+### Outstanding Fields (v1)
+
+The D2 no-show counter is a **field on `users`, not a collection** - `noShowCount` (integer, default 0) plus
+`borrowingBlockedAt` (nullable timestamp, set when the D2 threshold is crossed, cleared when an admin lifts
+it). There is deliberately no per-no-show history collection: the audit log already records the expiry
+event, and D2 only needs a count and a block flag. #153.
+
+### Cut Collections
+
+- `article-feedback` - the like/dislike interaction is not in the approved design (Section 2). Note the
+  **Article as a Review target is not cut**: `reviews` already carries a `book` XOR `article` target and
+  admin review management covers both (Section 7.10).
 
 ### Access Control Matrix
 
@@ -453,34 +502,108 @@ users, media, books, activities, articles, loans, reviews, activity-registration
 
 ---
 
-## 14. Open Decisions (must be resolved before build)
+## 14. Decisions
+
+**Canonical register:** this section is the single register of record. `docs/PRD-open-decisions.md` is the
+pre-merge design-review checklist and its IDs do **not** line up with the ones below - its `D4` is article
+reviews, `D5` is activity overflow, `D7` is the multi-copy model, and cancelability is `D8`. Where the two
+disagree, this section wins. The PRD checklist is kept for its resolved answers only.
 
 **Resolved in this spec:**
 
-| ID                       | Decision                                                 | Resolution  |
-| ------------------------ | -------------------------------------------------------- | ----------- |
-| Multi-copy model         | Counters (totalBooks/availableBooks)                     | Section 9   |
-| Loan duration            | Configurable in Settings (default 14 days)               | Section 4   |
-| Borrow limit             | Configurable max concurrent loans                        | Section 4   |
-| Publisher role           | None - all admins edit all content                       | Section 1   |
-| Deployment               | Docker/VPS                                               | Section 15  |
-| Scale                    | Thousands of users                                       | Section 15  |
-| Language                 | Arabic-only v1                                           | Section 2   |
-| Admin panel location     | Stays under /admin                                       | Section 15  |
-| Password reset / 2FA     | Deferred                                                 | Section 2   |
-| Email provider           | Nodemailer (provider TBD)                                | Section 5   |
-| Extension auto-approve   | Auto-approve when queue empty                            | Section 4   |
-| Article feedback/reviews | Merged: single interaction type (like/dislike + comment) | Section 6.7 |
+| ID                         | Decision                                      | Resolution                    |
+| -------------------------- | --------------------------------------------- | ----------------------------- |
+| Multi-copy model           | Counters (totalBooks/availableBooks)          | Section 9                     |
+| Loan duration              | Configurable in Settings (default 14 days)    | Section 4                     |
+| Borrow limit               | Configurable max concurrent loans             | Section 4, **D7** (default 3) |
+| **D1** - Pickup window     | 48h from acceptance, admin reschedules        | Section 4, **D1**             |
+| **D2** - No-show           | 2 no-shows; borrowing only; until admin lifts | Section 4, **D2**             |
+| **D3** - Finishing read    | Resolved by removal (article feedback cut)    | Section 2, **D3**             |
+| **D4** - Activity overflow | Hard refusal, no waitlist                     | Section 8, **D4**             |
+| **D5** - Extension         | 1 per loan, 2x base, from 3 days out          | Section 4, **D5**             |
+| **D6** - Cancelability     | Per operation, cancel is never punished       | Section 4, **D6**             |
+| **D7** - Borrow default    | 3                                             | Section 4, **D7**             |
+| Publisher role             | None - all admins edit all content            | Section 1                     |
+| Deployment                 | Docker/VPS                                    | Section 15                    |
+| Scale                      | Thousands of users                            | Section 15                    |
+| Language                   | Arabic-only v1                                | Section 2                     |
+| Admin panel location       | Contested - see note below                    | Section 15, see note below    |
+| Password reset / 2FA       | Deferred                                      | Section 2                     |
+| Email provider             | Nodemailer (provider TBD)                     | Section 5                     |
+| Extension auto-approve     | Auto-approve when queue empty                 | Section 4                     |
+| Article feedback/reviews   | **Cut from v1** - see Section 2               | -                             |
 
-**Remaining (must be resolved before build):**
+> **Admin panel location, contested.** This spec and the design both say `/admin`. The shipped panel is
+> served from `/admin-panel`, moved to avoid colliding with Payload's own admin. The move was deliberate
+> but was never recorded here. #65 decides: either amend this row, or move thirteen routes late in the
+> build. Until then this row is the only record that the two disagree.
 
-1. **D1 - Pickup window behavior**: duration (e.g., 24h/48h/72h), tolerance, reschedule limits, and exactly when `no_show` triggers.
-2. **D2 - No-show threshold**: 2 warnings -> restriction scope (blocks borrows? days? configurable?).
-3. **D3 - "Finishing reading" trigger** for article feedback popup.
-4. **D4 - Activity overflow** - waitlist or plain "full" refusal?
-5. **D5 - Extension policy**: max extensions, max total duration, when eligible (X days before due).
-6. **D6 - Cancelability rules** per operation type.
-7. **D7 - Borrow-limit default value** (proposal: 3 concurrent loans).
+### Resolved 2026-09-26 (were blocking #153, #154, #155)
+
+**D1 - Pickup window.** Duration **48h from acceptance**, configurable in Settings. No tolerance beyond
+the window itself - the window is the tolerance. Reschedule is an **admin** action, unlimited; each
+reschedule sets a fresh 48h window and does **not** reset the no-show counter. `no_show` triggers when the
+window expires while the Loan is still `accepted` -> `refused` with reason "window expired", copy released,
+waitlist head promoted, borrower warned.
+_Reasoning:_ the Loan is collected at the mosque and the community is on campus. The days a member is
+present but unavailable are Friday and Thursday evening, so 24h strands people on ordinary weekdays while
+72h can hold a scarce copy across a long weekend. 48h spans a weekend without a long stranding.
+_Assumption:_ mosque opening hours and the real collection rhythm are not recorded anywhere in the repo. If
+the mosque is reachable only on set days, re-decide this as "N days" rather than a fixed 48h.
+
+**D2 - No-show threshold.** **2** no-shows. Restriction scope is **borrowing only** - browsing, waitlisting,
+activity registration, reviews and bookmarks all continue. Duration is **until an admin reviews and lifts
+it**: not a fixed number of days, not permanent.
+_Reasoning:_ a no-show strands a scarce copy and delays everyone queued behind it, so two is
+proportionate. A fixed-day expiry invites waiting out the clock; permanent is too harsh for a community
+tool. A human decides, because "will this person ever collect" is not a machine question. This is a
+borrowing block, **not** the domain's _Suspension_, which is specifically the overdue penalty in
+Section 4 - do not conflate the two. The counter is per user, incremented by the D1 expiry, decremented
+never except by an admin lifting the block, and it is not reset by a pickup reschedule.
+
+**D3 - "Finishing reading" trigger.** **Resolved by removal.** The only feature it served was Article
+Feedback, which is cut (Section 2). If article feedback ever returns this must be decided again from
+scratch, not inherited from the 2026 checklist.
+
+**D4 - Activity overflow.** **Hard refusal, no waitlist.** The member is told the activity is full and
+pointed at future sessions through the existing new-activity fan-out.
+_Reasoning:_ an Activity is a single time-boxed event, unlike a book which circulates. Promoting someone
+from an activity waitlist minutes before the start is worthless, and a waitlist would mean a second queue,
+a second position sequence, a second promotion path and a second notification set, for occasional events.
+_Revisit if:_ Activities become recurring series (a weekly circle, a repeating course) - that is exactly
+when queueing starts to pay for itself.
+
+**D5 - Extension policy.** Eligible from **3 days before the due date**, until the due date passes. **Max 1
+extension per Loan**, max 21 days per extension (matching the existing cap). Total duration bounded to
+**2x the base duration**. Auto-approve when the queue is empty, otherwise admin decides with a reason.
+_Reasoning:_ once the due date has passed the correct action is to return the book - extension exists for
+a member who knows in advance they need longer. One extension covers a genuine delay without turning
+extension into renewal-by-default, and 2x base stops a scarce title being held indefinitely.
+_Implementation note:_ "one pending extension per loan" is already enforced; "one extension _ever_ per
+loan" is new and needs a rule, not just a constraint on the request.
+
+**D6 - Cancelability.** Per operation, on one principle: **an explicit, prompt action by a member must
+never leave the queue worse off than inaction did**, otherwise members get pushed onto the penalised path.
+
+| Operation                     | Rule                                                                                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loan request (`pending`)      | Member may cancel any time before the admin accepts. No copy is reserved at `pending`, so nothing to release.                                                                                                        |
+| Accepted, not yet collected   | Member may cancel at any time. The copy is released immediately and the waitlist head promoted. **Not** a no-show - a no-show is the _absence_ of action, and cancelling helps the queue while no-showing delays it. |
+| Extension request (`pending`) | Member may withdraw. Once approved the due date has moved and there is nothing to undo.                                                                                                                              |
+| Activity registration         | Member may cancel until the activity **starts** - not until the registration deadline, which gates _joining_, not _leaving_. The spot is released and capacity re-opens.                                             |
+| Pickup reschedule             | Admin action, see D1.                                                                                                                                                                                                |
+
+_Implementation note:_ shipped behaviour has no cancellation at all for any of these, and
+`currentParticipants` is only ever incremented, never decremented. See #153 and #155.
+
+**D7 - Borrow-limit default.** **3**, configurable in Settings.
+_Reasoning:_ at a 14-day loan duration a limit of 3 lets a member hold at most ~6 weeks of books at once -
+a fair share for a community library, and it keeps scarce titles circulating. The shipped default of 5
+allows ~10 weeks, which for a single-campus collection lets a few members hold most of the popular science
+stock.
+_Migration note:_ the shipped value is **5**, in two places - the `DEFAULT_BORROW_LIMIT` constant, which
+the Settings field's `defaultValue` already derives from, and the seeded Settings row in the loan-lifecycle
+migration. Changing the constant and backfilling the row in a new migration covers both. Tracked in #153.
 
 ---
 
