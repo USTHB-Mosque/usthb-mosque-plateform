@@ -10,6 +10,7 @@ export default async function AdminDashboardPage() {
       <AdminDashboard
         stats={data.stats}
         upcomingReturns={data.upcomingReturns}
+        upcomingPickups={data.upcomingPickups}
         latestReviews={data.latestReviews}
         recentActivityLogs={data.recentActivityLogs}
       />

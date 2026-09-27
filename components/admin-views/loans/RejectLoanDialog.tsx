@@ -20,6 +20,12 @@ interface RejectLoanDialogProps {
   itemLabel: string
   busy?: boolean
   onConfirm: (reason?: string) => void
+  // Overridable so a caller can frame the same transition as a cancellation
+  // (an accepted loan the member never collects) rather than a rejection.
+  title?: string
+  description?: string
+  confirmLabel?: string
+  placeholder?: string
 }
 
 const RejectLoanDialog: React.FC<RejectLoanDialogProps> = ({
@@ -28,6 +34,10 @@ const RejectLoanDialog: React.FC<RejectLoanDialogProps> = ({
   itemLabel,
   busy = false,
   onConfirm,
+  title = 'رفض طلب الإعارة',
+  description = `سيتم رفض ${itemLabel}. يمكنك إضافة سبب يظهر للمستفيد في سجلّ إعاراته.`,
+  confirmLabel = 'تأكيد الرفض',
+  placeholder = 'اكتب سبب الرفض هنا ...',
 }) => {
   const [reason, setReason] = useState('')
 
@@ -35,10 +45,8 @@ const RejectLoanDialog: React.FC<RejectLoanDialogProps> = ({
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : onOpenChange(false))}>
       <DialogContent className="sm:max-w-md" showCloseButton={!busy}>
         <DialogHeader>
-          <DialogTitle>رفض طلب الإعارة</DialogTitle>
-          <DialogDescription>
-            سيتم رفض {itemLabel}. يمكنك إضافة سبب يظهر للمستفيد في سجلّ إعاراته.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
           <Label>السبب (اختياري)</Label>
@@ -47,7 +55,7 @@ const RejectLoanDialog: React.FC<RejectLoanDialogProps> = ({
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="اكتب سبب الرفض هنا ..."
+            placeholder={placeholder}
           />
         </div>
         <DialogFooter>
@@ -67,7 +75,7 @@ const RejectLoanDialog: React.FC<RejectLoanDialogProps> = ({
             onClick={() => onConfirm(reason.trim() || undefined)}
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : null}
-            تأكيد الرفض
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
