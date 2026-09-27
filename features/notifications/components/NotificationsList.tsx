@@ -73,9 +73,11 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
     <div dir="rtl" className="flex w-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
+          {/* render renders an <a>, so Base UI needs nativeButton={false}. */}
           <Button
             variant={seen === 'all' ? 'default' : 'outline'}
             size="sm"
+            nativeButton={false}
             render={<Link href={buildHref({ seen: undefined, page: 1 })} />}
           >
             الكل
@@ -83,6 +85,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
           <Button
             variant={seen === 'unread' ? 'default' : 'outline'}
             size="sm"
+            nativeButton={false}
             render={<Link href={buildHref({ seen: 'unread', page: 1 })} />}
           >
             غير المقروء{data.unreadCount > 0 ? ` (${data.unreadCount})` : ''}
@@ -155,6 +158,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={<Link href={buildHref({ page: data.page - 1 })} />}
             >
               السابق
@@ -167,6 +171,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={<Link href={buildHref({ page: data.page + 1 })} />}
             >
               التالي
