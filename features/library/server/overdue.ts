@@ -60,6 +60,11 @@ export async function syncOverdueLoans(ctx: {
       message: `مضى موعد إرجاع الكتاب «${book.title}» — يرجى إرجاعه في أقرب وقت.`,
       link: '/user/my-loans',
       email: true,
+      emailTemplate: {
+        kind: 'loan-overdue',
+        bookTitle: book.title,
+        dueDate: loan.dueDate as string,
+      },
     })
   }
 

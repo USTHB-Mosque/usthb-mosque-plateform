@@ -1,13 +1,81 @@
-import { CollectionConfig } from 'payload'
+import { AuthenticationError, Forbidden, type CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 import { logActivity } from '@/utils/activity-log'
 import { ensureLibraryCard } from '@/utils/library-cards'
 import { userSituationsConfigArray } from '@/utils/constants/users'
 
+/**
+ * Roles a User self-registers as. Law 18-07 requires a reviewed identity
+ * document before a member account exists, so the collection refuses to create
+ * one without it.
+ *
+ * The check is scoped to *external* writes (`payloadAPI` of REST or GraphQL) and
+ * to callers who are not an admin. That is precisely the gap this closes: until
+ * now the requirement lived only in the `register` server action, so a direct
+ * POST to `/api/users` could mint a member with no document. Server-side Local
+ * API callers (the `register` action itself, seeds, the first-admin bootstrap)
+ * and admin-created staff are unaffected — `register` still validates and
+ * attaches the document, and staff have no student ID to supply.
+ */
+const SELF_REGISTERED_ROLES = ['user']
+
+/** True when the write arrived over HTTP rather than from server-side code. */
+function isExternalWrite(req: { payloadAPI?: string }): boolean {
+  return req.payloadAPI === 'REST' || req.payloadAPI === 'GraphQL'
+}
+
 export const User: CollectionConfig = {
   slug: 'users',
   hooks: {
+    beforeValidate: [
+      async ({ data, operation, req }) => {
+        if (operation !== 'create' || !data) return data
+
+        // An anonymous HTTP signup must supply its own affirmative consent.
+        // Only trusted creation paths (bootstrap, seeds, and the server-side
+        // registration action, which already checks the consent checkbox) may
+        // have it stamped on their behalf.
+        if (isExternalWrite(req) && !isAdmin(req.user) && data.consentGiven !== true) {
+          throw new Forbidden(req.t)
+        }
+
+        // Consent is recorded for everyone: the hook stamps the timestamp so
+        // admin-created, seeded and bootstrapped accounts carry the same
+        // evidence as a member who ticked the box, and so the schema-required
+        // `consentGiven` is satisfied on every path.
+        if (!data.consentGiven) {
+          data.consentGiven = true
+          data.consentTimestamp = new Date().toISOString()
+        } else if (!data.consentTimestamp || (isExternalWrite(req) && !isAdmin(req.user))) {
+          data.consentTimestamp = new Date().toISOString()
+        }
+
+        // Payload applies the field default before collection `beforeValidate`,
+        // so `role` is already populated by the time this hook runs.
+        const role = String(data.role)
+        if (
+          SELF_REGISTERED_ROLES.includes(role) &&
+          !data.verificationDocument &&
+          isExternalWrite(req) &&
+          !isAdmin(req.user)
+        ) {
+          throw new Forbidden(req.t)
+        }
+
+        return data
+      },
+    ],
+    beforeLogin: [
+      async ({ req, user }) => {
+        // A soft-deleted account must not be able to sign back in during its
+        // 30-day grace window; the row survives, the login does not.
+        if (user.deletedAt) {
+          throw new AuthenticationError(req.t)
+        }
+        return user
+      },
+    ],
     afterChange: [
       async ({ doc, req, operation, previousDoc }) => {
         if (operation === 'create') {
@@ -145,6 +213,13 @@ export const User: CollectionConfig = {
       options: ['admin', 'librarian', 'user'],
       saveToJWT: true,
       access: {
+        // `role` must be restricted on create as well as update. Without the
+        // create guard, an anonymous `POST /api/users` could ask for
+        // `role: 'librarian'`, which is outside SELF_REGISTERED_ROLES and so
+        // would skip the Verification Document requirement in `beforeValidate`
+        // — minting a staff account with no document. Denying the field makes
+        // the `user` default apply instead.
+        create: ({ req: { user } }) => isAdmin(user),
         update: ({ req: { user } }) => isAdmin(user),
       },
     },
@@ -181,7 +256,11 @@ export const User: CollectionConfig = {
     {
       name: 'consentGiven',
       type: 'checkbox',
-      defaultValue: false,
+      // Law 18-07: an account cannot exist without recorded consent. The
+      // `beforeValidate` hook stamps the value for paths that do not pass it
+      // (admin-created, seeded, bootstrapped), so this requirement holds
+      // without breaking them.
+      required: true,
       access: {
         update: () => false,
       },

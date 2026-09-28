@@ -62,6 +62,138 @@ async function waitlistAfter(bookId: number) {
 }
 
 describe('acceptLoanLogic', () => {
+  it('notifies a borrower on a direct Payload-admin transition exactly once', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, { book: book.id, user: member.id })
+    const req = await boundReq(payload, admin)
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: { status: 'accepted' },
+      req,
+      overrideAccess: false,
+    })
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
+    expect(rows.docs[0].message).toContain((await loanAfter(loan.id)).pickupCode)
+
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: { pickupHour: '14:00' },
+      req,
+      overrideAccess: false,
+    })
+    expect(
+      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+    ).toBe(1)
+  })
+  it('notifies a borrower whose user relation arrives populated', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, { book: book.id, user: member.id })
+
+    // At depth 2 the hook receives the user document rather than an id, which
+    // is the other shape `resolveRelationId` has to handle.
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: { status: 'accepted' },
+      req: await boundReq(payload, admin),
+      overrideAccess: false,
+      depth: 2,
+    })
+
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
+  })
+
+  it('uses the pickup schedule supplied in the same admin write', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, { book: book.id, user: member.id })
+    const req = await boundReq(payload, admin)
+
+    const pickupDate = new Date('2026-11-03T12:00:00.000Z').toISOString()
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: {
+        status: 'accepted',
+        pickupCode: 'مك-77/3/26',
+        pickupDate,
+        pickupHour: '15:45',
+      },
+      req,
+      overrideAccess: false,
+    })
+
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
+    expect(rows.docs[0].message).toContain('مك-77/3/26')
+    expect(rows.docs[0].message).toContain('03/11/2026')
+    // The hook reads the schedule the collection derived: the pickup hour is
+    // computed from `pickupDate`, so the supplied value is not echoed back.
+    const after = await loanAfter(loan.id)
+    expect(after.pickupHour).not.toBe('15:45')
+    expect(rows.docs[0].message).toContain(String(after.pickupHour))
+  })
+
+  it('notifies a borrower on a direct Payload-admin refusal, with and without a reason', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const req = await boundReq(payload, admin)
+
+    // The admin panel can refuse without supplying a reason, which is the
+    // `?? ''` fallback in the hook's message.
+    const noReason = await createTestLoan(payload, { book: book.id, user: member.id })
+    await payload.update({
+      collection: 'loans',
+      id: noReason.id,
+      data: { status: 'refused' },
+      req,
+      overrideAccess: false,
+    })
+
+    const withReason = await createTestLoan(payload, { book: book.id, user: otherMember.id })
+    await payload.update({
+      collection: 'loans',
+      id: withReason.id,
+      data: { status: 'refused', refusalReason: 'الكتاب محجوز للصيانة' },
+      req,
+      overrideAccess: false,
+    })
+
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: otherMember.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
+    expect(rows.docs[0].message).toContain('الكتاب محجوز للصيانة')
+
+    const withoutReason = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
+    expect(withoutReason.totalDocs).toBe(1)
+    expect(withoutReason.docs[0].message).toContain('تم رفض')
+  })
+
   it('refuses a non-admin actor', async () => {
     const book = await createTestBook(payload)
     const loan = await createTestLoan(payload, { book: book.id, user: member.id })

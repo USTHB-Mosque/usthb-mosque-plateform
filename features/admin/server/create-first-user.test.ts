@@ -75,7 +75,7 @@ describe('features/admin/server/create-first-user.ts', () => {
       expect(fakePayload.create).toHaveBeenCalledWith(
         expect.objectContaining({
           collection: 'users',
-          data: { email: 'a@b.c', password: 'secret', role: 'admin' },
+          data: { email: 'a@b.c', password: 'secret', role: 'admin', consentGiven: true },
         }),
       )
       expect(setPayloadTokenCookie).toHaveBeenCalledWith('jwt-token')

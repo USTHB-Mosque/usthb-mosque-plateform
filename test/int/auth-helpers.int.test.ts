@@ -5,7 +5,8 @@ import { createTestUser, loginToken } from '../lib/seed'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 
 import type { Payload } from 'payload'
-import { getAuthenticatedUser, getPayloadWithUser, isAdmin, requireUser } from '@/shared/lib/auth'
+import { getAuthenticatedUser, getPayloadWithUser, requireUser } from '@/shared/lib/auth'
+import { isAdmin } from '@/utils/access-helpers'
 import type { User } from '@/payload-types'
 
 let payload: Payload

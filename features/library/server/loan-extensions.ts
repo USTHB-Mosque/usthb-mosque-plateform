@@ -1,10 +1,10 @@
 'use server'
-import { getPayloadWithUser, isAdmin, type ActionCtx } from '@/shared/lib/auth'
+import { getPayloadWithUser, type ActionCtx } from '@/shared/lib/auth'
+import { isAdmin } from '@/utils/access-helpers'
 import type { Loan, LoanExtension } from '@/payload-types'
 
 import { createNotification } from '@/features/notifications'
 import { MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
-import { formatArabicDate } from '@/shared/lib/dates'
 
 export interface LoanExtensionActionResult {
   success: boolean
@@ -101,23 +101,6 @@ export async function requestLoanExtensionLogic(
         req: ctx.req,
         overrideAccess: true,
       })
-      await ctx.payload.update({
-        collection: 'loans',
-        id: loanId,
-        data: { dueDate: extension.newDueDate },
-        req: ctx.req,
-        overrideAccess: true,
-      })
-
-      await createNotification({
-        req: ctx.req,
-        user: ctx.user.id,
-        type: 'extension',
-        title: 'تمت الموافقة على التمديد',
-        message: `تم تمديد إعارة «${book.title}» حتى ${formatArabicDate(extension.newDueDate as string)}.`,
-        link: '/user/my-loans',
-        email: true,
-      })
 
       return {
         success: true,
@@ -179,59 +162,9 @@ export async function decideLoanExtensionLogic(
       overrideAccess: false,
     })
 
-    if (decision === 'approved') {
-      // Status stays picked_up, so the lifecycle hook is not triggered.
-      await ctx.payload.update({
-        collection: 'loans',
-        id: extension.loan as number,
-        data: { dueDate: extension.newDueDate },
-        req: ctx.req,
-        overrideAccess: false,
-      })
-    }
-
-    const loan = (await ctx.payload.findByID({
-      collection: 'loans',
-      id: extension.loan as number,
-      req: ctx.req,
-      overrideAccess: false,
-      depth: 0,
-    })) as Loan
-
-    const book = await ctx.payload.findByID({
-      collection: 'books',
-      id: loan.book as number,
-      req: ctx.req,
-      overrideAccess: false,
-      depth: 0,
-    })
-
-    const approved = decision === 'approved'
-    const title = approved ? 'تمت الموافقة على التمديد' : 'تم رفض طلب التمديد'
-    let message: string
-    if (approved) {
-      message = adminResponse
-        ? `تم تمديد إعارة «${book.title}» حتى ${formatArabicDate(extension.newDueDate as string)}. ملاحظة الإدارة: ${adminResponse}.`
-        : `تم تمديد إعارة «${book.title}» حتى ${formatArabicDate(extension.newDueDate as string)}.`
-    } else {
-      message = adminResponse
-        ? `تم رفض طلب تمديد إعارة «${book.title}». السبب: ${adminResponse}.`
-        : `تم رفض طلب تمديد إعارة «${book.title}».`
-    }
-
-    await createNotification({
-      req: ctx.req,
-      user: extension.user as number,
-      type: 'extension',
-      title,
-      message,
-      link: '/user/my-loans',
-      email: true,
-    })
-
     return {
       success: true,
-      message: approved ? 'تمت الموافقة على التمديد' : 'تم رفض طلب التمديد',
+      message: decision === 'approved' ? 'تمت الموافقة على التمديد' : 'تم رفض طلب التمديد',
       extensionId: Number(extensionId),
       status: decision,
     }

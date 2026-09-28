@@ -29,6 +29,10 @@ export async function createFirstAdmin(
       data: {
         email,
         password,
+        // The bootstrap admin consents by installing the platform; the
+        // collection hook would stamp this anyway, but stating it keeps the
+        // schema-required field honest at the call site.
+        consentGiven: true,
         role: 'admin',
       },
     })

@@ -2,6 +2,9 @@ import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
 import { addDays } from '@/shared/lib/dates'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { formatArabicDate } from '@/shared/lib/dates'
+import { createNotification } from '@/features/notifications/server/create-notification'
 
 /**
  * Loan extension requests (#19). A member requests an extension on a loan they
@@ -77,6 +80,62 @@ export const LoanExtension: CollectionConfig = {
           originalDueDate: originalDueDate.toISOString(),
           newDueDate: addDays(originalDueDate, days).toISOString(),
         }
+      },
+    ],
+    afterChange: [
+      async ({ doc, previousDoc, operation, req }) => {
+        if (operation !== 'update' || !previousDoc || doc.status === previousDoc.status) return doc
+        if (doc.status !== 'approved' && doc.status !== 'refused') return doc
+
+        const loanId = resolveRelationId(doc.loan)
+        const loan = await req.payload.findByID({
+          collection: 'loans',
+          id: loanId,
+          req,
+          overrideAccess: true,
+          depth: 0,
+        })
+        const bookId = resolveRelationId(loan.book)
+        const book = await req.payload.findByID({
+          collection: 'books',
+          id: bookId,
+          req,
+          overrideAccess: true,
+          depth: 0,
+        })
+        const response = doc.adminResponse
+        if (doc.status === 'approved') {
+          // The admin's direct Payload edit must move the due date too.
+          await req.payload.update({
+            collection: 'loans',
+            id: loanId,
+            data: { dueDate: doc.newDueDate },
+            req,
+            overrideAccess: true,
+          })
+        }
+        const approved = doc.status === 'approved'
+        const message = approved
+          ? `تم تمديد إعارة «${book.title}» حتى ${formatArabicDate(doc.newDueDate)}.${response ? ` ملاحظة الإدارة: ${response}.` : ''}`
+          : `تم رفض طلب تمديد إعارة «${book.title}».${response ? ` السبب: ${response}.` : ''}`
+        await createNotification({
+          req,
+          user: resolveRelationId(doc.user),
+          type: 'extension',
+          title: approved ? 'تمت الموافقة على التمديد' : 'تم رفض طلب التمديد',
+          message,
+          link: '/user/my-loans',
+          email: true,
+          emailTemplate: approved
+            ? {
+                kind: 'extension-approved',
+                bookTitle: book.title,
+                newDueDate: String(doc.newDueDate),
+                response,
+              }
+            : { kind: 'extension-rejected', bookTitle: book.title, reason: response },
+        })
+        return doc
       },
     ],
   },

@@ -20,8 +20,10 @@ import {
   LoanExtension,
   Log,
   LibraryCard,
+  BookRequest,
 } from '@/collections'
 import { Settings } from '@/globals'
+import { erasureJobsConfig } from '@/features/users/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -59,8 +61,13 @@ export default buildConfig({
     LoanExtension,
     Log,
     LibraryCard,
+    BookRequest,
   ],
   globals: [Settings],
+  // Same task registry as production so the integration suite can run the
+  // erasure job for real, but no autoRun: a background runner would race the
+  // suite's own truncate-between-tests.
+  jobs: { tasks: erasureJobsConfig.tasks },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'test-secret',
   telemetry: false,

@@ -19,15 +19,19 @@ export const createBookFavorite = async (bookIds: number[], userIds: number[]) =
     })
 
     if (existingFav.totalDocs === 0) {
+      // Created *as the owner*: the collection's duplicate-check hook runs its
+      // guard find under the collection's read access, which needs a signed-in
+      // request — and the hook then stamps the owner from that request itself
+      // (mirrors the article-favorite e2e seed).
+      const owner = { id: userId } as Parameters<typeof payload.create>[0]['user']
       const favorite = await payload.create({
         collection: 'book-favorites',
         data: {
           user: userId,
           book: bookId,
         },
-        // Seed-side system write: the collection's create access requires a
-        // signed-in user, which a seeder has none of.
-        overrideAccess: true,
+        user: owner,
+        overrideAccess: false,
       })
 
       return favorite

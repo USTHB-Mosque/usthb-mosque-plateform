@@ -4,6 +4,7 @@ vi.mock('@/shared/lib/auth', () => ({ getPayloadWithUser: vi.fn() }))
 
 import { GET } from './route'
 import { getPayloadWithUser } from '@/shared/lib/auth'
+import { publishNotificationCreated } from '@/features/notifications/server/notification-bus'
 
 const mockGetPayloadWithUser = vi.mocked(getPayloadWithUser)
 
@@ -46,15 +47,10 @@ describe('notifications SSE stream route (#17)', () => {
     await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
-  it('heartbeats when the count is unchanged and survives a transient database error', async () => {
-    const countMock = vi
-      .fn<() => Promise<{ totalDocs: number }>>()
-      .mockResolvedValueOnce({ totalDocs: 3 }) // connect: changed → data event
-      .mockResolvedValueOnce({ totalDocs: 3 }) // first tick: unchanged → ping
-      .mockRejectedValueOnce(new Error('db hiccup')) // second tick: error → ping
-      .mockResolvedValueOnce({ totalDocs: 9 }) // third tick: changed again → unread
+  it('pushes only to the recipient after visibility and heartbeats without querying', async () => {
+    const countMock = vi.fn().mockResolvedValue({ totalDocs: 3 })
     mockGetPayloadWithUser.mockResolvedValue({
-      payload: { count: countMock },
+      payload: { count: countMock, findByID: vi.fn().mockResolvedValue({ id: 42 }) },
       user: { id: 5 },
       req: {},
     } as never)
@@ -72,15 +68,73 @@ describe('notifications SSE stream route (#17)', () => {
       await vi.advanceTimersByTimeAsync(30_000)
       const ping = new TextDecoder().decode((await reader.read()).value)
       expect(ping).toContain(': ping')
+      expect(countMock).toHaveBeenCalledTimes(1)
 
-      await vi.advanceTimersByTimeAsync(30_000)
-      const survived = new TextDecoder().decode((await reader.read()).value)
-      expect(survived).toContain(': ping')
+      publishNotificationCreated(99, 43)
+      publishNotificationCreated(5, 42)
+      const pushed = new TextDecoder().decode((await reader.read()).value)
+      expect(pushed).toContain('event: unread')
+      expect(countMock).toHaveBeenCalledTimes(1)
 
-      await vi.advanceTimersByTimeAsync(30_000)
-      const secondUnread = new TextDecoder().decode((await reader.read()).value)
-      expect(secondUnread).toContain('event: unread')
-      expect(secondUnread).toContain('"count":9')
+      controller.abort()
+      await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('survives an initial count error and accepts a later push', async () => {
+    mockGetPayloadWithUser.mockResolvedValue({
+      payload: {
+        count: vi.fn().mockRejectedValue(new Error('db hiccup')),
+        findByID: vi.fn().mockResolvedValue({ id: 42 }),
+      },
+      user: { id: 5 },
+      req: {},
+    } as never)
+    const controller = new AbortController()
+    const response = await GET(new Request(STREAM_URL, { signal: controller.signal }))
+    const reader = response.body!.getReader()
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain(': ping')
+    publishNotificationCreated(5, 42)
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain('event: unread')
+    controller.abort()
+    await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
+  })
+
+  it('waits until the new row is committed before nudging the Bell', async () => {
+    const findByID = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('row is still in the writer transaction'))
+      .mockResolvedValue({ id: 42 })
+    mockGetPayloadWithUser.mockResolvedValue({
+      payload: { count: vi.fn().mockResolvedValue({ totalDocs: 1 }), findByID },
+      user: { id: 5 },
+      req: {},
+    } as never)
+
+    vi.useFakeTimers()
+    try {
+      const controller = new AbortController()
+      const response = await GET(new Request(STREAM_URL, { signal: controller.signal }))
+      const reader = response.body!.getReader()
+      await reader.read() // initial snapshot still has the older unread row
+
+      publishNotificationCreated(5, 42)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(findByID).toHaveBeenCalledTimes(1)
+
+      let delivered = false
+      const next = reader.read().then((chunk) => {
+        delivered = true
+        return chunk
+      })
+      await vi.advanceTimersByTimeAsync(50)
+      expect(delivered).toBe(false)
+
+      await vi.advanceTimersByTimeAsync(100)
+      expect(new TextDecoder().decode((await next).value)).toContain('event: unread')
+      expect(findByID).toHaveBeenCalledTimes(2)
 
       controller.abort()
       await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })

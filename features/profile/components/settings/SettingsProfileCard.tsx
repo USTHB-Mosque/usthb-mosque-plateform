@@ -12,6 +12,7 @@ import { Media, User as UserType } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import { cn } from '@/shared/lib/utils'
 import { logout } from '@/features/auth'
+import { deleteMyAccount } from '@/features/users/server/delete-account'
 import { toast } from 'sonner'
 
 type SettingsProfileCardProps = {
@@ -59,6 +60,29 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
     await logout()
     toast.success('تم تسجيل الخروج بنجاح')
     router.push('/auth/login')
+  }
+
+  // Erasure is irreversible after the 30-day window, so the control confirms
+  // before it fires and never pretends to have succeeded.
+  const [isDeleting, setIsDeleting] = React.useState(false)
+  const [confirmingDelete, setConfirmingDelete] = React.useState(false)
+
+  const onDeleteAccount = async () => {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true)
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteMyAccount()
+      if (!result.ok) toast.error(result.error ?? 'تعذّر حذف الحساب')
+      // On success the action redirects, so there is nothing to do here.
+    } catch {
+      toast.error('تعذّر حذف الحساب، حاول مرة أخرى')
+      setIsDeleting(false)
+      setConfirmingDelete(false)
+    }
   }
 
   return (
@@ -173,11 +197,25 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
           <div className="hidden flex-col items-stretch lg:flex">
             <button
               type="button"
-              className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2"
+              onClick={onDeleteAccount}
+              disabled={isDeleting}
+              aria-label="حذف الحساب"
+              className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2 disabled:opacity-60"
             >
               <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
-              <span>حذف الحساب</span>
+              <span>
+                {isDeleting
+                  ? 'جارٍ الحذف…'
+                  : confirmingDelete
+                    ? 'تأكيد الحذف نهائياً'
+                    : 'حذف الحساب'}
+              </span>
             </button>
+            {confirmingDelete ? (
+              <p className="mx-2 text-xs text-muted-foreground">
+                سيُعطّل حسابك فوراً وتُحذف وثيقة التحقق، ثم يُحذف الحساب نهائياً بعد 30 يوماً.
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

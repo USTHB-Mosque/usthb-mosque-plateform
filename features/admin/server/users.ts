@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
 import { writeLog } from './logs'
 import { LogAction } from './logs-core'
+import { softDeleteUserAccount } from '@/features/users/server/account-lifecycle'
 import type { Where } from 'payload'
 
 export { getAdminCtx }
@@ -108,15 +109,9 @@ export async function getAdminUsers(query: AdminUsersQuery = {}) {
 }
 
 export async function softDeleteUser(userId: number) {
-  const { payload, user } = await getAdminCtx()
+  const { payload, user, req } = await getAdminCtx()
 
-  await payload.update({
-    collection: 'users',
-    id: userId,
-    data: { deletedAt: new Date().toISOString() },
-    overrideAccess: false,
-    user,
-  })
+  await softDeleteUserAccount(payload, userId, req)
 
   revalidatePath('/admin-panel/users')
   await writeLog(payload, user, {
@@ -159,6 +154,8 @@ export async function createAdminUser(input: {
         password: input.password,
         role: input.role,
         verificationStatus: 'verified',
+        // An admin vouches for the account they create, so consent is recorded.
+        consentGiven: true,
       },
       overrideAccess: false,
       user,

@@ -15,6 +15,9 @@ import * as migration_20260924_000001_drop_extension_request_from_loans from './
 import * as migration_20260924_100000_add_admin_notification_preferences from './20260924_100000_add_admin_notification_preferences'
 import * as migration_20260925_000000_phase_2_data_layer from './20260925_000000_phase_2_data_layer'
 import * as migration_20260925_100000_phase_2_admin_screens from './20260925_100000_phase_2_admin_screens'
+import * as migration_20260928_000000_book_requests from './20260928_000000_book_requests'
+import * as migration_20260928_010000_payload_jobs from './20260928_010000_payload_jobs'
+import * as migration_20260928_020000_user_consent_required from './20260928_020000_user_consent_required'
 
 export const migrations = [
   {
@@ -101,5 +104,20 @@ export const migrations = [
     up: migration_20260925_100000_phase_2_admin_screens.up,
     down: migration_20260925_100000_phase_2_admin_screens.down,
     name: '20260925_100000_phase_2_admin_screens',
+  },
+  {
+    up: migration_20260928_000000_book_requests.up,
+    down: migration_20260928_000000_book_requests.down,
+    name: '20260928_000000_book_requests',
+  },
+  {
+    up: migration_20260928_010000_payload_jobs.up,
+    down: migration_20260928_010000_payload_jobs.down,
+    name: '20260928_010000_payload_jobs',
+  },
+  {
+    up: migration_20260928_020000_user_consent_required.up,
+    down: migration_20260928_020000_user_consent_required.down,
+    name: '20260928_020000_user_consent_required',
   },
 ]

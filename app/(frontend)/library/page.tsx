@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import Link from 'next/link'
 import LibraryShell from '@/shared/layouts/user/LibraryShell'
 import UserPage from '@/shared/layouts/user/UserPage'
 import { useGetProfileQuery } from '@/features/auth/api/profile.queries'
@@ -55,6 +56,9 @@ const LibraryPage: React.FC = () => {
         <p className="text-lg md:text-xl text-center max-w-2xl text-muted-foreground">
           استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد, متاحة للمطالعة والإستعارة.
         </p>
+        <Link href="/library/book-requests" className="inline-block text-primary-300 underline">
+          لم تجد كتابك؟ اقترحه للمكتبة
+        </Link>
       </div>
 
       <Tabs

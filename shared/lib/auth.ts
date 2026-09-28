@@ -13,6 +13,16 @@ export interface AuthOptions {
 }
 
 /**
+ * A soft-deleted account keeps its row for the 30-day erasure grace window,
+ * so a still-valid session or a freshly issued token can still resolve a user.
+ * Soft deletion has to be effective immediately, so every entry point that
+ * resolves a user from a token treats one as unauthenticated.
+ */
+function isSoftDeleted(user: User): boolean {
+  return Boolean(user.deletedAt)
+}
+
+/**
  * The `{ payload, user, req }` context every server action passes around —
  * exactly what `getPayloadWithUser` builds and what integration tests build
  * with `ctxFor`.
@@ -32,6 +42,8 @@ export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | u
 
   const user = response.user as User
 
+  if (isSoftDeleted(user)) return undefined
+
   if (opts?.acceptRoles) {
     if (!opts.acceptRoles.includes(user.role)) return undefined
   } else if (!opts?.allowAdmin && user.role === 'admin') return undefined
@@ -47,6 +59,8 @@ export async function getPayloadWithUser(opts?: AuthOptions): Promise<ActionCtx 
   if (!auth.user) return null
 
   const user = auth.user as User
+
+  if (isSoftDeleted(user)) return null
 
   if (opts?.acceptRoles) {
     if (!opts.acceptRoles.includes(user.role)) return null
@@ -73,10 +87,6 @@ export async function setPayloadTokenCookie(token: string, exp?: number) {
     sameSite: 'lax',
     maxAge,
   })
-}
-
-export function isAdmin(user: { role?: string } | null | undefined): boolean {
-  return user?.role === 'admin'
 }
 
 /**
