@@ -4,6 +4,7 @@ import UserSidebar from '@/shared/layouts/user/UserSidebar'
 import RootHtmlShell from '@/shared/root-html-shell'
 import { getAuthenticatedUser } from '@/shared/lib/auth'
 import { getProfileDashboardData } from '@/features/profile/server/dashboard'
+import { getBellState } from '@/features/notifications'
 import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default async function MemberPortalLayout({ children }: { children: React
   if (!user) redirect('/auth/login?redirect=/user/dashboard')
   if (user.role === 'admin' || user.role === 'librarian') redirect('/admin-panel/dashboard')
 
-  const dashboard = await getProfileDashboardData()
+  const [dashboard, bellState] = await Promise.all([getProfileDashboardData(), getBellState()])
   const activeLoans =
     dashboard?.loans.filter((loan) => ACTIVE_LOAN_STATUSES.includes(loan.status as never)).length ??
     0
@@ -32,6 +33,7 @@ export default async function MemberPortalLayout({ children }: { children: React
         userName={user.fullName ?? undefined}
         userEmail={user.email ?? undefined}
         loansBadge={activeLoans}
+        bellState={bellState}
       >
         {children}
       </UserSidebar>

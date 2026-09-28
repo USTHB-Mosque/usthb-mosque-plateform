@@ -191,7 +191,7 @@ test.describe('notification stream and bell', () => {
     const readRow = page.locator('button', { hasText: REMINDER_TITLE }).first()
     await expect(readRow.locator('span.h-2.w-2')).toHaveCount(0, { timeout: 15_000 })
 
-    const unreadFilter = page.getByRole('link', { name: /غير المقروء/ })
+    const unreadFilter = page.getByRole('button', { name: /غير المقروء/ })
     if ((await unreadFilter.count()) > 0 && (await unreadFilter.textContent())?.includes('(')) {
       await expect(async () => {
         await unreadFilter.click({ timeout: 5_000 })

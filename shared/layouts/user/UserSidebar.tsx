@@ -13,7 +13,9 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
+import { BellStateProvider } from '@/features/notifications'
 import { NotificationBell } from '@/features/notifications'
+import type { BellState } from '@/features/notifications'
 import ThemeSwitcher from '@/shared/ui/theme-switcher'
 import { motion } from 'motion/react'
 import type { Variants } from 'motion/react'
@@ -37,14 +39,24 @@ type UserSidebarProps = React.PropsWithChildren<{
   userName?: string
   userEmail?: string
   loansBadge?: number
+  /** Server-fetched bell state so the badge renders with the page. */
+  bellState?: BellState | null
 }>
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ userName, userEmail, loansBadge, children }) => {
+const UserSidebar: React.FC<UserSidebarProps> = ({
+  userName,
+  userEmail,
+  loansBadge,
+  bellState,
+  children,
+}) => {
   return (
     <UserSidebarProvider>
-      <SidebarShell userName={userName} userEmail={userEmail} loansBadge={loansBadge}>
-        {children}
-      </SidebarShell>
+      <BellStateProvider state={bellState}>
+        <SidebarShell userName={userName} userEmail={userEmail} loansBadge={loansBadge}>
+          {children}
+        </SidebarShell>
+      </BellStateProvider>
     </UserSidebarProvider>
   )
 }
