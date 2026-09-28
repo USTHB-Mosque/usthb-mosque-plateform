@@ -278,13 +278,14 @@ describe('user collection constraints (#152)', () => {
         email: 'new-librarian@usthb.dz',
         password: 'Str0ngPass!123',
         role: 'librarian',
-        consentGiven: true,
-      },
+      } as never,
       req,
       overrideAccess: false,
     })
 
     expect(created.role).toBe('librarian')
+    expect(created.consentGiven).toBe(true)
+    expect(created.consentTimestamp).toBeTruthy()
   })
 })
 
@@ -378,29 +379,62 @@ describe('consent stamping edge cases (#152)', () => {
 })
 
 describe('consent enforcement on the external surface (#152)', () => {
-  it('stamps consent when an external create omits it entirely', async () => {
+  it.each([undefined, false])(
+    'rejects an external create without explicit consent (%s)',
+    async (consentGiven) => {
+      const req = await boundReq(payload)
+      req.payloadAPI = 'REST'
+      const owner = await createTestUser(payload)
+      const mediaId = await attachVerificationDocument(owner)
+
+      // A raw HTTP body bypasses TypeScript's required field, so collection
+      // validation must reject it rather than fabricating a consent record.
+      await expect(
+        payload.create({
+          collection: 'users',
+          data: {
+            email: 'no-consent-field@usthb.dz',
+            password: 'Str0ngPass!123',
+            role: 'user',
+            verificationDocument: mediaId,
+            consentGiven,
+          } as never,
+          req,
+          overrideAccess: false,
+        }),
+      ).rejects.toThrow()
+
+      const found = await payload.find({
+        collection: 'users',
+        where: { email: { equals: 'no-consent-field@usthb.dz' } },
+        overrideAccess: true,
+      })
+      expect(found.totalDocs).toBe(0)
+    },
+  )
+
+  it('stamps consent time when an external member explicitly consents', async () => {
     const req = await boundReq(payload)
-    req.payloadAPI = 'REST'
+    req.payloadAPI = 'GraphQL'
     const owner = await createTestUser(payload)
     const mediaId = await attachVerificationDocument(owner)
-
-    // The generated type makes consentGiven required, so the only way to omit
-    // it is the way a real HTTP client would: a raw body Payload has not
-    // type-checked. The hook is what makes that safe.
-    const created = (await payload.create({
+    const created = await payload.create({
       collection: 'users',
       data: {
-        email: 'no-consent-field@usthb.dz',
+        email: 'consented@usthb.dz',
         password: 'Str0ngPass!123',
         role: 'user',
         verificationDocument: mediaId,
-      } as never,
+        consentGiven: true,
+        consentTimestamp: '2000-01-01T00:00:00.000Z',
+      },
       req,
       overrideAccess: false,
-    })) as User
+    })
 
     expect(created.consentGiven).toBe(true)
     expect(created.consentTimestamp).toBeTruthy()
+    expect(created.consentTimestamp).not.toBe('2000-01-01T00:00:00.000Z')
   })
 
   it('stamps consent on a bare server-side create', async () => {
@@ -483,6 +517,7 @@ describe('role defaulting (#152)', () => {
         email: 'no-role@usthb.dz',
         password: 'Str0ngPass!123',
         verificationDocument: mediaId,
+        consentGiven: true,
       } as never,
       req,
       overrideAccess: false,
@@ -507,6 +542,7 @@ describe('role escalation on create (#152)', () => {
           email: 'wants-librarian@usthb.dz',
           password: 'Str0ngPass!123',
           role: 'librarian',
+          consentGiven: true,
         } as never,
         req,
         overrideAccess: false,

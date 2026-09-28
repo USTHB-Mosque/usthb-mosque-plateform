@@ -1,5 +1,5 @@
 /** In-process fan-out for the single-instance Docker deployment (ADR 0002). */
-type Listener = () => void
+type Listener = (notificationId: number) => void
 type Bus = Map<number, Set<Listener>>
 
 // Route handlers and Payload hooks can be compiled into different module
@@ -18,10 +18,10 @@ export function subscribeToNotifications(userId: number, listener: Listener): ()
   }
 }
 
-export function publishNotificationCreated(userId: number): void {
+export function publishNotificationCreated(userId: number, notificationId: number): void {
   for (const listener of listeners.get(userId) ?? []) {
     try {
-      listener()
+      listener(notificationId)
     } catch {
       // A disconnected SSE consumer must never roll back the row being written.
     }

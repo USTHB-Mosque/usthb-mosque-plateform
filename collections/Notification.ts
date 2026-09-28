@@ -37,7 +37,7 @@ export const Notification: CollectionConfig = {
     afterChange: [
       ({ doc, operation }) => {
         if (operation === 'create') {
-          publishNotificationCreated(resolveRelationId(doc.user))
+          publishNotificationCreated(resolveRelationId(doc.user), doc.id)
         }
         return doc
       },

@@ -32,6 +32,14 @@ export const User: CollectionConfig = {
       async ({ data, operation, req }) => {
         if (operation !== 'create' || !data) return data
 
+        // An anonymous HTTP signup must supply its own affirmative consent.
+        // Only trusted creation paths (bootstrap, seeds, and the server-side
+        // registration action, which already checks the consent checkbox) may
+        // have it stamped on their behalf.
+        if (isExternalWrite(req) && !isAdmin(req.user) && data.consentGiven !== true) {
+          throw new Forbidden(req.t)
+        }
+
         // Consent is recorded for everyone: the hook stamps the timestamp so
         // admin-created, seeded and bootstrapped accounts carry the same
         // evidence as a member who ticked the box, and so the schema-required
@@ -39,7 +47,7 @@ export const User: CollectionConfig = {
         if (!data.consentGiven) {
           data.consentGiven = true
           data.consentTimestamp = new Date().toISOString()
-        } else if (!data.consentTimestamp) {
+        } else if (!data.consentTimestamp || (isExternalWrite(req) && !isAdmin(req.user))) {
           data.consentTimestamp = new Date().toISOString()
         }
 

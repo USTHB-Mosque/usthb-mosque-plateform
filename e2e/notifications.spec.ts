@@ -100,11 +100,11 @@ test.describe('notification stream and bell', () => {
     }
 
     // --- SSE: the badge must rise without any member-side reload ---
-    // 90s: the stream ticks every 30s from connect, and a dropped connection
-    // under parallel load restarts that cycle on reconnect.
-    if (approved && baseline === 0) {
+    // Earlier journey specs may leave a different loan approval unread, so
+    // measure this approval relative to the member's existing badge count.
+    if (approved) {
       await expect(async () => {
-        expect(await badgeCount(page)).toBeGreaterThanOrEqual(1)
+        expect(await badgeCount(page)).toBeGreaterThanOrEqual(baseline + 1)
       }).toPass({ timeout: 90_000 })
     } else if (!approved && baseline === 0) {
       // Neither a pending row nor a leftover badge — the loan never made it
@@ -114,9 +114,8 @@ test.describe('notification stream and bell', () => {
 
     // --- Member: mark it read through the bell dropdown ---
     // The menu stays open across retries; its items refresh in place when the
-    // next SSE tick refetches the bell state, so keep the menu open and click
-    // the approval item as soon as it appears — that may take a full 30s tick
-    // when another test's notification raised the badge first.
+    // SSE push refetches the bell state. Click this book's approval, not the
+    // possibly unread approval left by another journey.
     await expect(async () => {
       if ((await page.getByRole('menu').count()) === 0) {
         await bell.click({ timeout: 5_000 })
@@ -129,12 +128,21 @@ test.describe('notification stream and bell', () => {
         .first()
         .click({ timeout: 3_000 })
     }).toPass({ timeout: 90_000 })
-    // The bell's optimistic state clears the badge instantly on a fresh run;
-    // after another test's mark-all a leftover badge clears on the next SSE
-    // tick, so poll for the end state instead of a single check.
-    await expect(async () => {
-      expect(await badgeCount(page)).toBe(0)
-    }).toPass({ timeout: 45_000 })
+    if (approved) {
+      await expect(async () => {
+        expect(await badgeCount(page)).toBe(baseline)
+      }).toPass({ timeout: 45_000 })
+    }
+
+    // The count alone could drop optimistically even if the write failed.
+    // Confirm that the clicked approval, specifically, persisted as read.
+    await page.goto('/user/notifications')
+    const approvalRow = page
+      .locator('button', { hasText: APPROVAL_TITLE })
+      .filter({ hasText: APPROVED_BOOK })
+      .first()
+    await expect(approvalRow).toBeVisible({ timeout: 30_000 })
+    await expect(approvalRow.locator('span.h-2.w-2')).toHaveCount(0)
 
     await adminContext.close()
   })
