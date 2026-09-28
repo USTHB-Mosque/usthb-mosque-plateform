@@ -103,9 +103,13 @@ decision (ADR 0002).
 ## Auth surface
 
 `shared/lib/auth.ts` is the single auth helper module: `getAuthenticatedUser`,
-`getPayloadWithUser`, `requireUser`, `setPayloadTokenCookie`, `isAdmin`, and
+`getPayloadWithUser`, `requireUser`, `setPayloadTokenCookie`, and
 `createSessionForUser` (issues the token cookie after registration/OAuth).
 Import auth helpers from there, never re-derive sessions ad hoc.
+
+Role checks are not in that module: `isAdmin`, `isLibrarian` and `isStaff` live
+in `utils/access-helpers.ts`, the one implementation every collection, global
+and server action shares. Import them from there — there is no second copy.
 
 ## Agent skills
 

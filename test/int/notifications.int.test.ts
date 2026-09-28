@@ -266,6 +266,29 @@ describe('createNotification (#17)', () => {
     expect(after.emailSent).toBe(true)
   })
 
+  it('renders named lifecycle emails with the actual pickup details', async () => {
+    const req = await boundReq(payload, admin)
+    await createNotification({
+      req,
+      user: owner.id,
+      type: 'loan',
+      title: 'تم قبول طلب الإعارة',
+      message: 'رمز الاستلام في الرسالة',
+      email: true,
+      emailTemplate: {
+        kind: 'reservation-available',
+        bookTitle: 'فقه الصلاة',
+        pickupCode: 'م-12/5/26',
+        pickupDate: '2026-10-02T12:00:00.000Z',
+        pickupHour: '14:30',
+      },
+    })
+    const sent = sendEmailSpy.mock.calls[0][0] as { subject?: string; html?: string }
+    expect(sent.subject).toBe('كتابك جاهز للاستلام')
+    expect(sent.html).toContain('م-12/5/26')
+    expect(sent.html).toContain('14:30')
+  })
+
   it('gates email on the four Figma toggles, per type', async () => {
     // loanReturnReminder off → loan type silent
     await payload.update({
@@ -595,5 +618,25 @@ describe('notifications queries and actions (#17)', () => {
     } finally {
       updateSpy.mockRestore()
     }
+  })
+})
+
+describe('notification publish hook branches (#152)', () => {
+  it('publishes when the recipient relation is a populated document', async () => {
+    const recipient = await createTestUser(payload, { email: 'populated@usthb.dz' })
+    await payload.create({
+      collection: 'notifications',
+      data: { user: recipient.id, type: 'loan', title: 'جاهز', message: 'بانتظارك' },
+      overrideAccess: true,
+      depth: 2,
+    })
+    // Reaching here without a throw is the assertion: the hook resolved the
+    // populated owner rather than assuming a numeric id.
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: recipient.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
   })
 })

@@ -4,6 +4,7 @@ vi.mock('@/shared/lib/auth', () => ({ getPayloadWithUser: vi.fn() }))
 
 import { GET } from './route'
 import { getPayloadWithUser } from '@/shared/lib/auth'
+import { publishNotificationCreated } from '@/features/notifications/server/notification-bus'
 
 const mockGetPayloadWithUser = vi.mocked(getPayloadWithUser)
 
@@ -46,13 +47,8 @@ describe('notifications SSE stream route (#17)', () => {
     await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
-  it('heartbeats when the count is unchanged and survives a transient database error', async () => {
-    const countMock = vi
-      .fn<() => Promise<{ totalDocs: number }>>()
-      .mockResolvedValueOnce({ totalDocs: 3 }) // connect: changed → data event
-      .mockResolvedValueOnce({ totalDocs: 3 }) // first tick: unchanged → ping
-      .mockRejectedValueOnce(new Error('db hiccup')) // second tick: error → ping
-      .mockResolvedValueOnce({ totalDocs: 9 }) // third tick: changed again → unread
+  it('pushes only to the recipient immediately and heartbeats without querying', async () => {
+    const countMock = vi.fn().mockResolvedValue({ totalDocs: 3 })
     mockGetPayloadWithUser.mockResolvedValue({
       payload: { count: countMock },
       user: { id: 5 },
@@ -72,20 +68,34 @@ describe('notifications SSE stream route (#17)', () => {
       await vi.advanceTimersByTimeAsync(30_000)
       const ping = new TextDecoder().decode((await reader.read()).value)
       expect(ping).toContain(': ping')
+      expect(countMock).toHaveBeenCalledTimes(1)
 
-      await vi.advanceTimersByTimeAsync(30_000)
-      const survived = new TextDecoder().decode((await reader.read()).value)
-      expect(survived).toContain(': ping')
-
-      await vi.advanceTimersByTimeAsync(30_000)
-      const secondUnread = new TextDecoder().decode((await reader.read()).value)
-      expect(secondUnread).toContain('event: unread')
-      expect(secondUnread).toContain('"count":9')
+      publishNotificationCreated(99)
+      publishNotificationCreated(5)
+      const pushed = new TextDecoder().decode((await reader.read()).value)
+      expect(pushed).toContain('event: unread')
+      expect(countMock).toHaveBeenCalledTimes(1)
 
       controller.abort()
       await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('survives an initial count error and accepts a later push', async () => {
+    mockGetPayloadWithUser.mockResolvedValue({
+      payload: { count: vi.fn().mockRejectedValue(new Error('db hiccup')) },
+      user: { id: 5 },
+      req: {},
+    } as never)
+    const controller = new AbortController()
+    const response = await GET(new Request(STREAM_URL, { signal: controller.signal }))
+    const reader = response.body!.getReader()
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain(': ping')
+    publishNotificationCreated(5)
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain('event: unread')
+    controller.abort()
+    await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
   })
 })

@@ -32,6 +32,11 @@ export default defineConfig({
           ],
           setupFiles: ['./vitest.setup.ts'],
           globals: false,
+          // jsdom + `userEvent` + V8 coverage instrumentation can push a
+          // component test past Vitest's 5s default on a loaded machine, which
+          // made `test:coverage` fail on whichever file happened to run last.
+          // The integration project already sets its own, longer budget.
+          testTimeout: 15_000,
         },
       },
       {

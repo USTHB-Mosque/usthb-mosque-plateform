@@ -55,9 +55,11 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
-          // Internal invariant check: who may create is still gated by the
-          // collection's create access, so this read bypasses row scoping.
-          overrideAccess: true,
+          // The row is always the creator's own (`beforeChange` below stamps
+          // `req.user.id`), and that is exactly the row scoping the read
+          // access applies here — so the duplicate check runs under the same
+          // access rules as every other read (#152).
+          overrideAccess: false,
         })
         if (dup.totalDocs > 0) {
           throw new APIError('هذا الكتاب موجود بالفعل في المفضلة', 400)

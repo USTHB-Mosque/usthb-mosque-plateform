@@ -18,9 +18,10 @@ const {
 } = await import('./users')
 
 const user = { id: 9, role: 'admin' }
+const req = { kind: 'req' }
 
-function context(payload: Record<string, ReturnType<typeof vi.fn>> = {}) {
-  getAdminCtx.mockResolvedValue({ payload, user })
+function context(payloadOverrides: Record<string, ReturnType<typeof vi.fn>> = {}) {
+  getAdminCtx.mockResolvedValue({ payload: { ...payloadOverrides }, user, req })
 }
 
 describe('features/admin/server/users.ts', () => {
@@ -96,17 +97,43 @@ describe('features/admin/server/users.ts', () => {
     )
   })
 
-  it('soft deletes a user and records the action', async () => {
-    const update = vi.fn().mockResolvedValue({})
-    context({ update })
+  it('soft deletes a user through the account lifecycle and records the action', async () => {
+    // The real lifecycle function runs here: the admin action must stamp the
+    // deletion timestamps, drop the sessions and clear the media pointers,
+    // not just flip `deletedAt`.
+    const findByID = vi
+      .fn()
+      .mockResolvedValue({ id: 4, verificationDocument: null, profilePicture: null })
+    const update = vi.fn().mockResolvedValue({ id: 4 })
+    context({ findByID, update })
+
     await expect(softDeleteUser(4)).resolves.toEqual({ ok: true })
-    expect(update).toHaveBeenCalledWith(
+
+    expect(findByID).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'users', id: 4, overrideAccess: true, req }),
+    )
+    // First the deletion timestamps, then the emptied session list.
+    expect(update).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
         collection: 'users',
         id: 4,
-        data: { deletedAt: expect.any(String) },
-        overrideAccess: false,
-        user,
+        data: {
+          deletedAt: expect.any(String),
+          deletionScheduledFor: expect.any(String),
+        },
+        overrideAccess: true,
+        req,
+      }),
+    )
+    expect(update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        collection: 'users',
+        id: 4,
+        data: { sessions: [] },
+        overrideAccess: true,
+        req,
       }),
     )
     expect(writeLog).toHaveBeenCalled()

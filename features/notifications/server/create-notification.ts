@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import type { Notification } from '@/payload-types'
 import { EMAIL_PREFERENCE_BY_NOTIFICATION_TYPE, type NotificationType } from '@/utils/notifications'
+import { escapeHtml } from '@/shared/lib/email'
+import { renderLoanEmail, type LoanEmail } from './email-templates'
 
 export type CreateNotificationArgs = {
   /** The caller's request: passing it joins the caller's transaction. */
@@ -11,14 +13,7 @@ export type CreateNotificationArgs = {
   message: string
   link?: string
   email?: boolean
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  emailTemplate?: LoanEmail
 }
 
 function buildEmailHtml(title: string, message: string, link?: string): string {
@@ -77,10 +72,11 @@ export async function createNotification(args: CreateNotificationArgs): Promise<
   if (!preferenceEnabled) return notification
 
   try {
+    const rendered = args.emailTemplate ? renderLoanEmail(args.emailTemplate) : null
     await req.payload.sendEmail({
       to: recipient.email,
-      subject: title,
-      html: buildEmailHtml(title, message, link),
+      subject: rendered?.subject ?? title,
+      html: rendered?.html ?? buildEmailHtml(title, message, link),
     })
   } catch (error) {
     // Email failure must not roll back the notification (#17) — but it must

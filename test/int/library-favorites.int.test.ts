@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getTestPayload, resetDatabase, boundReq } from '../setup-integration'
 import { createTestUser, loginToken } from '../lib/seed'
@@ -32,6 +32,50 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await payload.db.destroy?.()
+})
+
+describe('favourites duplicate checks run under access control (#152)', () => {
+  it.each([['book-favorites', 'book'] as const, ['article-favorites', 'article'] as const])(
+    '%s: the duplicate check reads with access control enabled',
+    async (collection, field) => {
+      const target =
+        field === 'book' ? await createTestBook(payload) : await createTestArticle(payload)
+      const owner = { id: member.id } as Parameters<typeof payload.create>[0]['user']
+
+      await payload.create({
+        collection,
+        data: { user: member.id, [field]: target.id },
+        user: owner,
+        overrideAccess: false,
+      } as never)
+
+      // The guard find must not carry `overrideAccess: true`; any bypass would
+      // show up here as the flag reaching the Local API call.
+      const findSpy = vi.spyOn(payload, 'find')
+      try {
+        await expect(
+          payload.create({
+            collection,
+            data: { user: member.id, [field]: target.id },
+            user: owner,
+            overrideAccess: false,
+          } as never),
+        ).rejects.toThrow(
+          field === 'book'
+            ? 'هذا الكتاب موجود بالفعل في المفضلة'
+            : 'هذا المقال موجود بالفعل في المفضلة',
+        )
+
+        const guardCall = findSpy.mock.calls.find(
+          ([args]) => (args as { collection?: string }).collection === collection,
+        )
+        expect(guardCall).toBeDefined()
+        expect((guardCall![0] as { overrideAccess?: boolean }).overrideAccess).toBe(false)
+      } finally {
+        findSpy.mockRestore()
+      }
+    },
+  )
 })
 
 describe('book favorites', () => {

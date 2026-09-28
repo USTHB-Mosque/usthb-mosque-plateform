@@ -59,6 +59,7 @@ export async function seedE2e(): Promise<void> {
         role: 'user',
         password: E2E_MEMBER_PASSWORD,
         verificationStatus: member.verificationStatus,
+        consentGiven: true,
       },
     })
   }

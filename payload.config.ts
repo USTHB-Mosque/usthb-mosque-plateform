@@ -22,8 +22,10 @@ import {
   LoanExtension,
   Log,
   LibraryCard,
+  BookRequest,
 } from './collections'
 import { Settings } from './globals'
+import { erasureJobsConfig } from './features/users/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -63,8 +65,10 @@ export default buildConfig({
     LoanExtension,
     Log,
     LibraryCard,
+    BookRequest,
   ],
   globals: [Settings],
+  jobs: erasureJobsConfig,
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

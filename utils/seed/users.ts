@@ -19,6 +19,7 @@ export const createUser = async () => {
       fullName,
       role: 'user',
       password,
+      consentGiven: true,
     },
   })
 
@@ -50,6 +51,7 @@ export const createAdminUser = async () => {
       fullName: 'مسؤول المنصة',
       role: 'admin',
       password: adminPassword,
+      consentGiven: true,
     },
   })
 
@@ -80,6 +82,7 @@ export const seedUsers = async (n: number = 10) => {
           fullName,
           role: 'user',
           password,
+          consentGiven: true,
         },
       })
 

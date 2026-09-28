@@ -43,7 +43,7 @@ describe('features/admin/server/first-admin-core.ts', () => {
       expect.objectContaining({
         collection: 'users',
         draft: false,
-        data: { email: 'a@b.c', password: 'secret', role: 'admin' },
+        data: { email: 'a@b.c', password: 'secret', role: 'admin', consentGiven: true },
       }),
     )
     expect(logActivity).toHaveBeenCalledWith(payload, 7, 'first_admin_created')

@@ -540,3 +540,129 @@ describe('extension wrappers (cookie flows)', () => {
     expect((await extensionAfter(request.extensionId!)).status).toBe('approved')
   })
 })
+
+describe('extension decision hook branches (#152)', () => {
+  it('ignores a create and an unchanged status', async () => {
+    // A create must not notify, and re-saving an approved row must not
+    // notify a second time.
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, {
+      book: book.id,
+      user: member.id,
+      status: 'picked_up',
+      dueDate: new Date().toISOString(),
+    })
+    const ext = await payload.create({
+      collection: 'loan-extensions',
+      data: { loan: loan.id, user: member.id, days: 7, status: 'approved', adminResponse: 'موافق' },
+      overrideAccess: true,
+    })
+    expect(
+      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+    ).toBe(0)
+
+    await payload.update({
+      collection: 'loan-extensions',
+      id: ext.id,
+      data: { adminResponse: 'ما زلت موافقاً' },
+      overrideAccess: true,
+    })
+    expect(
+      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+    ).toBe(0)
+  })
+
+  it('notifies on a direct Payload refusal, with and without a reason', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const make = async (userId: number) => {
+      const loan = await createTestLoan(payload, {
+        book: book.id,
+        user: userId,
+        status: 'picked_up',
+        dueDate: new Date().toISOString(),
+      })
+      return payload.create({
+        collection: 'loan-extensions',
+        data: { loan: loan.id, user: userId, days: 7, status: 'pending' },
+        overrideAccess: true,
+      })
+    }
+
+    const withReason = await make(member.id)
+    const withoutReason = await make(otherMember.id)
+
+    await payload.update({
+      collection: 'loan-extensions',
+      id: withReason.id,
+      data: { status: 'refused', adminResponse: 'تجاوزت المدة المسموحة' },
+      overrideAccess: true,
+    })
+    await payload.update({
+      collection: 'loan-extensions',
+      id: withoutReason.id,
+      data: { status: 'refused' },
+      overrideAccess: true,
+    })
+
+    const rows = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
+    expect(rows.totalDocs).toBe(1)
+    expect(rows.docs[0].message).toContain('تجاوزت المدة المسموحة')
+
+    const bare = await payload.find({
+      collection: 'notifications',
+      where: { user: { equals: otherMember.id } },
+      overrideAccess: true,
+    })
+    expect(bare.totalDocs).toBe(1)
+    expect(bare.docs[0].message).toContain('تم رفض طلب تمديد')
+  })
+})
+
+describe('extension status transitions that are not decisions (#152)', () => {
+  it('stays silent when a decided extension is reopened as pending', async () => {
+    sendEmailSpy()
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, {
+      book: book.id,
+      user: member.id,
+      status: 'picked_up',
+      dueDate: new Date().toISOString(),
+    })
+    // `beforeChange` forces every new extension to 'pending', so a real
+    // decision has to be made before it can be reopened.
+    const ext = await payload.create({
+      collection: 'loan-extensions',
+      data: { loan: loan.id, user: member.id, days: 7 },
+      overrideAccess: true,
+    })
+    await payload.update({
+      collection: 'loan-extensions',
+      id: ext.id,
+      data: { status: 'approved' },
+      overrideAccess: true,
+    })
+    const afterApproval = await payload.count({ collection: 'notifications', overrideAccess: true })
+    expect(afterApproval.totalDocs).toBe(1)
+
+    // Reopening lands on a status that is neither approved nor refused, so the
+    // notification hook must return without sending a second notice.
+    await payload.update({
+      collection: 'loan-extensions',
+      id: ext.id,
+      data: { status: 'pending' },
+      overrideAccess: true,
+    })
+
+    const after = await extensionAfter(ext.id)
+    expect(after.status).toBe('pending')
+    expect(
+      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+    ).toBe(afterApproval.totalDocs)
+  })
+})

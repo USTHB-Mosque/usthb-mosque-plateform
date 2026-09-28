@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
 import { NOTIFICATION_TYPES } from '@/utils/notifications'
+import { publishNotificationCreated } from '@/features/notifications/server/notification-bus'
 
 /**
  * Server-side notification row (#17): written only through
@@ -30,6 +32,16 @@ export const Notification: CollectionConfig = {
       return { user: { equals: user.id } }
     },
     delete: () => false,
+  },
+  hooks: {
+    afterChange: [
+      ({ doc, operation }) => {
+        if (operation === 'create') {
+          publishNotificationCreated(resolveRelationId(doc.user))
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {

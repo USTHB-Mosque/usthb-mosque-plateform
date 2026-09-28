@@ -360,6 +360,16 @@ export async function sendLoanReminder(loanId: number) {
     message,
     link: '/user/my-loans',
     email: true,
+    emailTemplate:
+      loan.status === 'accepted'
+        ? {
+            kind: 'pickup-reminder',
+            bookTitle,
+            pickupCode: loan.pickupCode ?? '',
+            pickupDate: loan.pickupDate ?? '',
+            pickupHour: loan.pickupHour ?? '',
+          }
+        : { kind: 'loan-due-soon', bookTitle, dueDate: loan.dueDate ?? '' },
   })
 
   return { ok: true }

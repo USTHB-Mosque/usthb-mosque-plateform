@@ -10,16 +10,14 @@ import {
 import { getLoanSettings } from '@/shared/lib/settings'
 import { addDays } from '@/shared/lib/dates'
 import { checkRequestGates } from '@/shared/lib/loan-gates'
+import { formatArabicDate } from '@/shared/lib/dates'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { createNotification } from '@/features/notifications/server/create-notification'
 
 function formatHour(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
   return `${hours}:${minutes}`
-}
-
-function resolveId(value: unknown): number {
-  if (typeof value === 'number') return value
-  return (value as { id: number }).id
 }
 
 /** `${bookCode}/${loanId}/${twoDigitYear}` — the loan id makes it unique. */
@@ -223,7 +221,7 @@ export const Loan: CollectionConfig = {
         const previousStatus = previousDoc.status
         if (!status || status === previousStatus) return doc
 
-        const bookId = resolveId(doc.book)
+        const bookId = resolveRelationId(doc.book)
 
         // ---- stamps written back to the loan itself ----
         const stamps: Record<string, unknown> = {}
@@ -286,6 +284,73 @@ export const Loan: CollectionConfig = {
 
         if (status === 'returned' || status === 'refused') {
           await releaseAndPromote(bookId, previousStatus, req, context)
+        }
+
+        // A Payload-admin edit and a custom-panel transition are the same
+        // event. Emit from this hook, after stamps/copy accounting succeeded,
+        // so neither surface can forget the borrower (#152).
+        if (status === 'accepted' || status === 'refused') {
+          const book = await req.payload.findByID({
+            collection: 'books',
+            id: bookId,
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          if (status === 'accepted') {
+            // `stamps` is filled for every accept above; only the pickup code
+            // can come from the existing row, and only when there was none.
+            const code = String(stamps.pickupCode ?? doc.pickupCode)
+            const date = String(stamps.pickupDate)
+            const hour = String(stamps.pickupHour)
+            await createNotification({
+              req,
+              user: resolveRelationId(doc.user),
+              type: 'loan',
+              title: 'تم قبول طلب الإعارة',
+              message: `تم قبول طلب استعارة «${book.title}». رمز الاستلام: ${code}. تاريخ الاستلام: ${formatArabicDate(date)} الساعة ${hour}.`,
+              link: '/user/my-loans',
+              email: true,
+              emailTemplate: {
+                kind: 'reservation-available',
+                bookTitle: book.title,
+                pickupCode: code,
+                pickupDate: date,
+                pickupHour: hour,
+              },
+            })
+          } else {
+            await createNotification({
+              req,
+              user: resolveRelationId(doc.user),
+              type: 'loan',
+              title: 'تم رفض طلب الإعارة',
+              message: `تم رفض طلب استعارة «${book.title}». السبب: ${doc.refusalReason ?? ''}.`,
+              link: '/user/my-loans',
+              email: true,
+            })
+          }
+        }
+
+        const promotedUserId = req.context[PROMOTED_USER_ID]
+        delete req.context[PROMOTED_USER_ID]
+        if (typeof promotedUserId === 'number') {
+          const book = await req.payload.findByID({
+            collection: 'books',
+            id: bookId,
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          await createNotification({
+            req,
+            user: promotedUserId,
+            type: 'waitlist',
+            title: 'الكتاب متاح الآن لاستعارتك',
+            message: `جاء دورك لاستعارة «${book.title}»: سُجّل طلبك بانتظار موافقة الإدارة.`,
+            link: '/user/my-loans',
+            email: true,
+          })
         }
 
         return doc
