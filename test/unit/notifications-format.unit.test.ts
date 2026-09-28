@@ -36,12 +36,13 @@ describe('formatRelativeArabicTime', () => {
     expect(text).toContain('يوم')
   })
 
-  it('falls back to the absolute Arabic date beyond a week', () => {
+  it('keeps older notifications relative, leaving the absolute date for hover', () => {
     const text = formatRelativeArabicTime(
       new Date(NOW.getTime() - 30 * 86_400_000).toISOString(),
       NOW,
     )
-    expect(text).toMatch(/\d{4}/)
+    expect(text).toMatch(/^منذ/)
+    expect(text).not.toMatch(/2026/)
   })
 })
 
@@ -70,6 +71,27 @@ describe('groupNotificationsByDay', () => {
     const groups = groupNotificationsByDay([item({ id: 1, createdAt: NOW.toISOString() })], NOW)
     expect(groups).toHaveLength(1)
     expect(groups[0]?.key).toBe('today')
+  })
+
+  it('treats the previous calendar day as yesterday across a month boundary', () => {
+    // At 00:30 in Algeria, a UTC server still considers both instants Sep 30.
+    const now = new Date('2026-10-01T00:30:00+01:00')
+    const yesterday = new Date('2026-09-30T23:50:00+01:00')
+
+    const groups = groupNotificationsByDay([item({ createdAt: yesterday.toISOString() })], now)
+
+    expect(groups.map((group) => group.key)).toEqual(['yesterday'])
+  })
+
+  it('keeps the same Algeria calendar day across the UTC boundary', () => {
+    const now = new Date('2026-10-01T01:30:00+01:00')
+    const earlier = new Date('2026-10-01T00:15:00+01:00')
+
+    expect(
+      groupNotificationsByDay([item({ createdAt: earlier.toISOString() })], now).map(
+        (group) => group.key,
+      ),
+    ).toEqual(['today'])
   })
 
   it('returns no groups for no items', () => {

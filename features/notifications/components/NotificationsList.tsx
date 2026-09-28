@@ -41,6 +41,8 @@ type NotificationsListProps = {
   data: NotificationsPage
   seen: 'all' | 'unread'
   type?: NotificationType
+  /** Request-time clock shared by server render and client hydration. */
+  now: string
 }
 
 /** An icon per notification type — scannability without reading the chip. */
@@ -60,13 +62,18 @@ const TYPE_ICONS: Record<NotificationType, LucideIcon> = {
  * search params, day grouping with Arabic relative timestamps, mark as read
  * on click (nudging the navbar bell), and mark-all-as-read.
  */
-const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type }) => {
+const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type, now }) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = React.useTransition()
-  // One stamp per mount: SSR and the hydrating client each render a stable,
-  // self-consistent list (suppressing the sub-minute الـآن boundary drift).
-  const now = React.useMemo(() => new Date(), [])
+  // Hydrate with the exact server timestamp, then advance the labels/day
+  // headings while the page remains open.
+  const [referenceTime, setReferenceTime] = React.useState(() => new Date(now))
+
+  React.useEffect(() => {
+    const timer = window.setInterval(() => setReferenceTime(new Date()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const buildHref = (overrides: { seen?: string; type?: string; page?: number }) => {
     const next = new URLSearchParams(searchParams.toString())
@@ -103,7 +110,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
     })
   }
 
-  const groups = groupNotificationsByDay(data.notifications, now)
+  const groups = groupNotificationsByDay(data.notifications, referenceTime)
 
   return (
     <div dir="rtl" className="flex w-full flex-col gap-4">
@@ -162,7 +169,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
       ) : (
         groups.map((group) => (
           <section key={group.key} aria-label={group.label} className="flex flex-col gap-2">
-            <h3 className="text-xs font-medium text-grey-400">{group.label}</h3>
+            <h3 className="text-xs font-medium text-grey-500">{group.label}</h3>
             <div className="self-stretch overflow-hidden rounded-xl border border-stroke-grey">
               {group.items.map((item, index) => {
                 const Icon = TYPE_ICONS[item.type] ?? Bell
@@ -192,11 +199,10 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type 
                         ) : null}
                       </span>
                       <span
-                        className="text-[11px] text-grey-400"
+                        className="text-[11px] text-grey-500"
                         title={formatAbsoluteArabicTime(item.createdAt)}
-                        suppressHydrationWarning
                       >
-                        {formatRelativeArabicTime(item.createdAt, now)}
+                        {formatRelativeArabicTime(item.createdAt, referenceTime)}
                       </span>
                     </span>
                     <span className="text-sm text-grey-500">{item.message}</span>

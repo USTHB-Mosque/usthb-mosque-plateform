@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 
 import { makeNotificationItem as item } from '@/features/notifications/fixtures'
+import { BellStateProvider } from './bell-context'
 import NotificationBell from './NotificationBell'
 
 vi.mock('next/navigation', () => ({
@@ -55,5 +56,21 @@ describe('NotificationBell', () => {
     await vi.waitFor(() => {
       expect(getBellState).toHaveBeenCalledTimes(2)
     })
+  })
+
+  it('renders the server-provided badge immediately and only fetches on refresh', async () => {
+    const { getBellState } = await import('@/features/notifications/server/get-notifications')
+    const { notifyBellRefresh } = await import('@/features/notifications/lib/bell-refresh')
+    render(
+      <BellStateProvider state={{ unreadCount: 2, notifications: [] }}>
+        <NotificationBell />
+      </BellStateProvider>,
+    )
+
+    expect(screen.getByRole('button', { name: 'الإشعارات' })).toHaveTextContent('2')
+    expect(getBellState).not.toHaveBeenCalled()
+
+    notifyBellRefresh()
+    await vi.waitFor(() => expect(getBellState).toHaveBeenCalledTimes(1))
   })
 })

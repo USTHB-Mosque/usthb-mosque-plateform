@@ -28,6 +28,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const seen = readSeen(params.seen)
   const type = readType(params.type)
   const page = readPage(params.page)
+  const now = new Date().toISOString()
 
   const data = await getNotifications({
     seen: seen === 'unread' ? false : undefined,
@@ -38,7 +39,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
 
   return (
     <UserPage title="الإشعارات">
-      <NotificationsList data={data} seen={seen} type={type} />
+      <NotificationsList data={data} seen={seen} type={type} now={now} />
     </UserPage>
   )
 }

@@ -1,6 +1,7 @@
 import { execSync } from 'child_process'
 import { Client } from 'pg'
 
+import { migrations } from '@/migrations'
 import { E2E_BUCKET, E2E_DATABASE_NAME, E2E_DEV, e2eDatabaseUrl } from './lib/env'
 import { ensureE2eDatabase } from './lib/db'
 
@@ -20,9 +21,9 @@ export default async function globalSetup(): Promise<void> {
 
   if (!E2E_DEV) {
     // Migrate + verify, retrying on a silent no-op: `payload migrate` has
-    // occasionally exited 0 without applying anything while the web server's
-    // build runs concurrently. Only the schema check decides whether the
-    // step landed — the exit code and output cannot be trusted.
+    // occasionally exited 0 while applying only part of the set while the web
+    // server's build runs concurrently. Only the schema check decides whether
+    // the step landed — the exit code and output cannot be trusted.
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const output = execSync('node node_modules/payload/bin.js migrate', {
         env: { ...process.env, DATABASE_URL: databaseUrl, NODE_ENV: 'production' },
@@ -31,9 +32,14 @@ export default async function globalSetup(): Promise<void> {
       })
       const tail = output.trim().split('\n').slice(-2).join(' | ')
       console.log(`[e2e] migrate attempt ${attempt}: ${tail || '(no output)'}`)
-      if (await migrationsApplied(databaseUrl)) break
+
+      const missing = await missingMigrations(databaseUrl)
+      if (missing.length === 0) break
+      console.log(`[e2e] still missing: ${missing.join(', ')}`)
       if (attempt === 3) {
-        throw new Error('payload migrate applied no migrations after 3 attempts — aborting')
+        throw new Error(
+          `payload migrate left ${missing.length} migration(s) unapplied after 3 attempts — aborting`,
+        )
       }
     }
   }
@@ -50,15 +56,20 @@ export default async function globalSetup(): Promise<void> {
   await seedE2e()
 }
 
-/** True once the migrations table has rows (schema actually applied). */
-async function migrationsApplied(databaseUrl: string): Promise<boolean> {
+/**
+ * Names of the repo's migrations the database has not applied yet. An empty
+ * list is the only trustworthy proof that the schema landed: a row count alone
+ * passes even when `payload migrate` applied just the first migration.
+ */
+async function missingMigrations(databaseUrl: string): Promise<string[]> {
   const client = new Client({ connectionString: databaseUrl })
   await client.connect()
   try {
-    const result = await client.query('SELECT 1 FROM "payload_migrations" LIMIT 1')
-    return result.rowCount !== null && result.rowCount > 0
+    const result = await client.query<{ name: string }>('SELECT name FROM "payload_migrations"')
+    const applied = new Set(result.rows.map((row) => row.name))
+    return migrations.map((migration) => migration.name).filter((name) => !applied.has(name))
   } catch {
-    return false
+    return migrations.map((migration) => migration.name)
   } finally {
     await client.end()
   }

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { notifyBellRefresh, onBellRefresh } from '@/features/notifications/lib/bell-refresh'
-import { makeNotificationItem as item } from '@/features/notifications/fixtures'
+import { FIXTURE_NOW, makeNotificationItem as item } from '@/features/notifications/fixtures'
 import NotificationsList from './NotificationsList'
 
 const push = vi.fn()
@@ -21,10 +21,6 @@ vi.mock('@/features/notifications/server/mark-notifications-read', () => ({
   markAllNotificationsRead: vi.fn(async () => ({ ok: true as const, count: 1 })),
 }))
 
-// The grouping rides on the viewer's calendar day, so the fixture items are
-// built relative to the real clock: today / yesterday / five days ago.
-const DAY = 86_400_000
-
 function listProps(
   notifications: ReturnType<typeof item>[],
   seen: 'all' | 'unread' = 'all',
@@ -38,6 +34,7 @@ function listProps(
       page: 1,
     },
     seen,
+    now: FIXTURE_NOW.toISOString(),
   }
 }
 
@@ -52,10 +49,10 @@ describe('NotificationsList', () => {
     render(
       <NotificationsList
         {...listProps([
-          item({ id: 1, createdAt: new Date().toISOString() }),
-          item({ id: 4, createdAt: new Date().toISOString() }),
-          item({ id: 2, createdAt: new Date(Date.now() - DAY).toISOString() }),
-          item({ id: 3, createdAt: new Date(Date.now() - 5 * DAY).toISOString() }),
+          item({ id: 1, title: 'الأول' }),
+          item({ id: 4, title: 'الثاني' }),
+          item({ id: 2, createdAt: new Date(2026, 8, 26, 15).toISOString() }),
+          item({ id: 3, createdAt: new Date(2026, 8, 22, 15).toISOString() }),
         ])}
       />,
     )
@@ -70,7 +67,7 @@ describe('NotificationsList', () => {
       within(today)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual(expect.arrayContaining([expect.stringContaining('إشعار')]))
+    ).toEqual([expect.stringContaining('الأول'), expect.stringContaining('الثاني')])
     expect(within(screen.getByLabelText('أمس')).getAllByRole('button')).toHaveLength(1)
     expect(within(screen.getByLabelText('أقدم')).getAllByRole('button')).toHaveLength(1)
   })
@@ -89,14 +86,27 @@ describe('NotificationsList', () => {
   })
 
   it('renders relative Arabic timestamps with the absolute date as the title', () => {
-    // The list stamps against the mount clock, so "now" here means fresh.
-    render(
-      <NotificationsList {...listProps([item({ createdAt: new Date().toISOString() })], 'all')} />,
-    )
+    render(<NotificationsList {...listProps([item()], 'all')} />)
 
     const stamp = screen.getByText('الآن')
     expect(stamp).toBeVisible()
     expect(stamp.getAttribute('title')).toMatch(/\d{4}/)
+  })
+
+  it('advances relative timestamps while the inbox stays open', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(FIXTURE_NOW)
+    try {
+      render(<NotificationsList {...listProps([item()], 'all')} />)
+      expect(screen.getByText('الآن')).toBeVisible()
+
+      act(() => vi.advanceTimersByTime(60_000))
+
+      expect(screen.queryByText('الآن')).toBeNull()
+    } finally {
+      cleanup()
+      vi.useRealTimers()
+    }
   })
 
   it('shows a labelled icon per notification type', () => {
@@ -116,6 +126,18 @@ describe('NotificationsList', () => {
     try {
       render(<NotificationsList {...listProps([item({ id: 1 })], 'all')} />)
       await userEvent.click(screen.getAllByRole('button', { name: /إشعار/ })[0]!)
+      expect(listener).toHaveBeenCalledTimes(1)
+    } finally {
+      unsubscribe()
+    }
+  })
+
+  it('dispatches the bell refresh after marking all notifications read', async () => {
+    const listener = vi.fn()
+    const unsubscribe = onBellRefresh(listener)
+    try {
+      render(<NotificationsList {...listProps([item()])} />)
+      await userEvent.click(screen.getByRole('button', { name: 'تحديد الكل كمقروء' }))
       expect(listener).toHaveBeenCalledTimes(1)
     } finally {
       unsubscribe()

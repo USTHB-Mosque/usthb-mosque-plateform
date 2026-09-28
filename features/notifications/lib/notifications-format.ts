@@ -9,17 +9,13 @@ import type { NotificationListItem } from '@/features/notifications/server/get-n
  * deterministic text.
  */
 
-/** A week is the readability cut-off: older items show an absolute date. */
-const RELATIVE_WINDOW_DAYS = 7
-
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
 
 /**
- * "منذ 5 دقائق" style stamp: الآن under a minute, relative distance up to a
- * week, then the absolute Arabic date for anything older (the groups already
- * read أقدم there).
+ * "منذ 5 دقائق" style stamp: الآن under a minute, then a relative distance
+ * for every age. The absolute date is available on hover.
  */
 export function formatRelativeArabicTime(value: string, now: Date = new Date()): string {
   const date = new Date(value)
@@ -30,13 +26,10 @@ export function formatRelativeArabicTime(value: string, now: Date = new Date()):
   const strict = (unit: 'minute' | 'hour' | 'day') =>
     formatDistanceStrict(date, now, { locale: arDZ, unit, addSuffix: true })
 
-  if (distance < RELATIVE_WINDOW_DAYS * DAY) {
-    if (distance < HOUR) return strict('minute')
-    if (distance < DAY) return strict('hour')
-    return strict('day')
-  }
-
-  return format(date, 'd MMMM yyyy', { locale: arDZ })
+  if (distance < HOUR) return strict('minute')
+  if (distance < DAY) return strict('hour')
+  if (distance < 7 * DAY) return strict('day')
+  return formatDistanceStrict(date, now, { locale: arDZ, addSuffix: true })
 }
 
 /** The absolute Arabic date-time stamp, shared by the hover title. */
@@ -51,9 +44,21 @@ export type NotificationDayGroup = {
   items: NotificationListItem[]
 }
 
-/** Local calendar-day ordinal — groups follow the viewer's clock, not UTC. */
-function localDayIndex(value: Date): number {
-  return value.getFullYear() * 12_000 + value.getMonth() * 100 + value.getDate()
+// Both Node SSR and browser hydration must use the same calendar. The mosque
+// operates in Algeria; relying on the runtime's local zone breaks grouping
+// near midnight when the server runs in UTC.
+const calendar = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Africa/Algiers',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+})
+
+function previousCalendarDay(now: Date): Date {
+  const parts = calendar.formatToParts(now)
+  const value = (type: 'year' | 'month' | 'day') =>
+    Number(parts.find((part) => part.type === type)?.value)
+  return new Date(Date.UTC(value('year'), value('month') - 1, value('day') - 1))
 }
 
 /**
@@ -64,7 +69,8 @@ export function groupNotificationsByDay(
   items: NotificationListItem[],
   now: Date = new Date(),
 ): NotificationDayGroup[] {
-  const todayIndex = localDayIndex(now)
+  const today = calendar.format(now)
+  const yesterday = calendar.format(previousCalendarDay(now))
 
   const groups: NotificationDayGroup[] = [
     { key: 'today', label: 'اليوم', items: [] },
@@ -73,8 +79,8 @@ export function groupNotificationsByDay(
   ]
 
   for (const item of items) {
-    const groupIndex = todayIndex - localDayIndex(new Date(item.createdAt))
-    const bucket = groupIndex <= 0 ? 0 : groupIndex === 1 ? 1 : 2
+    const date = calendar.format(new Date(item.createdAt))
+    const bucket = date === today ? 0 : date === yesterday ? 1 : 2
     groups[bucket]?.items.push(item)
   }
 
