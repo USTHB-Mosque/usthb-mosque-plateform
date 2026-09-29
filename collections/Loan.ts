@@ -13,6 +13,7 @@ import { checkRequestGates } from '@/shared/lib/loan-gates'
 import { formatArabicDate } from '@/shared/lib/dates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
 
 function formatHour(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0')
@@ -215,6 +216,14 @@ export const Loan: CollectionConfig = {
     afterChange: [
       async ({ doc, req, operation, previousDoc, context }) => {
         if (context?.[SKIP_LOAN_LIFECYCLE]) return doc
+        if (operation === 'create' && doc.status === 'pending') {
+          await notifyAdmins(req, 'loanRequests', {
+            type: 'loan',
+            title: 'طلب إعارة جديد',
+            message: 'هناك طلب إعارة ينتظر المراجعة.',
+            link: '/admin-panel/loans/pending',
+          })
+        }
         if (operation !== 'update' || !previousDoc) return doc
 
         const status = doc.status

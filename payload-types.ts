@@ -193,6 +193,7 @@ export interface User {
     overdueReturns?: boolean | null;
     newReviews?: boolean | null;
     activityLogEvents?: boolean | null;
+    bulkEmailDigest?: boolean | null;
   };
   activityLog?:
     | {
@@ -454,6 +455,8 @@ export interface ActivityRegistration {
   user: number | User;
   activity: number | Activity;
   attended?: boolean | null;
+  status?: ('pending' | 'accepted' | 'refused' | 'quota_rejected') | null;
+  refusalReason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -492,6 +495,7 @@ export interface Notification {
   link?: string | null;
   seen?: boolean | null;
   emailSent?: boolean | null;
+  eventKey?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -866,6 +870,7 @@ export interface UsersSelect<T extends boolean = true> {
         overdueReturns?: T;
         newReviews?: T;
         activityLogEvents?: T;
+        bulkEmailDigest?: T;
       };
   activityLog?:
     | T
@@ -1053,6 +1058,8 @@ export interface ActivityRegistrationsSelect<T extends boolean = true> {
   user?: T;
   activity?: T;
   attended?: T;
+  status?: T;
+  refusalReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1088,6 +1095,7 @@ export interface NotificationsSelect<T extends boolean = true> {
   link?: T;
   seen?: T;
   emailSent?: T;
+  eventKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }

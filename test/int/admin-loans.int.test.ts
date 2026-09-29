@@ -287,6 +287,7 @@ describe('sendLoanReminder', () => {
   async function latestNotifications() {
     return payload.find({
       collection: 'notifications',
+      where: { user: { equals: member.id } },
       overrideAccess: true,
       depth: 0,
       sort: '-createdAt',

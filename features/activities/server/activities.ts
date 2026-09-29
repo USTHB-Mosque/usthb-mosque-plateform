@@ -1,6 +1,4 @@
 'use server'
-import config from '@/payload.config'
-import { getPayload } from 'payload'
 import { getPayloadWithUser } from '@/shared/lib/auth'
 import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
@@ -38,13 +36,6 @@ export async function registerActivityLogic(
       }
     }
 
-    if (activityResult.maxParticipants) {
-      const currentParticipants = activityResult.currentParticipants || 0
-      if (currentParticipants >= activityResult.maxParticipants) {
-        return { success: false, message: 'عذراً، اكتمل الحد الأقصى للمشاركين' }
-      }
-    }
-
     const existingRegistrationResult = await payload.find({
       collection: 'activity-registrations',
       where: {
@@ -54,7 +45,28 @@ export async function registerActivityLogic(
       overrideAccess: false,
     })
 
-    if (existingRegistrationResult.docs.length > 0) {
+    const previous = existingRegistrationResult.docs[0]
+    if (previous?.status === 'quota_rejected') {
+      const max = activityResult.maxParticipants
+      const current = activityResult.currentParticipants ?? 0
+      if (max != null && current >= max) {
+        return {
+          success: false,
+          message: 'عذراً، اكتمل الحد الأقصى للمشاركين',
+          registration: previous,
+        }
+      }
+      const registration = await payload.update({
+        collection: 'activity-registrations',
+        id: previous.id,
+        data: { status: 'pending' },
+        req,
+        overrideAccess: true,
+        context: { retryQuota: true },
+      })
+      return { success: true, message: 'تم التسجيل في النشاط بنجاح', registration }
+    }
+    if (previous) {
       return { success: false, message: 'لديك بالفعل تسجيل في هذا النشاط' }
     }
 
@@ -69,19 +81,9 @@ export async function registerActivityLogic(
       overrideAccess: false,
     })
 
-    // The participant counter is system state driven by the gated logic above
-    // (registration open, deadline, capacity, no duplicate), so it intentionally
-    // bypasses the admin-only write rule on activities.
-    await payload.update({
-      collection: 'activities',
-      id: activityId,
-      data: {
-        currentParticipants: (activityResult.currentParticipants || 0) + 1,
-      },
-      req,
-      overrideAccess: true,
-    })
-
+    if (registration.status === 'quota_rejected') {
+      return { success: false, message: 'عذراً، اكتمل الحد الأقصى للمشاركين', registration }
+    }
     return { success: true, message: 'تم التسجيل في النشاط بنجاح', registration }
   } catch (error) {
     console.error('Error registering for activity:', error)
@@ -113,5 +115,5 @@ export async function getUserActivityRegistration(activityId: string) {
     overrideAccess: false,
   })
 
-  return { registered: Boolean(existing.docs[0]) }
+  return { registered: existing.docs.some((row) => row.status !== 'quota_rejected') }
 }

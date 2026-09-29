@@ -43,6 +43,7 @@ type NotificationsListProps = {
   type?: NotificationType
   /** Request-time clock shared by server render and client hydration. */
   now: string
+  inboxHref?: string
 }
 
 /** An icon per notification type — scannability without reading the chip. */
@@ -62,7 +63,13 @@ const TYPE_ICONS: Record<NotificationType, LucideIcon> = {
  * search params, day grouping with Arabic relative timestamps, mark as read
  * on click (nudging the navbar bell), and mark-all-as-read.
  */
-const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type, now }) => {
+const NotificationsList: React.FC<NotificationsListProps> = ({
+  data,
+  seen,
+  type,
+  now,
+  inboxHref = NOTIFICATIONS_PAGE,
+}) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = React.useTransition()
@@ -82,20 +89,20 @@ const NotificationsList: React.FC<NotificationsListProps> = ({ data, seen, type,
       else next.set(key, String(value))
     }
     const query = next.toString()
-    return query ? `${NOTIFICATIONS_PAGE}?${query}` : NOTIFICATIONS_PAGE
+    return query ? `${inboxHref}?${query}` : inboxHref
   }
 
   const markRead = (id: number, seen: boolean, link: string | null) => {
     // Already-read rows only navigate — no redundant write.
     if (seen) {
-      router.push(link ?? NOTIFICATIONS_PAGE)
+      router.push(link ?? inboxHref)
       return
     }
     startTransition(async () => {
       const result = await markNotificationRead(id)
       if (result.ok) {
         notifyBellRefresh()
-        router.push(link ?? NOTIFICATIONS_PAGE)
+        router.push(link ?? inboxHref)
       } else router.refresh()
     })
   }

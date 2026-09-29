@@ -89,8 +89,16 @@ describe('acceptLoanLogic', () => {
       req,
       overrideAccess: false,
     })
+    // #154 pages admins for the fresh request; the borrower count is what the
+    // transition must keep at exactly one.
     expect(
-      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+      (
+        await payload.count({
+          collection: 'notifications',
+          where: { user: { equals: member.id } },
+          overrideAccess: true,
+        })
+      ).totalDocs,
     ).toBe(1)
   })
   it('notifies a borrower whose user relation arrives populated', async () => {

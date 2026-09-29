@@ -4,6 +4,8 @@ import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 import { logActivity } from '@/utils/activity-log'
 import { ensureLibraryCard } from '@/utils/library-cards'
 import { userSituationsConfigArray } from '@/utils/constants/users'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
+import { createNotification } from '@/features/notifications/server/create-notification'
 
 /**
  * Roles a User self-registers as. Law 18-07 requires a reviewed identity
@@ -85,6 +87,22 @@ export const User: CollectionConfig = {
           if (doc.verificationStatus === 'verified') {
             await ensureLibraryCard(req.payload, doc.id, req)
           }
+          if (doc.role === 'user') {
+            await notifyAdmins(req, 'activityLogEvents', {
+              type: 'system',
+              title: 'عضو جديد',
+              message: `انضم ${doc.fullName ?? doc.email} إلى المنصة.`,
+              link: `/admin-panel/users/${doc.id}`,
+            })
+            if (doc.verificationStatus === 'pending_verification') {
+              await notifyAdmins(req, 'accountRequests', {
+                type: 'verification',
+                title: 'طلب توثيق جديد',
+                message: `ينتظر ${doc.fullName ?? doc.email} توثيق الحساب.`,
+                link: '/admin-panel/verification',
+              })
+            }
+          }
         }
         // `previousDoc` is the row as it was before this update, so the
         // verified transition is detected without a nested read that could
@@ -96,6 +114,40 @@ export const User: CollectionConfig = {
         ) {
           await logActivity(req.payload, doc.id, 'account_verified', undefined, req)
           await ensureLibraryCard(req.payload, doc.id, req)
+        }
+        if (
+          operation === 'update' &&
+          doc.role === 'user' &&
+          doc.verificationStatus === 'pending_verification' &&
+          previousDoc.verificationStatus !== 'pending_verification'
+        ) {
+          await notifyAdmins(req, 'accountRequests', {
+            type: 'verification',
+            title: 'طلب توثيق جديد',
+            message: `أعاد ${doc.fullName ?? doc.email} إرسال طلب التوثيق.`,
+            link: '/admin-panel/verification',
+          })
+        }
+        if (
+          operation === 'update' &&
+          doc.verificationStatus !== previousDoc.verificationStatus &&
+          (doc.verificationStatus === 'verified' || doc.verificationStatus === 'rejected')
+        ) {
+          const verified = doc.verificationStatus === 'verified'
+          await createNotification({
+            req,
+            user: doc.id,
+            type: 'verification',
+            email: true,
+            title: verified ? 'تم توثيق الحساب' : 'تم رفض توثيق الحساب',
+            message: verified
+              ? 'تم قبول وثيقة التحقق وتوثيق حسابك.'
+              : `تم رفض وثيقة التحقق.${doc.verificationNote ? ` السبب: ${doc.verificationNote}.` : ''}`,
+            link: '/user/settings',
+            emailTemplate: verified
+              ? { kind: 'verification-approved' }
+              : { kind: 'verification-rejected', reason: doc.verificationNote },
+          })
         }
         return doc
       },
@@ -350,6 +402,12 @@ export const User: CollectionConfig = {
           type: 'checkbox',
           defaultValue: true,
           label: 'Activity Log Events',
+        },
+        {
+          name: 'bulkEmailDigest',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Daily Activity and Article Email Digest',
         },
       ],
     },

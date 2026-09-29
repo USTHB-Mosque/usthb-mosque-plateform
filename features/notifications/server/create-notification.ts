@@ -14,6 +14,7 @@ export type CreateNotificationArgs = {
   link?: string
   email?: boolean
   emailTemplate?: LoanEmail
+  eventKey?: string
 }
 
 function buildEmailHtml(title: string, message: string, link?: string): string {
@@ -41,7 +42,7 @@ function buildEmailHtml(title: string, message: string, link?: string): string {
  * notifications are always written regardless.
  */
 export async function createNotification(args: CreateNotificationArgs): Promise<Notification> {
-  const { req, user, type, title, message, link, email } = args
+  const { req, user, type, title, message, link, email, eventKey } = args
 
   // The row write joins the caller's transaction; the email goes out inside
   // that window, before the caller commits. If the caller rolls back after a
@@ -50,7 +51,7 @@ export async function createNotification(args: CreateNotificationArgs): Promise<
   // after an unknown-time commit is not possible from inside the helper.
   const notification = (await req.payload.create({
     collection: 'notifications',
-    data: { user, type, title, message, link },
+    data: { user, type, title, message, link, eventKey },
     req,
     overrideAccess: true,
   })) as Notification

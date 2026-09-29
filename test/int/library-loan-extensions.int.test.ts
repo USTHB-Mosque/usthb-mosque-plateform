@@ -543,8 +543,9 @@ describe('extension wrappers (cookie flows)', () => {
 
 describe('extension decision hook branches (#152)', () => {
   it('ignores a create and an unchanged status', async () => {
-    // A create must not notify, and re-saving an approved row must not
-    // notify a second time.
+    // A create must not notify the borrower, and re-saving an approved row
+    // must not notify a second time. (#154 adds an admin page on the create;
+    // the borrower-scoped counts below are what the hook must keep silent.)
     sendEmailSpy()
     const book = await createTestBook(payload)
     const loan = await createTestLoan(payload, {
@@ -559,7 +560,13 @@ describe('extension decision hook branches (#152)', () => {
       overrideAccess: true,
     })
     expect(
-      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+      (
+        await payload.count({
+          collection: 'notifications',
+          where: { user: { equals: member.id } },
+          overrideAccess: true,
+        })
+      ).totalDocs,
     ).toBe(0)
 
     await payload.update({
@@ -569,7 +576,13 @@ describe('extension decision hook branches (#152)', () => {
       overrideAccess: true,
     })
     expect(
-      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+      (
+        await payload.count({
+          collection: 'notifications',
+          where: { user: { equals: member.id } },
+          overrideAccess: true,
+        })
+      ).totalDocs,
     ).toBe(0)
   })
 
@@ -647,7 +660,11 @@ describe('extension status transitions that are not decisions (#152)', () => {
       data: { status: 'approved' },
       overrideAccess: true,
     })
-    const afterApproval = await payload.count({ collection: 'notifications', overrideAccess: true })
+    const afterApproval = await payload.count({
+      collection: 'notifications',
+      where: { user: { equals: member.id } },
+      overrideAccess: true,
+    })
     expect(afterApproval.totalDocs).toBe(1)
 
     // Reopening lands on a status that is neither approved nor refused, so the
@@ -662,7 +679,13 @@ describe('extension status transitions that are not decisions (#152)', () => {
     const after = await extensionAfter(ext.id)
     expect(after.status).toBe('pending')
     expect(
-      (await payload.count({ collection: 'notifications', overrideAccess: true })).totalDocs,
+      (
+        await payload.count({
+          collection: 'notifications',
+          where: { user: { equals: member.id } },
+          overrideAccess: true,
+        })
+      ).totalDocs,
     ).toBe(afterApproval.totalDocs)
   })
 })

@@ -1,6 +1,7 @@
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
 import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
+import { notifyMembers } from '@/features/notifications/server/audiences'
 
 export const Activity: CollectionConfig = {
   slug: 'activities',
@@ -11,6 +12,22 @@ export const Activity: CollectionConfig = {
   access: {
     read: () => true,
     ...adminWriteAccess(),
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await notifyMembers(req, {
+            type: 'activity',
+            title: 'نشاط جديد',
+            message: `نُشر النشاط «${doc.title}».`,
+            link: `/user/activities/${doc.id}`,
+            eventKey: `bulk:activity:${doc.id}`,
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {

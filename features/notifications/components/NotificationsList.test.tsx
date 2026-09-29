@@ -85,6 +85,17 @@ describe('NotificationsList', () => {
     expect(pill.getAttribute('href')).toBe('/user/notifications?seen=unread&type=loan')
   })
 
+  it('keeps Admin filters and navigation inside the Admin updates inbox', async () => {
+    render(
+      <NotificationsList {...listProps([item({ link: null })])} inboxHref="/admin-panel/updates" />,
+    )
+    expect(screen.getByRole('button', { name: 'إعارة' }).getAttribute('href')).toBe(
+      '/admin-panel/updates?type=loan',
+    )
+    await userEvent.click(screen.getAllByRole('button', { name: /إشعار/ })[0]!)
+    expect(push).toHaveBeenCalledWith('/admin-panel/updates')
+  })
+
   it('renders relative Arabic timestamps with the absolute date as the title', () => {
     render(<NotificationsList {...listProps([item()], 'all')} />)
 

@@ -5,13 +5,14 @@ import { PanelRight, PanelRightOpen } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Separator } from '@/shared/ui/separator'
 import { useAdminSidebar } from '@/shared/layouts/admin/AdminSidebar'
+import { NotificationBell } from '@/features/notifications'
 
 type AdminPageHeaderProps = {
   title: string
 }
 
 const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title }) => {
-  const { collapsed, toggle } = useAdminSidebar()
+  const { collapsed, toggle, role } = useAdminSidebar()
 
   return (
     <header className="sticky top-0 z-40 flex items-center gap-4 bg-background-2 px-4 py-3 sm:px-6">
@@ -29,6 +30,11 @@ const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title }) => {
       <h1 className="text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl]">
         {title}
       </h1>
+      {role === 'admin' ? (
+        <div className="ms-auto">
+          <NotificationBell inboxHref="/admin-panel/updates" />
+        </div>
+      ) : null}
     </header>
   )
 }

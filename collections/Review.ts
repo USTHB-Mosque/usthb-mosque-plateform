@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
 
 /**
  * One review model covering books and articles (#103): a row targets exactly
@@ -21,6 +22,19 @@ export const Review: CollectionConfig = {
     },
   },
   hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await notifyAdmins(req, 'newReviews', {
+            type: 'system',
+            title: 'تقييم جديد',
+            message: 'تمت إضافة تقييم جديد.',
+            link: '/admin-panel/reviews',
+          })
+        }
+        return doc
+      },
+    ],
     beforeValidate: [
       ({ data }) => {
         if (!data) return data

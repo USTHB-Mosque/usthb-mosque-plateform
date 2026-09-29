@@ -5,6 +5,7 @@ import { addDays } from '@/shared/lib/dates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { formatArabicDate } from '@/shared/lib/dates'
 import { createNotification } from '@/features/notifications/server/create-notification'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
 
 /**
  * Loan extension requests (#19). A member requests an extension on a loan they
@@ -83,7 +84,17 @@ export const LoanExtension: CollectionConfig = {
       },
     ],
     afterChange: [
-      async ({ doc, previousDoc, operation, req }) => {
+      async ({ doc, previousDoc, operation, req, context }) => {
+        // Auto-approved requests never sit in the admin queue, so they never
+        // page the admins; the flag is stamped by requestLoanExtensionLogic.
+        if (operation === 'create' && doc.status === 'pending' && !context?.extensionAutoApproved) {
+          await notifyAdmins(req, 'loanExtensions', {
+            type: 'extension',
+            title: 'طلب تمديد جديد',
+            message: 'هناك طلب تمديد إعارة ينتظر المراجعة.',
+            link: '/admin-panel/loans',
+          })
+        }
         if (operation !== 'update' || !previousDoc || doc.status === previousDoc.status) return doc
         if (doc.status !== 'approved' && doc.status !== 'refused') return doc
 

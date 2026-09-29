@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
-import { getAdminActivity } from '@/features/admin'
+import { getAdminActivity, getAdminActivityRegistrations } from '@/features/admin'
 import AdminActivityDetail from '@/components/admin-views/activities/AdminActivityDetail'
+import AdminRegistrations from '@/components/admin-views/activities/AdminRegistrations'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminActivityDetailPage({
@@ -18,10 +19,12 @@ export default async function AdminActivityDetailPage({
   }
 
   if (!activity) notFound()
+  const { registrations, canDecide } = await getAdminActivityRegistrations(activity.id)
 
   return (
     <AdminPage title={`الأنشطة / ${activity.title}`}>
       <AdminActivityDetail activity={activity} />
+      <AdminRegistrations registrations={registrations} canDecide={canDecide} />
     </AdminPage>
   )
 }
