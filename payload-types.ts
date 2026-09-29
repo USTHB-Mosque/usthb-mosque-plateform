@@ -409,6 +409,8 @@ export interface Article {
     };
     [k: string]: unknown;
   } | null;
+  ratingCount?: number | null;
+  averageRating?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1015,6 +1017,8 @@ export interface ArticlesSelect<T extends boolean = true> {
   image?: T;
   description?: T;
   content?: T;
+  ratingCount?: T;
+  averageRating?: T;
   updatedAt?: T;
   createdAt?: T;
 }

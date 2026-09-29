@@ -1,4 +1,5 @@
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { ratingAggregateFields } from '@/utils/constants/reviews'
 import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 import { notifyMembers } from '@/features/notifications/server/audiences'
@@ -84,5 +85,8 @@ export const Article: CollectionConfig = {
       name: 'content',
       type: 'richText',
     },
+    // Derived from the `reviews` rows targeting this article (#25), the same
+    // pair `books` carries.
+    ...ratingAggregateFields(),
   ],
 }

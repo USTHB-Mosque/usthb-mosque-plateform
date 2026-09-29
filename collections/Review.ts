@@ -1,5 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
+import { maintainReviewAggregates } from '@/shared/lib/review-aggregate'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
 
 /**
@@ -22,9 +24,29 @@ export const Review: CollectionConfig = {
     },
   },
   hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        if (!data) return data
+        const hasBook = data.book != null
+        const hasArticle = data.article != null
+        if (hasBook === hasArticle) {
+          throw new Error('يجب أن يستهدف التقييم كتاباً أو مقالاً واحداً بالضبط')
+        }
+        return data
+      },
+    ],
+    // The target's `ratingCount` / `averageRating` are derived from these rows
+    // and were never written by anything (#25). A review is the only thing that
+    // can change them, so create, update and delete all recompute — written
+    // against the target, so an article review maintains the article the same
+    // way a book review maintains the book (#103).
     afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation === 'create') {
+      async ({ doc, previousDoc, req, context }) => {
+        if (!context?.[SKIP_REVIEW_AGGREGATE]) {
+          await maintainReviewAggregates(req, { doc, previousDoc })
+        }
+        // A fresh review is actionable for admins (#154).
+        if (!previousDoc) {
           await notifyAdmins(req, 'newReviews', {
             type: 'system',
             title: 'تقييم جديد',
@@ -35,15 +57,11 @@ export const Review: CollectionConfig = {
         return doc
       },
     ],
-    beforeValidate: [
-      ({ data }) => {
-        if (!data) return data
-        const hasBook = data.book != null
-        const hasArticle = data.article != null
-        if (hasBook === hasArticle) {
-          throw new Error('يجب أن يستهدف التقييم كتاباً أو مقالاً واحداً بالضبط')
-        }
-        return data
+    afterDelete: [
+      async ({ doc, req, context }) => {
+        if (context?.[SKIP_REVIEW_AGGREGATE]) return doc
+        await maintainReviewAggregates(req, { doc })
+        return doc
       },
     ],
   },
