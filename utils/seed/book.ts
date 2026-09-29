@@ -18,8 +18,6 @@ interface BookData {
   location: string
   totalBooks: number
   availableBooks: number
-  averageRating: number
-  ratingCount: number
 }
 
 const booksData: BookData[] = [
@@ -41,8 +39,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 5,
     availableBooks: 2,
-    averageRating: 5,
-    ratingCount: 120,
   },
   {
     title: 'صحيح مسلم',
@@ -62,8 +58,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 5,
     availableBooks: 3,
-    averageRating: 5,
-    ratingCount: 95,
   },
   {
     title: 'رياض الصالحين',
@@ -83,8 +77,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 8,
     availableBooks: 5,
-    averageRating: 4.8,
-    ratingCount: 80,
   },
   {
     title: 'العقيدة الواسطية',
@@ -103,8 +95,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 10,
     availableBooks: 7,
-    averageRating: 4.7,
-    ratingCount: 65,
   },
   {
     title: 'زاد المعاد في هدي خير العباد',
@@ -123,8 +113,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 4,
     availableBooks: 1,
-    averageRating: 4.9,
-    ratingCount: 70,
   },
   {
     title: 'تفسير السعدي',
@@ -143,8 +131,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 6,
     availableBooks: 4,
-    averageRating: 4.6,
-    ratingCount: 55,
   },
   {
     title: 'الفقه على المذاهب الأربعة',
@@ -163,8 +149,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 5,
     availableBooks: 3,
-    averageRating: 4.7,
-    ratingCount: 90,
   },
   {
     title: 'الموافقات في أصول الشريعة',
@@ -183,8 +167,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 3,
     availableBooks: 2,
-    averageRating: 4.8,
-    ratingCount: 40,
   },
   {
     title: 'الرحيق المختوم',
@@ -203,8 +185,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 7,
     availableBooks: 5,
-    averageRating: 4.5,
-    ratingCount: 60,
   },
   {
     title: 'أساسيات الرياضيات',
@@ -223,8 +203,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 10,
     availableBooks: 8,
-    averageRating: 4.0,
-    ratingCount: 25,
   },
   {
     title: 'فيزياء عامة',
@@ -243,8 +221,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 8,
     availableBooks: 6,
-    averageRating: 4.2,
-    ratingCount: 35,
   },
   {
     title: 'مبادئ علم الأحياء',
@@ -263,8 +239,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 5,
     availableBooks: 3,
-    averageRating: 4.3,
-    ratingCount: 20,
   },
   {
     title: 'لغة عربية للمبتدئين',
@@ -282,8 +256,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 12,
     availableBooks: 10,
-    averageRating: 4.1,
-    ratingCount: 45,
   },
   {
     title: 'مبادئ الاقتصاد',
@@ -301,8 +273,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 6,
     availableBooks: 4,
-    averageRating: 4.4,
-    ratingCount: 50,
   },
   {
     title: 'كيمياء عامة',
@@ -320,8 +290,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 4,
     availableBooks: 2,
-    averageRating: 4.0,
-    ratingCount: 15,
   },
   {
     title: 'أساسيات الهندسة',
@@ -339,8 +307,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 5,
     availableBooks: 3,
-    averageRating: 4.3,
-    ratingCount: 28,
   },
   {
     title: 'تاريخ الإسلام',
@@ -359,8 +325,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 3,
     availableBooks: 1,
-    averageRating: 4.9,
-    ratingCount: 55,
   },
   {
     title: 'العلمانية والدين',
@@ -378,8 +342,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 4,
     availableBooks: 3,
-    averageRating: 4.2,
-    ratingCount: 18,
   },
   {
     title: 'آداب الدعوة إلى الله تعالى',
@@ -398,8 +360,6 @@ const booksData: BookData[] = [
     location: 'المكتبة المركزية',
     totalBooks: 6,
     availableBooks: 4,
-    averageRating: 4.4,
-    ratingCount: 32,
   },
 ]
 
@@ -537,8 +497,10 @@ export const seedBooks = async () => {
         location: bookData.location,
         totalBooks: bookData.totalBooks,
         availableBooks: bookData.availableBooks,
-        averageRating: bookData.averageRating,
-        ratingCount: bookData.ratingCount,
+        // No `averageRating` / `ratingCount`: both are derived from the review
+        // rows by the `reviews` hooks (#25). A seeded book has no reviews, so
+        // the honest values are the field defaults — writing a number here is
+        // how the site ended up advertising 127 ratings nobody gave.
         image: imageId,
         publishDate: new Date(
           Date.now() - Math.random() * 10 * 365 * 24 * 60 * 60 * 1000,

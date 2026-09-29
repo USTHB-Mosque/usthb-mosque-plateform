@@ -1,5 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
+import { maintainReviewAggregates } from '@/shared/lib/review-aggregate'
 
 /**
  * One review model covering books and articles (#103): a row targets exactly
@@ -30,6 +32,25 @@ export const Review: CollectionConfig = {
           throw new Error('يجب أن يستهدف التقييم كتاباً أو مقالاً واحداً بالضبط')
         }
         return data
+      },
+    ],
+    // The target's `ratingCount` / `averageRating` are derived from these rows
+    // and were never written by anything (#25). A review is the only thing that
+    // can change them, so create, update and delete all recompute — written
+    // against the target, so an article review maintains the article the same
+    // way a book review maintains the book (#103).
+    afterChange: [
+      async ({ doc, previousDoc, req, context }) => {
+        if (context?.[SKIP_REVIEW_AGGREGATE]) return doc
+        await maintainReviewAggregates(req, { doc, previousDoc })
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req, context }) => {
+        if (context?.[SKIP_REVIEW_AGGREGATE]) return doc
+        await maintainReviewAggregates(req, { doc })
+        return doc
       },
     ],
   },

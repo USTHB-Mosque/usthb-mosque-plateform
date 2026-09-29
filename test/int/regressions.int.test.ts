@@ -81,8 +81,9 @@ describe('defect: marking a loan returned does not give the copy back', () => {
 })
 
 describe('defect: averageRating and ratingCount are never recalculated', () => {
-  // RED until #25: flip `it.fails` to `it` when the recompute hooks exist.
-  it.fails('recomputes the aggregates when reviews are created', async () => {
+  // Fixed in #25: the review hooks recompute the target's aggregate from the
+  // real rows on every create, update and delete.
+  it('recomputes the aggregates when reviews are created', async () => {
     const book = await createTestBook(payload)
 
     await payload.create({
@@ -101,7 +102,7 @@ describe('defect: averageRating and ratingCount are never recalculated', () => {
     expect(after.averageRating).toBe(4)
   })
 
-  it.fails('recomputes the aggregates when a review is updated', async () => {
+  it('recomputes the aggregates when a review is updated', async () => {
     const book = await createTestBook(payload)
     const review = await payload.create({
       collection: 'reviews',
@@ -127,10 +128,11 @@ describe('defect: averageRating and ratingCount are never recalculated', () => {
     expect(after.averageRating).toBe(5)
   })
 
-  // RED until #25: the stale seeded aggregates must not survive the delete.
-  it.fails('recomputes the aggregates when a review is deleted', async () => {
-    // Seed stale aggregates so the delete cannot pass vacuously: today the
-    // hook-less book keeps reporting the fiction the seed wrote.
+  // The stale seeded aggregates must not survive the delete: the recompute runs
+  // over the rows that are actually left.
+  it('recomputes the aggregates when a review is deleted', async () => {
+    // Stale aggregates first, so the delete cannot pass vacuously: an
+    // aggregate the recompute skipped would leave the fiction in place.
     const book = await createTestBook(payload)
     await payload.update({
       collection: 'books',

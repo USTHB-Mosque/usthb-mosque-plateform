@@ -67,5 +67,21 @@ export const Article: CollectionConfig = {
       name: 'content',
       type: 'richText',
     },
+    // Derived from the `reviews` rows targeting this article (#25), the same
+    // pair `books` carries. Never written by a member: a review is what
+    // changes them.
+    {
+      name: 'ratingCount',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+    },
+    {
+      name: 'averageRating',
+      type: 'number',
+      min: 0,
+      max: 5,
+      defaultValue: 0,
+    },
   ],
 }
