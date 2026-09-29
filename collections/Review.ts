@@ -41,12 +41,12 @@ export const Review: CollectionConfig = {
     // against the target, so an article review maintains the article the same
     // way a book review maintains the book (#103).
     afterChange: [
-      async ({ doc, previousDoc, req, context }) => {
+      async ({ doc, previousDoc, operation, req, context }) => {
         if (!context?.[SKIP_REVIEW_AGGREGATE]) {
           await maintainReviewAggregates(req, { doc, previousDoc })
         }
         // A fresh review is actionable for admins (#154).
-        if (!previousDoc) {
+        if (operation === 'create') {
           await notifyAdmins(req, 'newReviews', {
             type: 'system',
             title: 'تقييم جديد',
