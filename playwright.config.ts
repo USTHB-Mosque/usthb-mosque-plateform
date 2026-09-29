@@ -1,6 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
-import { E2E_BASE_URL, E2E_DEV, e2eServerEnv } from './e2e/lib/env'
+import {
+  E2E_BASE_URL,
+  E2E_DEV,
+  E2E_GOOGLE_IDP_URL,
+  E2E_MAILPIT_API_URL,
+  e2eServerEnv,
+} from './e2e/lib/env'
 
 const serverEnv = e2eServerEnv()
 
@@ -29,21 +35,34 @@ export default defineConfig({
   // Canonical run boots a production build against the e2e database; the dev
   // toggle reuses `next dev` for faster authoring (schema push is allowed on
   // the e2e database only).
-  webServer: E2E_DEV
-    ? {
-        command: 'next dev',
-        url: E2E_BASE_URL,
-        reuseExistingServer: true,
-        timeout: 180_000,
-        env: serverEnv,
-      }
-    : {
-        command: 'pnpm build && next start',
-        url: E2E_BASE_URL,
-        reuseExistingServer: false,
-        timeout: 600_000,
-        env: serverEnv,
-      },
+  webServer: [
+    {
+      command: 'node e2e/mock/google-idp.mjs',
+      url: E2E_GOOGLE_IDP_URL,
+      reuseExistingServer: false,
+      env: serverEnv,
+    },
+    {
+      command: 'node e2e/mock/mailpit.mjs',
+      url: `${E2E_MAILPIT_API_URL}/api/v1/info`,
+      reuseExistingServer: false,
+    },
+    E2E_DEV
+      ? {
+          command: 'next dev',
+          url: E2E_BASE_URL,
+          reuseExistingServer: true,
+          timeout: 180_000,
+          env: serverEnv,
+        }
+      : {
+          command: 'pnpm build && next start',
+          url: E2E_BASE_URL,
+          reuseExistingServer: false,
+          timeout: 600_000,
+          env: serverEnv,
+        },
+  ],
   projects: [
     {
       name: 'setup',

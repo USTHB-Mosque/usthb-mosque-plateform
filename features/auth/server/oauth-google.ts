@@ -14,7 +14,7 @@ export function isGoogleOAuthConfigured(): boolean {
 }
 
 export function buildGoogleAuthorizationUrl(state: string): string {
-  const url = new URL(GOOGLE_AUTH_ENDPOINT)
+  const url = new URL(process.env.GOOGLE_AUTH_ENDPOINT || GOOGLE_AUTH_ENDPOINT)
   url.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID || '')
   url.searchParams.set('redirect_uri', getRedirectUri())
   url.searchParams.set('response_type', 'code')
@@ -33,11 +33,12 @@ interface GoogleIdentity {
 
 /**
  * Exchanges an authorization code for the caller's verified Google identity.
- * The trust boundary is the direct, server-to-server HTTPS call to Google below,
- * not a locally-verified ID token, which keeps this dependency-free.
+ * The trust boundary is the direct server-to-server call to the configured
+ * provider (Google by default), not a locally-verified ID token. The endpoint
+ * overrides allow the e2e suite to use a local mock IdP.
  */
 export async function exchangeGoogleCode(code: string): Promise<GoogleIdentity | null> {
-  const tokenResponse = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+  const tokenResponse = await fetch(process.env.GOOGLE_TOKEN_ENDPOINT || GOOGLE_TOKEN_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -54,9 +55,10 @@ export async function exchangeGoogleCode(code: string): Promise<GoogleIdentity |
   const tokenBody = (await tokenResponse.json()) as { access_token?: string }
   if (!tokenBody.access_token) return null
 
-  const userInfoResponse = await fetch(GOOGLE_USERINFO_ENDPOINT, {
-    headers: { Authorization: `Bearer ${tokenBody.access_token}` },
-  })
+  const userInfoResponse = await fetch(
+    process.env.GOOGLE_USERINFO_ENDPOINT || GOOGLE_USERINFO_ENDPOINT,
+    { headers: { Authorization: `Bearer ${tokenBody.access_token}` } },
+  )
 
   if (!userInfoResponse.ok) return null
 

@@ -1,8 +1,8 @@
-import { execSync } from 'child_process'
+import { execFileSync, execSync } from 'child_process'
 import { Client } from 'pg'
 
 import { migrations } from '@/migrations'
-import { E2E_BUCKET, E2E_DATABASE_NAME, E2E_DEV, e2eDatabaseUrl } from './lib/env'
+import { E2E_BUCKET, E2E_DATABASE_NAME, E2E_DEV, e2eServerEnv } from './lib/env'
 import { ensureE2eDatabase } from './lib/db'
 
 // Orchestrates the whole e2e data plane:
@@ -12,8 +12,9 @@ import { ensureE2eDatabase } from './lib/db'
 //    let Payload's push manage the e2e schema,
 // 3. truncate + lean-seed through the Local API with the final env, so
 //    `payload.config` is evaluated with the e2e DATABASE_URL and S3_BUCKET.
-export default async function globalSetup(): Promise<void> {
-  const databaseUrl = e2eDatabaseUrl()
+export default async function globalSetup(): Promise<() => void> {
+  const serverEnv = e2eServerEnv()
+  const databaseUrl = serverEnv.DATABASE_URL
 
   // Canonical mode migrates from a clean slate — a leftover dev-mode schema
   // push would otherwise block the migration on an interactive prompt.
@@ -26,7 +27,7 @@ export default async function globalSetup(): Promise<void> {
     // the step landed — the exit code and output cannot be trusted.
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const output = execSync('node node_modules/payload/bin.js migrate', {
-        env: { ...process.env, DATABASE_URL: databaseUrl, NODE_ENV: 'production' },
+        env: { ...serverEnv, NODE_ENV: 'production' },
         encoding: 'utf8',
         timeout: 240_000,
       })
@@ -44,16 +45,23 @@ export default async function globalSetup(): Promise<void> {
     }
   }
 
-  // Next's ambient types mark NODE_ENV readonly; this process is not Next's.
-  const processEnv = process.env as { NODE_ENV?: string }
-  processEnv.NODE_ENV = E2E_DEV ? 'development' : 'production'
-
-  process.env.DATABASE_URL = databaseUrl
-  process.env.S3_BUCKET = E2E_BUCKET
+  // Seed with the same isolated DB, storage and local-only SMTP settings as
+  // the web server; seeds must never inherit production mail credentials.
+  Object.assign(process.env, serverEnv)
 
   // Imported after the env is final: seed-e2e statically boots @/payload.config.
   const { seedE2e } = await import('@/utils/seed-e2e')
   await seedE2e()
+
+  return () => {
+    // Playwright can terminate the docker CLI without stopping its container.
+    // Global teardown runs before the webServer processes are released.
+    try {
+      execFileSync('docker', ['stop', 'usthb-e2e-mailpit'], { stdio: 'ignore' })
+    } catch {
+      // The container was already stopped (e.g. an interrupted run).
+    }
+  }
 }
 
 /**
