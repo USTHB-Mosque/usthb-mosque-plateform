@@ -1,4 +1,5 @@
 import { bookCategoriesConfigArray, bookTypesConfigArray } from '@/utils/constants/books'
+import { ratingAggregateFields } from '@/utils/constants/reviews'
 import { languagesConfigArray } from '@/utils/constants/data'
 import { adminWriteAccess, isStaff } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
@@ -81,19 +82,8 @@ export const Book: CollectionConfig = {
       type: 'richText',
     },
 
-    {
-      name: 'ratingCount',
-      type: 'number',
-      min: 0,
-      defaultValue: 0,
-    },
-    {
-      name: 'averageRating',
-      type: 'number',
-      min: 0,
-      max: 5,
-      defaultValue: 0,
-    },
+    // Derived from the `reviews` rows targeting this book (#25).
+    ...ratingAggregateFields(),
     {
       name: 'publisher',
       type: 'text',
