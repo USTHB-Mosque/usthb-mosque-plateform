@@ -11,6 +11,18 @@ function redirectClearingState(request: NextRequest, path: string) {
   return response
 }
 
+function respondWithSameOriginDashboardNavigation() {
+  // The IdP -> callback navigation is cross-site. Browser redirects retain
+  // that provenance, and Payload rejects the new cookie on the dashboard.
+  // A document navigation from our own origin starts a fresh, same-origin hop.
+  const response = new NextResponse(
+    '<!doctype html><html><head><meta http-equiv="refresh" content="0;url=/user/dashboard"></head></html>',
+    { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } },
+  )
+  response.cookies.delete(GOOGLE_OAUTH_STATE_COOKIE)
+  return response
+}
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code')
   const returnedState = request.nextUrl.searchParams.get('state')
@@ -47,7 +59,7 @@ export async function GET(request: NextRequest) {
     const { token, exp } = await createSessionForUser(payload, user)
     await setPayloadTokenCookie(token, exp)
 
-    return redirectClearingState(request, '/user/dashboard')
+    return respondWithSameOriginDashboardNavigation()
   } catch (error) {
     console.error('Google OAuth callback error:', error)
     return redirectClearingState(request, '/auth/login')

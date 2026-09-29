@@ -3,5 +3,6 @@
 export const E2E_MEMBER_EMAIL = 'member1@e2e.mosque'
 export const E2E_MEMBER_PASSWORD = 'Test@123456'
 export const E2E_GOOGLE_EMAIL = 'google.member@gmail.com'
+export const E2E_RESET_EMAIL = 'member2@e2e.mosque'
 export const E2E_ADMIN_EMAIL = 'admin@mosque.dz'
 export const E2E_ADMIN_PASSWORD = 'Admin@123456'
