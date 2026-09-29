@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -440,4 +441,278 @@ body {
 .custom-scrollbar {
   scrollbar-color: #4b5563 #f1f1f1;
   scrollbar-width: thin;
+}
+/* ── Onboarding: click unlocks recitation, then reveals the landing page ── */
+.onboarding-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: block;
+  width: 100%;
+  min-height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #eef6fa;
+  color: #243245;
+  cursor: pointer;
+  appearance: none;
+}
+
+html:has(.onboarding-splash),
+html:has(.onboarding-splash) body {
+  overflow: hidden;
+}
+
+.onboarding-splash__background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 1.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.onboarding-splash__content {
+  position: absolute;
+  top: 32.222%;
+  left: 50%;
+  display: flex;
+  width: min(640px, 90vw);
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  transform: translateX(-50%);
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboarding-splash__ring {
+  position: relative;
+  display: flex;
+  width: 130px;
+  height: 130px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.onboarding-splash__ring::before,
+.onboarding-splash__ring::after {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(13, 233, 195, 0.48);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+  transform: scale(0.72);
+  transition: border-color 0.45s ease;
+  animation: onboardingRipple 3s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.onboarding-splash__ring::after {
+  animation-delay: 1.5s;
+}
+
+.onboarding-splash__ring:has(.onboarding-splash__icon:hover)::before,
+.onboarding-splash__ring:has(.onboarding-splash__icon:hover)::after {
+  border-color: rgba(76, 255, 224, 0.82);
+}
+
+.onboarding-splash__icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 96px;
+  height: 96px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #0de9c3;
+  box-shadow:
+    inset 0 3px 8px rgba(255, 255, 255, 0.53),
+    0 4px 8px rgba(13, 233, 195, 0.33);
+  transition:
+    background-color 0.45s ease,
+    box-shadow 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboarding-splash__icon:hover {
+  background: #5affe0;
+  box-shadow:
+    inset 0 3px 9px rgba(255, 255, 255, 0.72),
+    0 6px 18px rgba(56, 255, 221, 0.48),
+    0 0 42px rgba(76, 255, 224, 0.3);
+  transform: translateY(-2px) scale(1.055);
+}
+
+.onboarding-splash__icon:active {
+  transform: translateY(0) scale(1.015);
+}
+
+.onboarding-splash__icon img {
+  width: 56px;
+  height: 56px;
+}
+
+.onboarding-splash__copy {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  transition:
+    opacity 0.65s ease,
+    filter 0.65s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboarding-splash__heading {
+  width: 100%;
+  font-family: 'Scheherazade New', serif;
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 1.56px;
+}
+
+.onboarding-splash__subtitle {
+  width: 100%;
+  font-family: 'Alyamama:Regular', var(--font-alyamama), 'Noto Sans Arabic', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  color: rgba(36, 50, 69, 0.8);
+}
+
+.onboarding-splash--ready .onboarding-splash__background {
+  animation: onboardingBackgroundEnter 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onboarding-splash--ready .onboarding-splash__content {
+  animation: onboardingContentEnter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 1.3s both;
+}
+
+.onboarding-splash--hiding .onboarding-splash__content,
+.onboarding-splash--zooming .onboarding-splash__content,
+.onboarding-splash--leaving .onboarding-splash__content {
+  pointer-events: none;
+}
+
+.onboarding-splash--hiding .onboarding-splash__copy,
+.onboarding-splash--zooming .onboarding-splash__copy,
+.onboarding-splash--leaving .onboarding-splash__copy {
+  opacity: 0;
+  filter: blur(3px);
+  transform: translateY(-10px);
+}
+
+.onboarding-splash--hiding .onboarding-splash__ring,
+.onboarding-splash--zooming .onboarding-splash__ring,
+.onboarding-splash--leaving .onboarding-splash__ring {
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 0.5s ease,
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboarding-splash--zooming .onboarding-splash__background,
+.onboarding-splash--leaving .onboarding-splash__background {
+  transform: scale(3);
+}
+
+.onboarding-splash--leaving {
+  animation: onboardingRevealLanding 0.7s ease both;
+}
+
+@keyframes onboardingRipple {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  14% {
+    opacity: 0.7;
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes onboardingBackgroundEnter {
+  from {
+    transform: scale(3);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes onboardingContentEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes onboardingRevealLanding {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .onboarding-splash__content {
+    top: 30%;
+  }
+  .onboarding-splash__ring {
+    width: 112px;
+    height: 112px;
+  }
+  .onboarding-splash__icon {
+    width: 82px;
+    height: 82px;
+  }
+  .onboarding-splash__icon img {
+    width: 48px;
+    height: 48px;
+  }
+  .onboarding-splash__heading {
+    font-size: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-splash__background,
+  .onboarding-splash__content {
+    transition-duration: 0.01ms;
+  }
+
+  .onboarding-splash__ring::before,
+  .onboarding-splash__ring::after {
+    animation: none;
+    opacity: 0;
+  }
+  .onboarding-splash--ready .onboarding-splash__background,
+  .onboarding-splash--ready .onboarding-splash__content,
+  .onboarding-splash--leaving {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
 }

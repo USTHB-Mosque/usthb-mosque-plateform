@@ -1,9 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Navbar from '@/shared/layouts/navbar/Navbar'
 import Footer from '@/shared/layouts/Footer'
 import SectionBlock from '@/features/landing/components/SectionBlock'
+import OnboardingSplash, {
+  type OnboardingPhase,
+} from '@/features/landing/components/OnboardingSplash'
 import ActivityCard from '@/features/activities/components/ActivityHighlightCard'
 import CTASection from '@/features/landing/components/CTASection'
 import Image from 'next/image'
@@ -28,6 +31,16 @@ import { staticActivities } from '@/features/activities/fixtures'
 import { staticArticles } from '@/features/articles/fixtures'
 
 const LandingPage: React.FC = () => {
+  const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>('ready')
+
+  const continueToLanding = () => {
+    if (onboardingPhase !== 'ready') return
+    setOnboardingPhase('hiding')
+    window.setTimeout(() => setOnboardingPhase('zooming'), 500)
+    window.setTimeout(() => setOnboardingPhase('leaving'), 2400)
+    window.setTimeout(() => setOnboardingPhase('done'), 3100)
+  }
+
   const {
     data: booksData,
     isLoading: booksLoading,
@@ -538,6 +551,9 @@ const LandingPage: React.FC = () => {
         <CTASection />
       </div>
       <Footer />
+      {onboardingPhase !== 'done' && (
+        <OnboardingSplash phase={onboardingPhase} onContinue={continueToLanding} />
+      )}
     </>
   )
 }
