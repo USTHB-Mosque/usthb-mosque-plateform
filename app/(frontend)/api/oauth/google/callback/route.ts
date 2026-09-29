@@ -11,7 +11,7 @@ function redirectClearingState(request: NextRequest, path: string) {
   return response
 }
 
-function landOnDashboard() {
+function respondWithSameOriginDashboardNavigation() {
   // The IdP -> callback navigation is cross-site. Browser redirects retain
   // that provenance, and Payload rejects the new cookie on the dashboard.
   // A document navigation from our own origin starts a fresh, same-origin hop.
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const { token, exp } = await createSessionForUser(payload, user)
     await setPayloadTokenCookie(token, exp)
 
-    return landOnDashboard()
+    return respondWithSameOriginDashboardNavigation()
   } catch (error) {
     console.error('Google OAuth callback error:', error)
     return redirectClearingState(request, '/auth/login')
