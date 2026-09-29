@@ -24,6 +24,7 @@ type NotificationBellProps = {
   /** Mobile-menu variant: a plain nav-like item linking to the notifications page. */
   sidebar?: boolean
   className?: string
+  inboxHref?: string
 }
 
 const UnreadBadge: React.FC<{ count: number; className?: string }> = ({ count, className }) =>
@@ -51,7 +52,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat('ar', {
  * is not in Figma — deliberately built in the existing navbar style and to be
  * flagged to the designer.
  */
-const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, className }) => {
+const NotificationBell: React.FC<NotificationBellProps> = ({
+  sidebar = false,
+  className,
+  inboxHref = NOTIFICATIONS_PAGE,
+}) => {
   const router = useRouter()
   // The member-portal layout provides the state from the server; when no
   // provider exists (outside that layout) the bell fetches on mount as before.
@@ -92,7 +97,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
     async (id: number, seen: boolean, link: string | null) => {
       // Already-read rows only navigate — no redundant write, no count drift.
       if (seen) {
-        router.push(link ?? NOTIFICATIONS_PAGE)
+        router.push(link ?? inboxHref)
         return
       }
       setState((prev) =>
@@ -111,9 +116,9 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
         refresh()
         return
       }
-      router.push(link ?? NOTIFICATIONS_PAGE)
+      router.push(link ?? inboxHref)
     },
-    [refresh, router],
+    [refresh, router, inboxHref],
   )
 
   if (!state) return null
@@ -125,7 +130,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
       <button
         type="button"
         aria-label="الإشعارات"
-        onClick={() => router.push(NOTIFICATIONS_PAGE)}
+        onClick={() => router.push(inboxHref)}
         className={cn(
           'flex h-[38px] w-full items-center gap-3 rounded-[10px] px-3 text-sm font-medium justify-start text-grey-500 transition-colors hover:bg-black/5 hover:text-[#243245]',
           className,
@@ -192,7 +197,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ sidebar = false, cl
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => router.push(NOTIFICATIONS_PAGE)}
+          onClick={() => router.push(inboxHref)}
           className="cursor-pointer justify-center gap-1 text-primary-300"
         >
           <span>عرض كل الإشعارات</span>

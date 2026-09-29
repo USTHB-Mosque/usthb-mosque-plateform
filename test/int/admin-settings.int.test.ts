@@ -143,6 +143,7 @@ describe('updateAdminNotificationPreferences', () => {
       activityLogEvents: true,
       loanReturnReminder: true,
       activityRegistrations: true,
+      bulkEmailDigest: false,
     })
   })
 
@@ -166,6 +167,7 @@ describe('updateAdminNotificationPreferences', () => {
       activityLogEvents: true,
       loanReturnReminder: true,
       activityRegistrations: true,
+      bulkEmailDigest: false,
     })
   })
 })

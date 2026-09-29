@@ -12,6 +12,7 @@ type NotificationsSectionProps = {
     activityRegistrations: boolean
     loanExtensions: boolean
     loanReturnReminder: boolean
+    bulkEmailDigest: boolean
   }
   className?: string
 }
@@ -38,6 +39,11 @@ const notificationItems = [
     description: 'يتم إرسال تذكير بإرجاع الإعارة إلى بريدك',
     alwaysOn: true,
   },
+  {
+    id: 'bulkEmailDigest' as const,
+    label: 'الملخص اليومي للأنشطة والمقالات',
+    description: 'يصل بريد واحد يجمع الأنشطة والمقالات الجديدة عند إرسال الملخص',
+  },
 ]
 
 const NotificationsSection: React.FC<NotificationsSectionProps> = ({
@@ -57,6 +63,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
         loanRequests: next.loanRequests,
         activityRegistrations: next.activityRegistrations,
         loanExtensions: next.loanExtensions,
+        bulkEmailDigest: next.bulkEmailDigest,
       })
       if (!result.ok) {
         setPreferences(prev)

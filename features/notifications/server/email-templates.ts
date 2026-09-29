@@ -16,9 +16,13 @@ export type LoanEmail =
   | { kind: 'extension-approved'; bookTitle: string; newDueDate: string; response?: string | null }
   | { kind: 'extension-rejected'; bookTitle: string; reason?: string | null }
   | { kind: 'no-show-warning'; bookTitle: string; pickupDate: string; reason?: string | null }
+  | { kind: 'verification-approved' }
+  | { kind: 'verification-rejected'; reason?: string | null }
 
 export function renderLoanEmail(template: LoanEmail): { subject: string; html: string } {
-  const book = escapeHtml(template.bookTitle)
+  // Verification emails carry no book; the book title only exists on the
+  // lifecycle variants.
+  const book = 'bookTitle' in template ? escapeHtml(template.bookTitle) : ''
   let subject: string
   let body: string
   switch (template.kind) {
@@ -49,6 +53,14 @@ export function renderLoanEmail(template: LoanEmail): { subject: string; html: s
     case 'no-show-warning':
       subject = 'انتهت مهلة استلام الكتاب'
       body = `<p>انتهت مهلة استلام «${book}» بتاريخ ${formatArabicDate(template.pickupDate)}. قد تُلغى الإعارة.</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}`
+      break
+    case 'verification-approved':
+      subject = 'تم توثيق الحساب'
+      body = `<p>تم قبول وثيقة التحقق وتوثيق حسابك. يمكنك الآن طلب استعارة الكتب من مكتبة المسجد.</p>`
+      break
+    case 'verification-rejected':
+      subject = 'لم يتم توثيق الحساب'
+      body = `<p>تعذر توثيق حسابك بعد مراجعة الوثيقة المرفقة.</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}<p>يمكنك إعادة رفع وثيقة جديدة من إعدادات حسابك.</p>`
       break
   }
   return {

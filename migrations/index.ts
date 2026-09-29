@@ -19,6 +19,8 @@ import * as migration_20260928_000000_book_requests from './20260928_000000_book
 import * as migration_20260928_010000_payload_jobs from './20260928_010000_payload_jobs'
 import * as migration_20260928_020000_user_consent_required from './20260928_020000_user_consent_required'
 import * as migration_20260929_000000_review_aggregates from './20260929_000000_review_aggregates'
+import * as migration_20260929_000000_notification_coverage from './20260929_000000_notification_coverage'
+import * as migration_20260929_010000_notification_event_key from './20260929_010000_notification_event_key'
 
 export const migrations = [
   {
@@ -125,5 +127,15 @@ export const migrations = [
     up: migration_20260929_000000_review_aggregates.up,
     down: migration_20260929_000000_review_aggregates.down,
     name: '20260929_000000_review_aggregates',
+  },
+  {
+    up: migration_20260929_000000_notification_coverage.up,
+    down: migration_20260929_000000_notification_coverage.down,
+    name: '20260929_000000_notification_coverage',
+  },
+  {
+    up: migration_20260929_010000_notification_event_key.up,
+    down: migration_20260929_010000_notification_event_key.down,
+    name: '20260929_010000_notification_event_key',
   },
 ]

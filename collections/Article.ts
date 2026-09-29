@@ -2,6 +2,7 @@ import { articleTypesConfigArray } from '@/utils/constants/articles'
 import { ratingAggregateFields } from '@/utils/constants/reviews'
 import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
+import { notifyMembers } from '@/features/notifications/server/audiences'
 
 export const Article: CollectionConfig = {
   slug: 'articles',
@@ -12,6 +13,22 @@ export const Article: CollectionConfig = {
   access: {
     read: () => true,
     ...adminWriteAccess(),
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await notifyMembers(req, {
+            type: 'article',
+            title: 'مقال جديد',
+            message: `نُشر المقال «${doc.title}».`,
+            link: `/user/articles/${doc.id}`,
+            eventKey: `bulk:article:${doc.id}`,
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {

@@ -18,7 +18,7 @@ import {
 type AdminSidebarProps = React.PropsWithChildren<{
   userName?: string
   userEmail?: string
-  role?: string
+  role?: 'admin' | 'librarian'
 }>
 
 const STORAGE_KEY = 'admin-panel:sidebar-collapsed'
@@ -26,9 +26,13 @@ const STORAGE_KEY = 'admin-panel:sidebar-collapsed'
 const AdminSidebarContext = React.createContext<{
   collapsed: boolean
   toggle: () => void
+  role?: 'admin' | 'librarian'
 }>({ collapsed: false, toggle: () => {} })
 
-const AdminSidebarProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+const AdminSidebarProvider: React.FC<React.PropsWithChildren<{ role?: 'admin' | 'librarian' }>> = ({
+  children,
+  role,
+}) => {
   const [collapsed, setCollapsed] = React.useState(false)
 
   React.useEffect(() => {
@@ -52,7 +56,7 @@ const AdminSidebarProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   }, [])
 
   return (
-    <AdminSidebarContext.Provider value={{ collapsed, toggle }}>
+    <AdminSidebarContext.Provider value={{ collapsed, toggle, role }}>
       {children}
     </AdminSidebarContext.Provider>
   )
@@ -64,7 +68,7 @@ export function useAdminSidebar() {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, children }) => {
   return (
-    <AdminSidebarProvider>
+    <AdminSidebarProvider role={role}>
       <SidebarShell userName={userName} userEmail={userEmail} role={role}>
         {children}
       </SidebarShell>

@@ -88,5 +88,6 @@ export const Notification: CollectionConfig = {
       defaultValue: false,
       access: { update: () => false },
     },
+    { name: 'eventKey', type: 'text', unique: true, index: true, access: { update: () => false } },
   ],
 }

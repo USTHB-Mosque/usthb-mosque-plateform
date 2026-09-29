@@ -4,6 +4,8 @@ import type { Where } from 'payload'
 import { getPayloadWithUser } from '@/shared/lib/auth'
 import type { Notification } from '@/payload-types'
 import type { NotificationType } from '@/utils/notifications'
+import { isAdmin } from '@/utils/access-helpers'
+import { syncAdminSchedule } from './admin-schedule'
 
 export type NotificationListItem = {
   id: number
@@ -68,6 +70,7 @@ export async function countUnreadNotifications(
 export async function getBellState(): Promise<BellState | null> {
   const ctx = await getPayloadWithUser({ allowAdmin: true })
   if (!ctx) return null
+  if (isAdmin(ctx.user)) await syncAdminSchedule(ctx.req)
 
   const latest = await ctx.payload.find({
     collection: 'notifications',
@@ -99,6 +102,7 @@ export async function getNotifications(args: {
   if (!ctx) {
     return { notifications: [], unreadCount: 0, totalDocs: 0, totalPages: 0, page: 1 }
   }
+  if (isAdmin(ctx.user)) await syncAdminSchedule(ctx.req)
 
   const conditions: Where[] = [{ user: { equals: ctx.user.id } }]
   if (args.seen !== undefined) conditions.push({ seen: { equals: args.seen } })

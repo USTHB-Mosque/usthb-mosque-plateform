@@ -2,6 +2,7 @@ import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
 import { maintainReviewAggregates } from '@/shared/lib/review-aggregate'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
 
 /**
  * One review model covering books and articles (#103): a row targets exactly
@@ -40,9 +41,19 @@ export const Review: CollectionConfig = {
     // against the target, so an article review maintains the article the same
     // way a book review maintains the book (#103).
     afterChange: [
-      async ({ doc, previousDoc, req, context }) => {
-        if (context?.[SKIP_REVIEW_AGGREGATE]) return doc
-        await maintainReviewAggregates(req, { doc, previousDoc })
+      async ({ doc, previousDoc, operation, req, context }) => {
+        if (!context?.[SKIP_REVIEW_AGGREGATE]) {
+          await maintainReviewAggregates(req, { doc, previousDoc })
+        }
+        // A fresh review is actionable for admins (#154).
+        if (operation === 'create') {
+          await notifyAdmins(req, 'newReviews', {
+            type: 'system',
+            title: 'تقييم جديد',
+            message: 'تمت إضافة تقييم جديد.',
+            link: '/admin-panel/reviews',
+          })
+        }
         return doc
       },
     ],

@@ -43,7 +43,10 @@ const PAGE_SIZE = 8
 
 const statusOptions = [
   { value: '', label: 'الكل' },
+  { value: 'pending', label: 'قيد المراجعة' },
   { value: 'registered', label: 'مسجّل' },
+  { value: 'refused', label: 'مرفوض' },
+  { value: 'quota_rejected', label: 'اكتمل العدد' },
   { value: 'attended', label: 'تم الحضور' },
   { value: 'passed', label: 'مكتمل' },
 ]
@@ -307,6 +310,11 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                       </TableCell>
                       <TableCell>
                         <RegistrationStatusBadge registration={registration} />
+                        {registration.refusalReason ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            السبب: {registration.refusalReason}
+                          </p>
+                        ) : null}
                       </TableCell>
                       <TableCell className="text-end">
                         <DropdownMenu>

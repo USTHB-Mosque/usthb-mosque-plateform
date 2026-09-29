@@ -114,6 +114,7 @@ describe('updateNotificationPreferences', () => {
       overdueReturns: true,
       newReviews: true,
       activityLogEvents: true,
+      bulkEmailDigest: false,
     })
   })
 
@@ -141,6 +142,7 @@ describe('updateNotificationPreferences', () => {
       overdueReturns: true,
       newReviews: true,
       activityLogEvents: true,
+      bulkEmailDigest: false,
     })
   })
 

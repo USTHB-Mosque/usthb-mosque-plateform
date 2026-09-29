@@ -4,16 +4,28 @@ import React from 'react'
 import { Badge } from '@/shared/ui/badge'
 import type { Activity, ActivityRegistration } from '@/payload-types'
 
-export type EffectiveRegistrationStatus = 'registered' | 'attended' | 'passed'
+export type EffectiveRegistrationStatus =
+  'pending' | 'registered' | 'refused' | 'quota_rejected' | 'attended' | 'passed'
 
 export const statusConfig: Record<
   EffectiveRegistrationStatus,
   { label: string; className: string; dotClassName: string }
 > = {
+  pending: {
+    label: 'قيد المراجعة',
+    className: 'bg-amber-500/15 text-amber-700',
+    dotClassName: 'bg-amber-500',
+  },
   registered: {
     label: 'مسجّل',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
     dotClassName: 'bg-[#0AAFC2]',
+  },
+  refused: { label: 'مرفوض', className: 'bg-red-500/15 text-red-700', dotClassName: 'bg-red-500' },
+  quota_rejected: {
+    label: 'اكتمل العدد',
+    className: 'bg-red-500/15 text-red-700',
+    dotClassName: 'bg-red-500',
   },
   attended: {
     label: 'تم الحضور',
@@ -30,6 +42,9 @@ export const statusConfig: Record<
 export function getEffectiveRegistrationStatus(
   registration: ActivityRegistration,
 ): EffectiveRegistrationStatus {
+  if (registration.status === 'refused' || registration.status === 'quota_rejected')
+    return registration.status
+  if (registration.status === 'pending') return 'pending'
   if (registration.attended) return 'attended'
 
   const activity = registration.activity as Activity | undefined

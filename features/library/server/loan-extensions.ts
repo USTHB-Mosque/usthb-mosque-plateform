@@ -68,19 +68,23 @@ export async function requestLoanExtensionLogic(
       return { success: false, message: 'لديك بالفعل طلب تمديد قيد المراجعة لهذه الإعارة' }
     }
 
-    const extension = (await ctx.payload.create({
-      collection: 'loan-extensions',
-      data: { loan: Number(loanId), user: ctx.user.id, days, reason },
-      req: ctx.req,
-      overrideAccess: false,
-    })) as LoanExtension
-
+    // The queue decides the outcome, so read it before the create: an empty
+    // queue means the row is born pre-approved and must not page the admins
+    // for a decision nobody will make.
     const queue = await ctx.payload.count({
       collection: 'waitlist-entries',
       where: { book: { equals: loan.book as number } },
       req: ctx.req,
       overrideAccess: true,
     })
+
+    const extension = (await ctx.payload.create({
+      collection: 'loan-extensions',
+      data: { loan: Number(loanId), user: ctx.user.id, days, reason },
+      req: ctx.req,
+      overrideAccess: false,
+      context: { extensionAutoApproved: queue.totalDocs === 0 },
+    })) as LoanExtension
 
     const book = await ctx.payload.findByID({
       collection: 'books',

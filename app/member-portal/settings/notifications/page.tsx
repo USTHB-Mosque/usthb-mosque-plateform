@@ -18,6 +18,7 @@ export default async function NotificationsSettingsPage() {
     activityRegistrations: data.user.notificationPreferences?.activityRegistrations ?? true,
     loanExtensions: data.user.notificationPreferences?.loanExtensions ?? true,
     loanReturnReminder: data.user.notificationPreferences?.loanReturnReminder ?? true,
+    bulkEmailDigest: data.user.notificationPreferences?.bulkEmailDigest ?? false,
   }
 
   return (

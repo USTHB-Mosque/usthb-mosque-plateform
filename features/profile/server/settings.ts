@@ -36,6 +36,7 @@ export async function updateNotificationPreferences(data: {
   loanRequests?: boolean
   activityRegistrations?: boolean
   loanExtensions?: boolean
+  bulkEmailDigest?: boolean
 }) {
   const ctx = await getPayloadWithUser()
   if (!ctx) return { ok: false as const, error: 'غير مصرح' }
@@ -49,6 +50,9 @@ export async function updateNotificationPreferences(data: {
         activityRegistrations: data.activityRegistrations ?? true,
         loanExtensions: data.loanExtensions ?? true,
         loanReturnReminder: true,
+        // Opt-in is off by default (CONTEXT.md); a call that omits the toggle
+        // resets it to that default rather than preserving stale state.
+        bulkEmailDigest: data.bulkEmailDigest ?? false,
       },
     },
     req: ctx.req,

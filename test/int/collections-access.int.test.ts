@@ -256,17 +256,6 @@ describe('row-scoped collections: book-favorites, activity-registrations, review
       },
     ],
     [
-      'activity-registrations',
-      async () => {
-        const activity = await createTestActivity(payload)
-        return payload.create({
-          collection: 'activity-registrations',
-          data: { user: owner.id, activity: activity.id },
-          overrideAccess: true,
-        })
-      },
-    ],
-    [
       'article-favorites',
       async () => {
         const article = await createTestArticle(payload)
@@ -293,6 +282,43 @@ describe('row-scoped collections: book-favorites, activity-registrations, review
     expect(await canWriteAs(admin, collection, id, {})).toBe(true)
     expect(await canDeleteAs(otherMember, collection, id)).toBe(false)
     expect(await canDeleteAs(admin, collection, id)).toBe(true)
+  })
+
+  // #154: registrations are readable by the owner but resolvable only by
+  // admins — a member may withdraw (delete) their own row, never decide it.
+  it('scopes activity-registrations reads to the owner, decisions to admins', async () => {
+    const activity = await createTestActivity(payload)
+    const doc = await payload.create({
+      collection: 'activity-registrations',
+      data: { user: owner.id, activity: activity.id },
+      overrideAccess: true,
+    })
+    const id = doc.id
+
+    expect(await canReadAs(undefined, 'activity-registrations', id)).toBe(false)
+    expect(await canReadAs(owner, 'activity-registrations', id)).toBe(true)
+    expect(await canReadAs(otherMember, 'activity-registrations', id)).toBe(false)
+    expect(await canReadAs(admin, 'activity-registrations', id)).toBe(true)
+
+    expect(await canWriteAs(otherMember, 'activity-registrations', id, {})).toBe(false)
+    expect(await canWriteAs(owner, 'activity-registrations', id, {})).toBe(false)
+    expect(await canWriteAs(admin, 'activity-registrations', id, {})).toBe(true)
+    expect(await canDeleteAs(otherMember, 'activity-registrations', id)).toBe(false)
+
+    // A successful delete removes the row, so each permitted delete gets its
+    // own row.
+    const owned = await payload.create({
+      collection: 'activity-registrations',
+      data: { user: owner.id, activity: activity.id },
+      overrideAccess: true,
+    })
+    expect(await canDeleteAs(owner, 'activity-registrations', owned.id)).toBe(true)
+    const adminRow = await payload.create({
+      collection: 'activity-registrations',
+      data: { user: otherMember.id, activity: activity.id },
+      overrideAccess: true,
+    })
+    expect(await canDeleteAs(admin, 'activity-registrations', adminRow.id)).toBe(true)
   })
 
   it('keeps reviews publicly readable and admin-only writable', async () => {
