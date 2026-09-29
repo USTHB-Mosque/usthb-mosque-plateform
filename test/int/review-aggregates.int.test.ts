@@ -5,7 +5,7 @@ import { createTestUser } from '../lib/seed'
 import { createTestArticle, createTestBook } from '../lib/factories'
 
 import type { Payload } from 'payload'
-import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
+import { RATING_AGGREGATE_PRECISION, SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
 import type { User } from '@/payload-types'
 
 // The aggregate a review's target reports (#25). Recomputed from the real rows
@@ -116,9 +116,10 @@ describe('review aggregates over more rows than one page', () => {
     }
 
     const sum = ratings.reduce((a, b) => a + b, 0)
+    const scale = 10 ** RATING_AGGREGATE_PRECISION
     expect(await aggregates('books', book.id)).toEqual({
       ratingCount: 12,
-      averageRating: Math.round((sum / 12) * 100) / 100,
+      averageRating: Math.round((sum / 12) * scale) / scale,
     })
   })
 })

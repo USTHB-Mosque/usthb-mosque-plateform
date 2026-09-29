@@ -1,4 +1,5 @@
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { ratingAggregateFields } from '@/utils/constants/reviews'
 import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
 
@@ -68,20 +69,7 @@ export const Article: CollectionConfig = {
       type: 'richText',
     },
     // Derived from the `reviews` rows targeting this article (#25), the same
-    // pair `books` carries. Never written by a member: a review is what
-    // changes them.
-    {
-      name: 'ratingCount',
-      type: 'number',
-      min: 0,
-      defaultValue: 0,
-    },
-    {
-      name: 'averageRating',
-      type: 'number',
-      min: 0,
-      max: 5,
-      defaultValue: 0,
-    },
+    // pair `books` carries.
+    ...ratingAggregateFields(),
   ],
 }

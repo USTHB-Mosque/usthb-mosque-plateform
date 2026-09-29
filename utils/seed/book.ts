@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
 import type { Book } from '@/payload-types'
 
 interface BookData {
@@ -446,7 +447,14 @@ export const seedBooks = async () => {
   // Delete existing books and related data
   const existingReviews = await payload.find({ collection: 'reviews', limit: 200 })
   for (const review of existingReviews.docs) {
-    await payload.delete({ collection: 'reviews', id: review.id })
+    // Every book goes in the lines below, so recomputing an aggregate once per
+    // deleted review would only re-read rows for a book that is about to
+    // disappear. This is what the opt-out on the recompute hook is for.
+    await payload.delete({
+      collection: 'reviews',
+      id: review.id,
+      context: { [SKIP_REVIEW_AGGREGATE]: true },
+    })
   }
   console.log(`Deleted ${existingReviews.docs.length} old reviews`)
 

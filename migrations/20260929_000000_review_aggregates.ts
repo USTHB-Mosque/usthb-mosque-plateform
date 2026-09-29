@@ -15,7 +15,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`ALTER TABLE "articles" ADD COLUMN "average_rating" numeric DEFAULT 0;`)
 
   // Books that have reviews: the real count and mean, rounded to the same two
-  // decimals the hook stores.
+  // decimals the hook stores. The `2` is hardcoded rather than imported from
+  // RATING_AGGREGATE_PRECISION on purpose — a migration has to keep meaning the
+  // same thing after the constant moves, so changing one means writing a new
+  // migration.
   await db.execute(sql`
     UPDATE "books" AS "b"
     SET
