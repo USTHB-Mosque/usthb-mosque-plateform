@@ -166,24 +166,12 @@ The entity responsible for data processing: library management / mosque scientif
 ## Deployment & CI/CD
 
 **Preview Deployment**:
-A Vercel-generated deployment URL created on every push to `dev` or PR to `main`. Used to verify changes before promoting to production. Ephemeral — replaced on next push.
+A temporary deployment used to verify changes before promotion. Vercel previews remain available during the VPS transition.
 _Avoid_: Staging deployment, test deployment
 
 **Production Deployment**:
-The live deployment at the production URL, served from the `main` branch. Only updated on merge to `main`.
+The deployment serving the community at the production URL. A VPS is the target host.
 _Avoid_: Live deployment, release
-
-**Branch Workflow**:
-`dev` = preview environment (every push gets a Vercel preview URL). `main` = production. Feature work PRs go to `dev` first; promoted to `main` when ready to ship.
-_Avoid_: Gitflow, trunk-based (this is a simplified two-branch flow)
-
-**CI Pipeline**:
-GitHub Actions runs `pnpm lint` and `pnpm typecheck` on every PR (to `dev` or `main`). No secrets required — these checks don't touch the database or external services. Vercel handles build + deploy separately.
-_Avoid_: Build pipeline, deployment pipeline (CI is checks only; deploy is Vercel's job)
-
-**Secrets Management**:
-All runtime secrets (PAYLOAD_SECRET, DATABASE_URL, S3 keys, email credentials) live in Vercel's environment configuration only. CI has zero secrets. If CI ever needs secrets (e.g., integration tests), use Vercel's Environments API (`vercel env pull`) to pull them dynamically.
-_Avoid_: Environment variable management, secrets vault
 
 ## Key Relationships
 
