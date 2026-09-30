@@ -60,7 +60,7 @@ A separate FIFO collection, `waitlist-entries` (book, user, position), per issue
 _Avoid_: Reservation queue, reservation
 
 **Pickup Window**:
-Configurable time window after `accepted` during which the user must collect the book. If expired -> `refused`. Admin can reschedule.
+Configurable time window after `accepted` during which the user must collect the book. If expired -> `refused`. Admin can reschedule. Two expired windows suspend borrowing only, until an admin lifts it.
 _Avoid_: Collection window, pickup deadline
 
 **Extension**:
@@ -214,14 +214,15 @@ _Avoid_: Environment variable management, secrets vault
 
 ### Loan State Machine Flow
 
-1. Member requests a loan: verified, under the borrow limit, no active loan or queued row for the book
+1. Member requests a loan: **not suspended by an overdue loan**, under the borrow limit, no active loan or queued row for the book. Verification is not a precondition — it is checked at collection (see Verification Gate below)
 2. A free copy gives a `pending` loan; no free copy joins the end of the `waitlist-entries` queue
-3. Admin accepts a `pending` loan -> `accepted`: copy reserved, unique pickup code minted, pickup date/hour stamped, borrower notified
-4. Admin refuses -> `refused` with a mandatory reason; any reserved copy is released, borrower notified
-5. Admin marks `accepted` -> `picked_up`: due date stamped from the book duration or the Settings global
-6. Past due date -> derived overdue; borrower notified exactly once
-7. Marking returned -> `returned`: copy released, waitlist head promoted in the same transaction, promoted user notified
-8. Member requests extension on their `picked_up` loan: auto-approved when the book's queue is empty (due date moves, both dates recorded), otherwise pending for an admin; approval moves the due date and records both dates
+3. Admin accepts a `pending` loan -> `accepted`: copy reserved, unique pickup code minted, pickup date/hour and the pickup window stamped, borrower notified of both the slot and the deadline
+4. Pickup window passes without a collection -> `refused` with the window-expiry reason: copy released, waitlist head promoted, borrower warned, `noShowCount` incremented. Two of these suspend borrowing only, until an admin lifts it; rescheduling sets a fresh window and never resets the counter
+5. Admin refuses -> `refused` with a mandatory reason; any reserved copy is released, borrower notified
+6. Admin marks `accepted` -> `picked_up`: due date stamped from the book duration or the Settings global. Refused unless the borrower is verified; an admin is alerted when one is attempted anyway
+7. Past due date -> derived overdue; borrower notified exactly once, and new loan requests are suspended until the book is returned
+8. Marking returned -> `returned`: copy released, waitlist head promoted in the same transaction, promoted user notified
+9. Member requests extension on their `picked_up` loan: auto-approved when the book's queue is empty (due date moves, both dates recorded), otherwise pending for an admin; approval moves the due date and records both dates
 
 ### Verification Gate
 

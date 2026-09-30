@@ -285,7 +285,13 @@ describe('borrowBook (wrapper)', () => {
 
 describe('getUserBookLoanState', () => {
   it('reports no active loan for anonymous callers', async () => {
-    expect(await getUserBookLoanState(1)).toEqual({ hasActiveLoan: false, waitlisted: false })
+    expect(await getUserBookLoanState(1)).toEqual({
+      hasActiveLoan: false,
+      waitlisted: false,
+      waitlistPosition: null,
+      remainingSlots: null,
+      needsVerification: false,
+    })
   })
 
   it('reports the active loan for the borrower', async () => {
@@ -298,7 +304,13 @@ describe('getUserBookLoanState', () => {
     })
     setNextHeaders(makeAuthHeaders(token))
     const state = await getUserBookLoanState(book.id)
-    expect(state).toEqual({ hasActiveLoan: true, waitlisted: false })
+    expect(state).toEqual({
+      hasActiveLoan: true,
+      waitlisted: false,
+      waitlistPosition: null,
+      remainingSlots: 2,
+      needsVerification: false,
+    })
   })
 
   it('reports the waitlist position for a queued borrower', async () => {
@@ -311,7 +323,13 @@ describe('getUserBookLoanState', () => {
     })
     setNextHeaders(makeAuthHeaders(token))
     const state = await getUserBookLoanState(book.id)
-    expect(state).toEqual({ hasActiveLoan: false, waitlisted: true })
+    expect(state).toEqual({
+      hasActiveLoan: false,
+      waitlisted: true,
+      waitlistPosition: 1,
+      remainingSlots: 3,
+      needsVerification: false,
+    })
   })
 
   it('ignores loans that are no longer active', async () => {
@@ -335,6 +353,48 @@ describe('getUserBookLoanState', () => {
     })
     setNextHeaders(makeAuthHeaders(token))
     const state = await getUserBookLoanState(book.id)
-    expect(state).toEqual({ hasActiveLoan: false, waitlisted: false })
+    expect(state).toEqual({
+      hasActiveLoan: false,
+      waitlisted: false,
+      waitlistPosition: null,
+      remainingSlots: 3,
+      needsVerification: false,
+    })
+  })
+
+  it('reports the budget as spent once the member is at the borrow limit', async () => {
+    await payload.updateGlobal({
+      slug: 'settings',
+      data: { borrowLimit: 1 },
+      overrideAccess: true,
+    })
+    const heldBook = await createTestBook(payload, { available: 3, total: 3 })
+    const otherBook = await createTestBook(payload, { available: 3, total: 3 })
+    await createTestLoan(payload, { book: heldBook.id, user: member.id })
+
+    const { token } = await loginToken(payload, {
+      email: member.email!,
+      password: 'correct horse battery',
+    })
+    setNextHeaders(makeAuthHeaders(token))
+    const state = await getUserBookLoanState(otherBook.id)
+    expect(state.remainingSlots).toBe(0)
+    expect(state.hasActiveLoan).toBe(false)
+  })
+
+  it('flags a member whose account still needs verifying', async () => {
+    const unverified = await createTestUser(payload, { verified: false })
+    const book = await createTestBook(payload, { available: 2, total: 2 })
+
+    const { token } = await loginToken(payload, {
+      email: unverified.email!,
+      password: 'correct horse battery',
+    })
+    setNextHeaders(makeAuthHeaders(token))
+    const state = await getUserBookLoanState(book.id)
+
+    expect(state.needsVerification).toBe(true)
+    // Verification never touched the budget, so both facts render side by side.
+    expect(state.remainingSlots).toBe(3)
   })
 })

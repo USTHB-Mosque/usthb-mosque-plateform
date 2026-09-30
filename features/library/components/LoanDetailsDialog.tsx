@@ -253,6 +253,20 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChang
                 {dueDate ? format(dueDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
               </span>
             </div>
+            {/* D1 (#153): the window is the deadline that decides whether an
+                accepted copy comes back as a no-show, so the member is shown
+                it here rather than only in the acceptance notice. */}
+            {effectiveStatus === 'accepted' && loan?.pickupWindowExpiresAt && (
+              <div className="flex items-center gap-2">
+                <CalendarDays className="size-4 text-primary" />
+                <span className="text-xs text-muted-foreground">آخر موعد للاستلام</span>
+                <span className="me-auto text-xs font-medium text-card-foreground">
+                  {format(new Date(loan.pickupWindowExpiresAt), 'd MMM yyyy HH:mm', {
+                    locale: arDZ,
+                  })}
+                </span>
+              </div>
+            )}
             {returnDate && (
               <div className="flex items-center gap-2">
                 <ArrowLeftFromLine className="size-4 text-[#0DE9C3]" />

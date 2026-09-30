@@ -111,14 +111,14 @@ made.
 
 **Key transitions & system actions (locked rules):**
 
-- **Request & approval:** preconditions to request - user is **verified** AND **under the configurable borrow limit** AND has no active Loan or queued row for the book. If `availableBooks > 0` -> a `pending` Loan is created for an **admin to accept**. It is **not** auto-approved: v1 ships a request queue (Section 7.2), and acceptance is where the duplicate-loan check and the mandatory refusal reason live. If `availableBooks === 0` -> join the waitlist with a server-stamped position, notified on promotion.
-- **Pickup window:** see **D1** in Section 14. Admin dropdown actions: **mark done / reschedule**. Needs a **pickup list view** ("picked and not" tags) - see Section 7.2.
+- **Request & approval:** preconditions to request - the member is **not suspended by an overdue Loan**, is **under the configurable borrow limit**, and has no active Loan or queued row for the book. Verification is deliberately _not_ a precondition; it is checked at collection (see the verification tie-in below). If `availableBooks > 0` -> a `pending` Loan is created for an **admin to accept**. It is **not** auto-approved: v1 ships a request queue (Section 7.2), and acceptance is where the duplicate-loan check and the mandatory refusal reason live. If `availableBooks === 0` -> join the waitlist with a server-stamped position, notified on promotion.
+- **Pickup window:** see **D1** in Section 14. Admin dropdown actions: **mark done / reschedule**. A window that expires while the Loan is still `accepted` auto-refuses it, releases the copy, promotes the waitlist head and warns the borrower as a no-show; two of those suspend borrowing only. The **pickup list view** ("picked and not" tags) and rescheduling ship with #153 - see Section 7.2.
 - **Due date & return:** loan duration **configurable** in Settings (default 14 days), overridable per book. Admin marks `returned` -> `availableBooks + 1` -> the waitlist head is promoted in the same transaction and notified.
 - **Overdue:** auto **email + in-app alert** "borrowing duration is over", exactly once. **Suspension of new loans** until the book is returned. If the waitlist is non-empty -> **request return**; else -> **suggest extension**.
 - **Extension:** user requests -> **auto-approve when the queue is empty**; else admin approves/refuses with a reason. Eligibility, caps and the total-duration bound are in **D5**.
 - **Cancelability:** every operation (Loan request, extension, registration, pickup) has explicit cancel rules - see **D6** in Section 14.
 
-**Verification tie-in:** unverified users can request/waitlist but **cannot reach `picked_up`**; admin is alerted to verify before pickup. Shipped behaviour blocks one state earlier, at request time; corrected in #153.
+**Verification tie-in:** unverified users can request/waitlist but **cannot reach `picked_up`**; admin is alerted to verify before pickup. The block sits at collection, not at request time (#153).
 
 ---
 
@@ -258,7 +258,7 @@ first (see Section 2). Listed so the requirement is not silently lost:
 - Table: user, book, date, book status, quantity.
 - **Duplicate-loan check:** alert before approving - "user has unreturned books" (2 actions: accept / refuse with reason).
 - **Manual add** borrowing/extension dialog - **search by name/email**, book search, take/return dates.
-- **Pickup view:** "picked / not" tags; used for no-show signalling.
+- **Pickup view:** "picked / not" tags; used for no-show signalling, carrying the pickup window deadline and an unlimited reschedule action (D1).
 
 ### 7.3 Users _(New)_
 
@@ -432,9 +432,9 @@ Static pages at `/privacy` and `/terms`:
 2. Admin approval/rejection flow
 3. Book reservation queue (FIFO order)
 4. Loan duration calculation (configurable, default 14 days)
-5. Reservation expiry (pickup window) - **gated on #153.** The D1 window is not implemented, so this is
-   pending, not unsatisfiable. Assert: window expires -> `refused` with the expiry reason, copy released,
-   waitlist head promoted, borrower warned, no-show counter incremented.
+5. Reservation expiry (pickup window) - **covered by #153**, `test/int/library-pickup-window.int.test.ts`.
+   Assert: window expires -> `refused` with the expiry reason, copy released, waitlist head promoted,
+   borrower warned, no-show counter incremented.
 6. Overdue detection and suspension
 7. Notification creation on status changes
 8. Soft delete with 30-day retention
@@ -445,7 +445,7 @@ Static pages at `/privacy` and `/terms`:
     "all 10 states" wording is withdrawn - see Section 2 and Section 4.
 11. Extension auto-approve when queue empty
 12. Waitlist auto-promotion on copy release
-13. No-show handling and copy release - **gated on #153**, same reason as case 5. Assert the D2 threshold:
+13. No-show handling and copy release - **covered by #153**, same file. Assert the D2 threshold:
     two no-shows suspend borrowing and only borrowing, until an admin lifts it.
 
 ### Prior Art
@@ -474,12 +474,12 @@ Note that the waitlist and the extension request are **separate collections**, n
 - `analytics-events` - event type, entity, user, timestamp. #156. Backs Article reads and interactions,
   which have no counter today.
 
-### Outstanding Fields (v1)
+### No-show Fields (v1)
 
 The D2 no-show counter is a **field on `users`, not a collection** - `noShowCount` (integer, default 0) plus
 `borrowingBlockedAt` (nullable timestamp, set when the D2 threshold is crossed, cleared when an admin lifts
 it). There is deliberately no per-no-show history collection: the audit log already records the expiry
-event, and D2 only needs a count and a block flag. #153.
+event, and D2 only needs a count and a block flag. Both fields ship with #153.
 
 ### Cut Collections
 
@@ -601,9 +601,10 @@ _Reasoning:_ at a 14-day loan duration a limit of 3 lets a member hold at most ~
 a fair share for a community library, and it keeps scarce titles circulating. The shipped default of 5
 allows ~10 weeks, which for a single-campus collection lets a few members hold most of the popular science
 stock.
-_Migration note:_ the shipped value is **5**, in two places - the `DEFAULT_BORROW_LIMIT` constant, which
-the Settings field's `defaultValue` already derives from, and the seeded Settings row in the loan-lifecycle
-migration. Changing the constant and backfilling the row in a new migration covers both. Tracked in #153.
+_Migration note:_ the shipped value was **5**, in two places - the `DEFAULT_BORROW_LIMIT` constant, which
+the Settings field's `defaultValue` derives from, and the seeded Settings row in the loan-lifecycle
+migration. #153 corrects both: the constant reads 3, and `20260930_000000_loan_pickup_window` backfills
+any row still holding 5.
 
 ---
 

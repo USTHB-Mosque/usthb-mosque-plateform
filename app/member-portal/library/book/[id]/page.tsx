@@ -33,7 +33,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
     sort: '-publishDate',
   })
 
-  const [{ favorited }, { hasActiveLoan }] = await Promise.all([
+  const [{ favorited }, loanState] = await Promise.all([
     getBookFavoriteState(book.id),
     getUserBookLoanState(book.id),
   ])
@@ -53,7 +53,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
               bookId={book.id}
               initialFavorited={favorited}
               bookTitle={book.title}
-              hasActiveLoan={hasActiveLoan}
+              loanState={loanState}
             />
             <BookAvailability
               totalBooks={book.totalBooks}

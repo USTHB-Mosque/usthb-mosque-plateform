@@ -256,10 +256,11 @@ export const Loan: CollectionConfig = {
           stamps.pickupDate = pickupAt.toISOString()
           stamps.pickupHour = formatHour(pickupAt)
           // D1 (#153): the window runs from acceptance, not from the slot the
-          // member asked for. The two stay bounded together because the request
-          // form only ever offers a slot within 48h of the request itself, and
-          // acceptance cannot precede the request — so a slot offered to the
-          // member always falls inside this window.
+          // member asked for. The form only offers *days* inside 48h of the
+          // request and acceptance cannot precede it, so the day always opens
+          // inside this window — but the hour can slip past it when an admin
+          // accepts fast, which is why the acceptance notice below carries this
+          // deadline alongside the slot rather than the slot alone.
           const { pickupWindowHours } = await getLoanSettings(req.payload, req)
           stamps.pickupWindowExpiresAt = new Date(
             Date.now() + pickupWindowHours * 60 * 60 * 1000,
@@ -334,12 +335,17 @@ export const Loan: CollectionConfig = {
             const code = String(stamps.pickupCode ?? doc.pickupCode)
             const date = String(stamps.pickupDate)
             const hour = String(stamps.pickupHour)
+            // D1 (#153): the slot is what the member asked for, this is when
+            // the copy goes back on the shelf. They are the only thing that
+            // tells a member arriving at their own approved hour that the
+            // window had already closed, so both go out together.
+            const windowEnd = new Date(String(stamps.pickupWindowExpiresAt))
             await createNotification({
               req,
               user: resolveRelationId(doc.user),
               type: 'loan',
               title: 'تم قبول طلب الإعارة',
-              message: `تم قبول طلب استعارة «${book.title}». رمز الاستلام: ${code}. تاريخ الاستلام: ${formatArabicDate(date)} الساعة ${hour}.`,
+              message: `تم قبول طلب استعارة «${book.title}». رمز الاستلام: ${code}. تاريخ الاستلام: ${formatArabicDate(date)} الساعة ${hour}. آخر موعد للاستلام: ${formatArabicDate(windowEnd.toISOString())} الساعة ${formatHour(windowEnd)}.`,
               link: '/user/my-loans',
               email: true,
               emailTemplate: {
