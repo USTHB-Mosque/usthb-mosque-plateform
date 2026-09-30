@@ -3,7 +3,8 @@
 import type { Payload, Where } from 'payload'
 import type { User } from '@/payload-types'
 import { getAdminCtx } from './ctx'
-import { groupLogsByDay, type LogActionValue, type LogInput, type LogsQuery } from './logs-core'
+import { groupLogsByDay } from '@/shared/lib/day-groups'
+import { type LogActionValue, type LogInput, type LogsQuery } from './logs-core'
 
 /**
  * Append-only writer used by the admin server actions. Log lines are
