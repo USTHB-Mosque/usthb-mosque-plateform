@@ -3,7 +3,6 @@ import { formatArabicDate } from '@/shared/lib/dates'
 
 const revalidatePath = vi.fn()
 const getAdminCtx = vi.fn()
-const acceptLoanLogic = vi.fn()
 const acceptLoan = vi.fn()
 const refuseLoan = vi.fn()
 const markLoanReturned = vi.fn()
@@ -20,7 +19,6 @@ vi.mock('@/features/admin/server/ctx', () => ({
 }))
 
 vi.mock('@/features/library', () => ({
-  acceptLoanLogic: (...args: unknown[]) => acceptLoanLogic(...args),
   acceptLoan: (...args: unknown[]) => acceptLoan(...args),
   refuseLoan: (...args: unknown[]) => refuseLoan(...args),
   markLoanReturned: (...args: unknown[]) => markLoanReturned(...args),
@@ -34,7 +32,6 @@ vi.mock('@/features/notifications', () => ({
 const {
   getAdminLoansStats,
   getLoansByStatus,
-  addLoan,
   approveLoan,
   rejectLoan,
   markLoanReturned: adminMarkLoanReturned,
@@ -53,7 +50,6 @@ describe('features/admin/server/loans.ts', () => {
   beforeEach(() => {
     getAdminCtx.mockReset().mockResolvedValue(adminCtx())
     revalidatePath.mockReset()
-    acceptLoanLogic.mockReset()
     acceptLoan.mockReset()
     refuseLoan.mockReset()
     markLoanReturned.mockReset()
@@ -260,111 +256,6 @@ describe('features/admin/server/loans.ts', () => {
         3,
         expect.objectContaining({
           where: { and: [{ status: { equals: 'pending' } }, { id: { equals: -1 } }] },
-        }),
-      )
-    })
-  })
-
-  describe('addLoan', () => {
-    it('creates a pending loan and accepts it, reserving the copy', async () => {
-      const payload = {
-        findByID: vi.fn().mockResolvedValue({ id: 11, availableBooks: 2 }),
-        create: vi.fn().mockResolvedValue({ id: 55 }),
-        delete: vi.fn().mockResolvedValue({}),
-      }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-      acceptLoanLogic.mockResolvedValue({ success: true, loanId: 55 })
-
-      const result = await addLoan(11, 7)
-
-      expect(result).toEqual({ ok: true, loanId: 55 })
-      expect(payload.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: 'loans',
-          data: expect.objectContaining({
-            book: 11,
-            user: 7,
-            status: 'pending',
-            loanDate: expect.any(String),
-          }),
-          overrideAccess: false,
-        }),
-      )
-      expect(acceptLoanLogic).toHaveBeenCalledWith(55, expect.anything())
-      expect(revalidatePath).toHaveBeenCalledWith('/admin-panel/loans')
-    })
-
-    it('returns an error when the book does not exist', async () => {
-      const payload = {
-        findByID: vi.fn().mockRejectedValue(new Error('not found')),
-        create: vi.fn(),
-      }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-
-      const result = await addLoan(999, 7)
-
-      expect(result).toEqual({ ok: false, error: 'الكتاب غير موجود' })
-      expect(payload.create).not.toHaveBeenCalled()
-    })
-
-    it('rejects when no copies are available', async () => {
-      const payload = { findByID: vi.fn().mockResolvedValue({ id: 11, availableBooks: 0 }) }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-
-      const result = await addLoan(11, 7)
-
-      expect(result).toEqual({ ok: false, error: 'لا توجد نسخ متاحة حالياً' })
-    })
-
-    it('treats a missing availability count as zero copies', async () => {
-      const payload = { findByID: vi.fn().mockResolvedValue({ id: 11 }) }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-
-      const result = await addLoan(11, 7)
-
-      expect(result).toEqual({ ok: false, error: 'لا توجد نسخ متاحة حالياً' })
-    })
-
-    it('rolls the loan back and returns the error when the accept fails', async () => {
-      const payload = {
-        findByID: vi.fn().mockResolvedValue({ id: 11, availableBooks: 2 }),
-        create: vi.fn().mockResolvedValue({ id: 55 }),
-        delete: vi.fn().mockResolvedValue({}),
-      }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-      acceptLoanLogic.mockResolvedValue({ success: false, message: 'حدث خطأ' })
-
-      const result = await addLoan(11, 7)
-
-      expect(result).toEqual({ ok: false, error: 'حدث خطأ' })
-      expect(payload.delete).toHaveBeenCalledWith(
-        expect.objectContaining({ collection: 'loans', id: 55 }),
-      )
-    })
-
-    it('passes pickup and due dates to the created loan', async () => {
-      const payload = {
-        findByID: vi.fn().mockResolvedValue({ id: 11, availableBooks: 2 }),
-        create: vi.fn().mockResolvedValue({ id: 55 }),
-        delete: vi.fn().mockResolvedValue({}),
-      }
-      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
-      acceptLoanLogic.mockResolvedValue({ success: true, loanId: 55 })
-
-      const result = await addLoan(11, 7, {
-        pickupDate: '2026-10-01T09:00:00.000Z',
-        dueDate: '2026-10-15T09:00:00.000Z',
-      })
-
-      expect(result).toEqual({ ok: true, loanId: 55 })
-      expect(payload.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: 'loans',
-          data: expect.objectContaining({
-            pickupDate: '2026-10-01T09:00:00.000Z',
-            dueDate: '2026-10-15T09:00:00.000Z',
-          }),
-          overrideAccess: false,
         }),
       )
     })

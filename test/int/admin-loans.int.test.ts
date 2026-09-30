@@ -208,6 +208,34 @@ describe('addLoan', () => {
     expect(result).toEqual({ ok: false, error: 'لا توجد نسخ متاحة حالياً' })
   })
 
+  it('leaves no Loan or pending-request Notification when acceptance fails', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    // A real database rejection after creation exercises the public action
+    // without replacing Payload or the Loan hook with mocks.
+    await payload.db.pool.query(
+      "ALTER TABLE loans ADD CONSTRAINT reject_accept_for_test CHECK (status <> 'accepted')",
+    )
+
+    try {
+      const result = await addLoan(book.id, member.id)
+
+      expect(result.ok).toBe(false)
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+      expect(
+        (
+          await payload.count({
+            collection: 'notifications',
+            where: { title: { equals: 'طلب إعارة جديد' } },
+            overrideAccess: true,
+          })
+        ).totalDocs,
+      ).toBe(0)
+      expect((await bookAfter(book.id)).availableBooks).toBe(1)
+    } finally {
+      await payload.db.pool.query('ALTER TABLE loans DROP CONSTRAINT reject_accept_for_test')
+    }
+  })
+
   it('returns an error when the book does not exist', async () => {
     const result = await addLoan(999_999, member.id)
 

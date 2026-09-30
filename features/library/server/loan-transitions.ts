@@ -15,6 +15,65 @@ const GENERIC_ERROR = 'حدث خطأ أثناء تحديث حالة الإعار
 
 export type TransitionCtx = ActionCtx
 
+/** Creates and accepts an Admin Loan as one transaction, including hook writes. */
+export async function createAcceptedLoanLogic(
+  bookId: number,
+  userId: number,
+  opts: { pickupDate?: string; dueDate?: string } | undefined,
+  ctx: TransitionCtx,
+): Promise<{ success: true; loanId: number } | { success: false; message: string }> {
+  if (!isAdmin(ctx.user)) return { success: false, message: NOT_ADMIN }
+
+  let book
+  try {
+    book = await ctx.payload.findByID({
+      collection: 'books',
+      id: Number(bookId),
+      req: ctx.req,
+      overrideAccess: false,
+      depth: 0,
+    })
+  } catch {
+    return { success: false, message: 'الكتاب غير موجود' }
+  }
+  if ((book.availableBooks ?? 0) <= 0) {
+    return { success: false, message: 'لا توجد نسخ متاحة حالياً' }
+  }
+
+  const transactionID = await ctx.payload.db.beginTransaction()
+  if (!transactionID) return { success: false, message: GENERIC_ERROR }
+  const txCtx = { ...ctx, req: { ...ctx.req, transactionID } }
+
+  try {
+    const loan = await ctx.payload.create({
+      collection: 'loans',
+      data: {
+        book: book.id,
+        user: Number(userId),
+        status: 'pending',
+        loanDate: new Date().toISOString(),
+        ...(opts?.pickupDate ? { pickupDate: opts.pickupDate } : {}),
+        ...(opts?.dueDate ? { dueDate: opts.dueDate } : {}),
+      },
+      req: txCtx.req,
+      overrideAccess: false,
+    })
+
+    const result = await acceptLoanLogic(loan.id, txCtx)
+    if (!result.success) {
+      await ctx.payload.db.rollbackTransaction(transactionID)
+      return { success: false, message: result.message }
+    }
+
+    await ctx.payload.db.commitTransaction(transactionID)
+    return { success: true, loanId: loan.id }
+  } catch (error) {
+    console.error('Error creating an accepted loan:', error)
+    await ctx.payload.db.rollbackTransaction(transactionID)
+    return { success: false, message: GENERIC_ERROR }
+  }
+}
+
 /** Reads the loan for a transition's actor and state checks. */
 async function readLoan(ctx: TransitionCtx, loanId: number | string) {
   const loan = (await ctx.payload.findByID({
