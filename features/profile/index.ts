@@ -5,10 +5,12 @@ export { default as ArticlesPreview } from './components/dashboard/ArticlesPrevi
 export { default as LoansPreview } from './components/dashboard/LoansPreview'
 export { default as RegistrationsPreview } from './components/dashboard/RegistrationsPreview'
 export { default as StatCard } from './components/dashboard/StatCard'
+export { default as ActivityLogTimeline } from './components/activity-log/ActivityLogTimeline'
 export { default as ProfileAccountForm } from './components/settings/ProfileAccountForm'
 export { default as ProfileFavoritesGrid } from './components/settings/ProfileFavoritesGrid'
 export { default as ProfilePasswordForm } from './components/settings/ProfilePasswordForm'
 
+export * from './server/activity-log'
 export * from './server/dashboard'
 export * from './server/latest-updates'
 export * from './server/settings'
