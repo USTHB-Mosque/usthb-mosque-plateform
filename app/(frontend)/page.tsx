@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Navbar from '@/shared/layouts/navbar/Navbar'
 import Footer from '@/shared/layouts/Footer'
 import SectionBlock from '@/features/landing/components/SectionBlock'
 import OnboardingSplash, {
   type OnboardingPhase,
 } from '@/features/landing/components/OnboardingSplash'
+import { playSoundEffect } from '@/features/landing/sound'
 import ActivityCard from '@/features/activities/components/ActivityHighlightCard'
 import CTASection from '@/features/landing/components/CTASection'
 import Image from 'next/image'
@@ -32,9 +33,47 @@ import { staticArticles } from '@/features/articles/fixtures'
 
 const LandingPage: React.FC = () => {
   const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>('ready')
+  const sfxContext = useRef<AudioContext | null>(null)
+  const appearanceSoundPlayed = useRef(false)
+
+  useEffect(() => {
+    const context = new AudioContext()
+    sfxContext.current = context
+
+    if (context.state === 'running') {
+      playSoundEffect(context, 'appear')
+      appearanceSoundPlayed.current = true
+    }
+
+    return () => {
+      context.close().catch(() => {})
+    }
+  }, [])
 
   const continueToLanding = () => {
     if (onboardingPhase !== 'ready') return
+
+    const context = sfxContext.current
+    if (context && context.state !== 'closed') {
+      const play = () => {
+        let clickDelay = 0
+        if (!appearanceSoundPlayed.current) {
+          playSoundEffect(context, 'appear')
+          appearanceSoundPlayed.current = true
+          clickDelay = 0.16
+        }
+        playSoundEffect(context, 'click', clickDelay)
+      }
+      if (context.state === 'suspended') {
+        context
+          .resume()
+          .then(play)
+          .catch(() => {})
+      } else {
+        play()
+      }
+    }
+
     setOnboardingPhase('hiding')
     window.setTimeout(() => setOnboardingPhase('zooming'), 500)
     window.setTimeout(() => setOnboardingPhase('leaving'), 2400)
