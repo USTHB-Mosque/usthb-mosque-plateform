@@ -5,6 +5,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { resolveDatabaseConnectionString } from '@/shared/lib/database-url'
 import { getStoragePlugin } from './storage'
 import {
   User,
@@ -30,15 +31,10 @@ import { pickupWindowJobsConfig } from './features/library/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const databaseUrl = process.env.DATABASE_URL || ''
-const connectionString = process.env.COMPOSE_DB_HOST
-  ? (() => {
-      const url = new URL(databaseUrl)
-      url.hostname = process.env.COMPOSE_DB_HOST
-      url.port = '5432'
-      return url.toString()
-    })()
-  : databaseUrl
+const connectionString = resolveDatabaseConnectionString(
+  process.env.DATABASE_URL,
+  process.env.COMPOSE_DB_HOST,
+)
 
 export default buildConfig({
   admin: {
