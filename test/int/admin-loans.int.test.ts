@@ -225,7 +225,7 @@ describe('addLoan', () => {
         (
           await payload.count({
             collection: 'notifications',
-            where: { title: { equals: 'طلب إعارة جديد' } },
+            where: { type: { equals: 'loan' } },
             overrideAccess: true,
           })
         ).totalDocs,
@@ -233,6 +233,37 @@ describe('addLoan', () => {
       expect((await bookAfter(book.id)).availableBooks).toBe(1)
     } finally {
       await payload.db.pool.query('ALTER TABLE loans DROP CONSTRAINT reject_accept_for_test')
+    }
+  })
+
+  it('rolls the Loan and copy back when the borrower Notification fails', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    // The pending Admin notice and copy reservation succeed. The borrower
+    // notice fails while marking its email sent, after it was created.
+    await payload.db.pool.query(
+      "ALTER TABLE notifications ADD CONSTRAINT reject_loan_email_for_test CHECK (type <> 'loan' OR email_sent = false)",
+    )
+
+    try {
+      const result = await addLoan(book.id, member.id)
+
+      expect(result.ok).toBe(false)
+      expect(payload.sendEmail).toHaveBeenCalled()
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+      expect(
+        (
+          await payload.count({
+            collection: 'notifications',
+            where: { type: { equals: 'loan' } },
+            overrideAccess: true,
+          })
+        ).totalDocs,
+      ).toBe(0)
+      expect((await bookAfter(book.id)).availableBooks).toBe(1)
+    } finally {
+      await payload.db.pool.query(
+        'ALTER TABLE notifications DROP CONSTRAINT reject_loan_email_for_test',
+      )
     }
   })
 
