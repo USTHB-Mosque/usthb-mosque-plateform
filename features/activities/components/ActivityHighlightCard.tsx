@@ -20,9 +20,8 @@ interface ActivityCardProps {
   actions?: ActivityCardAction[]
   className?: string
   showArrow?: boolean
+  featured?: boolean
 }
-
-const gradientOverlay = 'linear-gradient(to top, #243245 0%, #243245c0 50%, #24324553 100%)'
 
 const ActivityHighlightCard: React.FC<ActivityCardProps> = ({
   title,
@@ -34,22 +33,37 @@ const ActivityHighlightCard: React.FC<ActivityCardProps> = ({
   actions,
   className = '',
   showArrow = false,
+  featured = false,
 }) => {
   const [cardHovered, setCardHovered] = useState(false)
   const [buttonHovered, setButtonHovered] = useState(false)
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl min-h-[220px] ${className}`}
+      className={`card-lift flex flex-col justify-end overflow-hidden relative rounded-[12px] w-full select-none cursor-pointer transition-all duration-300 ${
+        featured ? 'min-h-[460px] p-[24px]' : 'min-h-[220px] p-[20px]'
+      } ${className}`}
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
+      <motion.img
+        alt={imageAlt}
+        className="absolute inset-0 object-cover pointer-events-none rounded-[12px] size-full"
+        src={imageSrc}
+        animate={{ scale: cardHovered ? 1.08 : 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      />
+      {/* Dark gradient overlay - crystal clear top, rich readable bottom */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#243245] via-[#243245]/70 via-50% to-transparent pointer-events-none rounded-[12px]" />
+
+      {/* Top right circular outward arrow button for non-featured cards */}
       {showArrow && (
         <button
-          className="absolute top-5 end-5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-secondary-800 border-none cursor-pointer overflow-hidden"
+          type="button"
+          aria-label={title}
+          className="absolute top-[16px] right-[16px] z-10 size-[34px] flex items-center justify-center rounded-full bg-secondary-800 border-none cursor-pointer overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
           onMouseEnter={() => setButtonHovered(true)}
           onMouseLeave={() => setButtonHovered(false)}
-          aria-label={title}
         >
           <motion.span
             className="absolute flex items-center justify-center"
@@ -68,55 +82,72 @@ const ActivityHighlightCard: React.FC<ActivityCardProps> = ({
         </button>
       )}
 
-      <motion.img
-        src={imageSrc}
-        alt={imageAlt}
-        className="absolute inset-0 w-full h-full object-cover"
-        animate={{ scale: cardHovered ? 1.08 : 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      />
-
-      <div
-        className="absolute inset-0 z-[3] flex flex-col justify-end gap-5 p-5 rounded-xl"
-        style={{ background: gradientOverlay }}
-      >
+      {/* Content Area */}
+      <div className="flex flex-col gap-[8px] items-start w-full relative z-10" dir="rtl">
+        {/* Badge on featured card, right above title */}
         {badge && (
-          <div className="self-start rounded-lg bg-primary-600 px-2 pt-[7px] pb-1 text-sm text-white">
-            {badge}
+          <div className="bg-[#0de9c3] px-[10px] py-[3px] rounded-[6px] flex items-center justify-center mb-[2px]">
+            <span
+              className="font-yamama font-bold text-[#243245] text-[12px] leading-tight whitespace-nowrap"
+              dir="rtl"
+            >
+              {badge}
+            </span>
           </div>
         )}
 
-        <div className="text-white/85">
-          <h2 className="text-xl font-bold text-white font-khalid md:text-2xl">{title}</h2>
-          {description && <p className="mt-1 text-sm">{description}</p>}
-          {hadith && <p className="mt-1 text-sm">{hadith}</p>}
-        </div>
+        {/* Title */}
+        <h3
+          className={`font-khalid text-white text-right leading-tight w-full ${
+            featured ? 'text-[28px] xl:text-[32px]' : 'text-[22px]'
+          }`}
+          dir="rtl"
+        >
+          {title}
+        </h3>
 
-        {actions && actions.length > 0 && (
-          <div className="flex w-full gap-3">
+        {/* Description & Hadith */}
+        {description && (
+          <p
+            className="font-yamama font-normal text-white/85 text-[14px] leading-relaxed text-right w-full"
+            dir="rtl"
+          >
+            {description}
+            {hadith && (
+              <>
+                <br />
+                {hadith}
+              </>
+            )}
+          </p>
+        )}
+
+        {/* Featured Actions */}
+        {featured && actions && actions.length > 0 && (
+          <div className="flex flex-row gap-[14px] items-center w-full pt-[6px]" dir="rtl">
             {actions.map((action, i) =>
               action.variant === 'primary' ? (
-                <motion.button
+                <button
                   key={i}
+                  type="button"
                   onClick={action.onClick}
-                  className="flex-1 rounded-lg border border-[#1fc7abb2] bg-[#1fc7ab7e] py-2 text-base text-white cursor-pointer shadow-[inset_0_4px_8px_#ffffff2b] md:text-lg"
-                  whileHover={{ backgroundColor: '#1fc7abbb' }}
-                  whileTap={{ backgroundColor: '#1fc7ab55' }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="flex-1 h-[42px] rounded-[8px] bg-[#1f6a6b] hover:bg-[#258284] border border-[#0de9c3]/50 flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-[0.98]"
                 >
-                  {action.label}
-                </motion.button>
+                  <span className="font-yamama font-bold text-[16px] text-[#f2f8fc] leading-none whitespace-nowrap">
+                    {action.label}
+                  </span>
+                </button>
               ) : (
-                <motion.button
+                <button
                   key={i}
+                  type="button"
                   onClick={action.onClick}
-                  className="flex-1 rounded-lg border border-white/50 bg-white/15 py-2 text-base text-white cursor-pointer shadow-[inset_0_4px_8px_#00000039] md:text-lg"
-                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.28)' }}
-                  whileTap={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="flex-1 h-[42px] rounded-[8px] bg-[#455161] hover:bg-[#526073] border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-[0.98]"
                 >
-                  {action.label}
-                </motion.button>
+                  <span className="font-yamama font-bold text-[16px] text-[#f2f8fc] leading-none whitespace-nowrap">
+                    {action.label}
+                  </span>
+                </button>
               ),
             )}
           </div>
