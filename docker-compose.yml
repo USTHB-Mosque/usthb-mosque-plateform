@@ -8,9 +8,9 @@
 # minio-data volume even after docker compose down.
 
 x-deploy-env: &deploy-env
-  # Inside the compose network the database is reachable as `db`, not
-  # 127.0.0.1 — override whatever .env says.
-  DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-usthb_mosque}
+  # Use the host-facing URL from .env, replacing only its host and port in
+  # payload.config.ts. The URL retains percent-encoded passwords.
+  COMPOSE_DB_HOST: db
   # A container's 127.0.0.1 is not the host's: override the host-facing .env.
   S3_ENDPOINT: http://minio:9000
   S3_BUCKET: ${S3_BUCKET:-media}

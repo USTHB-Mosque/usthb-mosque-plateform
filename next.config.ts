@@ -2,6 +2,8 @@ import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 import path from 'path'
 
+const publicUrl = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000')
+
 const nextConfig: NextConfig = {
   // next dev otherwise appends a generated agent-rules block to AGENTS.md on
   // every start; AGENTS.md is hand-maintained project guidance.
@@ -28,6 +30,12 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '3000',
+        pathname: '/api/media/file/**',
+      },
+      {
+        protocol: publicUrl.protocol.slice(0, -1) as 'http' | 'https',
+        hostname: publicUrl.hostname,
+        port: publicUrl.port,
         pathname: '/api/media/file/**',
       },
       // No direct storage bucket patterns here on purpose: media is always

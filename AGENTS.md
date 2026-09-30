@@ -74,7 +74,7 @@ Import rules (enforced in `eslint.config.mjs`):
 
 - **Journey specs reuse sessions instead of logging in.** `e2e/auth.setup.ts` authenticates the member and the admin once per run; specs load `e2e/lib/auth-state.ts` storage states and open a second context (`browser.newContext({ storageState: adminStorageState })`) when a journey crosses roles. Auth-flow specs exercise the login/OAuth/reset UI itself.
 - **Seed contract:** every run truncates and rebuilds `mosque_e2e` from scratch (`utils/seed-e2e.ts`), so ids restart at 1 — look up fixtures by email/title, never by id, and keep new fixtures deterministic in `utils/seed/e2e-fixtures.ts`.
-- Canonical mode (default) drops + migrates + seeds + builds + starts on :3100 — it is the gate; `E2E_DEV=1` reuses `next dev` for authoring only (it must never see a database whose schema was migrated from a different model state, or the push blocks on an interactive prompt).
+- Canonical mode (default) drops + migrates before the app's build, then starts on :3100 and seeds after the server is ready — it is the gate; `E2E_DEV=1` reuses `next dev` for authoring only (it must never see a database whose schema was migrated from a different model state, or the push blocks on an interactive prompt).
 - E2E routes SMTP to its dedicated local Mailpit container (`e2e/lib/env.ts` pins `EMAIL_HOST=127.0.0.1`, defaults `EMAIL_PORT` to 54325, and clears credentials). Password-reset specs read Mailpit's API (default :54326). Override `E2E_MAILPIT_*` and `E2E_PORT` when running alongside another worktree; all e2e mail stays local, including during migrations and seeding.
 - Administrative Local API calls inside specs/seeds (arrangement writes with no `user`) are an intentional bypass; anything asserting access behavior must go through the UI or `overrideAccess: false` with a `user`.
 - Visual baselines (`e2e/visual.spec.ts-snapshots/`) are generated only under the canonical run (`--update-snapshots=all`); date/time regions are masked because the seed's dates are relative to seed time.
@@ -94,7 +94,7 @@ if stray S3 variables are set — while every other environment uses S3 when
 `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` are set, falling back to Blob on a
 non-Vercel host with only a token. Dev runs `next dev` on the host with the
 compose `db`, `minio` and `minio-init` services. Compose app/migrator force
-`NODE_ENV=production`, `PAYLOAD_PUSH=false`, in-network DB/S3 URLs; local
+`NODE_ENV=production`, `PAYLOAD_PUSH=false`, in-network DB/S3 hosts; local
 schema push requires `PAYLOAD_PUSH=true` explicitly. See ADR 0003.
 
 ## Gotchas worth an hour each
@@ -102,6 +102,7 @@ schema push requires `PAYLOAD_PUSH=true` explicitly. See ADR 0003.
 - `payload.auth()` **rejects a cookie when neither `Origin` nor `Sec-Fetch-Site` is present**. To authenticate `curl` against local endpoints or SSR pages, add `-H "Sec-Fetch-Site: same-origin"`.
 - Rewrites in `next.config.ts` do **not** chain: a rewrite destination must be a real route.
 - Local `PAYLOAD_PUSH=true` pushes the schema; migration drift is invisible until a fresh DB. Trust migrations, not push.
+- Docker builds run before the DB starts. Pages/layouts that read Payload while rendering must be request-dynamic so `next build` does not query Postgres.
 
 ## Auth surface
 

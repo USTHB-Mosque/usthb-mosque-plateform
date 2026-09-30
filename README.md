@@ -59,8 +59,9 @@ Import rules (enforced in `eslint.config.mjs`):
 2. Copy `example.env` to `.env` and set `PAYLOAD_SECRET`. The template points
    host-run commands at Postgres (`127.0.0.1:5432`) and MinIO
    (`127.0.0.1:9000`). To use Payload's fast dev schema push, uncomment
-   `PAYLOAD_PUSH=true` **only in your local `.env`**. If an old `.env.local`
-   exists, update its DB and S3 URLs too: Next loads it ahead of `.env`.
+   `PAYLOAD_PUSH=true` **only in your local `.env`**. Remove an old
+   `.env.local`, or update **all** its DB and S3 settings (including credentials,
+   bucket and region): Next loads it ahead of `.env` while Compose uses `.env`.
 
    ```bash
    cp example.env .env
@@ -141,7 +142,7 @@ deployment decision is recorded in [ADR 0003](docs/adr/0003-vps-postgres-minio.m
 Point a domain at the VPS and allow inbound TCP 80/443 (and UDP 443 for HTTP/3).
 Copy `example.env` to `.env` on the VPS. Set `SITE_DOMAIN` to that domain and
 `NEXT_PUBLIC_SERVER_URL` to `https://` followed by it; set strong matching
-values for `POSTGRES_PASSWORD` (also in `DATABASE_URL`) and the `S3_*`
+values for `POSTGRES_PASSWORD` (URL-encoded in `DATABASE_URL`) and the `S3_*`
 credentials, plus `PAYLOAD_SECRET`. Leave `PAYLOAD_PUSH` unset. The same compose
 file builds the app, applies migrations, creates the MinIO bucket and starts
 Caddy in front of the app:
@@ -163,6 +164,8 @@ curl https://your-domain.example/api/health
   volume `minio-data`), served through `/api/media/file/**` so collection
   access control applies. The app's `S3_ENDPOINT` is `http://minio:9000`
   inside compose; host-run dev and e2e use `http://127.0.0.1:9000`.
+  Similarly, `COMPOSE_DB_HOST` switches only the host and port of `DATABASE_URL`
+  to `db:5432` inside containers, preserving encoded credentials.
 - **Health** — `/api/health` returns 503 when the database is unreachable.
 
 This VPS stack currently stores the database and media on one host. **Before

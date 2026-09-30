@@ -30,6 +30,15 @@ import { pickupWindowJobsConfig } from './features/library/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const databaseUrl = process.env.DATABASE_URL || ''
+const connectionString = process.env.COMPOSE_DB_HOST
+  ? (() => {
+      const url = new URL(databaseUrl)
+      url.hostname = process.env.COMPOSE_DB_HOST
+      url.port = '5432'
+      return url.toString()
+    })()
+  : databaseUrl
 
 export default buildConfig({
   admin: {
@@ -90,7 +99,7 @@ export default buildConfig({
   },
 
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL || '' },
+    pool: { connectionString },
     push: process.env.PAYLOAD_PUSH === 'true',
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
