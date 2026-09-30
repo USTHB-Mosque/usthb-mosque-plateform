@@ -151,11 +151,16 @@
   --secondary: #3d4f60;
   --secondary-foreground: #f2f8fc;
   --muted: #3d4f60;
-  --muted-foreground: #a2a2a2;
+  --muted-foreground: #cbd1d8; /* same step as --grey-500 in light */
   --accent: #0de9c3;
   --accent-foreground: #243245;
-  --destructive: #ff3d24;
-  --destructive-foreground: #ffffff;
+  /* `text-destructive` is the dominant use of this token (badges, buttons,
+     callouts, menu rows), so it has to be light enough to read on --card,
+     --background, --muted and on its own /5, /10 and /20 tints — the deep
+     #bd1904 is 1.7:1 here. Solid backgrounds then need dark ink back, hence
+     --destructive-foreground flips; nothing hardcodes white on it. */
+  --destructive: #ffc2b2;
+  --destructive-foreground: #243245;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
   --ring: #0de9c3;
@@ -175,12 +180,76 @@
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #93ffed;
 
-  /* Dark mode text greys */
+  /* Dark mode text greys.
+     The light ramp gets darker as the number rises; here it gets *lighter*,
+     because the canvas is dark. Every step below is floored at 4.5:1 against
+     the lightest surface it can land on (--muted / --sidebar-accent, 4.7:1 and
+     up) — the shipped #616062 gave inactive nav items 1.8:1. */
   --grey-100: #ffffffcc;
   --grey-200: #a2a2a2bf;
-  --grey-300: #a2a2a2;
-  --grey-400: #808080;
-  --grey-500: #616062;
+  --grey-300: #aab2bc;
+  --grey-400: #bcc4cd;
+  --grey-500: #cbd1d8;
+
+  /* ============================================
+     TEXT BLUE - the navy ramp inverts to off-white.
+     The light ramp is `#243245` at falling opacity, so dark keeps the same
+     opacities over `#f2f8fc`: muted stays muted, headings stay strongest.
+     ============================================ */
+  --blue-50: #77b1ff; /* already a light blue */
+  --blue-100: #9db9d6;
+  /* 70% rather than light's 60%: 60% lands at 4.0:1 over --sidebar-accent */
+  --blue-200: #f2f8fcb3;
+  --blue-300: #f2f8fccc;
+  --blue-400: #f2f8fc;
+  --blue-500: #ffffff;
+
+  /* ============================================
+     PRIMARY - only the steps this UI actually renders as ink on a themed
+     surface move. `#0aaf92` / `#0c8e78` / `#03372e` are ink-on-light values
+     (2.2:1 to 4.0:1 against --card) and disappear in the dark. The brand
+     itself is theme-invariant and is listed below as untouched.
+     ============================================ */
+  --primary-300: #5fe8d2; /* selected nav / links, incl. on bg-primary-main-20 */
+  --primary-400: #7af5e3; /* stat chips, incl. on bg-primary-main-10 */
+  --primary-500: #93ffed; /* chip labels and the AnalyticsView bar fill */
+
+  /* ============================================
+     FILL - keeps the --card / --muted relationship, so the card -> inset
+     nesting survives the theme swap.
+     ============================================ */
+  --fill-main: #2d3d50;
+  --fill-contrast: #3d4f60;
+
+  /* ============================================
+     STROKE - a #d9d9d9 hairline reads as a bright outline on --card.
+     ============================================ */
+  --stroke-grey: rgba(255, 255, 255, 0.14);
+  --stroke-blue: rgba(242, 248, 252, 0.35);
+
+  /* ============================================
+     DELIBERATELY THE SAME IN BOTH THEMES
+     ----------------------------------------
+     --secondary-50..900   public-site palette; the public site is always
+                           light. Its one themed appearance is the
+                           image-overlay chip in ActivityHighlightCard,
+                           which must stay dark or its teal arrow vanishes.
+     --primary, --primary-200, --primary-600, --primary-foreground,
+     --primary-50/100/700/800/900, --primary-main-*
+                         brand scale: solid teal and its translucent tints.
+                         The numbered steps not listed above are never
+                         rendered on a themed surface today.
+     --fill-white, --stroke-white, --grey-50
+                         literal white.
+     --danger*, --success*, --warning*
+                         status hues. The -15/-50 steps are translucent so
+                         they track the surface; --danger is only ever a
+                         badge fill behind text-white (there is no
+                         `text-danger` in the codebase), and --success-50 /
+                         --warning-50 are the tinted badge beds.
+     --grey-50           literal white, same reading as the top of the
+                         grey ramp above.
+     ============================================ */
 }
 
 @theme inline {
