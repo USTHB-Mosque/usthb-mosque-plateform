@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getTestPayload, resetDatabase } from '../setup-integration'
-import { createTestUser, loginToken } from '../lib/seed'
+import { createTestUser, ctxFor, loginToken } from '../lib/seed'
 import { createTestBook, createTestLoan } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 import {
@@ -11,6 +11,7 @@ import {
   markLoanPickedUp,
   sendLoanReminder,
 } from '@/features/admin/server/loans'
+import { createAcceptedLoanLogic } from '@/features/library/server/loan-transitions'
 
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
@@ -232,6 +233,56 @@ describe('addLoan', () => {
     const result = await addLoan(book.id, member.id)
 
     expect(result).toEqual({ ok: false, error: 'لا توجد نسخ متاحة حالياً' })
+  })
+
+  it('treats a missing copy count as no available copies', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    await payload.update({
+      collection: 'books',
+      id: book.id,
+      data: { availableBooks: null },
+      overrideAccess: true,
+    })
+
+    expect(await addLoan(book.id, member.id)).toEqual({
+      ok: false,
+      error: 'لا توجد نسخ متاحة حالياً',
+    })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+  })
+
+  it('refuses to create an accepted Loan without transaction support', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    const beginTransaction = vi.spyOn(payload.db, 'beginTransaction').mockResolvedValue(null)
+    try {
+      expect(await addLoan(book.id, member.id)).toEqual({
+        ok: false,
+        error: 'حدث خطأ أثناء تحديث حالة الإعارة',
+      })
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+    } finally {
+      beginTransaction.mockRestore()
+    }
+  })
+
+  it('rejects a non-Admin caller at the Loan lifecycle interface', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+
+    expect(
+      await createAcceptedLoanLogic(book.id, member.id, undefined, await ctxFor(payload, member)),
+    ).toEqual({ success: false, message: 'غير مصرح لك بتنفيذ هذا الإجراء' })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+  })
+
+  it('returns an error without leaving a Loan when its borrower does not exist', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+
+    expect(await addLoan(book.id, 999_999)).toEqual({
+      ok: false,
+      error: 'حدث خطأ أثناء تحديث حالة الإعارة',
+    })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+    expect((await bookAfter(book.id)).availableBooks).toBe(1)
   })
 
   it('leaves no Loan or pending-request Notification when acceptance fails', async () => {

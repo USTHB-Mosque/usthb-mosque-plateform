@@ -3,6 +3,7 @@ import { formatArabicDate } from '@/shared/lib/dates'
 
 const revalidatePath = vi.fn()
 const getAdminCtx = vi.fn()
+const createAcceptedLoanLogic = vi.fn()
 const acceptLoan = vi.fn()
 const refuseLoan = vi.fn()
 const markLoanReturned = vi.fn()
@@ -20,6 +21,7 @@ vi.mock('@/features/admin/server/ctx', () => ({
 }))
 
 vi.mock('@/features/library', () => ({
+  createAcceptedLoanLogic: (...args: unknown[]) => createAcceptedLoanLogic(...args),
   acceptLoan: (...args: unknown[]) => acceptLoan(...args),
   refuseLoan: (...args: unknown[]) => refuseLoan(...args),
   markLoanReturned: (...args: unknown[]) => markLoanReturned(...args),
@@ -34,6 +36,7 @@ vi.mock('@/features/notifications', () => ({
 const {
   getAdminLoansStats,
   getLoansByStatus,
+  addLoan,
   approveLoan,
   rejectLoan,
   markLoanReturned: adminMarkLoanReturned,
@@ -53,6 +56,7 @@ describe('features/admin/server/loans.ts', () => {
   beforeEach(() => {
     getAdminCtx.mockReset().mockResolvedValue(adminCtx())
     revalidatePath.mockReset()
+    createAcceptedLoanLogic.mockReset()
     acceptLoan.mockReset()
     refuseLoan.mockReset()
     markLoanReturned.mockReset()
@@ -267,6 +271,25 @@ describe('features/admin/server/loans.ts', () => {
         3,
         expect.objectContaining({
           where: { and: [{ status: { equals: 'pending' } }, { id: { equals: -1 } }] },
+        }),
+      )
+    })
+  })
+
+  describe('addLoan', () => {
+    it('records the approved Loan when its book title cannot be resolved for the log', async () => {
+      const payload = {
+        findByID: vi.fn().mockRejectedValue(new Error('book unavailable')),
+        create: vi.fn().mockResolvedValue({}),
+      }
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+      createAcceptedLoanLogic.mockResolvedValue({ success: true, loanId: 55 })
+
+      expect(await addLoan(11, 7)).toEqual({ ok: true, loanId: 55 })
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'logs',
+          data: expect.objectContaining({ message: 'قبل طلب إعارة #55' }),
         }),
       )
     })
