@@ -32,8 +32,8 @@ const ActivityInformations = ({ longDescription }: ActivityInformationsProps) =>
         <Separator />
         <div
           dir="rtl"
-          className="prose prose-sm max-w-none font-yamama text-right
-                     prose-headings:font-khalid prose-headings:text-secondary prose-headings:mt-0
+          className="prose dark:prose-invert prose-sm max-w-none font-yamama text-right
+                     prose-headings:font-khalid prose-headings:text-foreground prose-headings:mt-0
                      prose-strong:text-primary prose-p:leading-relaxed"
         >
           <RichText data={longDescription} />

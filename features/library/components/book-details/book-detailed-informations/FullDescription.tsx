@@ -42,8 +42,8 @@ const FullDescription: React.FC<FullDescriptionProps> = ({
       {longDescription ? (
         <div
           dir="rtl"
-          className="prose prose-lg max-w-none font-yamama text-right 
-                     prose-h1:text-2xl sm:prose-h1:text-3xl prose-headings:font-khalid prose-headings:text-secondary 
+          className="prose dark:prose-invert prose-lg max-w-none font-yamama text-right
+                     prose-h1:text-2xl sm:prose-h1:text-3xl prose-headings:font-khalid prose-headings:text-foreground
                      prose-strong:text-primary prose-p:leading-relaxed"
         >
           <RichText data={longDescription} />
