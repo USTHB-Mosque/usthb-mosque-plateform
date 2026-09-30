@@ -118,3 +118,4 @@ and server action shares. Import them from there — there is no second copy.
 - Triage labels: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix — `docs/agents/triage-labels.md`
 - Domain vocabulary: `CONTEXT.md`; decisions: `docs/adr/` — `docs/agents/domain.md`
 - Agent tooling inventory and decisions: `docs/agents/tooling.md`
+- Theming (light/dark contract, token rules, scope): `docs/theming.md`

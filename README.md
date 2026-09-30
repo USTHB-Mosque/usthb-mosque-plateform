@@ -169,8 +169,9 @@ change them), and `EMAIL_*` / `GOOGLE_CLIENT_*` if those features are used.
 4. Open a pull request against `dev` with a clear description and linked issues.
 
 See [AGENTS.md](AGENTS.md) for the working conventions agents and contributors
-follow, [CONTEXT.md](CONTEXT.md) for domain vocabulary, and `docs/adr/` for
-architectural decisions.
+follow, [CONTEXT.md](CONTEXT.md) for domain vocabulary, `docs/adr/` for
+architectural decisions, and [docs/theming.md](docs/theming.md) for the
+light/dark theming contract.
 
 ## License
 
