@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload'
+import { CollectionConfig, Where } from 'payload'
 import { isAdmin, isStaff } from '@/utils/access-helpers'
 
 export const LogAction = {
@@ -49,10 +49,40 @@ export const Log: CollectionConfig = {
     defaultColumns: ['actor', 'action', 'message', 'timestamp'],
   },
   access: {
-    read: ({ req: { user } }) => {
+    /**
+     * A member reads their own history: rows they acted on, rows the admins
+     * wrote about them (`targetType: 'user'` + their id) and rows about loans
+     * they hold. Everything else stays private — the stored `message` is the
+     * admin's wording and is never rendered to another member (#165).
+     *
+     * Payload's `Where` has no subqueries, so the loan ids the member may see
+     * are resolved here first. `overrideAccess` is left at its default: this
+     * is a metadata lookup performed *on behalf of* the rule, not a data read
+     * the member is asking for.
+     */
+    read: async ({ req }) => {
+      const { user, payload } = req
       if (!user) return false
       if (isAdmin(user)) return true
-      return { actor: { equals: user.id } }
+
+      const loans = await payload.find({
+        collection: 'loans',
+        where: { user: { equals: user.id } },
+        pagination: false,
+        depth: 0,
+        overrideAccess: true,
+        req,
+      })
+      const loanIds = loans.docs.map((loan) => String(loan.id))
+
+      const mine: Where[] = [
+        { actor: { equals: user.id } },
+        { and: [{ targetType: { equals: 'user' } }, { targetId: { equals: String(user.id) } }] },
+      ]
+      if (loanIds.length > 0) {
+        mine.push({ and: [{ targetType: { equals: 'loan' } }, { targetId: { in: loanIds } }] })
+      }
+      return { or: mine }
     },
     create: ({ req: { user } }) => isStaff(user),
     // Audit log is append-only: rows are never edited or removed.
@@ -79,10 +109,14 @@ export const Log: CollectionConfig = {
     {
       name: 'targetType',
       type: 'text',
+      index: true,
     },
     {
       name: 'targetId',
       type: 'text',
+      // Text on purpose: targets span collections of different id types. It is
+      // matched against `logs.targetType` in the member read rule (#165).
+      index: true,
     },
     {
       name: 'timestamp',
