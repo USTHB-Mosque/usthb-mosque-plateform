@@ -6,7 +6,7 @@ import { writeLog } from './logs'
 import { LogAction, type LogActionValue } from './logs-core'
 import {
   acceptLoan,
-  acceptLoanLogic,
+  createAcceptedLoanLogic,
   expirePickupWindows,
   markLoanPickedUp as libraryMarkLoanPickedUp,
   markLoanReturned as libraryMarkLoanReturned,
@@ -230,58 +230,15 @@ export async function addLoan(
   opts?: { pickupDate?: string; dueDate?: string },
 ) {
   const ctx = await getAdminCtx()
-
-  let book
-  try {
-    book = await ctx.payload.findByID({
-      collection: 'books',
-      id: Number(bookId),
-      req: ctx.req,
-      overrideAccess: false,
-      depth: 0,
-    })
-  } catch {
-    return { ok: false, error: 'الكتاب غير موجود' }
-  }
-  if ((book.availableBooks ?? 0) <= 0) {
-    return { ok: false, error: 'لا توجد نسخ متاحة حالياً' }
-  }
-
-  const loan = await ctx.payload.create({
-    collection: 'loans',
-    data: {
-      book: book.id,
-      user: Number(userId),
-      status: 'pending',
-      loanDate: new Date().toISOString(),
-      ...(opts?.pickupDate ? { pickupDate: opts.pickupDate } : {}),
-      ...(opts?.dueDate ? { dueDate: opts.dueDate } : {}),
-    },
-    req: ctx.req,
-    overrideAccess: false,
-    user: ctx.user,
-  })
-
-  const result = await acceptLoanLogic(loan.id, ctx)
+  const result = await createAcceptedLoanLogic(bookId, userId, opts, ctx)
   if (!result.success) {
-    // Best effort: roll back the loan we just created if the accept fails.
-    await ctx.payload.delete({
-      collection: 'loans',
-      id: loan.id,
-      req: ctx.req,
-      overrideAccess: false,
-      user: ctx.user,
-    })
     return { ok: false, error: result.message }
   }
 
   revalidateAdminLoans()
-  await writeLog(ctx.payload, ctx.user, {
-    action: LogAction.LoanApproved,
-    targetType: 'loan',
-    targetId: loan.id,
-    message: `قبل طلب إعارة للكتاب: ${book.title}`,
-  })
+  await writeLoanLog(ctx.payload, ctx.user, result.loanId, LogAction.LoanApproved, (title) =>
+    title ? `قبل طلب إعارة للكتاب: ${title}` : `قبل طلب إعارة #${result.loanId}`,
+  )
   return { ok: true, loanId: result.loanId }
 }
 

@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getTestPayload, resetDatabase } from '../setup-integration'
-import { createTestUser, loginToken } from '../lib/seed'
+import { createTestUser, ctxFor, loginToken } from '../lib/seed'
 import { createTestBook, createTestLoan } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 import {
@@ -11,6 +11,7 @@ import {
   markLoanPickedUp,
   sendLoanReminder,
 } from '@/features/admin/server/loans'
+import { createAcceptedLoanLogic } from '@/features/library/server/loan-transitions'
 
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
@@ -33,7 +34,9 @@ beforeEach(async () => {
   })
   setNextHeaders(makeAuthHeaders(token))
 
-  vi.spyOn(payload, 'sendEmail').mockImplementation(async () => undefined)
+  vi.spyOn(payload, 'sendEmail')
+    .mockImplementation(async () => undefined)
+    .mockClear()
 })
 
 afterAll(async () => {
@@ -230,6 +233,115 @@ describe('addLoan', () => {
     const result = await addLoan(book.id, member.id)
 
     expect(result).toEqual({ ok: false, error: 'لا توجد نسخ متاحة حالياً' })
+  })
+
+  it('treats a missing copy count as no available copies', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    await payload.update({
+      collection: 'books',
+      id: book.id,
+      data: { availableBooks: null },
+      overrideAccess: true,
+    })
+
+    expect(await addLoan(book.id, member.id)).toEqual({
+      ok: false,
+      error: 'لا توجد نسخ متاحة حالياً',
+    })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+  })
+
+  it('refuses to create an accepted Loan without transaction support', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    const beginTransaction = vi.spyOn(payload.db, 'beginTransaction').mockResolvedValue(null)
+    try {
+      expect(await addLoan(book.id, member.id)).toEqual({
+        ok: false,
+        error: 'حدث خطأ أثناء تحديث حالة الإعارة',
+      })
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+    } finally {
+      beginTransaction.mockRestore()
+    }
+  })
+
+  it('rejects a non-Admin caller at the Loan lifecycle interface', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+
+    expect(
+      await createAcceptedLoanLogic(book.id, member.id, undefined, await ctxFor(payload, member)),
+    ).toEqual({ success: false, message: 'غير مصرح لك بتنفيذ هذا الإجراء' })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+  })
+
+  it('returns an error without leaving a Loan when its borrower does not exist', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+
+    expect(await addLoan(book.id, 999_999)).toEqual({
+      ok: false,
+      error: 'حدث خطأ أثناء تحديث حالة الإعارة',
+    })
+    expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+    expect((await bookAfter(book.id)).availableBooks).toBe(1)
+  })
+
+  it('leaves no Loan or pending-request Notification when acceptance fails', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    // A real database rejection after creation exercises the public action
+    // without replacing Payload or the Loan hook with mocks.
+    await payload.db.pool.query(
+      "ALTER TABLE loans ADD CONSTRAINT reject_accept_for_test CHECK (status <> 'accepted')",
+    )
+
+    try {
+      const result = await addLoan(book.id, member.id)
+
+      expect(result.ok).toBe(false)
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+      expect(
+        (
+          await payload.count({
+            collection: 'notifications',
+            where: { type: { equals: 'loan' } },
+            overrideAccess: true,
+          })
+        ).totalDocs,
+      ).toBe(0)
+      expect((await bookAfter(book.id)).availableBooks).toBe(1)
+    } finally {
+      await payload.db.pool.query('ALTER TABLE loans DROP CONSTRAINT reject_accept_for_test')
+    }
+  })
+
+  it('rolls the Loan and copy back when the borrower Notification fails', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 1 })
+    // The pending Admin notice and copy reservation succeed. The borrower
+    // notice fails while marking its email sent, after it was created.
+    await payload.db.pool.query(
+      "ALTER TABLE notifications ADD CONSTRAINT reject_loan_email_for_test CHECK (type <> 'loan' OR email_sent = false)",
+    )
+
+    try {
+      const result = await addLoan(book.id, member.id)
+
+      expect(result.ok).toBe(false)
+      expect(payload.sendEmail).toHaveBeenCalled()
+      expect((await payload.count({ collection: 'loans', overrideAccess: true })).totalDocs).toBe(0)
+      expect(
+        (
+          await payload.count({
+            collection: 'notifications',
+            where: { type: { equals: 'loan' } },
+            overrideAccess: true,
+          })
+        ).totalDocs,
+      ).toBe(0)
+      expect((await bookAfter(book.id)).availableBooks).toBe(1)
+    } finally {
+      await payload.db.pool.query(
+        'ALTER TABLE notifications DROP CONSTRAINT reject_loan_email_for_test',
+      )
+    }
   })
 
   it('returns an error when the book does not exist', async () => {

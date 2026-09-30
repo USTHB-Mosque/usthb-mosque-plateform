@@ -78,6 +78,7 @@ Import rules (enforced in `eslint.config.mjs`):
 - E2E routes SMTP to its dedicated local Mailpit container (`e2e/lib/env.ts` pins `EMAIL_HOST=127.0.0.1`, `EMAIL_PORT=54325`, and clears credentials). The real notification creators run unmodified; password-reset specs read the caught message from Mailpit's API on :54326. All e2e mail stays local, including during migrations and seeding.
 - Administrative Local API calls inside specs/seeds (arrangement writes with no `user`) are an intentional bypass; anything asserting access behavior must go through the UI or `overrideAccess: false` with a `user`.
 - Visual baselines (`e2e/visual.spec.ts-snapshots/`) are generated only under the canonical run (`--update-snapshots=all`); date/time regions are masked because the seed's dates are relative to seed time.
+- The axe scan (`e2e/a11y.spec.ts`) fails only on serious and critical violations; the rest are logged, so a green run does not mean a clean report.
 
 ## Environment reality
 
