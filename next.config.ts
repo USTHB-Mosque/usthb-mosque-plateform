@@ -30,18 +30,6 @@ const nextConfig: NextConfig = {
         port: '3000',
         pathname: '/api/media/file/**',
       },
-      {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '54323',
-        pathname: '/storage/v1/object/public/media/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '54323',
-        pathname: '/storage/v1/object/public/media/**',
-      },
       // No direct storage bucket patterns here on purpose: media is always
       // served through /api/media/file/** so collection access control applies.
     ],
@@ -96,9 +84,9 @@ const nextConfig: NextConfig = {
                     "default-src 'self'",
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
                     "style-src 'self' 'unsafe-inline'",
-                    "img-src 'self' data: blob: http://127.0.0.1:* https://*.supabase.co",
+                    "img-src 'self' data: blob:",
                     "font-src 'self' data:",
-                    "connect-src 'self' http://127.0.0.1:* https://*.supabase.co",
+                    "connect-src 'self'",
                     "frame-ancestors 'none'",
                     "base-uri 'self'",
                     "form-action 'self'",

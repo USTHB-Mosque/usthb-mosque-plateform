@@ -234,11 +234,10 @@ async function withPrivateBlobAccess(
  *
  * 1. Vercel deployments use Vercel Blob whenever a Blob token is present —
  *    exactly today's behavior, taking precedence over any stray S3 variables
- *    (e.g. local-dev Supabase S3 values that would be unreachable from Vercel).
+ *    (e.g. local MinIO values that would be unreachable from Vercel).
  * 2. S3 everywhere else (local dev, the Docker deploy, or an explicit
  *    S3-only Vercel project) — selected whenever S3 credentials are present,
- *    so one adapter serves local Supabase S3, the compose MinIO, and any
- *    remote S3-compatible provider.
+ *    so one adapter serves local and VPS MinIO, or another S3-compatible provider.
  * 3. Non-Vercel fallback to Blob when only a token exists.
  * 4. Otherwise, fail loudly: a config that cannot store media must not boot.
  *
