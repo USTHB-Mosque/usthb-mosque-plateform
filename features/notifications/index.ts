@@ -3,6 +3,7 @@
 
 export { default as NotificationBell } from './components/NotificationBell'
 export * from './server/create-notification'
+export * from './server/audiences'
 export * from './server/get-notifications'
 export * from './server/mark-notifications-read'
 export * from './server/send-digest'

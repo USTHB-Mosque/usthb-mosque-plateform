@@ -12,6 +12,7 @@ import {
   getUserBookLoanState,
 } from '@/features/library/server/borrow-book'
 import type { User } from '@/payload-types'
+import { OVERDUE_SUSPENSION_MESSAGE } from '@/shared/lib/loan-gates'
 
 // One shared instance for the whole file; destroyed exactly once at the end —
 // destroying it per describe would strand every later operation on a dead pool.
@@ -32,17 +33,73 @@ afterAll(async () => {
 })
 
 describe('borrowBookLogic', () => {
-  it('blocks an unverified user', async () => {
+  it('lets an unverified user request — the gate belongs at collection', async () => {
     const unverified = await createTestUser(payload, { verified: false })
     const book = await createTestBook(payload, { available: 3, total: 3 })
 
     const result = await borrowBookLogic(String(book.id), await ctxFor(payload, unverified))
 
-    expect(result.success).toBe(false)
-    expect(result.message).toBe('يجب تأكيد حسابك قبل استعارة الكتب')
-
+    expect(result.success).toBe(true)
+    // No copy moves at request time, and the request waits for an admin —
+    // exactly what a verified member gets.
+    const loans = await payload.find({
+      collection: 'loans',
+      where: { user: { equals: unverified.id } },
+      overrideAccess: true,
+      depth: 0,
+    })
+    expect(loans.totalDocs).toBe(1)
+    expect(loans.docs[0].status).toBe('pending')
     const after = await payload.findByID({ collection: 'books', id: book.id, overrideAccess: true })
     expect(after.availableBooks).toBe(3)
+  })
+
+  it('lets an unverified user join the waitlist', async () => {
+    const unverified = await createTestUser(payload, { verified: false })
+    const book = await createTestBook(payload, { available: 0, total: 5 })
+
+    const result = await borrowBookLogic(String(book.id), await ctxFor(payload, unverified))
+
+    expect(result.success).toBe(true)
+    expect(result.waitlisted).toBe(true)
+    const entries = await payload.find({
+      collection: 'waitlist-entries',
+      where: { user: { equals: unverified.id } },
+      overrideAccess: true,
+      depth: 0,
+    })
+    expect(entries.totalDocs).toBe(1)
+    expect(entries.docs[0].position).toBe(1)
+  })
+
+  it('suspends new requests while a loan is overdue, and lifts on return', async () => {
+    const freshBook = await createTestBook(payload, { available: 3, total: 3 })
+    const lateBook = await createTestBook(payload, { available: 0, total: 1 })
+    const lateLoan = await createTestLoan(payload, {
+      book: lateBook.id,
+      user: member.id,
+      status: 'picked_up',
+      pickupCode: 'مك-01/1/26',
+      dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+
+    const blocked = await borrowBookLogic(String(freshBook.id), await ctxFor(payload, member))
+    expect(blocked.success).toBe(false)
+    expect(blocked.message).toBe(OVERDUE_SUSPENSION_MESSAGE)
+
+    // Returning the book is what lifts the suspension — derived from dueDate,
+    // so there is never a flag to clear afterwards.
+    await payload.update({
+      collection: 'loans',
+      id: lateLoan.id,
+      data: { status: 'returned' },
+      req: await boundReq(payload, admin),
+      overrideAccess: false,
+      depth: 0,
+    })
+
+    const allowed = await borrowBookLogic(String(freshBook.id), await ctxFor(payload, member))
+    expect(allowed.success).toBe(true)
   })
 
   it('blocks the request when the borrow limit is reached', async () => {

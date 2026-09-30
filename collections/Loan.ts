@@ -11,7 +11,7 @@ import {
 } from '@/utils/constants/loans'
 import { getLoanSettings } from '@/shared/lib/settings'
 import { addDays, formatArabicDate, formatHour } from '@/shared/lib/dates'
-import { checkRequestGates } from '@/shared/lib/loan-gates'
+import { checkPickupGate, checkRequestGates } from '@/shared/lib/loan-gates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
@@ -226,6 +226,24 @@ export const Loan: CollectionConfig = {
         if (!status || status === previousStatus) return doc
 
         const bookId = resolveRelationId(doc.book)
+
+        // SPEC §4 / #153: verification is enforced at collection, so the hook
+        // checks it too — the Payload admin surface reaches `picked_up` without
+        // passing through the transition. Thrown rather than notified, and
+        // deliberately so: this write is about to abort, and an alert created
+        // inside it joins the same transaction and dies with it. The transition
+        // (which can fail cleanly, before writing) owns the admins' warning.
+        if (status === 'picked_up') {
+          const borrower = await req.payload.findByID({
+            collection: 'users',
+            id: resolveRelationId(doc.user),
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          const gate = checkPickupGate(borrower)
+          if (!gate.ok) throw new Error(gate.message)
+        }
 
         // ---- stamps written back to the loan itself ----
         const stamps: Record<string, unknown> = {}
