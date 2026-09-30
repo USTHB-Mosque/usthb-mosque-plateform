@@ -34,7 +34,7 @@ const ThemeSwitcher: React.FC = () => {
               'flex h-[32px] flex-1 items-center justify-center gap-2 rounded-[8px] px-3 text-sm font-medium transition-colors',
               active
                 ? 'bg-primary-main-20 font-bold text-primary-300'
-                : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
+                : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
               !mounted && 'pointer-events-none opacity-50',
             )}
           >

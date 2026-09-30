@@ -39,7 +39,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending_verification: 'bg-amber-100 text-amber-700',
+  pending_verification: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
   verified: 'bg-[#00FF92] text-[#243245]',
   rejected: 'bg-destructive/10 text-destructive',
 }
@@ -62,9 +62,9 @@ function InfoRow({
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center justify-between gap-3 rounded-lg bg-[#E8F2F8] px-4 py-2.5">
+      <div className="flex items-center justify-between gap-3 rounded-lg bg-fill-contrast px-4 py-2.5">
         <Icon className="size-5 flex-none text-grey-400" />
-        <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+        <span className="flex-1 text-right text-base font-alyamama text-foreground">
           {value || 'غير محدد'}
         </span>
       </div>
@@ -174,14 +174,14 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
         <Card className="ring-0 border border-border">
           <CardContent className="flex flex-col gap-5 p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="flex-1 text-lg font-bold font-dubai text-[#243245]">
+              <h3 className="flex-1 text-lg font-bold font-dubai text-foreground">
                 إجراءات المسؤول
               </h3>
               <Badge
                 variant="secondary"
                 className={
                   user.role === 'admin'
-                    ? 'bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg'
+                    ? 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg'
                     : 'bg-muted text-muted-foreground rounded-lg'
                 }
               >
@@ -263,13 +263,13 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
                 <div className="flex flex-col gap-2">
                   <span className="text-sm text-muted-foreground">غياب عن الاستلام</span>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="rounded-lg bg-[#FFB020]/15 text-[#B45309]">
+                    <Badge className="rounded-lg bg-[#FFB020]/15 text-[#B45309] dark:text-[#ffcaa2]">
                       {noShowCount} من {NO_SHOW_LIMIT} غياب
                     </Badge>
                     <Badge
                       className={`rounded-lg ${
                         blocked
-                          ? 'bg-[#FF6B6B]/15 text-[#C0392B]'
+                          ? 'bg-[#FF6B6B]/15 text-[#C0392B] dark:text-[#ffb9b2]'
                           : 'bg-muted text-muted-foreground'
                       }`}
                     >

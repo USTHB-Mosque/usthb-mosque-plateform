@@ -96,7 +96,7 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
             {isRegistered ? (
               <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
                 <CheckCircle2 className="size-5 text-[#0DE9C3]" />
-                <span className="font-alyamama text-sm font-medium text-[#0AAFC2]">
+                <span className="font-alyamama text-sm font-medium text-[#0AAFC2] dark:text-[#4dedff]">
                   أنت مسجّل في هذا النشاط
                 </span>
               </div>

@@ -405,7 +405,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
                           aria-label={`قبول طلب ${getDisplayName(user)}`}
                           disabled={pending}
                           onClick={() => openConfirm('approve', [loan.id])}
-                          className="flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-[#00FF92]/10 text-emerald-600 transition-colors hover:bg-[#00FF92]/20 disabled:opacity-50"
+                          className="flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-[#00FF92]/10 text-emerald-600 transition-colors hover:bg-[#00FF92]/20 disabled:opacity-50 dark:text-emerald-300"
                         >
                           <Check className="size-4" />
                         </button>

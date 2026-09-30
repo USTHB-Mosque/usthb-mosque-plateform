@@ -404,8 +404,8 @@ const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events = [] }) => {
                 todayCell
                   ? 'border border-primary bg-primary-main-30'
                   : cell.prevMonth || cell.nextMonth
-                    ? 'bg-[#E2EFF7]/50'
-                    : 'bg-[#E2EFF7]'
+                    ? 'bg-fill-contrast/50'
+                    : 'bg-fill-contrast'
               } ${hasActivity ? 'cursor-pointer' : ''}`}
             >
               <span

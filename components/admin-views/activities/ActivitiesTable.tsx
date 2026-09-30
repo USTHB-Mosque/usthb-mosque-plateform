@@ -40,7 +40,10 @@ function activityStatus(activity: Activity): { label: string; className: string 
   }
   const started = activity.startDate ? new Date(activity.startDate).getTime() < Date.now() : false
   if (started) return { label: 'مكتمل', className: 'bg-muted text-muted-foreground rounded-lg' }
-  return { label: 'قادم', className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg' }
+  return {
+    label: 'قادم',
+    className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg',
+  }
 }
 
 function formatDate(value?: string | null): string {
@@ -189,7 +192,10 @@ const ActivitiesTable: React.FC<ActivitiesTableProps> = ({
                   </button>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="rounded-lg bg-[#0DEAC2]/10 text-[#0AAFC2]">
+                  <Badge
+                    variant="secondary"
+                    className="rounded-lg bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff]"
+                  >
                     {activity.type ? typeLabelMap[activity.type] || '—' : '—'}
                   </Badge>
                 </TableCell>

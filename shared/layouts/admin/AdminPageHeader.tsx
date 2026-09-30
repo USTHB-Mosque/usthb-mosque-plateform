@@ -27,7 +27,7 @@ const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title }) => {
         {collapsed ? <PanelRightOpen className="size-5" /> : <PanelRight className="size-5" />}
       </Button>
       <Separator orientation="vertical" className="h-[17px]" />
-      <h1 className="text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl]">
+      <h1 className="text-lg font-bold font-dubai text-foreground whitespace-nowrap [direction:rtl]">
         {title}
       </h1>
       {role === 'admin' ? (

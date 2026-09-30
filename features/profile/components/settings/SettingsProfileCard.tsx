@@ -126,7 +126,7 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
       {/* Info */}
       <div className="flex flex-col gap-6 pt-[68px] pb-6">
         <div className="flex flex-col items-center gap-3 px-6 lg:items-start">
-          <span className="text-center text-2xl font-khalid text-[#243245] lg:text-start">
+          <span className="text-center text-2xl font-khalid text-foreground lg:text-start">
             {displayName}
           </span>
           <span className="text-center text-sm font-alyamama text-grey-500 lg:text-start">
@@ -167,7 +167,7 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
                   'flex items-center gap-2 py-2 pe-3 ps-3 text-sm font-alyamama transition-colors rounded-[10px] mx-2',
                   isActive
                     ? 'bg-primary-main-20 text-primary-300 font-bold'
-                    : 'text-[#243245] hover:bg-black/5',
+                    : 'text-foreground hover:bg-black/5 dark:hover:bg-white/5',
                 )}
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />

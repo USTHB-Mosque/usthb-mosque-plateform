@@ -16,17 +16,17 @@ export const statusConfig: Record<
 > = {
   pending: {
     label: 'قيد الانتظار',
-    className: 'bg-[#FFB020]/15 text-[#B45309]',
-    dotClassName: 'bg-[#B45309]',
+    className: 'bg-[#FFB020]/15 text-[#B45309] dark:text-[#ffcaa2]',
+    dotClassName: 'bg-[#B45309] dark:bg-[#ffcaa2]',
   },
   accepted: {
     label: 'مقبول',
-    className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
+    className: 'bg-[#0DEAC2]/15 text-[#0AAFC2] dark:text-[#4dedff]',
     dotClassName: 'bg-[#0AAFC2]',
   },
   picked_up: {
     label: 'تم الأخذ',
-    className: 'bg-[#228BE6]/15 text-[#1864AB]',
+    className: 'bg-[#228BE6]/15 text-[#1864AB] dark:text-[#9bceff]',
     dotClassName: 'bg-[#228BE6]',
   },
   returned: {
@@ -36,20 +36,20 @@ export const statusConfig: Record<
   },
   refused: {
     label: 'مرفوض',
-    className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
-    dotClassName: 'bg-[#C0392B]',
+    className: 'bg-[#FF6B6B]/15 text-[#C0392B] dark:text-[#ffb9b2]',
+    dotClassName: 'bg-[#C0392B] dark:bg-[#ffb9b2]',
   },
   // #153, D6: the member's own withdrawal, so it reads as closed rather than
   // as the administration's red refusal — a cancellation is not a rebuke.
   cancelled: {
     label: 'ملغى',
-    className: 'bg-[#7048E8]/15 text-[#6741D9]',
-    dotClassName: 'bg-[#6741D9]',
+    className: 'bg-[#7048E8]/15 text-[#6741D9] dark:text-[#c9b7ff]',
+    dotClassName: 'bg-[#6741D9] dark:bg-[#c9b7ff]',
   },
   overdue: {
     label: 'متأخر',
-    className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
-    dotClassName: 'bg-[#C0392B]',
+    className: 'bg-[#FF6B6B]/15 text-[#C0392B] dark:text-[#ffb9b2]',
+    dotClassName: 'bg-[#C0392B] dark:bg-[#ffb9b2]',
   },
 }
 

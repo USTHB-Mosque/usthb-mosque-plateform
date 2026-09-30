@@ -363,9 +363,9 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
                   const urgency = getDueUrgency(loan)
                   const dueTextColor =
                     urgency === 'overdue'
-                      ? 'text-[#C0392B]'
+                      ? 'text-[#C0392B] dark:text-[#ffb9b2]'
                       : urgency === 'soon'
-                        ? 'text-[#B45309]'
+                        ? 'text-[#B45309] dark:text-[#ffcaa2]'
                         : 'text-muted-foreground'
 
                   return (

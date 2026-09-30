@@ -128,7 +128,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
             {userName ? (
               <div
                 className={cn(
-                  'flex h-[56px] items-center rounded-[10px] bg-[#e8f1f7]',
+                  'flex h-[56px] items-center rounded-[10px] bg-fill-contrast',
                   collapsed ? 'justify-center px-0' : 'px-3',
                 )}
               >
@@ -140,7 +140,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
                 </span>
                 {!collapsed ? (
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">
+                    <p className="truncate text-sm font-bold font-dubai text-foreground">
                       {userName}
                     </p>
                     {userEmail ? (
@@ -195,7 +195,7 @@ const NavGroup: React.FC<{
                 collapsed && 'justify-center px-0',
                 active
                   ? 'bg-primary-main-20 text-primary-300 font-bold'
-                  : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
+                  : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
               )}
             >
               <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
@@ -310,13 +310,13 @@ const MobileNavigation: React.FC<{
           <motion.div variants={drawerSectionVariants} className="mt-auto flex flex-col gap-3 pt-4">
             <ThemeSwitcher />
             {userName ? (
-              <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
+              <div className="rounded-[10px] bg-fill-contrast px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
                     {userName.trim().charAt(0) || 'م'}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">
+                    <p className="truncate text-sm font-bold font-dubai text-foreground">
                       {userName}
                     </p>
                     {userEmail ? (

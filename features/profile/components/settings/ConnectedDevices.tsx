@@ -76,7 +76,7 @@ const ConnectedDevices: React.FC<ConnectedDevicesProps> = ({
                       <Icon className="h-5 w-5 text-primary-300" />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-base font-alyamama text-[#243245]">
+                      <span className="text-base font-alyamama text-foreground">
                         {isCurrent ? 'هذا الجهاز' : 'جلسة نشطة'}
                       </span>
                       <span className="text-sm text-grey-500">

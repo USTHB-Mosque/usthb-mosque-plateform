@@ -54,7 +54,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
             className,
           )}
         >
-          <span className="whitespace-nowrap text-sm font-medium text-[#243245]">
+          <span className="whitespace-nowrap text-sm font-medium text-foreground">
             تم تحديد <span className="font-bold text-primary-300">{count}</span> {itemName}
           </span>
 

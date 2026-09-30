@@ -190,7 +190,10 @@ const ArticlesTable: React.FC<ArticlesTableProps> = ({
                   {article.description}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="rounded-lg bg-[#0DEAC2]/10 text-[#0AAFC2]">
+                  <Badge
+                    variant="secondary"
+                    className="rounded-lg bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff]"
+                  >
                     {article.type ? typeLabelMap[article.type] || '—' : '—'}
                   </Badge>
                 </TableCell>

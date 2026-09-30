@@ -134,7 +134,7 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
                     collapsed && 'justify-center px-0',
                     active
                       ? 'bg-primary-main-20 text-primary-300 font-bold'
-                      : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
+                      : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
                   )}
                 >
                   <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
@@ -166,7 +166,7 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
                       collapsed && 'justify-center px-0',
                       active
                         ? 'bg-primary-main-20 text-primary-300 font-bold'
-                        : 'text-grey-500 hover:bg-black/5 hover:text-[#243245]',
+                        : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
                     )}
                   >
                     <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
@@ -181,7 +181,7 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
             <button
               onClick={toggle}
               className={cn(
-                'mb-2 flex h-[38px] w-full items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-grey-500 transition-colors hover:bg-black/5 hover:text-[#243245]',
+                'mb-2 flex h-[38px] w-full items-center gap-3 rounded-[10px] px-3 text-sm font-medium text-grey-500 transition-colors hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
                 collapsed && 'justify-center px-0',
               )}
               title={collapsed ? 'توسيع' : 'طي'}
@@ -206,13 +206,13 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
                 </div>
               ) : null
             ) : userName ? (
-              <div className="rounded-[10px] bg-[#e8f1f7] px-3 py-2">
+              <div className="rounded-[10px] bg-fill-contrast px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
                     {userName.trim().charAt(0) || 'م'}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-[#243245]">
+                    <p className="truncate text-sm font-bold font-dubai text-foreground">
                       {userName}
                     </p>
                     {userEmail && <p className="truncate text-[11px] text-grey-500">{userEmail}</p>}

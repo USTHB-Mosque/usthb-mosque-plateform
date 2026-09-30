@@ -24,12 +24,18 @@ import { arDZ } from 'date-fns/locale'
  */
 const PickupWindowTag: React.FC<{ loan: Loan }> = ({ loan }) => {
   if (loan.status === 'picked_up') {
-    return <Badge className="rounded-lg bg-[#228BE6]/15 text-[#1864AB]">تم تسجيل الاستلام</Badge>
+    return (
+      <Badge className="rounded-lg bg-[#228BE6]/15 text-[#1864AB] dark:text-[#9bceff]">
+        تم تسجيل الاستلام
+      </Badge>
+    )
   }
 
   return (
     <div className="flex flex-col gap-1">
-      <Badge className="w-fit rounded-lg bg-[#FFB020]/15 text-[#B45309]">لم يُسجَّل الاستلام</Badge>
+      <Badge className="w-fit rounded-lg bg-[#FFB020]/15 text-[#B45309] dark:text-[#ffcaa2]">
+        لم يُسجَّل الاستلام
+      </Badge>
       {loan.pickupWindowExpiresAt ? (
         <span className="text-xs text-muted-foreground">
           نافذة الاستلام حتى{' '}

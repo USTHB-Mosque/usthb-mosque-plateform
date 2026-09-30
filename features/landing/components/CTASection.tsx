@@ -6,7 +6,7 @@ const CTASection: React.FC = () => {
   return (
     <section
       dir="rtl"
-      className="w-full bg-[#E8F2F8] flex justify-center items-center px-6 py-16 md:px-16 lg:px-24"
+      className="w-full bg-fill-contrast flex justify-center items-center px-6 py-16 md:px-16 lg:px-24"
     >
       <div className="relative w-full rounded-3xl overflow-hidden min-h-[320px] md:min-h-[392px]">
         <Image src="/static/images/footer.png" alt="" fill className="object-cover" priority />

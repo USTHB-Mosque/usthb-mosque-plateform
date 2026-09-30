@@ -132,7 +132,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
         aria-label="الإشعارات"
         onClick={() => router.push(inboxHref)}
         className={cn(
-          'flex h-[38px] w-full items-center gap-3 rounded-[10px] px-3 text-sm font-medium justify-start text-grey-500 transition-colors hover:bg-black/5 hover:text-[#243245]',
+          'flex h-[38px] w-full items-center gap-3 rounded-[10px] px-3 text-sm font-medium justify-start text-grey-500 transition-colors hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
           className,
         )}
       >
@@ -184,7 +184,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
               )}
             >
               <span className="flex w-full items-center justify-between gap-2">
-                <span className="truncate text-sm font-bold font-dubai text-[#243245]">
+                <span className="truncate text-sm font-bold font-dubai text-foreground">
                   {item.title}
                 </span>
                 <span className="shrink-0 text-[10px] text-grey-400">

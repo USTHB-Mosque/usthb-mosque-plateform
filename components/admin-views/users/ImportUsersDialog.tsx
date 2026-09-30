@@ -127,7 +127,7 @@ const ImportUsersDialog: React.FC<ImportUsersDialogProps> = ({ open, onOpenChang
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   {result.invalidCount === 0 ? (
-                    <span className="flex items-center gap-1.5 font-medium text-emerald-600">
+                    <span className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-300">
                       <CheckCircle2 className="size-4" />
                       جميع الصفوف صالحة ({result.validCount})
                     </span>
