@@ -3,23 +3,18 @@ import { isAdmin } from '@/utils/access-helpers'
 import {
   ACTIVE_LOAN_STATUSES,
   IS_WAITLIST_PROMOTION,
+  PICKUP_WINDOW_EXPIRED,
+  PICKUP_WINDOW_EXPIRY_REASON,
   PROMOTED_USER_ID,
   RESERVED_LOAN_STATUSES,
   SKIP_LOAN_LIFECYCLE,
 } from '@/utils/constants/loans'
 import { getLoanSettings } from '@/shared/lib/settings'
-import { addDays } from '@/shared/lib/dates'
-import { checkRequestGates } from '@/shared/lib/loan-gates'
-import { formatArabicDate } from '@/shared/lib/dates'
+import { addDays, formatArabicDate, formatHour } from '@/shared/lib/dates'
+import { checkPickupGate, checkRequestGates } from '@/shared/lib/loan-gates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
-
-function formatHour(date: Date): string {
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${hours}:${minutes}`
-}
 
 /** `${bookCode}/${loanId}/${twoDigitYear}` — the loan id makes it unique. */
 async function generatePickupCode(
@@ -202,7 +197,10 @@ export const Loan: CollectionConfig = {
     },
     create: ({ req: { user } }) => Boolean(user),
     // Loans move only through the admin transitions; a borrower never edits
-    // their own row.
+    // their own row. The one exception is D6 cancellation, which is a member
+    // action on their own request — and even that does not come through here:
+    // `cancelLoan` writes with `overrideAccess: true` after validating
+    // ownership and state itself, so this rule stays as narrow as it reads.
     update: ({ req: { user } }) => isAdmin(user),
     delete: ({ req: { user } }) => isAdmin(user),
   },
@@ -232,6 +230,24 @@ export const Loan: CollectionConfig = {
 
         const bookId = resolveRelationId(doc.book)
 
+        // SPEC §4 / #153: verification is enforced at collection, so the hook
+        // checks it too — the Payload admin surface reaches `picked_up` without
+        // passing through the transition. Thrown rather than notified, and
+        // deliberately so: this write is about to abort, and an alert created
+        // inside it joins the same transaction and dies with it. The transition
+        // (which can fail cleanly, before writing) owns the admins' warning.
+        if (status === 'picked_up') {
+          const borrower = await req.payload.findByID({
+            collection: 'users',
+            id: resolveRelationId(doc.user),
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          const gate = checkPickupGate(borrower)
+          if (!gate.ok) throw new Error(gate.message)
+        }
+
         // ---- stamps written back to the loan itself ----
         const stamps: Record<string, unknown> = {}
 
@@ -242,6 +258,16 @@ export const Loan: CollectionConfig = {
           const pickupAt = doc.pickupDate ? new Date(doc.pickupDate) : new Date()
           stamps.pickupDate = pickupAt.toISOString()
           stamps.pickupHour = formatHour(pickupAt)
+          // D1 (#153): the window runs from acceptance, not from the slot the
+          // member asked for. The form only offers *days* inside 48h of the
+          // request and acceptance cannot precede it, so the day always opens
+          // inside this window — but the hour can slip past it when an admin
+          // accepts fast, which is why the acceptance notice below carries this
+          // deadline alongside the slot rather than the slot alone.
+          const { pickupWindowHours } = await getLoanSettings(req.payload, req)
+          stamps.pickupWindowExpiresAt = new Date(
+            Date.now() + pickupWindowHours * 60 * 60 * 1000,
+          ).toISOString()
         }
 
         if (status === 'picked_up' && !doc.dueDate) {
@@ -291,7 +317,15 @@ export const Loan: CollectionConfig = {
           })
         }
 
-        if (status === 'returned' || status === 'refused') {
+        // D6 (#153): a cancelled Loan unwinds exactly what an admin refusal of
+        // the same Loan would unwind — the reserved copy goes back and the
+        // queue moves up. `releaseAndPromote` only acts when the *previous*
+        // status held a copy, so `pending -> cancelled` releases nothing (there
+        // was nothing to release) and `accepted -> cancelled` hands the copy to
+        // the next waiter. The notification block below deliberately does NOT
+        // include `cancelled`: the member cancelled it themselves, so telling
+        // them so would be noise, and D6 refuses to count it as a no-show.
+        if (status === 'returned' || status === 'refused' || status === 'cancelled') {
           await releaseAndPromote(bookId, previousStatus, req, context)
         }
 
@@ -312,12 +346,17 @@ export const Loan: CollectionConfig = {
             const code = String(stamps.pickupCode ?? doc.pickupCode)
             const date = String(stamps.pickupDate)
             const hour = String(stamps.pickupHour)
+            // D1 (#153): the slot is what the member asked for, this is when
+            // the copy goes back on the shelf. They are the only thing that
+            // tells a member arriving at their own approved hour that the
+            // window had already closed, so both go out together.
+            const windowEnd = new Date(String(stamps.pickupWindowExpiresAt))
             await createNotification({
               req,
               user: resolveRelationId(doc.user),
               type: 'loan',
               title: 'تم قبول طلب الإعارة',
-              message: `تم قبول طلب استعارة «${book.title}». رمز الاستلام: ${code}. تاريخ الاستلام: ${formatArabicDate(date)} الساعة ${hour}.`,
+              message: `تم قبول طلب استعارة «${book.title}». رمز الاستلام: ${code}. تاريخ الاستلام: ${formatArabicDate(date)} الساعة ${hour}. آخر موعد للاستلام: ${formatArabicDate(windowEnd.toISOString())} الساعة ${formatHour(windowEnd)}.`,
               link: '/user/my-loans',
               email: true,
               emailTemplate: {
@@ -326,6 +365,29 @@ export const Loan: CollectionConfig = {
                 pickupCode: code,
                 pickupDate: date,
                 pickupHour: hour,
+              },
+            })
+          } else if (context?.[PICKUP_WINDOW_EXPIRED]) {
+            // D1/D2 (#153): a refusal the sweep wrote is a no-show, not an
+            // admin decision. The borrower is told what actually happened and
+            // gets the dedicated template rather than the generic refusal.
+            await createNotification({
+              req,
+              user: resolveRelationId(doc.user),
+              type: 'loan',
+              title: 'لم تُسجَّل عملية استلام الكتاب',
+              message: `انتهت مهلة استلام «${book.title}» دون تسجيل، فأُعيد الكتاب إلى الرفوف وتم ترتيب قائمة الانتظار.`,
+              link: '/user/my-loans',
+              email: true,
+              emailTemplate: {
+                kind: 'no-show-warning',
+                bookTitle: book.title,
+                // The sentence reads "انتهت المهلة بتاريخ X", so X is when the
+                // window closed, not the slot the member asked for. Guaranteed
+                // non-null: the sweep only reaches this branch through its
+                // `pickupWindowExpiresAt: { exists: true }` filter.
+                pickupDate: String(doc.pickupWindowExpiresAt),
+                reason: PICKUP_WINDOW_EXPIRY_REASON,
               },
             })
           } else {
@@ -380,6 +442,9 @@ export const Loan: CollectionConfig = {
         { label: 'تم الأخذ', value: 'picked_up' },
         { label: 'تم الإرجاع', value: 'returned' },
         { label: 'مرفوض', value: 'refused' },
+        // D6 (#153): the member's own withdrawal, distinct from `refused` so
+        // the desk can tell an administration decision from a member decision.
+        { label: 'ملغى', value: 'cancelled' },
       ],
     },
     { name: 'loanDate', type: 'date', required: true, defaultValue: () => new Date() },
@@ -390,6 +455,10 @@ export const Loan: CollectionConfig = {
     { name: 'pickupHour', type: 'text' },
     // Generated at accept time, unique per loan.
     { name: 'pickupCode', type: 'text', unique: true, index: true },
+    // D1 (#153): the deadline for collecting an accepted Loan, stamped from the
+    // Settings window at accept time and refreshed by an admin reschedule.
+    // A lapsed window is what makes the sweep refuse the loan as a no-show.
+    { name: 'pickupWindowExpiresAt', type: 'date', index: true },
     { name: 'refusalReason', type: 'text' },
     { name: 'returnDate', type: 'date' },
     // Overdue is derived from `dueDate`; this flag makes the notification fire

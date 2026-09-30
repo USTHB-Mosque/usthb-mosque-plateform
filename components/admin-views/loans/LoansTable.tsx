@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react'
 import {
   Ban,
   Bell,
+  CalendarClock,
   Check,
   Eye,
   Minus,
@@ -36,14 +37,17 @@ import {
   markLoanPickedUp,
   markLoanReturned,
   rejectLoan,
+  reschedulePickup,
   sendLoanReminder,
 } from '@/features/admin/server/loans'
 import { adminLoansKeys } from '@/features/admin/api/loans.queries'
 import { booksKeys } from '@/features/library/api/books.queries'
 import { useQueryClient } from '@tanstack/react-query'
 import type { LoanStatus } from '@/utils/constants/loans'
-import LoanConfirmDialog from './LoanConfirmDialog'
+import ConfirmDialog from '@/shared/ui/confirm-dialog'
+import PickupWindowTag from './PickupWindowTag'
 import RejectLoanDialog from './RejectLoanDialog'
+import ReschedulePickupDialog from './ReschedulePickupDialog'
 
 type LoansTableProps = {
   loans: Loan[]
@@ -112,6 +116,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
     loanLabel?: string
   } | null>(null)
   const [reject, setReject] = useState<{ loanIds: number[]; loanLabel: string } | null>(null)
+  const [reschedule, setReschedule] = useState<Loan | null>(null)
 
   const loanIds = loans.map((l) => l.id)
   const allSelected = loanIds.length > 0 && loanIds.every((id) => selected.has(id))
@@ -225,6 +230,22 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
   const openDetails = (loan: Loan) => {
     setDetailsLoan(loan)
     setDetailsOpen(true)
+  }
+
+  // D1 (#153): one loan at a time — rescheduling is a conversation at the
+  // desk, not a bulk operation, and each one re-opens a fresh window server-side.
+  const runReschedule = (loan: Loan, pickupDate: string) => {
+    startTransition(async () => {
+      const result = await reschedulePickup(loan.id, pickupDate)
+      setReschedule(null)
+      if (!result.ok) {
+        toast.error(result.error || 'تعذر إعادة الجدولة')
+        return
+      }
+      toast.success('تمت إعادة جدولة الاستلام')
+      queryClient.invalidateQueries({ queryKey: adminLoansKeys.root })
+      router.refresh()
+    })
   }
 
   const bulkActions: BulkAction[] = (() => {
@@ -402,7 +423,13 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
                     </TableCell>
                   ) : (
                     <TableCell>
-                      <LoanStatusBadge loan={loan} />
+                      {/* The two collection tabs speak in picked / not-picked
+                          plus the window deadline, not the bare stored status. */}
+                      {activeStatus === 'accepted' || activeStatus === 'picked_up' ? (
+                        <PickupWindowTag loan={loan} />
+                      ) : (
+                        <LoanStatusBadge loan={loan} />
+                      )}
                     </TableCell>
                   )}
 
@@ -463,6 +490,13 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
                                 <Bell className="size-4" />
                                 إرسال تذكير بالاستلام
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => setReschedule(loan)}
+                                disabled={pending}
+                              >
+                                <CalendarClock className="size-4" />
+                                إعادة جدولة الاستلام
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 variant="destructive"
@@ -504,7 +538,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
       </div>
 
       {confirm ? (
-        <LoanConfirmDialog
+        <ConfirmDialog
           open
           onOpenChange={() => setConfirm(null)}
           title={confirmContent[confirm.action].title}
@@ -526,6 +560,18 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
           onConfirm={(reason) => {
             startTransition(() => handleReject(reject.loanIds, reason))
           }}
+        />
+      ) : null}
+
+      {reschedule ? (
+        <ReschedulePickupDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setReschedule(null)
+          }}
+          loan={reschedule}
+          busy={pending}
+          onConfirm={(pickupDate) => runReschedule(reschedule, pickupDate)}
         />
       ) : null}
 

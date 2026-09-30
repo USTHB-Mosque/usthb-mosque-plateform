@@ -14,3 +14,10 @@ export function addDays(date: Date, days: number): Date {
   next.setDate(next.getDate() + days)
   return next
 }
+
+/** `HH:mm`, zero padded — the pickup hour shown on the loan and the schedule. */
+export function formatHour(date: Date): string {
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}

@@ -21,6 +21,10 @@ import * as migration_20260928_020000_user_consent_required from './20260928_020
 import * as migration_20260929_000000_review_aggregates from './20260929_000000_review_aggregates'
 import * as migration_20260929_000000_notification_coverage from './20260929_000000_notification_coverage'
 import * as migration_20260929_010000_notification_event_key from './20260929_010000_notification_event_key'
+import * as migration_20260930_000000_loan_pickup_window from './20260930_000000_loan_pickup_window'
+import * as migration_20260930_010000_pickup_window_enums from './20260930_010000_pickup_window_enums'
+import * as migration_20260930_020000_backfill_pickup_window from './20260930_020000_backfill_pickup_window'
+import * as migration_20260930_030000_member_cancellation from './20260930_030000_member_cancellation'
 
 export const migrations = [
   {
@@ -137,5 +141,25 @@ export const migrations = [
     up: migration_20260929_010000_notification_event_key.up,
     down: migration_20260929_010000_notification_event_key.down,
     name: '20260929_010000_notification_event_key',
+  },
+  {
+    up: migration_20260930_000000_loan_pickup_window.up,
+    down: migration_20260930_000000_loan_pickup_window.down,
+    name: '20260930_000000_loan_pickup_window',
+  },
+  {
+    up: migration_20260930_010000_pickup_window_enums.up,
+    down: migration_20260930_010000_pickup_window_enums.down,
+    name: '20260930_010000_pickup_window_enums',
+  },
+  {
+    up: migration_20260930_020000_backfill_pickup_window.up,
+    down: migration_20260930_020000_backfill_pickup_window.down,
+    name: '20260930_020000_backfill_pickup_window',
+  },
+  {
+    up: migration_20260930_030000_member_cancellation.up,
+    down: migration_20260930_030000_member_cancellation.down,
+    name: '20260930_030000_member_cancellation',
   },
 ]

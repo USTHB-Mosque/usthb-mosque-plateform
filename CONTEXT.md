@@ -48,24 +48,28 @@ _Avoid_: Copy tracking, barcode system
 ## Loan Lifecycle
 
 **Loan**:
-A physical book borrowing. Moves through five stored states; overdue is derived from `dueDate`. The book is picked up at the mosque - loans are physical, not digital.
+A physical book borrowing. Moves through six stored states; overdue is derived from `dueDate`. The book is picked up at the mosque - loans are physical, not digital.
 _Avoid_: Borrowing, checkout (too e-commerce)
 
 **Loan State**:
-Five stored states (phase 1, #19, Figma Borrowings): `pending` (قيد الانتظار, the fresh request), `accepted` (مقبول, copy reserved), `picked_up` (تم الأخذ, due date stamped), `returned` (تم الإرجاع), `refused` (مرفوض). Overdue is NOT stored: a `picked_up` loan past its `dueDate` reads as overdue by derivation (`getEffectiveLoanStatus`), and the borrower is notified once (`overdueNotified` flag) by a lazy check on read — no scheduled job.
-_Avoid_: A stored "overdue" state; "requested/approved_pickup/no_show/cancelled" (older 10-state machine, deferred)
+Six stored states (#19 Figma Borrowings; `cancelled` added by #153): `pending` (قيد الانتظار, the fresh request), `accepted` (مقبول, copy reserved), `picked_up` (تم الأخذ, due date stamped), `returned` (تم الإرجاع), `refused` (مرفوض), `cancelled` (ملغى, the member withdrew it themselves). Overdue is NOT stored: a `picked_up` loan past its `dueDate` reads as overdue by derivation (`getEffectiveLoanStatus`), and the borrower is notified once (`overdueNotified` flag) by a lazy check on read — no scheduled job.
+_Avoid_: A stored "overdue" state; "requested/approved_pickup/no_show" (older 10-state machine, still deferred — `cancelled` from it is now built, see Cancellation)
 
 **Waitlist**:
 A separate FIFO collection, `waitlist-entries` (book, user, position), per issue #19 — this supersedes the earlier "no separate collection" note. A request with no free copy joins the end of the queue (`position` stamped server-side); marking a loan returned releases the copy and promotes the first waiter (who does not already hold an active loan) into a fresh `pending` loan, then resequences the remaining positions.
 _Avoid_: Reservation queue, reservation
 
 **Pickup Window**:
-Configurable time window after `accepted` during which the user must collect the book. If expired -> `refused`. Admin can reschedule.
+Configurable time window after `accepted` during which the user must collect the book. If expired -> `refused`. Admin can reschedule. Two expired windows suspend borrowing only, until an admin lifts it.
 _Avoid_: Collection window, pickup deadline
 
 **Extension**:
-A request to extend the loan due date. Auto-approved when the waitlist is empty; otherwise requires admin approval with a reason.
+A request to extend the loan due date. Auto-approved when the waitlist is empty; otherwise requires admin approval with a reason. The member may withdraw it while it is still `pending`; once approved the due date has already moved and there is nothing to undo.
 _Avoid_: Renewal, prolongation
+
+**Cancellation**:
+SPEC D6. A member withdrawing their own Loan request while it is still `pending` or `accepted`, or their own extension request while it is `pending`. `pending -> cancelled` releases nothing because no copy was ever reserved; `accepted -> cancelled` releases the copy and promotes the waitlist head exactly as an admin refusal would — but it notifies nobody, records no reason and never increments `noShowCount`, because cancelling helps the queue while a no-show delays it. Written by a server action with `overrideAccess: true` after ownership and state checks (the collection update rules stay admin-only), and recorded in the audit log as `loan_cancelled` / `extension_withdrawn`.
+_Avoid_: Withdraw a loan (that word belongs to extension requests), cancellation request
 
 **Borrow Limit**:
 Configurable maximum number of concurrent loans per user. Default: 3. Enforced as a precondition for loan requests.
@@ -214,14 +218,17 @@ _Avoid_: Environment variable management, secrets vault
 
 ### Loan State Machine Flow
 
-1. Member requests a loan: verified, under the borrow limit, no active loan or queued row for the book
+1. Member requests a loan: **not suspended by an overdue loan**, under the borrow limit, no active loan or queued row for the book. Verification is not a precondition — it is checked at collection (see Verification Gate below)
 2. A free copy gives a `pending` loan; no free copy joins the end of the `waitlist-entries` queue
-3. Admin accepts a `pending` loan -> `accepted`: copy reserved, unique pickup code minted, pickup date/hour stamped, borrower notified
-4. Admin refuses -> `refused` with a mandatory reason; any reserved copy is released, borrower notified
-5. Admin marks `accepted` -> `picked_up`: due date stamped from the book duration or the Settings global
-6. Past due date -> derived overdue; borrower notified exactly once
-7. Marking returned -> `returned`: copy released, waitlist head promoted in the same transaction, promoted user notified
-8. Member requests extension on their `picked_up` loan: auto-approved when the book's queue is empty (due date moves, both dates recorded), otherwise pending for an admin; approval moves the due date and records both dates
+3. Admin accepts a `pending` loan -> `accepted`: copy reserved, unique pickup code minted, pickup date/hour and the pickup window stamped, borrower notified of both the slot and the deadline
+4. Pickup window passes without a collection -> `refused` with the window-expiry reason: copy released, waitlist head promoted, borrower warned, `noShowCount` incremented. Two of these suspend borrowing only, until an admin lifts it; rescheduling sets a fresh window and never resets the counter
+5. Admin refuses -> `refused` with a mandatory reason; any reserved copy is released, borrower notified
+6. Admin marks `accepted` -> `picked_up`: due date stamped from the book duration or the Settings global. Refused unless the borrower is verified; an admin is alerted when one is attempted anyway
+7. Past due date -> derived overdue; borrower notified exactly once, and new loan requests are suspended until the book is returned
+8. Marking returned -> `returned`: copy released, waitlist head promoted in the same transaction, promoted user notified
+9. Member requests extension on their `picked_up` loan: auto-approved when the book's queue is empty (due date moves, both dates recorded), otherwise pending for an admin; approval moves the due date and records both dates
+10. Member cancels their own request while `pending` or `accepted` (from the three-dot menu or the details dialog, behind a confirmation): `cancelled`. `pending` releases nothing; `accepted` releases the copy and promotes the waitlist head in the same transaction. Borrower not notified, no reason recorded, `noShowCount` untouched, the D7 budget slot returned, audit row `loan_cancelled`
+11. Member withdraws their own extension request while `pending`: `withdrawn`. The due date never moved, so nothing is undone; no notification, audit row `extension_withdrawn`
 
 ### Verification Gate
 

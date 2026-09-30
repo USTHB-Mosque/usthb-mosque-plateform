@@ -4,13 +4,13 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/shared/ui/card'
 import Image from 'next/image'
 import Ratings from '@/shared/common/Ratings'
-import { CheckCircle2, Link, Loader2 } from 'lucide-react'
+import { CheckCircle2, Link, ListOrdered } from 'lucide-react'
 import { Book, Media } from '@/payload-types'
 import { toast } from 'sonner'
 import BookFavoriteButton from './BookFavoriteButton'
 import BorrowDialog from './BorrowDialog'
 import { getImageUrl } from '@/shared/lib/image-utils'
-import { borrowBook } from '@/features/library/server/borrow-book'
+import { borrowBook, type UserBookLoanState } from '@/features/library/server/borrow-book'
 import { useGetProfileQuery } from '@/features/auth'
 import { Button } from '@/shared/ui/button'
 
@@ -22,9 +22,21 @@ interface BookPreviewProps {
   bookId: Book['id']
   initialFavorited: boolean
   bookTitle?: string
-  hasActiveLoan?: boolean
+  /**
+   * The signed-in member's relationship with this book. Absent on the public
+   * page, where nobody is signed in and there is nothing to render (#153).
+   */
+  loanState?: UserBookLoanState
   adminMode?: boolean
   adminActions?: React.ReactNode
+}
+
+const DEFAULT_STATE: UserBookLoanState = {
+  hasActiveLoan: false,
+  waitlisted: false,
+  waitlistPosition: null,
+  remainingSlots: null,
+  needsVerification: false,
 }
 
 const BookPreview: React.FC<BookPreviewProps> = ({
@@ -35,7 +47,7 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   bookId,
   initialFavorited,
   bookTitle,
-  hasActiveLoan = false,
+  loanState,
   adminMode = false,
   adminActions,
 }) => {
@@ -46,9 +58,26 @@ const BookPreview: React.FC<BookPreviewProps> = ({
   const [borrowDialogOpen, setBorrowDialogOpen] = useState(false)
   const { data: { user } = { user: undefined } } = useGetProfileQuery()
 
+  const { hasActiveLoan, waitlisted, waitlistPosition, remainingSlots, needsVerification } =
+    loanState ?? DEFAULT_STATE
+
   const onCopyLink = () => {
     navigator.clipboard.writeText(window.location.href)
     toast.success('تم نسخ الرابط')
+  }
+
+  const handleJoinWaitlist = async () => {
+    setIsBorrowing(true)
+    const result = await borrowBook(bookId.toString())
+    setIsBorrowing(false)
+
+    if (result.success) {
+      toast.success(result.message)
+      // Re-read the page so the queue position replaces the join action.
+      router.refresh()
+    } else {
+      toast.error(result.message)
+    }
   }
 
   const handleBorrowClick = () => {
@@ -56,8 +85,10 @@ const BookPreview: React.FC<BookPreviewProps> = ({
       router.push('/auth/login?redirect=/library/book/' + bookId)
       return
     }
+    // No free copy: the request *is* joining the queue, and that needs no
+    // period or date to pick. Previously this ended in a refusal toast.
     if (!isAvailable) {
-      toast.error('عذراً، الكتاب غير متوفر حالياً')
+      void handleJoinWaitlist()
       return
     }
     setBorrowDialogOpen(true)
@@ -76,6 +107,17 @@ const BookPreview: React.FC<BookPreviewProps> = ({
       toast.error(result.message)
     }
   }
+
+  // The two reasons `checkRequestGates` can refuse a member who can see the
+  // button. Waiting is allowed unverified — only collecting is not — so the
+  // verification notice applies to the request path alone.
+  const budgetExhausted = remainingSlots !== null && remainingSlots <= 0
+  const mustVerify = needsVerification && isAvailable
+  const blockedReason = budgetExhausted
+    ? 'بلغت الحد الأقصى للكتب المستعارة — أعِد كتابة إحداها أولاً.'
+    : mustVerify
+      ? 'حسابك بانتظار التوثيق. يمكنك التصفح وقائمة الانتظار، لكن تسليم الكتاب يتطلب حساباً موثّقاً.'
+      : null
 
   return (
     <>
@@ -110,6 +152,13 @@ const BookPreview: React.FC<BookPreviewProps> = ({
               <div className="flex flex-col gap-3">{adminActions}</div>
             ) : (
               <>
+                {remainingSlots !== null && (
+                  <p className="text-center text-xs text-muted-foreground">
+                    المتبقي من حد الإعارة:{' '}
+                    <span className="font-medium text-card-foreground">{remainingSlots}</span>
+                  </p>
+                )}
+
                 {hasActiveLoan ? (
                   <div className="flex items-center justify-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
                     <CheckCircle2 className="size-5 text-[#0DE9C3]" />
@@ -117,14 +166,32 @@ const BookPreview: React.FC<BookPreviewProps> = ({
                       لديك إعارة نشطة لهذا الكتاب
                     </span>
                   </div>
+                ) : waitlisted ? (
+                  <div className="flex items-center justify-center gap-2 rounded-lg border border-[#FFB020]/30 bg-[#FFB020]/10 px-4 py-3">
+                    <ListOrdered className="size-5 text-[#FFB020]" />
+                    <span className="font-alyamama text-sm font-medium text-[#B45309]">
+                      أنت في قائمة الانتظار — المركز {waitlistPosition}
+                    </span>
+                  </div>
                 ) : (
-                  <Button
-                    className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none"
-                    onClick={handleBorrowClick}
-                    disabled={isBorrowing}
-                  >
-                    {user ? 'احجز الآن' : 'تصفح الكتاب'}
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      className="w-full text-lg text-secondary h-12 bg-primary hover:bg-primary/90 shadow-[inset_0px_4px_8px_1px_#ffffff99] hover:shadow-[inset_0px_4px_8px_1px_#ffffff66,0_0_12px_rgba(13,233,195,0.7)] active:brightness-90 active:shadow-none"
+                      onClick={handleBorrowClick}
+                      disabled={isBorrowing || Boolean(blockedReason)}
+                    >
+                      {!user
+                        ? 'تصفح الكتاب'
+                        : isAvailable
+                          ? 'احجز الآن'
+                          : 'انضم إلى قائمة الانتظار'}
+                    </Button>
+                    {blockedReason && (
+                      <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                        {blockedReason}
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 <div className="flex gap-3">

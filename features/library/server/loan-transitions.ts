@@ -1,7 +1,10 @@
 'use server'
 import { getPayloadWithUser, type ActionCtx } from '@/shared/lib/auth'
 import { isAdmin } from '@/utils/access-helpers'
-import type { Loan } from '@/payload-types'
+import { checkPickupGate } from '@/shared/lib/loan-gates'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { notifyAdmins } from '@/features/notifications'
+import type { Loan, User } from '@/payload-types'
 
 export interface LoanActionResult {
   success: boolean
@@ -107,6 +110,32 @@ export async function markLoanPickedUpLogic(
 
     if (loan.status !== 'accepted') {
       return { success: false, message: 'لا يمكن تسجيل أخذ كتاب لطلب غير مقبول' }
+    }
+
+    // SPEC §4 / #153: verification belongs at collection, not at request time,
+    // so this is where it is checked — and where the desk is told to go verify
+    // the borrower, rather than the member being turned away months earlier
+    // for a document nobody had reviewed. Fails before any write, so the
+    // warning below outlives it; the `loans` hook enforces the same rule for
+    // writes that arrive outside this transition but cannot notify, since an
+    // alert inside an aborted transaction goes down with it.
+    const borrower = (await ctx.payload.findByID({
+      collection: 'users',
+      id: resolveRelationId(loan.user),
+      req: ctx.req,
+      overrideAccess: true,
+      depth: 0,
+    })) as User | null
+
+    const gate = checkPickupGate(borrower)
+    if (!gate.ok) {
+      await notifyAdmins(ctx.req, 'accountRequests', {
+        type: 'verification',
+        title: 'محاولة تسجيل استلام لعميل غير موثّق',
+        message: 'حاول تسجيل استلام كتاب لعميل لم يُوثَّق حسابه. راجع طلب التحقق قبل تسليم الكتاب.',
+        link: '/admin-panel/verification',
+      })
+      return { success: false, message: gate.message }
     }
 
     await ctx.payload.update({

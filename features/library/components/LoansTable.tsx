@@ -3,11 +3,11 @@
 import React, { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { FileText, LibraryBig, MoreVertical, SlidersHorizontal } from 'lucide-react'
+import { FileText, LibraryBig, MoreVertical, SlidersHorizontal, Undo2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { Book, Loan, Media } from '@/payload-types'
+import { Book, Loan, LoanExtension, Media } from '@/payload-types'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Button } from '@/shared/ui/button'
 import {
@@ -23,8 +23,11 @@ import ListingToolbar from '@/shared/listing/listing-toolbar/ListingToolbar'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Pagination } from '@/shared/common/Pagination'
 import EmptyData from '@/shared/common/EmptyData'
+import ConfirmDialog from '@/shared/ui/confirm-dialog'
 import { useSearch } from '@/shared/hooks/use-search'
 import { getImageUrl } from '@/shared/lib/image-utils'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { canMemberCancel, canWithdrawExtension } from '@/shared/lib/loan-gates'
 import LoanStatusBadge, {
   getDueUrgency,
   getEffectiveLoanStatus,
@@ -33,7 +36,11 @@ import LoanStatusBadge, {
 import ExtensionDialog from './ExtensionDialog'
 import LoanDetailsDialog from './LoanDetailsDialog'
 import LoanRequestDetailsDialog from './LoanRequestDetailsDialog'
-import { requestLoanExtension } from '@/features/library/server/loan-extensions'
+import {
+  requestLoanExtension,
+  withdrawLoanExtension,
+} from '@/features/library/server/loan-extensions'
+import { cancelLoan } from '@/features/library/server/cancel-loan'
 
 type LoansFilters = {
   period: 'current' | 'past'
@@ -44,6 +51,12 @@ type LoansFilters = {
 
 type LoansTableProps = {
   loans: Loan[]
+  /**
+   * D6 (#153): the member's extension requests, newest first, so the three-dot
+   * menu can offer "withdraw" instead of "request" while one is still pending.
+   * Read by the same dashboard query as `loans`, so the two cannot go stale.
+   */
+  extensions?: LoanExtension[]
 }
 
 const PAGE_SIZE = 8
@@ -56,17 +69,25 @@ const statusOptions = [
   { value: 'overdue', label: 'متأخر' },
   { value: 'returned', label: 'تم الإرجاع' },
   { value: 'refused', label: 'مرفوض' },
+  { value: 'cancelled', label: 'ملغى' },
 ]
 
-const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
+/** One confirmation at a time; the wording is decided by the member's action. */
+type ConfirmAction =
+  { kind: 'cancel'; loan: Loan } | { kind: 'withdraw'; loan: Loan; extensionId: number } | null
+
+const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
   const router = useRouter()
   const [isRequestingExtension, startExtensionRequest] = useTransition()
+  const [isCancelling, startCancel] = useTransition()
+  const [isWithdrawing, startWithdraw] = useTransition()
   const [extensionLoan, setExtensionLoan] = useState<Loan | null>(null)
   const [extensionOpen, setExtensionOpen] = useState(false)
   const [detailsLoan, setDetailsLoan] = useState<Loan | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [requestDetailsLoan, setRequestDetailsLoan] = useState<Loan | null>(null)
   const [requestDetailsOpen, setRequestDetailsOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
 
   const openLoanDetails = (loan: Loan) => {
     const effective = getEffectiveLoanStatus(loan)
@@ -78,6 +99,69 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
       setDetailsOpen(true)
     }
   }
+
+  const bookTitleOf = (loan: Loan) => (loan.book as Book | undefined)?.title ?? 'الإعارة'
+
+  /** The loan's latest request; the dashboard returns them newest first. */
+  const extensionFor = (loan: Loan) =>
+    extensions.find((extension) => resolveRelationId(extension.loan) === loan.id)
+
+  /**
+   * D6 (#153): cancelling and withdrawing are member actions on rows whose
+   * update rules are admin-only, so the server action owns the checks. The
+   * dialog stays open on failure — the toast says why, and the member can try
+   * again rather than losing the context they were in.
+   */
+  const runCancel = (loan: Loan) => {
+    const loanId = loan.id
+    startCancel(async () => {
+      const result = await cancelLoan(loanId)
+      if (result.success) {
+        toast.success(result.message)
+        setConfirmAction(null)
+        setDetailsOpen(false)
+        setRequestDetailsOpen(false)
+        router.refresh()
+      } else {
+        toast.error(result.message)
+      }
+    })
+  }
+
+  const runWithdraw = (extensionId: number) => {
+    startWithdraw(async () => {
+      const result = await withdrawLoanExtension(extensionId)
+      if (result.success) {
+        toast.success(result.message)
+        setConfirmAction(null)
+        router.refresh()
+      } else {
+        toast.error(result.message)
+      }
+    })
+  }
+
+  const confirmContent = confirmAction
+    ? confirmAction.kind === 'withdraw'
+      ? {
+          title: 'سحب طلب التمديد',
+          description: `سيتم سحب طلب تمديد «${bookTitleOf(confirmAction.loan)}». يمكنك طلبه مجدداً في أي وقت.`,
+          confirmLabel: 'تأكيد السحب',
+        }
+      : // D6 says cancelling is never punished, so the dialog says so up front:
+        // an accepted Loan also warns that the reserved copy goes back at once.
+        getEffectiveLoanStatus(confirmAction.loan) === 'accepted'
+        ? {
+            title: 'إلغاء طلب الإعارة',
+            description: `سيتم تحرير النسخة المخصصة لـ«${bookTitleOf(confirmAction.loan)}» فوراً وإتاحتها لقائمة الانتظار، ولن يُحتسب هذا الإجراء غياباً.`,
+            confirmLabel: 'تأكيد الإلغاء',
+          }
+        : {
+            title: 'إلغاء طلب الإعارة',
+            description: `سيتم إلغاء طلب «${bookTitleOf(confirmAction.loan)}» ولن يُحتسب هذا الإجراء غياباً.`,
+            confirmLabel: 'تأكيد الإلغاء',
+          }
+    : { title: '', description: '', confirmLabel: '' }
 
   const { values, searchValues, setValue, reset } = useSearch<LoansFilters>({
     initialValues: {
@@ -268,6 +352,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                 {pageItems.map((loan) => {
                   const book = loan.book as Book | undefined
                   const cover = book?.image as Media | undefined
+                  const extension = extensionFor(loan)
                   const bookId = book?.id
                   const loanDate = loan.loanDate ? new Date(loan.loanDate) : null
                   const displayDate = loan.returnDate
@@ -347,18 +432,50 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
                                 <FileText className="size-4" />
                                 تفاصيل الإعارة
                               </DropdownMenuItem>
+                              {/* D6 (#153): offered only while cancelling still
+                                  leaves the queue no worse off than inaction
+                                  would — `pending` or `accepted`, never once
+                                  the book has changed hands. */}
+                              {canMemberCancel(getEffectiveLoanStatus(loan)) && (
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={(e: React.MouseEvent) => {
+                                    e.stopPropagation()
+                                    setConfirmAction({ kind: 'cancel', loan })
+                                  }}
+                                >
+                                  <XCircle className="size-4" />
+                                  إلغاء الطلب
+                                </DropdownMenuItem>
+                              )}
                               {getEffectiveLoanStatus(loan) === 'picked_up' && (
                                 <>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={(e: React.MouseEvent) => {
-                                      e.stopPropagation()
-                                      setExtensionLoan(loan)
-                                      setExtensionOpen(true)
-                                    }}
-                                  >
-                                    طلب تمديد الإعارة
-                                  </DropdownMenuItem>
+                                  {extension && canWithdrawExtension(extension.status) ? (
+                                    <DropdownMenuItem
+                                      onClick={(e: React.MouseEvent) => {
+                                        e.stopPropagation()
+                                        setConfirmAction({
+                                          kind: 'withdraw',
+                                          loan,
+                                          extensionId: extension.id,
+                                        })
+                                      }}
+                                    >
+                                      <Undo2 className="size-4" />
+                                      سحب طلب التمديد
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={(e: React.MouseEvent) => {
+                                        e.stopPropagation()
+                                        setExtensionLoan(loan)
+                                        setExtensionOpen(true)
+                                      }}
+                                    >
+                                      طلب تمديد الإعارة
+                                    </DropdownMenuItem>
+                                  )}
                                 </>
                               )}
                             </DropdownMenuGroup>
@@ -417,12 +534,37 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans }) => {
         bookTitle={(extensionLoan?.book as Book | undefined)?.title}
       />
 
-      <LoanDetailsDialog open={detailsOpen} onOpenChange={setDetailsOpen} loan={detailsLoan} />
+      <LoanDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        loan={detailsLoan}
+        onCancel={(loan) => setConfirmAction({ kind: 'cancel', loan })}
+      />
 
       <LoanRequestDetailsDialog
         open={requestDetailsOpen}
         onOpenChange={setRequestDetailsOpen}
         loan={requestDetailsLoan}
+        onCancel={(loan) => setConfirmAction({ kind: 'cancel', loan })}
+      />
+
+      {/* D6 (#153): SPEC asks for a confirmation on every mutating action, so
+          both entry points — the three-dot menu and the details dialog — land
+          on this same one rather than each growing its own. */}
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(next) => {
+          if (!next) setConfirmAction(null)
+        }}
+        title={confirmContent.title}
+        description={confirmContent.description}
+        confirmLabel={confirmContent.confirmLabel}
+        busy={isCancelling || isWithdrawing}
+        onConfirm={() => {
+          if (!confirmAction) return
+          if (confirmAction.kind === 'cancel') runCancel(confirmAction.loan)
+          else runWithdraw(confirmAction.extensionId)
+        }}
       />
     </div>
   )

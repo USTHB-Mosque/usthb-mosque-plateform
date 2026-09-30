@@ -133,6 +133,7 @@ export interface Config {
   jobs: {
     tasks: {
       purgeDeletedAccounts: TaskPurgeDeletedAccounts;
+      expirePickupWindows: TaskExpirePickupWindows;
       inline: {
         input: unknown;
         output: unknown;
@@ -184,6 +185,8 @@ export interface User {
   consentTimestamp?: string | null;
   deletedAt?: string | null;
   deletionScheduledFor?: string | null;
+  noShowCount?: number | null;
+  borrowingBlockedAt?: string | null;
   notificationPreferences?: {
     loanRequests?: boolean | null;
     activityRegistrations?: boolean | null;
@@ -422,12 +425,13 @@ export interface Loan {
   id: number;
   book: number | Book;
   user: number | User;
-  status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused') | null;
+  status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused' | 'cancelled') | null;
   loanDate: string;
   dueDate?: string | null;
   pickupDate?: string | null;
   pickupHour?: string | null;
   pickupCode?: string | null;
+  pickupWindowExpiresAt?: string | null;
   refusalReason?: string | null;
   returnDate?: string | null;
   overdueNotified?: boolean | null;
@@ -521,7 +525,7 @@ export interface LoanExtension {
   id: number;
   loan: number | Loan;
   user: number | User;
-  status?: ('pending' | 'approved' | 'refused') | null;
+  status?: ('pending' | 'approved' | 'refused' | 'withdrawn') | null;
   days: number;
   reason?: string | null;
   adminResponse?: string | null;
@@ -551,12 +555,17 @@ export interface Log {
     | 'review_deleted'
     | 'loan_approved'
     | 'loan_refused'
+    | 'loan_expired'
+    | 'loan_rescheduled'
     | 'loan_picked_up'
     | 'loan_returned'
+    | 'loan_cancelled'
     | 'extension_approved'
     | 'extension_refused'
+    | 'extension_withdrawn'
     | 'user_verified'
     | 'user_rejected'
+    | 'user_block_lifted'
     | 'user_role_changed'
     | 'user_deleted'
     | 'users_imported'
@@ -675,7 +684,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'purgeDeletedAccounts';
+        taskSlug: 'inline' | 'purgeDeletedAccounts' | 'expirePickupWindows';
         taskID: string;
         input?:
           | {
@@ -708,7 +717,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'purgeDeletedAccounts') | null;
+  taskSlug?: ('inline' | 'purgeDeletedAccounts' | 'expirePickupWindows') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -861,6 +870,8 @@ export interface UsersSelect<T extends boolean = true> {
   consentTimestamp?: T;
   deletedAt?: T;
   deletionScheduledFor?: T;
+  noShowCount?: T;
+  borrowingBlockedAt?: T;
   notificationPreferences?:
     | T
     | {
@@ -1035,6 +1046,7 @@ export interface LoansSelect<T extends boolean = true> {
   pickupDate?: T;
   pickupHour?: T;
   pickupCode?: T;
+  pickupWindowExpiresAt?: T;
   refusalReason?: T;
   returnDate?: T;
   overdueNotified?: T;
@@ -1252,6 +1264,7 @@ export interface Setting {
   id: number;
   defaultLoanDurationDays?: number | null;
   borrowLimit?: number | null;
+  pickupWindowHours?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1280,6 +1293,7 @@ export interface PayloadJobsStat {
 export interface SettingsSelect<T extends boolean = true> {
   defaultLoanDurationDays?: T;
   borrowLimit?: T;
+  pickupWindowHours?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1317,6 +1331,21 @@ export interface TaskPurgeDeletedAccounts {
   };
   output: {
     purged?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpirePickupWindows".
+ */
+export interface TaskExpirePickupWindows {
+  input: {
+    /**
+     * Override the current time, so the job can be run against a fixed instant in a test.
+     */
+    now?: string | null;
+  };
+  output: {
+    expired?: number | null;
   };
 }
 /**

@@ -350,6 +350,33 @@ export const User: CollectionConfig = {
         update: ({ req: { user } }) => isAdmin(user),
       },
     },
+    // D2 (#153): a no-show counter and the block it earns. Both live on the
+    // user rather than in a history collection — the audit log already records
+    // each expiry, and the rule only needs a count plus a flag. A member must
+    // never clear either themselves, so both are admin-writable only.
+    {
+      name: 'noShowCount',
+      type: 'number',
+      label: 'مرات عدم الاستلام',
+      defaultValue: 0,
+      min: 0,
+      admin: { readOnly: true },
+      access: {
+        update: ({ req: { user } }) => isAdmin(user),
+      },
+    },
+    {
+      name: 'borrowingBlockedAt',
+      type: 'date',
+      label: 'حظر الاستعارة منذ',
+      admin: {
+        readOnly: true,
+        condition: ({ siblingData }) => Boolean(siblingData?.borrowingBlockedAt),
+      },
+      access: {
+        update: ({ req: { user } }) => isAdmin(user),
+      },
+    },
     {
       name: 'notificationPreferences',
       type: 'group',
