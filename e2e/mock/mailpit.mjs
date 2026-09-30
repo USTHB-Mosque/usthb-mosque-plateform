@@ -1,6 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process'
 
-const name = 'usthb-e2e-mailpit'
+const name = process.env.E2E_MAILPIT_CONTAINER_NAME || 'usthb-e2e-mailpit'
+const smtpPort = process.env.E2E_MAILPIT_SMTP_PORT || '54325'
+const apiPort = process.env.E2E_MAILPIT_API_PORT || '54326'
 // Recover from a prior run that was interrupted before global teardown.
 spawnSync('docker', ['rm', '-f', name], { stdio: 'ignore' })
 const container = spawn(
@@ -11,10 +13,10 @@ const container = spawn(
     '--name',
     name,
     '-p',
-    '127.0.0.1:54325:1025',
+    `127.0.0.1:${smtpPort}:1025`,
     '-p',
-    '127.0.0.1:54326:8025',
-    'public.ecr.aws/supabase/mailpit:v1.30.2',
+    `127.0.0.1:${apiPort}:8025`,
+    'axllent/mailpit:v1.30.2',
   ],
   { stdio: 'inherit' },
 )

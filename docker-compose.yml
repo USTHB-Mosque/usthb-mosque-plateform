@@ -1,27 +1,24 @@
-# One-command deployment of everything that is not Supabase (see ADR 0002):
-# the Next.js app, PostgreSQL 17, and an S3-compatible object store for media.
+# One stack for local Postgres/MinIO and VPS deployment (see ADR 0003).
 #
-#   cp example.env .env   # fill in the values
-#   docker compose up --build
+#   docker compose up -d db minio minio-init     # host-run next dev
+#   docker compose up --build --detach            # VPS: app + Caddy
 #
 # Migrations run in the one-shot `migrate` service; the app waits for it to
-# finish and never starts if a migration fails. Media files are stored in the
-# MinIO `media` bucket (persisted in the `minio-data` volume), so uploads and
-# reads work out of the box. To point at any other S3-compatible provider,
-# set S3_ENDPOINT / S3_BUCKET / S3_REGION / S3_ACCESS_KEY_ID /
-# S3_SECRET_ACCESS_KEY in .env — the compose overrides are all defaults, so
-# .env wins; the bundled MinIO can then be removed from this file.
+# finish and never starts if a migration fails. Media stays in the named
+# minio-data volume even after docker compose down.
 
 x-deploy-env: &deploy-env
   # Inside the compose network the database is reachable as `db`, not
   # 127.0.0.1 — override whatever .env says.
   DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-usthb_mosque}
-  # Bundled MinIO media store; every value yields to .env when set there.
-  S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+  # A container's 127.0.0.1 is not the host's: override the host-facing .env.
+  S3_ENDPOINT: http://minio:9000
   S3_BUCKET: ${S3_BUCKET:-media}
   S3_REGION: ${S3_REGION:-local}
   S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-mosque}
   S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
+  NODE_ENV: production
+  PAYLOAD_PUSH: 'false'
 
 services:
   app:
@@ -29,9 +26,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
     restart: unless-stopped
-    ports:
-      - '${APP_PORT:-3000}:3000'
+    expose:
+      - '3000'
     env_file:
       - .env
     environment:
@@ -41,6 +40,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
     healthcheck:
@@ -50,6 +51,23 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 3
+
+  caddy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
 
   migrate:
     build:
@@ -68,6 +86,8 @@ services:
   db:
     image: postgres:17
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -82,17 +102,17 @@ services:
       retries: 10
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     restart: unless-stopped
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
     ports:
-      # Admin console, optional; remove if the host does not need it.
-      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+      - '127.0.0.1:${MINIO_API_PORT:-9000}:9000'
+      - '127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001'
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-mosque}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
     healthcheck:
       test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
@@ -100,7 +120,7 @@ services:
       retries: 10
 
   minio-init:
-    image: quay.io/minio/mc:latest
+    image: quay.io/minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
     restart: 'no'
     depends_on:
       minio:
@@ -111,10 +131,12 @@ services:
       mc mb --ignore-existing local/$${S3_BUCKET:-media}
       "
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-mosque}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
       S3_BUCKET: ${S3_BUCKET:-media}
 
 volumes:
   pgdata:
   minio-data:
+  caddy-data:
+  caddy-config:

@@ -91,6 +91,7 @@ export default buildConfig({
 
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
+    push: process.env.PAYLOAD_PUSH === 'true',
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
 

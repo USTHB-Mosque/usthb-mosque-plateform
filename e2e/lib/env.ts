@@ -12,8 +12,8 @@ const load = (file: string) => {
 load('.env.local')
 load('.env')
 
-// The e2e-only database name inside the running local Supabase Postgres —
-// never the development `postgres` database, never the vitest `mosque_test`.
+// The e2e-only database name inside the running local compose Postgres —
+// never the development `usthb_mosque` database, never the vitest `mosque_test`.
 export const E2E_DATABASE_NAME = 'mosque_e2e'
 
 // Dedicated bucket so e2e uploads never pollute the development `media` bucket.
@@ -24,7 +24,11 @@ export const E2E_PORT = Number(process.env.E2E_PORT ?? 3100)
 export const E2E_BASE_URL = `http://localhost:${E2E_PORT}`
 export const E2E_GOOGLE_IDP_PORT = Number(process.env.E2E_GOOGLE_IDP_PORT ?? 3200)
 export const E2E_GOOGLE_IDP_URL = `http://127.0.0.1:${E2E_GOOGLE_IDP_PORT}`
-export const E2E_MAILPIT_API_URL = 'http://127.0.0.1:54326'
+export const E2E_MAILPIT_CONTAINER_NAME =
+  process.env.E2E_MAILPIT_CONTAINER_NAME || 'usthb-e2e-mailpit'
+export const E2E_MAILPIT_SMTP_PORT = Number(process.env.E2E_MAILPIT_SMTP_PORT ?? 54325)
+export const E2E_MAILPIT_API_PORT = Number(process.env.E2E_MAILPIT_API_PORT ?? 54326)
+export const E2E_MAILPIT_API_URL = `http://127.0.0.1:${E2E_MAILPIT_API_PORT}`
 
 // Authoring mode: run the suite against `next dev` (schema push allowed on the
 // e2e database). Canonical mode (default): migrate + build + start.
@@ -50,7 +54,7 @@ export function e2eServerEnv(): Record<string, string> {
   // The e2e-only Mailpit container catches all mail. Never inherit real SMTP
   // credentials from .env.local, even while seeding.
   env.EMAIL_HOST = '127.0.0.1'
-  env.EMAIL_PORT = '54325'
+  env.EMAIL_PORT = String(E2E_MAILPIT_SMTP_PORT)
   env.EMAIL_USER = ''
   env.EMAIL_PASSWORD = ''
   // NEXT_PUBLIC_* values are inlined into the client bundle at build time —
@@ -64,6 +68,7 @@ export function e2eServerEnv(): Record<string, string> {
   env.GOOGLE_TOKEN_ENDPOINT = `${E2E_GOOGLE_IDP_URL}/token`
   env.GOOGLE_USERINFO_ENDPOINT = `${E2E_GOOGLE_IDP_URL}/userinfo`
   env.PORT = String(E2E_PORT)
+  env.PAYLOAD_PUSH = E2E_DEV ? 'true' : 'false'
   // .env/.env.local set NODE_ENV=development for `pnpm dev`; never leak it into
   // a `next build` (dev-mode React breaks static prerendering).
   env.NODE_ENV = E2E_DEV ? 'development' : 'production'

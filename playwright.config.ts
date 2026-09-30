@@ -49,14 +49,14 @@ export default defineConfig({
     },
     E2E_DEV
       ? {
-          command: 'next dev',
+          command: 'pnpm exec tsx e2e/prepare-db.ts && next dev',
           url: E2E_BASE_URL,
           reuseExistingServer: true,
           timeout: 180_000,
           env: serverEnv,
         }
       : {
-          command: 'pnpm build && next start',
+          command: 'pnpm exec tsx e2e/prepare-db.ts && pnpm build && next start',
           url: E2E_BASE_URL,
           reuseExistingServer: false,
           timeout: 600_000,

@@ -1,8 +1,8 @@
 import { Client } from 'pg'
 
-// Creates the dedicated e2e database on the running local Supabase Postgres —
-// same pattern as test/lib/db.ts does for mosque_test. Canonical runs drop any
-// existing e2e database first: migrations must always run from a clean slate
+// Creates the dedicated e2e database on the running local compose Postgres —
+// same pattern as test/lib/db.ts does for mosque_test. The webServer preparation
+// drops any existing e2e database in canonical mode: migrations start clean
 // (a dev-mode push leaves a `batch = -1` marker that makes `payload migrate`
 // block on an interactive data-loss prompt).
 export async function ensureE2eDatabase(

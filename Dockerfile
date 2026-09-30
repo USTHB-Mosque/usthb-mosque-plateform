@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Multi-stage build for the self-hosted Docker deployment (see ADR 0002).
+# Multi-stage build for the self-hosted Docker deployment (see ADR 0003).
 # Two runnable targets:
 #   - runtime:  slim Next.js standalone server (docker compose `app`)
 #   - migrator: full dependency tree + Payload config, runs `payload migrate`
@@ -34,6 +34,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+
 # next build evaluates payload.config.ts to collect page data, and the config
 # refuses to boot without a storage backend. Nothing is uploaded at build time;
 # the real S3_* values are read from the environment at runtime.
@@ -52,15 +55,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json payload-types.ts payload.config.ts storage.ts ./
+COPY . .
 # Bake the pinned pnpm so the one-shot container needs no network at start.
 RUN corepack install --global
-COPY collections ./collections
-COPY utils ./utils
-COPY migrations ./migrations
-# The copy set above must cover payload.config.ts's whole import graph except
-# the admin UI (importMap component strings resolve only in the admin build).
-# If payload.config.ts ever starts importing from features/, copy that here.
+# Payload config imports collections, globals and feature jobs; keep the full
+# source so migrations and one-off admin bootstraps resolve the same graph.
 
 USER node
 
