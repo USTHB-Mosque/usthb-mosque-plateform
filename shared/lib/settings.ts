@@ -1,10 +1,16 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-import { DEFAULT_BORROW_LIMIT, DEFAULT_LOAN_DURATION_DAYS } from '@/utils/constants/loans'
+import {
+  DEFAULT_BORROW_LIMIT,
+  DEFAULT_LOAN_DURATION_DAYS,
+  DEFAULT_PICKUP_WINDOW_HOURS,
+} from '@/utils/constants/loans'
 
 export interface LoanSettings {
   defaultLoanDurationDays: number
   borrowLimit: number
+  /** D1 (#153): hours an accepted Loan waits for collection. */
+  pickupWindowHours: number
 }
 
 function positiveInt(value: unknown): number | undefined {
@@ -26,11 +32,16 @@ export async function getLoanSettings(
     ...(req ? { req } : {}),
     overrideAccess: true,
     depth: 0,
-  })) as { defaultLoanDurationDays?: unknown; borrowLimit?: unknown } | null
+  })) as {
+    defaultLoanDurationDays?: unknown
+    borrowLimit?: unknown
+    pickupWindowHours?: unknown
+  } | null
 
   const defaultLoanDurationDays =
     positiveInt(settings?.defaultLoanDurationDays) ?? DEFAULT_LOAN_DURATION_DAYS
   const borrowLimit = positiveInt(settings?.borrowLimit) ?? DEFAULT_BORROW_LIMIT
+  const pickupWindowHours = positiveInt(settings?.pickupWindowHours) ?? DEFAULT_PICKUP_WINDOW_HOURS
 
-  return { defaultLoanDurationDays, borrowLimit }
+  return { defaultLoanDurationDays, borrowLimit, pickupWindowHours }
 }

@@ -21,6 +21,8 @@ export interface AnalyticsResult {
     requests: number
   }>
   busiestDays: Array<{ day: Date; requests: number }>
+  busiestHours: Array<{ hour: number; requests: number }>
+  busiestWeekdays: Array<{ weekday: number; requests: number }>
 }
 
 /**
@@ -38,7 +40,7 @@ export async function getAdminAnalytics(query: AnalyticsQuery = {}): Promise<Ana
   const from = query.from ? new Date(query.from) : new Date(new Date().getFullYear(), 0, 1)
   const fromISO = from.toISOString()
 
-  const [categories, types, books, days] = await Promise.all([
+  const [categories, types, books, days, hours, weekdays] = await Promise.all([
     db.query(
       `SELECT b.category AS category, COUNT(*)::int AS requests
          FROM loans l
@@ -78,6 +80,25 @@ export async function getAdminAnalytics(query: AnalyticsQuery = {}): Promise<Ana
         ORDER BY day ASC`,
       [fromISO],
     ),
+    db.query(
+      `SELECT EXTRACT(HOUR FROM l.loan_date AT TIME ZONE 'Africa/Algiers')::int AS hour,
+              COUNT(*)::int AS requests
+         FROM loans l
+        WHERE l.loan_date >= $1
+          AND EXTRACT(HOUR FROM l.loan_date AT TIME ZONE 'Africa/Algiers') BETWEEN 8 AND 17
+        GROUP BY 1
+        ORDER BY 1`,
+      [fromISO],
+    ),
+    db.query(
+      `SELECT EXTRACT(ISODOW FROM l.loan_date AT TIME ZONE 'Africa/Algiers')::int AS weekday,
+              COUNT(*)::int AS requests
+         FROM loans l
+        WHERE l.loan_date >= $1
+        GROUP BY 1
+        ORDER BY 1`,
+      [fromISO],
+    ),
   ])
 
   return {
@@ -86,5 +107,7 @@ export async function getAdminAnalytics(query: AnalyticsQuery = {}): Promise<Ana
     topTypes: types.rows,
     topRequestedBooks: books.rows,
     busiestDays: days.rows,
+    busiestHours: hours.rows,
+    busiestWeekdays: weekdays.rows,
   }
 }

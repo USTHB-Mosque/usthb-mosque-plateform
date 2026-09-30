@@ -6,9 +6,9 @@ import type { Loan } from '@/payload-types'
 
 import { ACTIVE_LOAN_STATUSES } from '@/utils/constants/loans'
 
-/** The five stored states plus `overdue`, which is derived from `dueDate`. */
+/** The six stored states plus `overdue`, which is derived from `dueDate`. */
 export type EffectiveLoanStatus =
-  'pending' | 'accepted' | 'picked_up' | 'returned' | 'refused' | 'overdue'
+  'pending' | 'accepted' | 'picked_up' | 'returned' | 'refused' | 'cancelled' | 'overdue'
 
 export const statusConfig: Record<
   EffectiveLoanStatus,
@@ -39,6 +39,13 @@ export const statusConfig: Record<
     className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
     dotClassName: 'bg-[#C0392B]',
   },
+  // #153, D6: the member's own withdrawal, so it reads as closed rather than
+  // as the administration's red refusal — a cancellation is not a rebuke.
+  cancelled: {
+    label: 'ملغى',
+    className: 'bg-[#7048E8]/15 text-[#6741D9]',
+    dotClassName: 'bg-[#6741D9]',
+  },
   overdue: {
     label: 'متأخر',
     className: 'bg-[#FF6B6B]/15 text-[#C0392B]',
@@ -48,7 +55,14 @@ export const statusConfig: Record<
 
 export function getEffectiveLoanStatus(loan: Loan): EffectiveLoanStatus {
   const status = loan.status
-  if (status === 'returned' || status === 'refused' || status === 'pending') return status
+  if (
+    status === 'returned' ||
+    status === 'refused' ||
+    status === 'cancelled' ||
+    status === 'pending'
+  ) {
+    return status
+  }
   if (status === 'picked_up') {
     // Overdue is derived from `dueDate`, never stored (#19).
     const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
@@ -64,7 +78,9 @@ export function isLoanActive(loan: Loan): boolean {
 export function getDueUrgency(loan: Loan): 'overdue' | 'soon' | 'ok' {
   const status = getEffectiveLoanStatus(loan)
   if (status === 'overdue') return 'overdue'
-  if (status === 'returned' || status === 'refused') return 'ok'
+  // A cancelled loan owes nothing back, so its (stale) due date must not
+  // colour the row as urgent.
+  if (status === 'returned' || status === 'refused' || status === 'cancelled') return 'ok'
   const due = loan.dueDate ? new Date(loan.dueDate).getTime() : Number.POSITIVE_INFINITY
   if (due - Date.now() <= 3 * 24 * 60 * 60 * 1000) return 'soon'
   return 'ok'

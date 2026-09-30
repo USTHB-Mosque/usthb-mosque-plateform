@@ -8,6 +8,7 @@ const refuseLoan = vi.fn()
 const markLoanReturned = vi.fn()
 const markLoanPickedUp = vi.fn()
 const createNotification = vi.fn()
+const expirePickupWindows = vi.fn()
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => revalidatePath(...args),
@@ -23,6 +24,7 @@ vi.mock('@/features/library', () => ({
   refuseLoan: (...args: unknown[]) => refuseLoan(...args),
   markLoanReturned: (...args: unknown[]) => markLoanReturned(...args),
   markLoanPickedUp: (...args: unknown[]) => markLoanPickedUp(...args),
+  expirePickupWindows: (...args: unknown[]) => expirePickupWindows(...args),
 }))
 
 vi.mock('@/features/notifications', () => ({
@@ -36,6 +38,7 @@ const {
   rejectLoan,
   markLoanReturned: adminMarkLoanReturned,
   markLoanPickedUp: adminMarkLoanPickedUp,
+  reschedulePickup,
   sendLoanReminder,
 } = await import('./loans')
 
@@ -55,6 +58,7 @@ describe('features/admin/server/loans.ts', () => {
     markLoanReturned.mockReset()
     markLoanPickedUp.mockReset()
     createNotification.mockReset()
+    expirePickupWindows.mockReset().mockResolvedValue(0)
   })
 
   afterEach(() => {
@@ -94,6 +98,13 @@ describe('features/admin/server/loans.ts', () => {
           overrideAccess: false,
         }),
       )
+      // The stats are a pickup surface, so they drain the window queue first —
+      // and the caller's `user` stays out of the sweep (it is a system write).
+      expect(expirePickupWindows).toHaveBeenCalledTimes(1)
+      expect(expirePickupWindows).toHaveBeenCalledWith({
+        payload: expect.anything(),
+        req: expect.anything(),
+      })
     })
   })
 
@@ -395,6 +406,120 @@ describe('features/admin/server/loans.ts', () => {
       const result = await adminMarkLoanPickedUp(5)
 
       expect(result).toEqual({ ok: false, error: 'لا يمكن تسجيل أخذ كتاب لطلب غير مقبول' })
+    })
+  })
+
+  describe('reschedulePickup', () => {
+    const acceptedLoan = { id: 9, status: 'accepted', pickupDate: '2026-10-01T09:00:00.000Z' }
+
+    const reschedulePayload = () => ({
+      findByID: vi.fn().mockResolvedValue(acceptedLoan),
+      findGlobal: vi.fn().mockResolvedValue({ pickupWindowHours: 48 }),
+      update: vi.fn().mockResolvedValue({}),
+      create: vi.fn().mockResolvedValue({}),
+    })
+
+    it('re-opens the window from the Settings value and logs the reschedule', async () => {
+      const payload = reschedulePayload()
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const before = Date.now()
+      const result = await reschedulePickup(9, '2026-10-05T10:30:00')
+      const after = Date.now()
+
+      expect(result).toEqual({ ok: true })
+      expect(payload.findGlobal).toHaveBeenCalledWith(expect.objectContaining({ slug: 'settings' }))
+
+      const { data } = payload.update.mock.calls[0][0]
+      expect(data.pickupDate).toBe(new Date('2026-10-05T10:30:00').toISOString())
+      expect(data.pickupHour).toBe('10:30')
+      const expires = new Date(data.pickupWindowExpiresAt).getTime()
+      expect(expires).toBeGreaterThanOrEqual(before + 48 * 60 * 60 * 1000)
+      expect(expires).toBeLessThanOrEqual(after + 48 * 60 * 60 * 1000)
+
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'logs',
+          data: expect.objectContaining({ action: 'loan_rescheduled', targetType: 'loan' }),
+        }),
+      )
+      expect(revalidatePath).toHaveBeenCalledWith('/admin-panel/loans')
+    })
+
+    it('names the book in the audit line when the loan resolves one', async () => {
+      const payload = reschedulePayload()
+      payload.findByID.mockResolvedValue({
+        id: 9,
+        status: 'accepted',
+        pickupDate: '2026-10-01T09:00:00.000Z',
+        book: { id: 3, title: 'الفوائد' },
+      })
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const result = await reschedulePickup(9, '2026-10-05T10:30:00')
+
+      expect(result).toEqual({ ok: true })
+      expect(payload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ message: 'أعاد جدولة استلام: الفوائد' }),
+        }),
+      )
+    })
+
+    it('leaves the no-show counter alone — D1 says rescheduling never resets it', async () => {
+      const payload = reschedulePayload()
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      await reschedulePickup(9, '2026-10-05T10:30:00')
+
+      expect(payload.update.mock.calls[0][0].data).not.toHaveProperty('noShowCount')
+    })
+
+    it('reports a missing loan', async () => {
+      const payload = reschedulePayload()
+      payload.findByID.mockRejectedValue(new Error('not found'))
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const result = await reschedulePickup(99, '2026-10-05T10:30:00')
+
+      expect(result).toEqual({ ok: false, error: 'الإعارة غير موجودة' })
+      expect(payload.update).not.toHaveBeenCalled()
+    })
+
+    it('reports a lookup that resolved to nothing', async () => {
+      const payload = reschedulePayload()
+      payload.findByID.mockResolvedValue(undefined)
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const result = await reschedulePickup(99, '2026-10-05T10:30:00')
+
+      expect(result).toEqual({ ok: false, error: 'الإعارة غير موجودة' })
+      expect(payload.update).not.toHaveBeenCalled()
+    })
+
+    it('refuses to reschedule a loan that is not awaiting collection', async () => {
+      const payload = reschedulePayload()
+      payload.findByID.mockResolvedValue({ id: 9, status: 'picked_up' })
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const result = await reschedulePickup(9, '2026-10-05T10:30:00')
+
+      expect(result).toEqual({
+        ok: false,
+        error: 'إعادة الجدولة متاحة فقط للإعارات المقبولة',
+      })
+      expect(payload.update).not.toHaveBeenCalled()
+    })
+
+    it('rejects a date that is not a date', async () => {
+      const payload = reschedulePayload()
+      getAdminCtx.mockResolvedValue(adminCtx({ payload }))
+
+      const result = await reschedulePickup(9, 'not-a-date')
+
+      expect(result).toEqual({ ok: false, error: 'تاريخ استلام غير صالح' })
+      expect(payload.update).not.toHaveBeenCalled()
+      expect(payload.create).not.toHaveBeenCalled()
     })
   })
 

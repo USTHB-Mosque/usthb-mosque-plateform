@@ -51,6 +51,30 @@ async function bookAfter(bookId: number) {
 }
 
 describe('getAdminLoansStats', () => {
+  it('drains the pickup-window queue before counting (#153)', async () => {
+    const book = await createTestBook(payload, { available: 1, total: 5 })
+    const loan = await createTestLoan(payload, { book: book.id, user: member.id })
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: { status: 'accepted' },
+      overrideAccess: true,
+    })
+    await payload.update({
+      collection: 'loans',
+      id: loan.id,
+      data: { pickupWindowExpiresAt: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+
+    const { stats } = await getAdminLoansStats()
+
+    // The desk opens the stats and the lapsed window is gone before the counts
+    // are taken, rather than counting an acceptance nobody can still honour.
+    expect((await loanAfter(loan.id)).status).toBe('refused')
+    expect(stats.totalLoans).toBe(1)
+  })
+
   it('counts totals, pending, extension requests and overdue loans', async () => {
     const book = await createTestBook(payload, { available: 1, total: 5 })
 

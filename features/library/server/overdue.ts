@@ -57,7 +57,10 @@ export async function syncOverdueLoans(ctx: {
       user: loan.user as number,
       type: 'loan',
       title: 'إعارة متأخرة',
-      message: `مضى موعد إرجاع الكتاب «${book.title}» — يرجى إرجاعه في أقرب وقت.`,
+      // The suspension is part of the alert, not just of the gate: SPEC §4
+      // makes it the enforcement mechanism, and a member who is told only
+      // that they are late would file the refusal at the desk as a mystery.
+      message: `مضى موعد إرجاع الكتاب «${book.title}» — يرجى إرجاعه في أقرب وقت. تُوقف طلبات الإعارة الجديدة حتى يتم إرجاعه.`,
       link: '/user/my-loans',
       email: true,
       emailTemplate: {

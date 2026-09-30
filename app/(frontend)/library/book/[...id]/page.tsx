@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import { getBookFavoriteState } from '@/features/library/server/favorites'
+import { getUserBookLoanState } from '@/features/library/server/borrow-book'
 
 const BookDetailsPage = async ({
   params,
@@ -38,7 +39,13 @@ const BookDetailsPage = async ({
     sort: '-publishDate',
   })
 
-  const { favorited } = await getBookFavoriteState(book.id)
+  // This route serves visitors, but a signed-in member can land on it too, so
+  // it reads the same state as the member portal instead of pretending they
+  // hold nothing (#153).
+  const [{ favorited }, loanState] = await Promise.all([
+    getBookFavoriteState(book.id),
+    getUserBookLoanState(book.id),
+  ])
 
   return (
     <Layout>
@@ -55,6 +62,7 @@ const BookDetailsPage = async ({
               bookId={book.id}
               initialFavorited={favorited}
               bookTitle={book.title}
+              loanState={loanState}
             />
             <BookAvailability
               totalBooks={book.totalBooks}

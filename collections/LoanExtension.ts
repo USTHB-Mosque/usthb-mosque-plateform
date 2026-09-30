@@ -27,6 +27,10 @@ export const LoanExtension: CollectionConfig = {
       return { user: { equals: user.id } }
     },
     create: ({ req: { user } }) => Boolean(user),
+    // Decisions belong to the administration. D6 withdrawal is the one member
+    // write, and like Loan cancellation it does not come through here —
+    // `withdrawLoanExtension` validates ownership and the `pending` state and
+    // then writes with `overrideAccess: true`.
     update: ({ req: { user } }) => isAdmin(user),
     delete: ({ req: { user } }) => isAdmin(user),
   },
@@ -96,6 +100,9 @@ export const LoanExtension: CollectionConfig = {
           })
         }
         if (operation !== 'update' || !previousDoc || doc.status === previousDoc.status) return doc
+        // `withdrawn` (#153, D6) is deliberately outside both branches: the
+        // member withdrew it themselves, so there is no decision to announce,
+        // and the due date never moved. The row itself is the record.
         if (doc.status !== 'approved' && doc.status !== 'refused') return doc
 
         const loanId = resolveRelationId(doc.loan)
@@ -162,6 +169,9 @@ export const LoanExtension: CollectionConfig = {
         { label: 'قيد المراجعة', value: 'pending' },
         { label: 'مقبول', value: 'approved' },
         { label: 'مرفوض', value: 'refused' },
+        // D6 (#153): the member's own withdrawal of a request nobody has
+        // decided yet — not a refusal, which is the administration's answer.
+        { label: 'مسحوب', value: 'withdrawn' },
       ],
     },
     { name: 'days', type: 'number', required: true, min: 1 },

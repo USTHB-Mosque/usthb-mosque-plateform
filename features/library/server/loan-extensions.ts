@@ -5,12 +5,15 @@ import type { Loan, LoanExtension } from '@/payload-types'
 
 import { createNotification } from '@/features/notifications'
 import { MAX_EXTENSION_DAYS } from '@/utils/constants/loans'
+import { checkExtensionWithdrawGate } from '@/shared/lib/loan-gates'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { LogAction } from '@/collections/Log'
 
 export interface LoanExtensionActionResult {
   success: boolean
   message: string
   extensionId?: number
-  status?: 'pending' | 'approved' | 'refused'
+  status?: 'pending' | 'approved' | 'refused' | 'withdrawn'
 }
 
 const NOT_LOGGED_IN = 'يجب تسجيل الدخول أولاً'
@@ -178,6 +181,79 @@ export async function decideLoanExtensionLogic(
   }
 }
 
+/**
+ * D6 - Cancelability (#153): the borrower withdraws an extension request while
+ * it is still waiting on the administration. Once decided there is nothing to
+ * undo — an approval has already moved the due date, a refusal has already been
+ * answered — so `checkExtensionWithdrawGate` accepts `pending` and nothing else.
+ *
+ * The write uses `overrideAccess: true` for the same reason the Loan
+ * cancellation does: `loan-extensions.access.update` stays admin-only, because
+ * a member who could edit their own row could approve their own extension. This
+ * action validates ownership and state and then writes one fixed value.
+ *
+ * Nothing is announced. The `loan-extensions` afterChange hook only notifies on
+ * `approved`/`refused`, so a withdrawal is silent for the member (they pressed
+ * the button) and simply takes the request out of the administration's queue —
+ * the `withdrawn` row is itself the record.
+ */
+export async function withdrawLoanExtensionLogic(
+  extensionId: number | string,
+  ctx: ActionCtx,
+): Promise<LoanExtensionActionResult> {
+  try {
+    // Read regardless of the caller so ownership can be answered directly
+    // instead of surfacing a row-scoped 404.
+    const extension = (await ctx.payload.findByID({
+      collection: 'loan-extensions',
+      id: extensionId,
+      req: ctx.req,
+      overrideAccess: true,
+      depth: 0,
+    })) as LoanExtension
+
+    if (resolveRelationId(extension.user) !== ctx.user.id) {
+      return { success: false, message: 'لا يمكنك سحب طلب تمديد لست مالكه' }
+    }
+
+    const gate = checkExtensionWithdrawGate(extension.status)
+    if (!gate.ok) return { success: false, message: gate.message }
+
+    await ctx.payload.update({
+      collection: 'loan-extensions',
+      id: extension.id,
+      data: { status: 'withdrawn' },
+      req: ctx.req,
+      overrideAccess: true,
+    })
+
+    await ctx.payload.create({
+      collection: 'logs',
+      data: {
+        actor: ctx.user.id,
+        action: LogAction.ExtensionWithdrawn,
+        targetType: 'loan-extension',
+        targetId: String(extension.id),
+        timestamp: new Date().toISOString(),
+        message: 'سحب العضو طلب تمديد إعارة',
+        metadata: { loan: resolveRelationId(extension.loan) },
+      },
+      req: ctx.req,
+      overrideAccess: true,
+    })
+
+    return {
+      success: true,
+      message: 'تم سحب طلب التمديد',
+      extensionId: extension.id,
+      status: 'withdrawn',
+    }
+  } catch (error) {
+    console.error('Error withdrawing a loan extension:', error)
+    return { success: false, message: GENERIC_ERROR }
+  }
+}
+
 export async function requestLoanExtension(
   loanId: number | string,
   days: number,
@@ -196,4 +272,12 @@ export async function decideLoanExtension(
   const ctx = await getPayloadWithUser({ allowAdmin: true })
   if (!ctx) return { success: false, message: NOT_LOGGED_IN }
   return decideLoanExtensionLogic(extensionId, decision, ctx, adminResponse)
+}
+
+export async function withdrawLoanExtension(
+  extensionId: number | string,
+): Promise<LoanExtensionActionResult> {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { success: false, message: NOT_LOGGED_IN }
+  return withdrawLoanExtensionLogic(extensionId, ctx)
 }

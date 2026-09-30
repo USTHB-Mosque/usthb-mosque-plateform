@@ -30,9 +30,11 @@ const guestRoutes: Route[] = [
 ]
 
 // Member routes, scanned through the stored member session.
-// Member routes, scanned through the stored member session. The dashboard's
-// tables are desktop-only and its header hides on mobile, so settle on the
-// calendar widget, which exists at every width.
+// The dashboard's tables are desktop-only and its header hides on mobile, so
+// settle on the calendar widget, which exists at every width.
+// Known gap (#140): the Bell lives in the member portal only while #157 moves
+// it into the public navbar. Until that lands no route here shows it, so the
+// set has to grow a navbar route — otherwise the move lands unreviewed.
 const memberRoutes: Route[] = [
   { name: 'dashboard', path: '/user/dashboard', settle: 'section.rounded-xl' },
 ]

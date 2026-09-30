@@ -19,6 +19,7 @@ import {
   refuseLoanLogic,
 } from '@/features/library/server/loan-transitions'
 import { syncOverdueLoans } from '@/features/library/server/overdue'
+import { OVERDUE_SUSPENSION_MESSAGE, UNVERIFIED_PICKUP_MESSAGE } from '@/shared/lib/loan-gates'
 
 // One shared instance for the whole file; destroyed exactly once at the end —
 // destroying it per describe would strand every later operation on a dead pool.
@@ -59,6 +60,23 @@ async function waitlistAfter(bookId: number) {
     depth: 0,
   })
   return entries.docs.map((entry) => ({ user: entry.user, position: entry.position }))
+}
+
+/**
+ * The inbox of one user, newest first. Every `createTestUser` in `beforeEach`
+ * already fans a "member joined" notice out to the admins, so a test that
+ * wants to know whether *its* action notified takes a count on both sides
+ * rather than asserting an absolute.
+ */
+async function notificationsFor(userId: number) {
+  const rows = await payload.find({
+    collection: 'notifications',
+    where: { user: { equals: userId } },
+    sort: '-createdAt',
+    overrideAccess: true,
+    depth: 0,
+  })
+  return rows.docs
 }
 
 describe('acceptLoanLogic', () => {
@@ -459,6 +477,63 @@ describe('markLoanPickedUpLogic', () => {
     expect(result.message).toBe('لا يمكن تسجيل أخذ كتاب لطلب غير مقبول')
   })
 
+  it('refuses an unverified borrower and tells the admins to verify them', async () => {
+    const unverified = await createTestUser(payload, { email: 'unverified-pickup@usthb.dz' })
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, {
+      book: book.id,
+      user: unverified.id,
+      status: 'accepted',
+      pickupCode: 'مك-01/1/26',
+    })
+    const inboxBefore = await notificationsFor(admin.id)
+
+    const result = await markLoanPickedUpLogic(loan.id, await ctxFor(payload, admin))
+
+    expect(result.success).toBe(false)
+    expect(result.message).toBe(UNVERIFIED_PICKUP_MESSAGE)
+    expect((await loanAfter(loan.id)).status).toBe('accepted')
+
+    const inbox = await notificationsFor(admin.id)
+    expect(inbox.length).toBe(inboxBefore.length + 1)
+    const alert = inbox.find((row) => row.title === 'محاولة تسجيل استلام لعميل غير موثّق')
+    expect(alert).toBeDefined()
+    expect(alert?.type).toBe('verification')
+  })
+
+  it('enforces the same gate on the hook, which throws instead of notifying', async () => {
+    const unverified = await createTestUser(payload, { email: 'unverified-hook@usthb.dz' })
+    const book = await createTestBook(payload)
+    const loan = await createTestLoan(payload, {
+      book: book.id,
+      user: unverified.id,
+      status: 'accepted',
+      pickupCode: 'مك-01/1/26',
+    })
+    const inboxBefore = await notificationsFor(admin.id)
+
+    // The Payload admin surface reaches `picked_up` without the transition,
+    // so the hook is the one that closes it.
+    await expect(
+      payload.update({
+        collection: 'loans',
+        id: loan.id,
+        data: { status: 'picked_up' },
+        req: await boundReq(payload, admin),
+        overrideAccess: false,
+        depth: 0,
+      }),
+    ).rejects.toThrow(UNVERIFIED_PICKUP_MESSAGE)
+
+    // Rolled back: the loan never left `accepted`.
+    expect((await loanAfter(loan.id)).status).toBe('accepted')
+
+    // And deliberately silent — an alert written inside this transaction would
+    // have rolled back with the write it reports, so a failed attempt leaves
+    // the admins' inbox exactly as it found it.
+    expect((await notificationsFor(admin.id)).length).toBe(inboxBefore.length)
+  })
+
   it('stamps the due date from the book duration', async () => {
     const book = await createTestBook(payload)
     await payload.update({
@@ -786,6 +861,10 @@ describe('overdue: lazy check on read', () => {
     })
     expect(notifications.docs[0]?.type).toBe('loan')
     expect(notifications.docs[0]?.title).toBe('إعارة متأخرة')
+    // The alert carries the suspension itself, not just the lateness: SPEC §4
+    // makes it the enforcement mechanism, and the email template already says
+    // so — the in-app message has to agree with it.
+    expect(notifications.docs[0]?.message).toContain('تُوقف طلبات الإعارة الجديدة')
 
     const flagged = await payload.find({
       collection: 'loans',
@@ -902,20 +981,44 @@ describe('loan create guard (REST surface)', () => {
     expect(String(loan.user)).toBe(String(member.id))
   })
 
-  it('throws the Arabic verification message for unverified members', async () => {
+  it('lets an unverified member create — the gate moved to collection', async () => {
     const unverified = await createTestUser(payload, { email: 'unverified@usthb.dz' })
     const book = await createTestBook(payload)
     const req = await boundReq(payload, unverified)
 
+    const loan = await payload.create({
+      collection: 'loans',
+      data: { book: book.id, user: unverified.id, loanDate: new Date().toISOString() },
+      req,
+      overrideAccess: false,
+      depth: 0,
+    })
+
+    expect(loan.status).toBe('pending')
+    expect(String(loan.user)).toBe(String(unverified.id))
+  })
+
+  it('throws the suspension message while a loan is overdue', async () => {
+    const book = await createTestBook(payload)
+    const lateBook = await createTestBook(payload, { available: 0, total: 1 })
+    await createTestLoan(payload, {
+      book: lateBook.id,
+      user: member.id,
+      status: 'picked_up',
+      pickupCode: 'مك-01/1/26',
+      dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    const req = await boundReq(payload, member)
+
     await expect(
       payload.create({
         collection: 'loans',
-        data: { book: book.id, user: unverified.id, loanDate: new Date().toISOString() },
+        data: { book: book.id, user: member.id, loanDate: new Date().toISOString() },
         req,
         overrideAccess: false,
         depth: 0,
       }),
-    ).rejects.toThrow('يجب تأكيد حسابك قبل استعارة الكتب')
+    ).rejects.toThrow(OVERDUE_SUSPENSION_MESSAGE)
   })
 
   it('throws the borrow-limit message at the configured limit', async () => {

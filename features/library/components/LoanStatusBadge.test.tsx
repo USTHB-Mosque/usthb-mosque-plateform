@@ -25,6 +25,7 @@ describe('getEffectiveLoanStatus', () => {
     expect(getEffectiveLoanStatus(loanWith({ status: 'accepted' }))).toBe('accepted')
     expect(getEffectiveLoanStatus(loanWith({ status: 'returned' }))).toBe('returned')
     expect(getEffectiveLoanStatus(loanWith({ status: 'refused' }))).toBe('refused')
+    expect(getEffectiveLoanStatus(loanWith({ status: 'cancelled' }))).toBe('cancelled')
   })
 
   it('derives overdue from a past due date, never stores it', () => {
@@ -62,11 +63,15 @@ describe('getDueUrgency', () => {
     expect(getDueUrgency(loanWith({ status: 'picked_up', dueDate: comfortable }))).toBe('ok')
     expect(getDueUrgency(loanWith({ status: 'returned' }))).toBe('ok')
     expect(getDueUrgency(loanWith({ status: 'refused' }))).toBe('ok')
+    // A cancelled loan owes nothing back, so its stale due date must not read
+    // as urgency.
+    const stale = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    expect(getDueUrgency(loanWith({ status: 'cancelled', dueDate: stale }))).toBe('ok')
   })
 })
 
 describe('LoanStatusBadge', () => {
-  it.each(['pending', 'accepted', 'picked_up', 'returned', 'refused'] as const)(
+  it.each(['pending', 'accepted', 'picked_up', 'returned', 'refused', 'cancelled'] as const)(
     'renders the Arabic label for %s',
     (status) => {
       render(<LoanStatusBadge loan={loanWith({ status })} />)

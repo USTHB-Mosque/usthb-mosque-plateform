@@ -7,12 +7,14 @@ import { LogAction, type LogActionValue } from './logs-core'
 import {
   acceptLoan,
   createAcceptedLoanLogic,
+  expirePickupWindows,
   markLoanPickedUp as libraryMarkLoanPickedUp,
   markLoanReturned as libraryMarkLoanReturned,
   refuseLoan,
 } from '@/features/library'
 import { createNotification } from '@/features/notifications'
-import { formatArabicDate } from '@/shared/lib/dates'
+import { formatArabicDate, formatHour } from '@/shared/lib/dates'
+import { getLoanSettings } from '@/shared/lib/settings'
 import type { Payload, Where } from 'payload'
 import type { Book, Loan, User } from '@/payload-types'
 import type { LoanStatus } from '@/utils/constants/loans'
@@ -63,7 +65,15 @@ export interface AdminLoansStats {
 }
 
 export async function getAdminLoansStats(): Promise<AdminLoansStats> {
-  const { payload, user } = await getAdminCtx()
+  const ctx = await getAdminCtx()
+  const { payload, user } = ctx
+
+  // #153, D1: the scheduled sweep is the normal path, but the stats and the
+  // list below are the surfaces that show pickup state — so they drain the
+  // queue first rather than count a window that has already lapsed. The
+  // explicit object leaves the caller's `user` out: the sweep is a system
+  // write and runs with `overrideAccess` inside.
+  await expirePickupWindows({ payload: ctx.payload, req: ctx.req })
 
   const [totalLoans, pendingLoans, extensionRequests, overdueLoans] = await Promise.all([
     payload.count({
@@ -167,7 +177,14 @@ export async function getLoansByStatus(
   status: LoanStatus,
   params: AdminLoansQuery = {},
 ): Promise<LoansPageResult> {
-  const { payload, user } = await getAdminCtx()
+  const ctx = await getAdminCtx()
+  const { payload, user } = ctx
+
+  // #153, D1: these tabs are where the pickup desk looks for window state, so
+  // they drain the queue before querying — a window that has lapsed is refused
+  // instead of listed. Same explicit object as the stats read: the sweep is a
+  // system write and never receives the caller's `user`.
+  await expirePickupWindows({ payload: ctx.payload, req: ctx.req })
 
   const andFilters: Where[] = [{ status: { equals: status } }]
 
@@ -269,6 +286,63 @@ export async function markLoanPickedUp(loanId: number) {
   )
   revalidateAdminLoans()
   return { ok: true }
+}
+
+/**
+ * D1 (#153): the admin reschedules a collection. Unlimited, as the decision
+ * requires, and every reschedule opens a fresh window measured from this
+ * moment.
+ *
+ * The no-show counter is deliberately untouched. Rescheduling is the admin
+ * helping a member, and D1 is explicit that it must not reset what a no-show
+ * has already earned — only lifting the block does that.
+ */
+export async function reschedulePickup(loanId: number, pickupDate: string) {
+  const ctx = await getAdminCtx()
+
+  let loan
+  try {
+    loan = (await ctx.payload.findByID({
+      collection: 'loans',
+      id: Number(loanId),
+      depth: 0,
+      req: ctx.req,
+      overrideAccess: false,
+    })) as Loan | undefined
+  } catch {
+    return { ok: false as const, error: 'الإعارة غير موجودة' }
+  }
+  if (!loan) return { ok: false as const, error: 'الإعارة غير موجودة' }
+
+  if (loan.status !== 'accepted') {
+    return { ok: false as const, error: 'إعادة الجدولة متاحة فقط للإعارات المقبولة' }
+  }
+
+  const at = new Date(pickupDate)
+  if (Number.isNaN(at.getTime())) {
+    return { ok: false as const, error: 'تاريخ استلام غير صالح' }
+  }
+
+  const { pickupWindowHours } = await getLoanSettings(ctx.payload, ctx.req)
+  await ctx.payload.update({
+    collection: 'loans',
+    id: loan.id,
+    data: {
+      pickupDate: at.toISOString(),
+      pickupHour: formatHour(at),
+      pickupWindowExpiresAt: new Date(
+        Date.now() + pickupWindowHours * 60 * 60 * 1000,
+      ).toISOString(),
+    },
+    req: ctx.req,
+    overrideAccess: false,
+  })
+
+  await writeLoanLog(ctx.payload, ctx.user, loan.id, LogAction.LoanRescheduled, (title) =>
+    title ? `أعاد جدولة استلام: ${title}` : `أعاد جدولة استلام إعارة #${loan.id}`,
+  )
+  revalidateAdminLoans()
+  return { ok: true as const }
 }
 
 /**
