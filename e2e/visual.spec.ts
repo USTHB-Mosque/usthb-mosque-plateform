@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 
 import { E2E_DEV } from './lib/env'
-import { userStorageState } from './lib/auth-state'
+import { adminStorageState, userStorageState } from './lib/auth-state'
+import { pinDarkTheme } from './lib/theme'
 
 // Direct URLs resolve through the seed's title -> id manifest (see the seed
 // contract in AGENTS.md): never hard-code an id, the seed restarts them at 1.
@@ -20,6 +21,11 @@ type Route = {
 }
 
 // Guest routes, exactly as a visitor sees them.
+//
+// Light only, deliberately. ThemeScopeGuard forces `light` on every path that
+// is not portal/admin, so a "dark" capture here would be pixel-identical to the
+// light one — the dark pass lives below, over the surface that can actually
+// change colour. Lifting that restriction is out of scope for #172.
 const guestRoutes: Route[] = [
   { name: 'landing', path: '/' },
   { name: 'library', path: '/library', settle: 'a[href*="/library/book/"]' },
@@ -37,6 +43,22 @@ const guestRoutes: Route[] = [
 // set has to grow a navbar route — otherwise the move lands unreviewed.
 const memberRoutes: Route[] = [
   { name: 'dashboard', path: '/user/dashboard', settle: 'section.rounded-xl' },
+  // Notifications, loans and settings carry the heaviest concentration of the
+  // raw literals the audit flagged (LoanStatusBadge, AccountInfoSection,
+  // SecuritySection), so they are the pages a dark regression shows up on.
+  { name: 'notifications', path: '/user/notifications' },
+  { name: 'my-loans', path: '/user/my-loans' },
+  { name: 'settings', path: '/user/settings' },
+]
+
+// The admin panel was never under visual regression at all, despite being half
+// of #172's scope and owning three of its named call-outs: the sidebar, the
+// analytics charts and the status badges in the loan tables.
+const adminRoutes: Route[] = [
+  { name: 'admin-dashboard', path: '/admin-panel/dashboard', settle: 'h1' },
+  { name: 'admin-library', path: '/admin-panel/library', settle: 'h1' },
+  { name: 'admin-users', path: '/admin-panel/users', settle: 'h1' },
+  { name: 'admin-loans', path: '/admin-panel/loans', settle: 'h1' },
 ]
 
 const VIEWPORTS = [
@@ -75,7 +97,15 @@ async function visualMasks(page: Page): Promise<ReturnType<typeof page.locator>[
   return result
 }
 
-async function captureVisual(page: Page, route: Route, name: string): Promise<void> {
+async function captureVisual(
+  page: Page,
+  route: Route,
+  name: string,
+  theme: 'light' | 'dark' = 'light',
+): Promise<void> {
+  // Must run before the first navigation: the no-flash script reads
+  // localStorage.theme synchronously in <head>.
+  if (theme === 'dark') await pinDarkTheme(page)
   await page.goto(route.path)
   if (route.settle) {
     await expect(page.locator(route.settle).first()).toBeVisible({ timeout: 30_000 })
@@ -87,7 +117,9 @@ async function captureVisual(page: Page, route: Route, name: string): Promise<vo
   await pauseVideos(page)
   await page.waitForTimeout(1_200)
   const mask = await visualMasks(page)
-  await expect(page).toHaveScreenshot(`${name}.png`, { mask })
+  // The dark variant appends to the light name, so every baseline that exists
+  // today keeps its exact path and stays valid.
+  await expect(page).toHaveScreenshot(`${name}${theme === 'dark' ? '-dark' : ''}.png`, { mask })
 }
 
 test.describe('visual regression of key routes', () => {
@@ -100,20 +132,37 @@ test.describe('visual regression of key routes', () => {
     test.describe(`desktop ${viewport.width}x${viewport.height}`, () => {
       test.use({ viewport })
 
+      const at = (route: Route) => `${route.name}-${viewport.width}`
+
       for (const route of guestRoutes) {
         test(`${route.name} (${route.path})`, async ({ page }) => {
-          await captureVisual(page, route, `${route.name}-${viewport.width}`)
+          await captureVisual(page, route, at(route))
+        })
+      }
+
+      // Everything below sits inside ThemeScopeGuard's scope, so it is
+      // captured in both themes. The light shot guards the invariant that a
+      // dark pass must not disturb light; the dark shot is the pass #172's
+      // acceptance gate asks for.
+      const captureBoth = (route: Route): void => {
+        test(`light — ${route.name} (${route.path})`, async ({ page }) => {
+          await captureVisual(page, route, at(route))
+        })
+        test(`dark — ${route.name} (${route.path})`, async ({ page }) => {
+          await captureVisual(page, route, at(route), 'dark')
         })
       }
 
       test.describe('member pages', () => {
         test.use({ storageState: userStorageState })
 
-        for (const route of memberRoutes) {
-          test(`${route.name} (${route.path})`, async ({ page }) => {
-            await captureVisual(page, route, `${route.name}-${viewport.width}`)
-          })
-        }
+        for (const route of memberRoutes) captureBoth(route)
+      })
+
+      test.describe('admin pages', () => {
+        test.use({ storageState: adminStorageState })
+
+        for (const route of adminRoutes) captureBoth(route)
       })
     })
   }
