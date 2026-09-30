@@ -33,7 +33,9 @@ beforeEach(async () => {
   })
   setNextHeaders(makeAuthHeaders(token))
 
-  vi.spyOn(payload, 'sendEmail').mockImplementation(async () => undefined)
+  vi.spyOn(payload, 'sendEmail')
+    .mockImplementation(async () => undefined)
+    .mockClear()
 })
 
 afterAll(async () => {
