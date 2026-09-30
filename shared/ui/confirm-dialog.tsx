@@ -12,7 +12,12 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Loader2 } from 'lucide-react'
 
-interface LoanConfirmDialogProps {
+/**
+ * The confirmation step SPEC requires before any destructive or mutating
+ * action. Fully parameterised so the caller owns the wording — the danger is
+ * in the sentence, not in the component.
+ */
+interface ConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
@@ -22,7 +27,7 @@ interface LoanConfirmDialogProps {
   onConfirm: () => void
 }
 
-const LoanConfirmDialog: React.FC<LoanConfirmDialogProps> = ({
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   onOpenChange,
   title,
@@ -57,4 +62,4 @@ const LoanConfirmDialog: React.FC<LoanConfirmDialogProps> = ({
   )
 }
 
-export default LoanConfirmDialog
+export default ConfirmDialog

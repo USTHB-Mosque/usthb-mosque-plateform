@@ -14,7 +14,7 @@ export default async function DashboardMyLoansPage() {
 
   return (
     <UserPage title="إعاراتي">
-      <LoansTable loans={data.loans} />
+      <LoansTable loans={data.loans} extensions={data.extensions} />
     </UserPage>
   )
 }

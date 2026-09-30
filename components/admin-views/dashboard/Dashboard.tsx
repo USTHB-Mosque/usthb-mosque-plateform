@@ -39,7 +39,7 @@ import { LoanDetailsDialog } from '@/features/library'
 import { markLoanPickedUp, sendLoanReminder, rejectLoan } from '@/features/admin/server/loans'
 import BulkActionsBar from '@/shared/common/BulkActionsBar'
 import TableCheckbox from '@/components/admin-views/shared/TableCheckbox'
-import LoanConfirmDialog from '@/components/admin-views/loans/LoanConfirmDialog'
+import ConfirmDialog from '@/shared/ui/confirm-dialog'
 import RejectLoanDialog from '@/components/admin-views/loans/RejectLoanDialog'
 import { buildCalendarEvents } from './calendar-events'
 import { cn } from '@/shared/lib/utils'
@@ -411,7 +411,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       ) : null}
 
       {confirm ? (
-        <LoanConfirmDialog
+        <ConfirmDialog
           open
           onOpenChange={() => setConfirm(null)}
           title="تسجيل أخذ الكتاب"

@@ -197,7 +197,10 @@ export const Loan: CollectionConfig = {
     },
     create: ({ req: { user } }) => Boolean(user),
     // Loans move only through the admin transitions; a borrower never edits
-    // their own row.
+    // their own row. The one exception is D6 cancellation, which is a member
+    // action on their own request — and even that does not come through here:
+    // `cancelLoan` writes with `overrideAccess: true` after validating
+    // ownership and state itself, so this rule stays as narrow as it reads.
     update: ({ req: { user } }) => isAdmin(user),
     delete: ({ req: { user } }) => isAdmin(user),
   },
@@ -314,7 +317,15 @@ export const Loan: CollectionConfig = {
           })
         }
 
-        if (status === 'returned' || status === 'refused') {
+        // D6 (#153): a cancelled Loan unwinds exactly what an admin refusal of
+        // the same Loan would unwind — the reserved copy goes back and the
+        // queue moves up. `releaseAndPromote` only acts when the *previous*
+        // status held a copy, so `pending -> cancelled` releases nothing (there
+        // was nothing to release) and `accepted -> cancelled` hands the copy to
+        // the next waiter. The notification block below deliberately does NOT
+        // include `cancelled`: the member cancelled it themselves, so telling
+        // them so would be noise, and D6 refuses to count it as a no-show.
+        if (status === 'returned' || status === 'refused' || status === 'cancelled') {
           await releaseAndPromote(bookId, previousStatus, req, context)
         }
 
@@ -431,6 +442,9 @@ export const Loan: CollectionConfig = {
         { label: 'تم الأخذ', value: 'picked_up' },
         { label: 'تم الإرجاع', value: 'returned' },
         { label: 'مرفوض', value: 'refused' },
+        // D6 (#153): the member's own withdrawal, distinct from `refused` so
+        // the desk can tell an administration decision from a member decision.
+        { label: 'ملغى', value: 'cancelled' },
       ],
     },
     { name: 'loanDate', type: 'date', required: true, defaultValue: () => new Date() },

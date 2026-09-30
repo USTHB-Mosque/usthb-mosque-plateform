@@ -10,22 +10,27 @@ import {
   DialogFooter,
 } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
-import { BookOpen, Info } from 'lucide-react'
+import { BookOpen, Info, XCircle } from 'lucide-react'
 import type { Loan } from '@/payload-types'
-import LoanStatusBadge from './LoanStatusBadge'
+import { canMemberCancel } from '@/shared/lib/loan-gates'
+import LoanStatusBadge, { getEffectiveLoanStatus } from './LoanStatusBadge'
 
 interface LoanRequestDetailsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   loan: Loan | null
+  /** D6 (#153): second entry point to the same confirmation as the table menu. */
+  onCancel?: (loan: Loan) => void
 }
 
 const LoanRequestDetailsDialog: React.FC<LoanRequestDetailsDialogProps> = ({
   open,
   onOpenChange,
   loan,
+  onCancel,
 }) => {
   const book = loan?.book as { title?: string; author?: string } | undefined
+  const showCancel = Boolean(onCancel && loan && canMemberCancel(getEffectiveLoanStatus(loan)))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,6 +74,17 @@ const LoanRequestDetailsDialog: React.FC<LoanRequestDetailsDialogProps> = ({
         </div>
 
         <DialogFooter>
+          {showCancel && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => loan && onCancel?.(loan)}
+              className="font-alyamama"
+            >
+              <XCircle className="me-1 size-4" />
+              إلغاء الطلب
+            </Button>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>

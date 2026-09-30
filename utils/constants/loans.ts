@@ -1,17 +1,40 @@
 /**
- * Loan lifecycle vocabulary (#19, Figma Borrowings). The five stored states of
- * the `loans` collection. Overdue is deliberately NOT one of them: it is
- * derived from `dueDate` (see `getEffectiveLoanStatus`), decided as a lazy
+ * Loan lifecycle vocabulary (#19, Figma Borrowings; #153, D6). The six stored
+ * states of the `loans` collection. Overdue is deliberately NOT one of them: it
+ * is derived from `dueDate` (see `getEffectiveLoanStatus`), decided as a lazy
  * check on read rather than a scheduled job.
+ *
+ * `cancelled` (#153, D6) is the member's own withdrawal of a request they have
+ * not collected yet. It is deliberately not `refused`: a refusal is the
+ * administration's decision and carries a reason the member reads, while a
+ * cancellation is the member acting on their own request — so it never notifies
+ * the member and never touches `noShowCount`, where a refusal would.
  */
-export const LOAN_STATUSES = ['pending', 'accepted', 'picked_up', 'returned', 'refused'] as const
+export const LOAN_STATUSES = [
+  'pending',
+  'accepted',
+  'picked_up',
+  'returned',
+  'refused',
+  'cancelled',
+] as const
 
 export type LoanStatus = (typeof LOAN_STATUSES)[number]
 
-/** Statuses that still hold a place in the borrower's active-loan budget. */
+/**
+ * Statuses that still hold a place in the borrower's active-loan budget.
+ *
+ * `cancelled` is absent on purpose: cancelling gives the slot straight back, so
+ * the budget the D7 borrow limit counts can never be held hostage by a request
+ * the member walked away from.
+ */
 export const ACTIVE_LOAN_STATUSES: readonly LoanStatus[] = ['pending', 'accepted', 'picked_up']
 
-/** Where a loan currently holds (or may hold) a physical copy. */
+/**
+ * Where a loan currently holds (or may hold) a physical copy. `cancelled` is
+ * absent: only `accepted` reserves, so `pending -> cancelled` releases nothing
+ * and `accepted -> cancelled` releases the copy the hook reserved.
+ */
 export const RESERVED_LOAN_STATUSES: readonly LoanStatus[] = ['accepted', 'picked_up']
 
 /** Platform-wide fallbacks; also the `defaultValue`s of `globals/Settings.ts`. */

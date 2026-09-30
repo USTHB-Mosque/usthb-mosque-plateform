@@ -115,3 +115,58 @@ export function checkPickupGate(
   }
   return { ok: true }
 }
+
+/**
+ * D6, Cancelability (#153) — a Loan may be cancelled by its borrower only while
+ * cancelling still leaves the queue no worse off than doing nothing would.
+ *
+ * Two states, for the two different reasons the rule bites. `pending` holds no
+ * copy, so cancelling simply drops the request. `accepted` holds one, and
+ * cancelling releases it and promotes the queue head — strictly better for
+ * everyone than the window lapsing into a no-show, which is exactly why D6
+ * refuses to punish it. From `picked_up` the book is in a member's hands and
+ * the only way out is returning it; `returned`, `refused` and `cancelled` are
+ * terminal and have nothing left to cancel.
+ *
+ * Shared by the server action (which turns the failure into a message) and the
+ * member table (which uses `canMemberCancel` to decide whether to offer the
+ * menu item at all), so the two can never disagree about what is cancellable.
+ */
+export const CANCEL_UNAVAILABLE_MESSAGE = 'لا يمكن إلغاء إعارة بهذه الحالة'
+
+const CANCELLABLE_LOAN_STATUSES: readonly string[] = ['pending', 'accepted']
+
+export function checkCancelGate(status: string | null | undefined): GateResult {
+  if (!CANCELLABLE_LOAN_STATUSES.includes(status ?? '')) {
+    return { ok: false, message: CANCEL_UNAVAILABLE_MESSAGE }
+  }
+  return { ok: true }
+}
+
+/** The menu-visibility view of `checkCancelGate`: same rule, no message. */
+export function canMemberCancel(status: string | null | undefined): boolean {
+  return checkCancelGate(status).ok
+}
+
+/**
+ * D6, Cancelability (#153) — an extension request may be withdrawn only while it
+ * is still waiting on the administration. Once it is decided the due date has
+ * already moved (approval) or the member has their answer (refusal), and D6 is
+ * explicit that there is nothing left to undo. `withdrawn` reads as false too:
+ * a withdrawal is itself a decision, and it is not repeatable.
+ */
+export const EXTENSION_WITHDRAW_UNAVAILABLE_MESSAGE = 'لا يمكن سحب طلب التمديد بعد معالجته'
+
+const WITHDRAWABLE_EXTENSION_STATUSES: readonly string[] = ['pending']
+
+export function checkExtensionWithdrawGate(status: string | null | undefined): GateResult {
+  if (!WITHDRAWABLE_EXTENSION_STATUSES.includes(status ?? '')) {
+    return { ok: false, message: EXTENSION_WITHDRAW_UNAVAILABLE_MESSAGE }
+  }
+  return { ok: true }
+}
+
+/** The menu-visibility view of `checkExtensionWithdrawGate`. */
+export function canWithdrawExtension(status: string | null | undefined): boolean {
+  return checkExtensionWithdrawGate(status).ok
+}

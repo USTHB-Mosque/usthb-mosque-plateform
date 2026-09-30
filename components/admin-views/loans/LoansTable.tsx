@@ -44,7 +44,7 @@ import { adminLoansKeys } from '@/features/admin/api/loans.queries'
 import { booksKeys } from '@/features/library/api/books.queries'
 import { useQueryClient } from '@tanstack/react-query'
 import type { LoanStatus } from '@/utils/constants/loans'
-import LoanConfirmDialog from './LoanConfirmDialog'
+import ConfirmDialog from '@/shared/ui/confirm-dialog'
 import PickupWindowTag from './PickupWindowTag'
 import RejectLoanDialog from './RejectLoanDialog'
 import ReschedulePickupDialog from './ReschedulePickupDialog'
@@ -538,7 +538,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
       </div>
 
       {confirm ? (
-        <LoanConfirmDialog
+        <ConfirmDialog
           open
           onOpenChange={() => setConfirm(null)}
           title={confirmContent[confirm.action].title}

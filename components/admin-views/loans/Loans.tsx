@@ -38,6 +38,9 @@ const LOAN_TABS: Array<{ value: LoanStatus; label: string }> = [
   { value: 'picked_up', label: 'تم الأخذ' },
   { value: 'returned', label: 'تم الإرجاع' },
   { value: 'refused', label: 'مرفوض' },
+  // D6 (#153): a member's own withdrawal, kept apart from `refused` so the
+  // desk can tell its own decisions from the members'.
+  { value: 'cancelled', label: 'ملغى' },
 ]
 
 const OVERDUE_FILTER_OPTIONS = [

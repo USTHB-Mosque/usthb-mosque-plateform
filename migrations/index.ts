@@ -24,6 +24,7 @@ import * as migration_20260929_010000_notification_event_key from './20260929_01
 import * as migration_20260930_000000_loan_pickup_window from './20260930_000000_loan_pickup_window'
 import * as migration_20260930_010000_pickup_window_enums from './20260930_010000_pickup_window_enums'
 import * as migration_20260930_020000_backfill_pickup_window from './20260930_020000_backfill_pickup_window'
+import * as migration_20260930_030000_member_cancellation from './20260930_030000_member_cancellation'
 
 export const migrations = [
   {
@@ -155,5 +156,10 @@ export const migrations = [
     up: migration_20260930_020000_backfill_pickup_window.up,
     down: migration_20260930_020000_backfill_pickup_window.down,
     name: '20260930_020000_backfill_pickup_window',
+  },
+  {
+    up: migration_20260930_030000_member_cancellation.up,
+    down: migration_20260930_030000_member_cancellation.down,
+    name: '20260930_030000_member_cancellation',
   },
 ]

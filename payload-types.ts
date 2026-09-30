@@ -425,7 +425,7 @@ export interface Loan {
   id: number;
   book: number | Book;
   user: number | User;
-  status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused') | null;
+  status?: ('pending' | 'accepted' | 'picked_up' | 'returned' | 'refused' | 'cancelled') | null;
   loanDate: string;
   dueDate?: string | null;
   pickupDate?: string | null;
@@ -525,7 +525,7 @@ export interface LoanExtension {
   id: number;
   loan: number | Loan;
   user: number | User;
-  status?: ('pending' | 'approved' | 'refused') | null;
+  status?: ('pending' | 'approved' | 'refused' | 'withdrawn') | null;
   days: number;
   reason?: string | null;
   adminResponse?: string | null;
@@ -559,8 +559,10 @@ export interface Log {
     | 'loan_rescheduled'
     | 'loan_picked_up'
     | 'loan_returned'
+    | 'loan_cancelled'
     | 'extension_approved'
     | 'extension_refused'
+    | 'extension_withdrawn'
     | 'user_verified'
     | 'user_rejected'
     | 'user_block_lifted'

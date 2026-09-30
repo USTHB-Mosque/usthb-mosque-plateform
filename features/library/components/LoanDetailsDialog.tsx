@@ -18,16 +18,20 @@ import {
   BookOpen,
   ArrowRightToLine,
   ArrowLeftFromLine,
+  XCircle,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import type { Loan } from '@/payload-types'
+import { canMemberCancel } from '@/shared/lib/loan-gates'
 import LoanStatusBadge, { getEffectiveLoanStatus } from './LoanStatusBadge'
 
 interface LoanDetailsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   loan: Loan | null
+  /** D6 (#153): second entry point to the same confirmation as the table menu. */
+  onCancel?: (loan: Loan) => void
 }
 
 const WEEKDAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
@@ -67,7 +71,12 @@ function isDateInRange(date: Date, start: Date, end: Date) {
   return d >= start.getTime() && d <= end.getTime()
 }
 
-const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChange, loan }) => {
+const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({
+  open,
+  onOpenChange,
+  loan,
+  onCancel,
+}) => {
   const loanDate = loan?.loanDate ? new Date(loan.loanDate) : null
   const dueDate = loan?.dueDate ? new Date(loan.dueDate) : null
   const returnDate = loan?.returnDate ? new Date(loan.returnDate) : null
@@ -122,6 +131,14 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChang
   }
 
   const effectiveStatus = loan ? getEffectiveLoanStatus(loan) : null
+  // Only while cancelling is still allowed — a returned, overdue or already
+  // cancelled loan offers no way out (D6).
+  const showCancel = Boolean(onCancel && loan && canMemberCancel(effectiveStatus))
+  // D6 (#153): a cancelled loan has no period left to honour — it was the
+  // borrower's to keep only until they withdrew it. Showing a highlighted due
+  // date next to `ملغى` would read as a deadline that no longer exists, so the
+  // calendar and the date rows go with it.
+  const showDates = effectiveStatus !== 'cancelled'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,7 +160,7 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChang
           )}
 
           {/* Loan interval calendar */}
-          {loanDate && dueDate && (
+          {loanDate && dueDate && showDates && (
             <div className="flex flex-col gap-2">
               <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 <CalendarDays className="size-3.5 text-primary" />
@@ -238,48 +255,61 @@ const LoanDetailsDialog: React.FC<LoanDetailsDialogProps> = ({ open, onOpenChang
           )}
 
           {/* Loan info rows */}
-          <div className="flex flex-col gap-2.5 rounded-lg border border-stroke-grey bg-background p-3">
-            <div className="flex items-center gap-2">
-              <ArrowRightToLine className="size-4 text-primary" />
-              <span className="text-xs text-muted-foreground">تاريخ الإعارة</span>
-              <span className="me-auto text-xs font-medium text-card-foreground">
-                {loanDate ? format(loanDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="size-4 text-[#FFB020]" />
-              <span className="text-xs text-muted-foreground">موعد الإرجاع</span>
-              <span className="me-auto text-xs font-medium text-card-foreground">
-                {dueDate ? format(dueDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
-              </span>
-            </div>
-            {/* D1 (#153): the window is the deadline that decides whether an
+          {showDates && (
+            <div className="flex flex-col gap-2.5 rounded-lg border border-stroke-grey bg-background p-3">
+              <div className="flex items-center gap-2">
+                <ArrowRightToLine className="size-4 text-primary" />
+                <span className="text-xs text-muted-foreground">تاريخ الإعارة</span>
+                <span className="me-auto text-xs font-medium text-card-foreground">
+                  {loanDate ? format(loanDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="size-4 text-[#FFB020]" />
+                <span className="text-xs text-muted-foreground">موعد الإرجاع</span>
+                <span className="me-auto text-xs font-medium text-card-foreground">
+                  {dueDate ? format(dueDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
+                </span>
+              </div>
+              {/* D1 (#153): the window is the deadline that decides whether an
                 accepted copy comes back as a no-show, so the member is shown
                 it here rather than only in the acceptance notice. */}
-            {effectiveStatus === 'accepted' && loan?.pickupWindowExpiresAt && (
-              <div className="flex items-center gap-2">
-                <CalendarDays className="size-4 text-primary" />
-                <span className="text-xs text-muted-foreground">آخر موعد للاستلام</span>
-                <span className="me-auto text-xs font-medium text-card-foreground">
-                  {format(new Date(loan.pickupWindowExpiresAt), 'd MMM yyyy HH:mm', {
-                    locale: arDZ,
-                  })}
-                </span>
-              </div>
-            )}
-            {returnDate && (
-              <div className="flex items-center gap-2">
-                <ArrowLeftFromLine className="size-4 text-[#0DE9C3]" />
-                <span className="text-xs text-muted-foreground">تم الإرجاع</span>
-                <span className="me-auto text-xs font-medium text-card-foreground">
-                  {format(returnDate, 'd MMM yyyy', { locale: arDZ })}
-                </span>
-              </div>
-            )}
-          </div>
+              {effectiveStatus === 'accepted' && loan?.pickupWindowExpiresAt && (
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="size-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">آخر موعد للاستلام</span>
+                  <span className="me-auto text-xs font-medium text-card-foreground">
+                    {format(new Date(loan.pickupWindowExpiresAt), 'd MMM yyyy HH:mm', {
+                      locale: arDZ,
+                    })}
+                  </span>
+                </div>
+              )}
+              {returnDate && (
+                <div className="flex items-center gap-2">
+                  <ArrowLeftFromLine className="size-4 text-[#0DE9C3]" />
+                  <span className="text-xs text-muted-foreground">تم الإرجاع</span>
+                  <span className="me-auto text-xs font-medium text-card-foreground">
+                    {format(returnDate, 'd MMM yyyy', { locale: arDZ })}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <DialogFooter>
+          {showCancel && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => loan && onCancel?.(loan)}
+              className="font-alyamama"
+            >
+              <XCircle className="me-1 size-4" />
+              إلغاء الطلب
+            </Button>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)} className="font-alyamama">
             إغلاق
           </Button>

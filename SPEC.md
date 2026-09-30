@@ -93,13 +93,15 @@ made.
 
 **Real-world flow (confirmed):** loans are **physical** - the book is picked up at the mosque. Flow: verified user requests -> admin accepts -> copy reserved + **pickup window** -> user collects at the mosque -> admin marks `picked_up` -> due date from a **configurable duration** -> admin marks `returned`. Extensions go through admin, with auto-approval when the queue is empty.
 
-**Stored states (5):** the `loans` collection stores exactly these five.
+**Stored states (6):** the `loans` collection stores exactly these six.
 
 1. `pending` (fresh request awaiting an admin decision; the "accepted borrowings" queue)
 2. `accepted` (copy reserved, pickup code minted, pickup slot + **pickup window** set)
 3. `picked_up` (user collected the book; loan active; due date stamped)
 4. `returned` (book returned; copy released -> next waitlisted member promoted + notified)
 5. `refused` (admin declined, or the pickup window expired; a reason is always recorded)
+6. `cancelled` (the member withdrew their own request before collecting it; no reason, no
+   notification, no no-show - see **D6**)
 
 **Deliberately not a stored state:**
 
@@ -107,7 +109,7 @@ made.
 - **Extension request** - a separate collection (`loan-extensions`). The Loan stays `picked_up` throughout, so an extension can never itself go overdue or be picked up.
 - **Overdue** - **derived, never stored.** A `picked_up` Loan past its `dueDate` reads as overdue via `getEffectiveLoanStatus`. The borrower is notified exactly once through an `overdueNotified` flag, on a lazy check at read time rather than a scheduled job. Accepted trade-off: a member who never opens the portal is not notified.
 - **No-show** - a `refused` Loan whose reason is window expiry. A separate state would only have duplicated `refused`.
-- **`on_site`, `cancelled`** - v2, see Section 2.
+- **`on_site`** - v2, see Section 2.
 
 **Key transitions & system actions (locked rules):**
 
@@ -116,7 +118,8 @@ made.
 - **Due date & return:** loan duration **configurable** in Settings (default 14 days), overridable per book. Admin marks `returned` -> `availableBooks + 1` -> the waitlist head is promoted in the same transaction and notified.
 - **Overdue:** auto **email + in-app alert** "borrowing duration is over", exactly once. **Suspension of new loans** until the book is returned. If the waitlist is non-empty -> **request return**; else -> **suggest extension**.
 - **Extension:** user requests -> **auto-approve when the queue is empty**; else admin approves/refuses with a reason. Eligibility, caps and the total-duration bound are in **D5**.
-- **Cancelability:** every operation (Loan request, extension, registration, pickup) has explicit cancel rules - see **D6** in Section 14.
+- **Cancelability:** every operation (Loan request, extension, registration, pickup) has explicit cancel rules - see **D6** in Section 14. Loan requests and extension requests are **built**: a member withdraws a `pending` or `accepted` Loan (the copy is released and the queue promoted when one was reserved) or a `pending` extension, from the three-dot menu or the details dialog, behind a confirmation. Cancelling is never a no-show and never notifies the member.
+- **Member writes to admin-owned rows:** `loans.access.update` and `loan-extensions.access.update` stay admin-only - a member who could edit their own row could set `status` or `dueDate`. Cancellation is therefore a server action that reads the row with `overrideAccess: false`, validates ownership and state, and writes the single fixed value with `overrideAccess: true` (the pattern `releaseAndPromote` and the extension auto-approve already follow). Each transition writes an audit row (`loan_cancelled`, `extension_withdrawn`).
 
 **Verification tie-in:** unverified users can request/waitlist but **cannot reach `picked_up`**; admin is alerted to verify before pickup. The block sits at collection, not at request time (#153).
 
@@ -143,6 +146,12 @@ made.
 | New article                     | All users       | article created/published                                         |
 | Pickup reminder/no-show warning | Borrowers       | pickup window                                                     |
 | Admin notifications             | Admin panel     | severe overdues, pending queues, request arrivals, new user count |
+
+**Deliberately silent:** a member cancelling their own Loan or withdrawing their own extension request
+(D6) notifies nobody. The member pressed the button, so there is nothing to tell them, and telling the
+administration would add a page for an event they did not act on. The **audit log** records both
+(`loan_cancelled`, `extension_withdrawn`) instead; the copy a cancelled Loan released is announced to
+the waitlist head through the existing "book free" trigger.
 
 **Email policy (proposed defaults):**
 
@@ -196,6 +205,10 @@ Each item tagged **New / Extend / Polish**, with data impact.
 ### 6.5 Loans _(New + Extend)_
 
 - **My loans** - currently borrowed list (exists; extend with state machine badges, pickup window, return due).
+- **Cancel request** (New) - offered while the request is `pending` or `accepted` (D6), from both the
+  three-dot menu and the details dialog, behind a confirmation that says the copy will be released and
+  that this is not a no-show. Withdraw extension (New) - the three-dot menu offers it instead of
+  "request extension" while one is still `pending`.
 - **Extension request** (New) - button when eligible; per Section 4.
 - **Waitlist** (New) - join if no free copy; show position; auto-promotion to request on availability.
 - **Borrow-limit indicator** - show remaining concurrent loans.
@@ -439,14 +452,20 @@ Static pages at `/privacy` and `/terms`:
 7. Notification creation on status changes
 8. Soft delete with 30-day retention
 9. Access control enforcement (users can't approve loans)
-10. Loan state machine transitions - **all five stored states** (`pending`, `accepted`, `picked_up`,
-    `returned`, `refused`) plus derived overdue. The waitlist and the extension request are separate
-    collections and are covered by cases 3, 11 and 12; `overdue` is covered by case 6. The original
-    "all 10 states" wording is withdrawn - see Section 2 and Section 4.
+10. Loan state machine transitions - **all six stored states** (`pending`, `accepted`, `picked_up`,
+    `returned`, `refused`, `cancelled`) plus derived overdue. The waitlist and the extension request are
+    separate collections and are covered by cases 3, 11 and 12; `overdue` is covered by case 6; the
+    `cancelled` transitions are covered by case 14. The original "all 10 states" wording is withdrawn -
+    see Section 2 and Section 4.
 11. Extension auto-approve when queue empty
 12. Waitlist auto-promotion on copy release
 13. No-show handling and copy release - **covered by #153**, same file. Assert the D2 threshold:
     two no-shows suspend borrowing and only borrowing, until an admin lifts it.
+14. Member cancellation (D6) - **covered by #153**,
+    `test/int/library-cancel-loan.int.test.ts` and `test/int/library-extension-withdraw.int.test.ts`.
+    Assert: ownership gate, the `pending`/`accepted` state gate, `accepted -> cancelled` releases the
+    copy and promotes the waitlist head, neither transition notifies the borrower, `noShowCount` does
+    not move, the D7 budget slot returns, and both write an audit row.
 
 ### Prior Art
 
@@ -593,8 +612,12 @@ never leave the queue worse off than inaction did**, otherwise members get pushe
 | Activity registration         | Member may cancel until the activity **starts** - not until the registration deadline, which gates _joining_, not _leaving_. The spot is released and capacity re-opens.                                             |
 | Pickup reschedule             | Admin action, see D1.                                                                                                                                                                                                |
 
-_Implementation note:_ shipped behaviour has no cancellation at all for any of these, and
-`currentParticipants` is only ever incremented, never decremented. See #153 and #155.
+_Implementation note:_ **Loan requests and extension requests are built** (#153): `loans.status` gained
+`cancelled`, `loan-extensions.status` gained `withdrawn`, and the member surface offers both behind a
+confirmation. The `loans` release-and-promote hook treats `cancelled` exactly like `refused` for the
+copy and the queue, but deliberately _not_ for the borrower notification or the no-show counter.
+Activity registration cancellation and `currentParticipants` re-opening remain **#155**; pickup
+rescheduling is D1 and is an admin action.
 
 **D7 - Borrow-limit default.** **3**, configurable in Settings.
 _Reasoning:_ at a 14-day loan duration a limit of 3 lets a member hold at most ~6 weeks of books at once -

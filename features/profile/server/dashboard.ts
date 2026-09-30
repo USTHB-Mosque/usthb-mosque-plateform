@@ -25,7 +25,7 @@ export async function getProfileDashboardData() {
     overrideAccess: false,
   })
 
-  const [favorites, articleFavorites, registrations, loans, articles, activities] =
+  const [favorites, articleFavorites, registrations, loans, articles, activities, extensions] =
     await Promise.all([
       ctx.payload.find({
         collection: 'book-favorites',
@@ -79,6 +79,20 @@ export async function getProfileDashboardData() {
         req: ctx.req,
         overrideAccess: false,
       }),
+      // D6 (#153): the member table swaps "request extension" for "withdraw
+      // extension" while one is still waiting on the administration, so the read
+      // that surfaces the loans has to surface that state too. Newest first, so
+      // the first match for a loan is its latest request — the one the table
+      // should decide on. Returned raw like every other field here; the table
+      // owns its own lookup.
+      ctx.payload.find({
+        collection: 'loan-extensions',
+        depth: 0,
+        limit: 100,
+        sort: '-createdAt',
+        req: ctx.req,
+        overrideAccess: false,
+      }),
     ])
 
   return {
@@ -89,5 +103,6 @@ export async function getProfileDashboardData() {
     loans: loans.docs,
     articles: articles.docs,
     activities: activities.docs,
+    extensions: extensions.docs,
   }
 }
