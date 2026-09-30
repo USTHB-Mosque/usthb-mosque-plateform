@@ -8,6 +8,8 @@ import OnboardingSplash, {
   type OnboardingPhase,
 } from '@/features/landing/components/OnboardingSplash'
 import { playSoundEffect } from '@/features/landing/sound'
+import { useQuranSync } from '@/features/landing/use-quran-sync'
+import HeroVerse from '@/features/landing/components/HeroVerse'
 import ActivityCard from '@/features/activities/components/ActivityHighlightCard'
 import CTASection from '@/features/landing/components/CTASection'
 import Image from 'next/image'
@@ -35,6 +37,14 @@ const LandingPage: React.FC = () => {
   const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>('ready')
   const sfxContext = useRef<AudioContext | null>(null)
   const appearanceSoundPlayed = useRef(false)
+  const {
+    isRecitationPlaying,
+    recitationReady,
+    wordIdx,
+    prepareAudio,
+    beginRecitation,
+    toggleRecitation,
+  } = useQuranSync()
 
   useEffect(() => {
     const context = new AudioContext()
@@ -74,11 +84,24 @@ const LandingPage: React.FC = () => {
       }
     }
 
+    prepareAudio()
     setOnboardingPhase('hiding')
     window.setTimeout(() => setOnboardingPhase('zooming'), 500)
     window.setTimeout(() => setOnboardingPhase('leaving'), 2400)
     window.setTimeout(() => setOnboardingPhase('done'), 3100)
   }
+
+  const beginRecitationRef = useRef(beginRecitation)
+
+  useEffect(() => {
+    beginRecitationRef.current = beginRecitation
+  })
+
+  useEffect(() => {
+    if (onboardingPhase !== 'done') return
+    const timer = window.setTimeout(() => beginRecitationRef.current(), 2100)
+    return () => window.clearTimeout(timer)
+  }, [onboardingPhase])
 
   const {
     data: booksData,
@@ -296,27 +319,12 @@ const LandingPage: React.FC = () => {
                 className="w-40 sm:w-48 md:w-auto"
               />{' '}
             </motion.div>
-            <motion.p
-              dir="rtl"
-              initial={{ y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              style={{ fontFamily: 'var(--font-uthmanic)' }}
-              className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(24px,2.5vw,28px)]"
-            >
-              ﴿في بُيوتٍ أَذِنَ{' '}
-              <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>اللَّهُ</span> أَن
-              تُرفَعَ وَيُذكَرَ فيهَا{' '}
-              <span style={{ whiteSpace: 'nowrap', fontSize: 'inherit' }}>
-                اسمُ
-                <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>هُ</span>
-              </span>{' '}
-              يُسَبِّحُ لَهُ فيها بِالغُدُوِّ وَالْآصالِ۝ رِجَالٌ لَا تُلْهِيهِمْ تِجَارَةٌ وَلَا
-              بَيْعٌ عَنْ ذِكْرِ{' '}
-              <span style={{ color: 'var(--primary-300)', fontSize: 'inherit' }}>اللَّهِ</span>{' '}
-              وَإِقَامِ الصَّلَاةِ وَإِيتَاءِ الزَّكَاةِ ۙ يَخَافُونَ يَوْمًا تَتَقَلَّبُ فِيهِ
-              الْقُلُوبُ وَالْأَبْصَارُ﴾ [النور: ٣٦]
-            </motion.p>
+            <HeroVerse
+              wordIdx={wordIdx}
+              isRecitationPlaying={isRecitationPlaying}
+              recitationReady={recitationReady}
+              onToggleRecitation={toggleRecitation}
+            />
           </div>
         </section>
 
