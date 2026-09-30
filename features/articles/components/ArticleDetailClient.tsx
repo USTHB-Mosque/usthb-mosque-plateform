@@ -111,8 +111,8 @@ export default function ArticleDetailClient({
 
         <div
           id="article-content"
-          className="prose prose-lg max-w-none font-yamama text-right leading-relaxed mt-8
-                     prose-headings:font-khalid prose-headings:text-secondary
+          className="prose dark:prose-invert prose-lg max-w-none font-yamama text-right leading-relaxed mt-8
+                     prose-headings:font-khalid prose-headings:text-foreground
                      prose-strong:text-primary prose-blockquote:border-r-4
                      prose-blockquote:border-primary prose-blockquote:pr-4"
         >

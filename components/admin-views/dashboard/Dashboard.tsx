@@ -79,7 +79,7 @@ const ACTION_META: Record<string, { label: string; icon: LucideIcon; tone: strin
   profile_updated: {
     label: 'تحديث الملف الشخصي',
     icon: UserPen,
-    tone: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    tone: 'bg-violet-500/10 text-violet-600 dark:text-violet-300',
   },
   account_verified: {
     label: 'تفعيل الحساب',

@@ -41,8 +41,8 @@ function labelOf(value: string | null, map: Record<string, string>): string {
 }
 
 function categoryPillClass(value: string | null): string {
-  if (value === BookCategory.Religious) return 'bg-[#0DEAC2]/15 text-[#0AAFC2]'
-  if (value === BookCategory.Scientific) return 'bg-[#228BE6]/15 text-[#1864AB]'
+  if (value === BookCategory.Religious) return 'bg-[#0DEAC2]/15 text-[#0AAFC2] dark:text-[#4dedff]'
+  if (value === BookCategory.Scientific) return 'bg-[#228BE6]/15 text-[#1864AB] dark:text-[#9bceff]'
   return 'bg-muted text-muted-foreground'
 }
 
@@ -499,7 +499,7 @@ export default function AnalyticsView({ initial }: AnalyticsViewProps) {
               <span className="font-semibold text-foreground">{attendanceTotal}</span>
             </p>
 
-            <div className="h-72 w-full rounded-xl bg-white">
+            <div className="h-72 w-full rounded-xl bg-background">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

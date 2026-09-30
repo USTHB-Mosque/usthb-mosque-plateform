@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { PanelRight, PanelRightOpen } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import DarkModeToggle from '@/shared/ui/dark-mode-toggle'
 import { Separator } from '@/shared/ui/separator'
 import { useAdminSidebar } from '@/shared/layouts/admin/AdminSidebar'
 import { NotificationBell } from '@/features/notifications'
@@ -27,14 +28,13 @@ const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title }) => {
         {collapsed ? <PanelRightOpen className="size-5" /> : <PanelRight className="size-5" />}
       </Button>
       <Separator orientation="vertical" className="h-[17px]" />
-      <h1 className="text-lg font-bold font-dubai text-[#243245] whitespace-nowrap [direction:rtl]">
+      <h1 className="text-lg font-bold font-dubai text-foreground whitespace-nowrap [direction:rtl]">
         {title}
       </h1>
-      {role === 'admin' ? (
-        <div className="ms-auto">
-          <NotificationBell inboxHref="/admin-panel/updates" />
-        </div>
-      ) : null}
+      <div className="ms-auto flex items-center gap-2">
+        <DarkModeToggle />
+        {role === 'admin' ? <NotificationBell inboxHref="/admin-panel/updates" /> : null}
+      </div>
     </header>
   )
 }

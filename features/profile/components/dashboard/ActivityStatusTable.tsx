@@ -46,7 +46,7 @@ const STATUS_COLORS: Record<string, { className: string; dotClassName: string }>
     dotClassName: 'bg-muted-foreground/60',
   },
   attended: {
-    className: 'bg-green-100 text-green-700',
+    className: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
     dotClassName: 'bg-green-600',
   },
 }

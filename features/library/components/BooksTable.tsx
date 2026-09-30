@@ -314,7 +314,7 @@ const BooksTable: React.FC<BooksTableProps> = ({
                         <Badge
                           key={label}
                           variant="secondary"
-                          className="bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg"
+                          className="bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg"
                         >
                           {label}
                         </Badge>

@@ -82,7 +82,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
     >
       <div className="flex flex-col self-stretch gap-6">
         <div className="flex flex-col items-start self-stretch">
-          <span className="text-xl font-bold font-dubai text-[#243245]">خيارات الإشعارات</span>
+          <span className="text-xl font-bold font-dubai text-foreground">خيارات الإشعارات</span>
         </div>
         <div className="self-stretch bg-background-2 rounded-xl border border-solid border-stroke-grey">
           {notificationItems.map((item, index) => (
@@ -94,7 +94,7 @@ const NotificationsSection: React.FC<NotificationsSectionProps> = ({
               )}
             >
               <div className="flex flex-col items-start gap-1">
-                <span className="text-base font-alyamama text-[#243245]">{item.label}</span>
+                <span className="text-base font-alyamama text-foreground">{item.label}</span>
                 <span className="text-sm font-alyamama text-grey-500">{item.description}</span>
               </div>
               <Switch

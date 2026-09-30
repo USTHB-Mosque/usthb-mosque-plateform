@@ -106,7 +106,7 @@ function PasswordForm({
       <div className="self-stretch bg-background-2 rounded-xl border border-solid border-stroke-grey p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col items-start gap-1">
-            <label className="text-base font-alyamama text-[#243245]">كلمة المرور الحالية</label>
+            <label className="text-base font-alyamama text-foreground">كلمة المرور الحالية</label>
             <div className="relative w-full">
               <input
                 type={showCurrent ? 'text' : 'password'}
@@ -114,7 +114,7 @@ function PasswordForm({
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 disabled={pending}
-                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
+                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-foreground outline-none focus:border-primary-300"
                 dir="rtl"
               />
               <button
@@ -127,7 +127,7 @@ function PasswordForm({
             </div>
           </div>
           <div className="flex flex-col items-start gap-1">
-            <label className="text-base font-alyamama text-[#243245]">كلمة المرور الجديدة</label>
+            <label className="text-base font-alyamama text-foreground">كلمة المرور الجديدة</label>
             <div className="relative w-full">
               <input
                 type={showNew ? 'text' : 'password'}
@@ -135,7 +135,7 @@ function PasswordForm({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 disabled={pending}
-                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
+                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-foreground outline-none focus:border-primary-300"
                 dir="rtl"
               />
               <button
@@ -148,7 +148,7 @@ function PasswordForm({
             </div>
           </div>
           <div className="flex flex-col items-start gap-1">
-            <label className="text-base font-alyamama text-[#243245]">تأكيد كلمة المرور</label>
+            <label className="text-base font-alyamama text-foreground">تأكيد كلمة المرور</label>
             <div className="relative w-full">
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -156,7 +156,7 @@ function PasswordForm({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={pending}
-                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-[#243245] outline-none focus:border-primary-300"
+                className="w-full bg-fill-contrast py-2 ps-4 pe-10 rounded-lg border border-stroke-grey text-base font-alyamama text-foreground outline-none focus:border-primary-300"
                 dir="rtl"
               />
               <button
@@ -173,7 +173,7 @@ function PasswordForm({
               type="button"
               onClick={onBack}
               disabled={pending}
-              className="flex items-center bg-fill-contrast text-[#243245] py-2 px-6 rounded-lg border border-stroke-grey text-base font-alyamama transition-colors hover:bg-stroke-grey cursor-pointer"
+              className="flex items-center bg-fill-contrast text-foreground py-2 px-6 rounded-lg border border-stroke-grey text-base font-alyamama transition-colors hover:bg-stroke-grey cursor-pointer"
             >
               إلغاء
             </button>
@@ -209,7 +209,7 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
         className={cn('flex flex-none flex-col px-4 pt-6 pb-6 gap-6 sm:px-6 lg:flex-1', className)}
       >
         {/* Sub-view title */}
-        <span className="text-xl font-bold font-alyamama text-[#243245]">{activeView.label}</span>
+        <span className="text-xl font-bold font-alyamama text-foreground">{activeView.label}</span>
 
         {/* Form content */}
         {activeView.item === 'password' && (
@@ -240,7 +240,7 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
       {getSections(user, accountLogs?.length).map((section) => (
         <div key={section.title} className="flex flex-col self-stretch gap-6">
           <div className="flex flex-col items-start self-stretch">
-            <span className="text-xl font-bold font-alyamama text-[#243245] lg:font-dubai">
+            <span className="text-xl font-bold font-alyamama text-foreground lg:font-dubai">
               {section.title}
             </span>
           </div>
@@ -261,7 +261,7 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
                       <Icon className="h-5 w-5 text-primary-300" />
                     </div>
                     <div className="flex flex-col shrink-0 items-start gap-2">
-                      <span className="text-base font-alyamama text-[#243245]">{item.label}</span>
+                      <span className="text-base font-alyamama text-foreground">{item.label}</span>
                       <span className="text-sm font-alyamama text-grey-500">{item.subtitle}</span>
                     </div>
                   </div>

@@ -36,7 +36,8 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending_verification: 'bg-amber-100 text-amber-700 rounded-lg',
+  pending_verification:
+    'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 rounded-lg',
   verified: 'bg-[#00FF92] text-[#243245] rounded-lg',
   rejected: 'bg-destructive/10 text-destructive rounded-lg',
 }
@@ -245,7 +246,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
                     variant="secondary"
                     className={
                       user.role === 'admin'
-                        ? 'bg-[#0DEAC2]/10 text-[#0AAFC2] rounded-lg'
+                        ? 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg'
                         : 'bg-muted text-muted-foreground rounded-lg'
                     }
                   >

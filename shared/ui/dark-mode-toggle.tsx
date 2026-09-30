@@ -7,14 +7,19 @@ import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
 
 const DarkModeToggle: React.FC = () => {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  const isDark = theme === 'dark'
+  // `theme` resolves against localStorage / the system preference on the client
+  // but stays undefined on the server, so anything derived from it must wait for
+  // mount — otherwise the hydration render disagrees with the server markup on
+  // aria-label / aria-pressed. `resolvedTheme` (not `theme`) because the
+  // provider's default is `system`.
+  const isDark = mounted && resolvedTheme === 'dark'
 
   return (
     <Button

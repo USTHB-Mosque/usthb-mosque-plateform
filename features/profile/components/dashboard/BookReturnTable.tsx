@@ -22,8 +22,8 @@ interface BookReturnTableProps {
 }
 
 const STATUS_LEGEND = [
-  { label: 'متأخر', dotClassName: 'bg-[#C0392B]' },
-  { label: 'قريب الموعد', dotClassName: 'bg-[#B45309]' },
+  { label: 'متأخر', dotClassName: 'bg-[#C0392B] dark:bg-[#ffb9b2]' },
+  { label: 'قريب الموعد', dotClassName: 'bg-[#B45309] dark:bg-[#ffcaa2]' },
   { label: 'ضمن الموعد', dotClassName: 'bg-[#22C55E]' },
 ]
 
@@ -39,19 +39,19 @@ function getDueDateStatus(
   if (diff < 0)
     return {
       label: 'متأخر',
-      dotClassName: 'bg-[#C0392B]',
-      badgeClassName: 'bg-[#FF6B6B]/15 text-[#C0392B]',
+      dotClassName: 'bg-[#C0392B] dark:bg-[#ffb9b2]',
+      badgeClassName: 'bg-[#FF6B6B]/15 text-[#C0392B] dark:text-[#ffb9b2]',
     }
   if (diff <= threeDays)
     return {
       label: 'قريب الموعد',
-      dotClassName: 'bg-[#B45309]',
-      badgeClassName: 'bg-[#FFB020]/15 text-[#B45309]',
+      dotClassName: 'bg-[#B45309] dark:bg-[#ffcaa2]',
+      badgeClassName: 'bg-[#FFB020]/15 text-[#B45309] dark:text-[#ffcaa2]',
     }
   return {
     label: 'ضمن الموعد',
     dotClassName: 'bg-[#22C55E]',
-    badgeClassName: 'bg-[#22C55E]/15 text-[#15803D]',
+    badgeClassName: 'bg-[#22C55E]/15 text-[#15803D] dark:text-[#00f15a]',
   }
 }
 

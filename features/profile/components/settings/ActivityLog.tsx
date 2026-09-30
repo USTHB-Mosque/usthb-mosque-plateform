@@ -55,7 +55,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({ user, onBack, entries: suppli
                   <Icon className="h-5 w-5 text-primary-300" />
                 </div>
                 <div className="flex flex-col items-start gap-1">
-                  <span className="text-base font-alyamama text-[#243245]">
+                  <span className="text-base font-alyamama text-foreground">
                     {'message' in entry && entry.message ? entry.message : config.label}
                   </span>
                   {'metadata' in entry && typeof entry.metadata === 'string' && entry.metadata && (

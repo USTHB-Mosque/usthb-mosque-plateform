@@ -186,7 +186,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                     type="button"
                     onClick={() => markRead(item.id, item.seen, item.link)}
                     className={cn(
-                      'flex w-full flex-col items-start gap-1 px-5 py-4 text-start transition-colors hover:bg-black/5',
+                      'flex w-full flex-col items-start gap-1 px-5 py-4 text-start transition-colors hover:bg-black/5 dark:hover:bg-white/5',
                       index !== group.items.length - 1 && 'border-b border-stroke-grey',
                       !item.seen && 'bg-primary-main-20/20',
                     )}
@@ -198,7 +198,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                           className="size-4 shrink-0 text-primary-300"
                           aria-hidden={false}
                         />
-                        <span className="text-base font-bold font-dubai text-[#243245]">
+                        <span className="text-base font-bold font-dubai text-foreground">
                           {item.title}
                         </span>
                         {!item.seen ? (

@@ -13,18 +13,22 @@ export const statusConfig: Record<
 > = {
   pending: {
     label: 'قيد المراجعة',
-    className: 'bg-amber-500/15 text-amber-700',
+    className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
     dotClassName: 'bg-amber-500',
   },
   registered: {
     label: 'مسجّل',
-    className: 'bg-[#0DEAC2]/15 text-[#0AAFC2]',
+    className: 'bg-[#0DEAC2]/15 text-[#0AAFC2] dark:text-[#4dedff]',
     dotClassName: 'bg-[#0AAFC2]',
   },
-  refused: { label: 'مرفوض', className: 'bg-red-500/15 text-red-700', dotClassName: 'bg-red-500' },
+  refused: {
+    label: 'مرفوض',
+    className: 'bg-red-500/15 text-red-700 dark:text-red-200',
+    dotClassName: 'bg-red-500',
+  },
   quota_rejected: {
     label: 'اكتمل العدد',
-    className: 'bg-red-500/15 text-red-700',
+    className: 'bg-red-500/15 text-red-700 dark:text-red-200',
     dotClassName: 'bg-red-500',
   },
   attended: {

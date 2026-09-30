@@ -18,7 +18,12 @@ const buttonVariants = cva(
         ghost:
           'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
         destructive:
-          'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
+          // Dark keeps the light bed (/10 resting, /15 hover) rather than the
+          // shadcn /20 -> /30: `--destructive` is a light coral there, and a
+          // lifted tint erodes the label's contrast — /20 is already 4.15:1 on
+          // `--card` and /30 is 3.66:1. /15 still reads as a hover change and
+          // holds 4.61:1 on the card, 5.31:1 on the page.
+          'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:hover:bg-destructive/15 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {

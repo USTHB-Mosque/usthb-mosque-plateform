@@ -25,14 +25,14 @@ function ReadOnlyField({
   return (
     <div dir="rtl" className="flex flex-none flex-col gap-1">
       <div className="flex flex-col items-start self-stretch">
-        <span className="text-base font-alyamama text-[#243245]">{label}</span>
+        <span className="text-base font-alyamama text-foreground">{label}</span>
       </div>
       <div
         dir="rtl"
-        className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+        className="flex items-center justify-between self-stretch bg-fill-contrast py-2 px-4 rounded-lg gap-3"
       >
         <Icon className="h-5 w-5 flex-none text-grey-400" />
-        <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+        <span className="flex-1 text-right text-base font-alyamama text-foreground">
           {value || 'غير محدد'}
         </span>
       </div>
@@ -88,7 +88,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
       dir="rtl"
       className="flex w-full flex-none flex-col gap-4 bg-background px-4 pt-3 pb-6 sm:px-6 lg:flex-1 lg:gap-6 lg:px-0 lg:pt-6"
     >
-      <span className="hidden text-xl font-bold font-dubai text-[#243245] lg:block">
+      <span className="hidden text-xl font-bold font-dubai text-foreground lg:block">
         معلومات الحساب
       </span>
 
@@ -101,15 +101,15 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
       {/* Phone — editable */}
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex flex-col items-start self-stretch">
-          <span className="text-base font-alyamama text-[#243245]">رقم الهاتف</span>
+          <span className="text-base font-alyamama text-foreground">رقم الهاتف</span>
         </div>
         {!canEditPhone ? (
           <div
             dir="rtl"
-            className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+            className="flex items-center justify-between self-stretch bg-fill-contrast py-2 px-4 rounded-lg gap-3"
           >
             <Phone className="h-5 w-5 flex-none text-grey-400" />
-            <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+            <span className="flex-1 text-right text-base font-alyamama text-foreground">
               {phone || 'غير محدد'}
             </span>
           </div>
@@ -124,7 +124,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               disabled={pending}
-              className="flex-1 bg-transparent text-base font-alyamama text-[#243245] outline-none"
+              className="flex-1 bg-transparent text-base font-alyamama text-foreground outline-none"
               autoFocus
               dir="rtl"
             />
@@ -148,10 +148,10 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
         ) : (
           <div
             dir="rtl"
-            className="flex items-center justify-between self-stretch bg-[#E8F2F8] py-2 px-4 rounded-lg gap-3"
+            className="flex items-center justify-between self-stretch bg-fill-contrast py-2 px-4 rounded-lg gap-3"
           >
             <Phone className="h-5 w-5 flex-none text-grey-400" />
-            <span className="flex-1 text-right text-base font-alyamama text-[#243245]">
+            <span className="flex-1 text-right text-base font-alyamama text-foreground">
               {phone || 'غير محدد'}
             </span>
             <button

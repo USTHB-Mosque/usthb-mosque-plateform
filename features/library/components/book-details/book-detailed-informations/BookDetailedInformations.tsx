@@ -38,7 +38,7 @@ const BookDetailedInformations: React.FC<BookDetailedInformationsProps> = ({
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
               className={`
-                  flex-1 px-4 py-4 text-black transition-all relative
+                  flex-1 px-4 py-4 text-black dark:text-foreground transition-all relative
                   hover:text-primary-200
                   ${isActive ? 'text-primary-300' : ''}
                   ${isFirst ? 'rounded-ss-lg' : ''}

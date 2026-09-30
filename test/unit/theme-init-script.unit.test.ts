@@ -29,6 +29,22 @@ describe('ThemeInitScript', () => {
     expect(source).toContain("'dark'")
     expect(source).toContain("'light'")
   })
+
+  it('treats a stored "system" as "follow the OS", not as a colour', () => {
+    // next-themes writes the literal string "system" once the `نظام` option is
+    // picked (and it is the provider's own default). The previous
+    // `t ? t==='dark' : matchMedia` read any non-empty value as a theme, so
+    // those users were pinned to light on portal and admin.
+    expect(source).toContain("t==='dark'")
+    expect(source).toContain("t!=='light'")
+    expect(source).toContain("matchMedia('(prefers-color-scheme: dark)')")
+  })
+
+  it('keeps the OS lookup behind the portal/admin gate', () => {
+    // A visitor path takes the `: false` arm, so it never consults the
+    // preference at all — visitor pages stay light whatever the OS says.
+    expect(source).toMatch(/\(portal\|\|admin\)\?\(t==='dark'/)
+  })
 })
 
 describe('RootHtmlShell', () => {
