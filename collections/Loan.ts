@@ -242,6 +242,15 @@ export const Loan: CollectionConfig = {
           const pickupAt = doc.pickupDate ? new Date(doc.pickupDate) : new Date()
           stamps.pickupDate = pickupAt.toISOString()
           stamps.pickupHour = formatHour(pickupAt)
+          // D1 (#153): the window runs from acceptance, not from the slot the
+          // member asked for. The two stay bounded together because the request
+          // form only ever offers a slot within 48h of the request itself, and
+          // acceptance cannot precede the request — so a slot offered to the
+          // member always falls inside this window.
+          const { pickupWindowHours } = await getLoanSettings(req.payload, req)
+          stamps.pickupWindowExpiresAt = new Date(
+            Date.now() + pickupWindowHours * 60 * 60 * 1000,
+          ).toISOString()
         }
 
         if (status === 'picked_up' && !doc.dueDate) {
@@ -390,6 +399,10 @@ export const Loan: CollectionConfig = {
     { name: 'pickupHour', type: 'text' },
     // Generated at accept time, unique per loan.
     { name: 'pickupCode', type: 'text', unique: true, index: true },
+    // D1 (#153): the deadline for collecting an accepted Loan, stamped from the
+    // Settings window at accept time and refreshed by an admin reschedule.
+    // A lapsed window is what makes the sweep refuse the loan as a no-show.
+    { name: 'pickupWindowExpiresAt', type: 'date', index: true },
     { name: 'refusalReason', type: 'text' },
     { name: 'returnDate', type: 'date' },
     // Overdue is derived from `dueDate`; this flag makes the notification fire

@@ -184,6 +184,8 @@ export interface User {
   consentTimestamp?: string | null;
   deletedAt?: string | null;
   deletionScheduledFor?: string | null;
+  noShowCount?: number | null;
+  borrowingBlockedAt?: string | null;
   notificationPreferences?: {
     loanRequests?: boolean | null;
     activityRegistrations?: boolean | null;
@@ -428,6 +430,7 @@ export interface Loan {
   pickupDate?: string | null;
   pickupHour?: string | null;
   pickupCode?: string | null;
+  pickupWindowExpiresAt?: string | null;
   refusalReason?: string | null;
   returnDate?: string | null;
   overdueNotified?: boolean | null;
@@ -861,6 +864,8 @@ export interface UsersSelect<T extends boolean = true> {
   consentTimestamp?: T;
   deletedAt?: T;
   deletionScheduledFor?: T;
+  noShowCount?: T;
+  borrowingBlockedAt?: T;
   notificationPreferences?:
     | T
     | {
@@ -1035,6 +1040,7 @@ export interface LoansSelect<T extends boolean = true> {
   pickupDate?: T;
   pickupHour?: T;
   pickupCode?: T;
+  pickupWindowExpiresAt?: T;
   refusalReason?: T;
   returnDate?: T;
   overdueNotified?: T;
@@ -1252,6 +1258,7 @@ export interface Setting {
   id: number;
   defaultLoanDurationDays?: number | null;
   borrowLimit?: number | null;
+  pickupWindowHours?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1280,6 +1287,7 @@ export interface PayloadJobsStat {
 export interface SettingsSelect<T extends boolean = true> {
   defaultLoanDurationDays?: T;
   borrowLimit?: T;
+  pickupWindowHours?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

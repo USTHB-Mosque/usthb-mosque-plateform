@@ -16,8 +16,24 @@ export const RESERVED_LOAN_STATUSES: readonly LoanStatus[] = ['accepted', 'picke
 
 /** Platform-wide fallbacks; also the `defaultValue`s of `globals/Settings.ts`. */
 export const DEFAULT_LOAN_DURATION_DAYS = 14
-export const DEFAULT_BORROW_LIMIT = 5
+/** D7: three concurrent books at a 14-day duration, configurable in Settings. */
+export const DEFAULT_BORROW_LIMIT = 3
 export const MAX_EXTENSION_DAYS = 21
+
+/**
+ * D1: how long an accepted Loan holds its reserved copy for collection,
+ * measured from acceptance. Configurable per platform in Settings.
+ */
+export const DEFAULT_PICKUP_WINDOW_HOURS = 48
+
+/**
+ * D2: no-shows tolerated before borrowing is blocked. The block lasts until an
+ * admin lifts it — `borrowingBlockedAt` carries the state, never a fixed term.
+ */
+export const NO_SHOW_LIMIT = 2
+
+/** The recorded reason when a Pickup Window lapses (D1), surfaced to the admin. */
+export const PICKUP_WINDOW_EXPIRY_REASON = 'انتهت مدة الاستلام'
 
 /** Set on `req.context` / an operation's `context` to keep the loans lifecycle
  * hook from re-entering itself when it writes back to `loans` (#19). Cleared
@@ -27,3 +43,10 @@ export const SKIP_LOAN_LIFECYCLE = 'skipLoanLifecycle'
 export const IS_WAITLIST_PROMOTION = 'isWaitlistPromotion'
 /** Written by the lifecycle hook so the caller knows who was promoted. */
 export const PROMOTED_USER_ID = 'promotedUserId'
+/**
+ * Set when the Pickup Window sweep refuses a loan (#153, D1) so the lifecycle
+ * hook tells the borrower the no-show story instead of the generic refusal.
+ * Deliberately not cleared: unlike `SKIP_LOAN_LIFECYCLE` it is a property of
+ * this transition, and a later transition writes its own context.
+ */
+export const PICKUP_WINDOW_EXPIRED = 'pickupWindowExpired'
