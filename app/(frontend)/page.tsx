@@ -10,13 +10,14 @@ import OnboardingSplash, {
 import { playSoundEffect } from '@/features/landing/sound'
 import { useQuranSync } from '@/features/landing/use-quran-sync'
 import HeroVerse from '@/features/landing/components/HeroVerse'
+import RevealCard from '@/features/landing/components/RevealCard'
+import { useReveal } from '@/shared/hooks/use-reveal'
 import ActivityCard from '@/features/activities/components/ActivityHighlightCard'
 import CTASection from '@/features/landing/components/CTASection'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { useGetBooksQuery } from '@/features/library/api/books.queries'
 import { useGetArticlesQuery } from '@/features/articles/api/articles.queries'
-import { useGetActivitiesQuery } from '@/features/activities/api/activities.queries'
 import { BookCategory } from '@/features/library/types'
 import { Media } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -24,17 +25,21 @@ import Link from 'next/link'
 import ListingRenderer from '@/shared/listing/ListingRenderer'
 import EmptyData from '@/shared/common/EmptyData'
 import ErrorData from '@/shared/common/ErrorData'
-import ActivityCardSkeleton from '@/features/activities/components/ActivityCardSkeleton'
 import BookCard from '@/features/library/components/BookCard'
 import BlogArticleCard from '@/features/articles/components/BlogArticleCard'
 import BookCardSkeleton from '@/features/library/components/BookCardSkeleton'
 import ArticleCardSkeleton from '@/features/articles/components/ArticleCardSkeleton'
 import { staticBooks } from '@/features/library/fixtures'
-import { staticActivities } from '@/features/activities/fixtures'
 import { staticArticles } from '@/features/articles/fixtures'
+import { landingActivities, type LandingActivity } from '@/features/landing/fixtures'
 
 const LandingPage: React.FC = () => {
   const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>('ready')
+  const [bgReady, setBgReady] = useState(false)
+  const [textReady, setTextReady] = useState(false)
+  const [textSettled, setTextSettled] = useState(false)
+  const [navReady, setNavReady] = useState(false)
+  const [navSettled, setNavSettled] = useState(false)
   const sfxContext = useRef<AudioContext | null>(null)
   const appearanceSoundPlayed = useRef(false)
   const {
@@ -92,6 +97,11 @@ const LandingPage: React.FC = () => {
   }
 
   const beginRecitationRef = useRef(beginRecitation)
+  const refCommunity = useReveal<HTMLDivElement>()
+  const refMessage = useReveal<HTMLDivElement>()
+  const refBooks = useReveal<HTMLElement>()
+  const refActivities = useReveal<HTMLElement>()
+  const refArticles = useReveal<HTMLElement>()
 
   useEffect(() => {
     beginRecitationRef.current = beginRecitation
@@ -99,8 +109,16 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     if (onboardingPhase !== 'done') return
-    const timer = window.setTimeout(() => beginRecitationRef.current(), 2100)
-    return () => window.clearTimeout(timer)
+    const t1 = window.setTimeout(() => setBgReady(true), 100)
+    const t2 = window.setTimeout(() => setTextReady(true), 450)
+    const t3 = window.setTimeout(() => setNavReady(true), 1200)
+    const t4 = window.setTimeout(() => beginRecitationRef.current(), 2100)
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      window.clearTimeout(t3)
+      window.clearTimeout(t4)
+    }
   }, [onboardingPhase])
 
   const {
@@ -122,132 +140,126 @@ const LandingPage: React.FC = () => {
     limit: 3,
   })
 
-  const {
-    data: activitiesData,
-    isLoading: activitiesLoading,
-    isError: activitiesError,
-  } = useGetActivitiesQuery({
-    page: 1,
-    limit: 4,
-  })
-
   const books = booksData?.docs || []
   const articles = articlesData?.docs || []
-  const activities = activitiesData?.docs || []
 
   const activityHadith = (
     <>
-      قال رسول <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> صلى{' '}
-      <span style={{ fontSize: 14, color: 'var(--primary-300)' }}>الله</span> عليه وسلم :
-      &quot;خيركم من تعلم القرآن وعلمه&quot;
+      قال رسول <span className="text-[#0de9c3] font-medium">الله</span> صلى{' '}
+      <span className="text-[#0de9c3] font-medium">الله</span> عليه وسلم : &quot; خيركم من تعلم
+      القرآن وعلمه&quot;
     </>
   )
 
-  const renderActivityBento = (items: typeof activities, withHadith: boolean) => (
-    <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+  // Same images as uM_landing's ACTIVITIES_DATA, mapped to card positions.
+  const ACTIVITY_IMAGES = {
+    featured: '/static/images/activity-quran.jpg',
+    top: '/static/images/activity-library.jpg',
+    bottomRight: '/static/images/activity-ramadan.jpg',
+    bottomLeft: '/static/images/activity-masa.jpg',
+  }
+
+  // Source layout (uM_landing): featured card on the visual right (RTL), left
+  // column holds two rows — a full-width card, then a row of two cards.
+  const renderActivityBento = (items: LandingActivity[]) => (
+    <div className="flex w-full max-w-[1200px] flex-col items-stretch gap-4 lg:flex-row">
       {items[0] && (
-        <motion.div
-          key={items[0].id}
-          initial={{ scale: 0.98 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0 }}
-          className="md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2"
-        >
+        <div key={items[0].id} className="flex w-full min-h-[460px] lg:flex-1">
           <ActivityCard
             title={items[0].title}
-            imageSrc={getImageUrl((items[0].image as Media)?.url)}
+            imageSrc={ACTIVITY_IMAGES.featured}
             imageAlt={items[0].title}
-            className="h-full min-h-[320px]"
+            featured
             badge="الأكثر إقبالا"
-            description={items[0].shortDescription}
-            hadith={withHadith ? activityHadith : undefined}
+            description={items[0].description}
+            hadith={activityHadith}
             actions={[
               { label: 'سجل الآن', variant: 'primary' },
               { label: 'التفاصيل', variant: 'secondary' },
             ]}
           />
-        </motion.div>
+        </div>
       )}
-      {items[1] && (
-        <motion.div
-          key={items[1].id}
-          initial={{ scale: 0.98 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="md:col-span-2 lg:col-span-2"
-        >
-          <ActivityCard
-            title={items[1].title}
-            imageSrc={getImageUrl((items[1].image as Media)?.url)}
-            imageAlt={items[1].title}
-            className="h-full min-h-[200px]"
-            showArrow
-            description={items[1].shortDescription}
-            hadith={withHadith ? activityHadith : undefined}
-          />
-        </motion.div>
-      )}
-      {items[2] && (
-        <motion.div
-          key={items[2].id}
-          initial={{ scale: 0.98 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <ActivityCard
-            title={items[2].title}
-            imageSrc={getImageUrl((items[2].image as Media)?.url)}
-            imageAlt={items[2].title}
-            className="h-full min-h-[200px]"
-            showArrow
-            description={items[2].shortDescription}
-          />
-        </motion.div>
-      )}
-      {items[3] && (
-        <motion.div
-          key={items[3].id}
-          initial={{ scale: 0.98 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <ActivityCard
-            title={items[3].title}
-            imageSrc={getImageUrl((items[3].image as Media)?.url)}
-            imageAlt={items[3].title}
-            className="h-full min-h-[200px]"
-            showArrow
-            description={items[3].shortDescription}
-          />
-        </motion.div>
+      {(items[1] || items[2] || items[3]) && (
+        <div className="flex w-full flex-1 flex-col items-stretch gap-4">
+          {items[1] && (
+            <RevealCard key={items[1].id} index={0} className="w-full">
+              <ActivityCard
+                title={items[1].title}
+                imageSrc={ACTIVITY_IMAGES.top}
+                imageAlt={items[1].title}
+                className="h-full"
+                showArrow
+                description={items[1].description}
+                hadith={activityHadith}
+              />
+            </RevealCard>
+          )}
+          {(items[2] || items[3]) && (
+            <div className="flex w-full flex-col gap-4 sm:flex-row">
+              {items[3] && (
+                <RevealCard key={items[3].id} index={2} className="flex-1">
+                  <ActivityCard
+                    title={items[3].title}
+                    imageSrc={ACTIVITY_IMAGES.bottomRight}
+                    imageAlt={items[3].title}
+                    className="h-full"
+                    showArrow
+                    description={items[3].description}
+                  />
+                </RevealCard>
+              )}
+              {items[2] && (
+                <RevealCard key={items[2].id} index={1} className="flex-1">
+                  <ActivityCard
+                    title={items[2].title}
+                    imageSrc={ACTIVITY_IMAGES.bottomLeft}
+                    imageAlt={items[2].title}
+                    className="h-full"
+                    showArrow
+                    description={items[2].description}
+                  />
+                </RevealCard>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full z-100">
+      <div
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget) setNavSettled(true)
+        }}
+        className={`fixed top-0 left-0 w-full z-100 ${
+          navReady ? (navSettled ? '' : 'nav-visible') : 'opacity-0 pointer-events-none'
+        }`}
+      >
         <Navbar />
       </div>
       <div className="w-full min-h-screen">
         {/* ── Hero Video Section ── */}
         <section className="relative w-full overflow-hidden h-screen">
           {/* Hero video */}
-          <video
-            src="/static/images/hero_vid_light.mp4"
-            style={{
-              filter: 'grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)',
-            }}
-            className="absolute bottom-0 w-full object-cover sm:scale-115 scale-150  translate-x-[-6vw] lg:translate-y-[7vh] translate-y-[-7vh] sm:translate-y-0 "
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
+          <div
+            className={`absolute inset-0 ${bgReady ? 'hero-bg-playing' : 'opacity-0'}`}
+            style={{ transformOrigin: 'center center' }}
+          >
+            <video
+              src="/static/images/hero_vid_light.mp4"
+              style={{
+                filter: 'grayscale(0.5) brightness(1.1) contrast(0.9) saturate(0) blur(0px)',
+              }}
+              className="absolute bottom-0 w-full object-cover sm:scale-115 scale-150  translate-x-[-6vw] lg:translate-y-[7vh] translate-y-[-7vh] sm:translate-y-0 "
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          </div>
 
           {/* Full-screen gradient overlay */}
           <div
@@ -301,7 +313,14 @@ const LandingPage: React.FC = () => {
           />
 
           {/* Hero content */}
-          <div className="absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] sm:min-h-[90%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16">
+          <div
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget) setTextSettled(true)
+            }}
+            className={`absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] sm:min-h-[90%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16 ${
+              textReady ? (textSettled ? '' : 'hero-text-visible') : 'opacity-0'
+            }`}
+          >
             {/* Bismillah */}
             {/* Quran verse */}
             <motion.div
@@ -329,12 +348,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* ── Section 1: لبنة المجتمع ── */}
-        <motion.div
-          initial={{ y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
+        <div ref={refCommunity} className="reveal">
           <SectionBlock
             heading="لبنة المجتمع"
             body="إن من الملفت للنظر أن أول عمل قام به الرسول ﷺ في قباء وفي المدينة كان بناء مسجد في كل منهما، وهذا الأمر لم يكن على سبيل المصادفة، ولم يكن مجرد إشارة عابرة، بل هذا منهج أصيل، فلا قيام لأمة إسلامية بغير المسجد."
@@ -343,15 +357,10 @@ const LandingPage: React.FC = () => {
             cardBody="فِي بُيُوتٍ أَذِنَ اللهُ أَنْ تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ يُسَبِّحُ لَهُ فِيهَا بِالْغُدُوِّ وَالْآصَالِ."
             imagePosition="right"
           />
-        </motion.div>
+        </div>
 
         {/* ── Section 2: رسالة علمية وإيمانية ── */}
-        <motion.div
-          initial={{ y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
+        <div ref={refMessage} className="reveal">
           <SectionBlock
             heading="رسالة علمية وإيمانية"
             body="يعتبر مسجد جامعة باب الزوار جسراً معرفياً يربط بين العلوم التجريبية والقيم الروحية. نهدف إلى توفير بيئة هادئة ومحفزة للطلاب والباحثين، تساهم في بناء جيل متوازن علمياً وفكرياً."
@@ -365,36 +374,19 @@ const LandingPage: React.FC = () => {
               { value: '8+', label: 'نشاط سنوي' },
             ]}
           />
-        </motion.div>
+        </div>
 
         {/* ── Books Section ── */}
-        <motion.section
-          initial={{ y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="w-full flex justify-center items-center px-6 py-16 md:px-16 md:py-20 lg:px-24"
+        <section
+          ref={refBooks}
+          className="reveal w-full flex justify-center items-center px-6 py-16 md:px-16 md:py-20 lg:px-24"
           dir="rtl"
         >
           <div className="flex w-full flex-col items-center">
-            <motion.h3
-              initial={{ y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-400 md:text-xl"
-            >
-              مجموعة مختارة
-            </motion.h3>
-            <motion.p
-              initial={{ y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-10 mt-3 text-center font-khalid text-2xl font-bold md:text-[32px]"
-            >
+            <h3 className="m-0 text-base font-bold text-primary-400 md:text-xl">مجموعة مختارة</h3>
+            <p className="mb-10 mt-3 text-center font-khalid text-2xl font-bold md:text-[32px]">
               أحدث إصدارات المكتبة
-            </motion.p>
+            </p>
 
             <ListingRenderer
               isLoading={booksLoading}
@@ -412,32 +404,18 @@ const LandingPage: React.FC = () => {
               staticFallback={
                 <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {staticBooks.map((book, idx) => (
-                    <motion.div
-                      key={book.id}
-                      initial={{ scale: 0.98 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className="h-full"
-                    >
+                    <RevealCard key={book.id} index={idx} className="h-full">
                       <BookCard book={book} />
-                    </motion.div>
+                    </RevealCard>
                   ))}
                 </div>
               }
             >
               <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {books.map((book, idx) => (
-                  <motion.div
-                    key={book.id}
-                    initial={{ scale: 0.98 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    className="h-full"
-                  >
+                  <RevealCard key={book.id} index={idx} className="h-full">
                     <BookCard book={book} />
-                  </motion.div>
+                  </RevealCard>
                 ))}
               </div>
             </ListingRenderer>
@@ -449,58 +427,23 @@ const LandingPage: React.FC = () => {
               عرض الفهرس الكامل
             </Link>
           </div>
-        </motion.section>
+        </section>
 
         {/* ── Activities Section ── */}
-        <motion.section
-          initial={{ y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+        <section
+          ref={refActivities}
+          className="reveal w-full bg-fill-contrast flex justify-center items-center px-6 py-16 md:px-16 lg:px-24"
           dir="rtl"
-          className="w-full bg-fill-contrast flex justify-center items-center px-6 py-16 md:px-16 lg:px-24"
         >
           <div className="flex w-full flex-col items-center">
-            <motion.h3
-              initial={{ y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-400 md:text-xl"
-            >
+            <h3 className="m-0 font-yamama font-bold leading-none text-[#0aaf92] text-[20px] whitespace-nowrap text-center">
               نشاطاتنا
-            </motion.h3>
-            <motion.p
-              initial={{ y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-10 mt-3 text-center font-khalid text-2xl font-bold md:text-[32px]"
-            >
+            </h3>
+            <p className="mb-10 mt-3 font-khalid not-italic leading-none text-[#243245] text-[40px] xl:text-[44px] text-center">
               نشاطات دعوية وتعليمية واجتماعية
-            </motion.p>
+            </p>
 
-            <ListingRenderer
-              isLoading={activitiesLoading}
-              isError={!!activitiesError}
-              isEmpty={activities.length === 0}
-              loader={
-                <div className="grid w-full max-w-[1200px] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <ActivityCardSkeleton
-                    large
-                    className="md:col-span-2 lg:col-span-2 lg:row-span-2"
-                  />
-                  <ActivityCardSkeleton className="md:col-span-2 lg:col-span-2" />
-                  <ActivityCardSkeleton />
-                  <ActivityCardSkeleton />
-                </div>
-              }
-              errorFallback={<ErrorData />}
-              emptyFallback={<EmptyData title="لا توجد أنشطة حالياً" />}
-              staticFallback={renderActivityBento(staticActivities, true)}
-            >
-              {renderActivityBento(activities, false)}
-            </ListingRenderer>
+            {renderActivityBento(landingActivities)}
 
             <Link
               href="/activities"
@@ -509,36 +452,19 @@ const LandingPage: React.FC = () => {
               عرض الفهرس الكامل
             </Link>
           </div>
-        </motion.section>
+        </section>
 
         {/* ── Articles Section ── */}
-        <motion.section
-          initial={{ y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="w-full flex justify-center items-center px-6 py-16 md:px-16 md:py-20 lg:px-24"
+        <section
+          ref={refArticles}
+          className="reveal w-full flex justify-center items-center px-6 py-16 md:px-16 md:py-20 lg:px-24"
           dir="rtl"
         >
           <div className="flex w-full flex-col items-center">
-            <motion.h3
-              initial={{ y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="m-0 text-base font-bold text-primary-400 md:text-xl"
-            >
-              فكر ومعرفة
-            </motion.h3>
-            <motion.p
-              initial={{ y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-6 mt-2 text-center font-khalid text-2xl font-bold md:text-[32px]"
-            >
+            <h3 className="m-0 text-base font-bold text-primary-400 md:text-xl">فكر ومعرفة</h3>
+            <p className="mb-6 mt-2 text-center font-khalid text-2xl font-bold md:text-[32px]">
               أحدث المقالات
-            </motion.p>
+            </p>
 
             <ListingRenderer
               isLoading={articlesLoading}
@@ -556,32 +482,18 @@ const LandingPage: React.FC = () => {
               staticFallback={
                 <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {staticArticles.map((article, idx) => (
-                    <motion.div
-                      key={article.id}
-                      initial={{ scale: 0.98 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className="h-full"
-                    >
+                    <RevealCard key={article.id} index={idx} className="h-full">
                       <BlogArticleCard article={article} />
-                    </motion.div>
+                    </RevealCard>
                   ))}
                 </div>
               }
             >
               <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {articles.map((article, idx) => (
-                  <motion.div
-                    key={article.id}
-                    initial={{ scale: 0.98 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    className="h-full"
-                  >
+                  <RevealCard key={article.id} index={idx} className="h-full">
                     <BlogArticleCard article={article} />
-                  </motion.div>
+                  </RevealCard>
                 ))}
               </div>
             </ListingRenderer>
@@ -593,7 +505,7 @@ const LandingPage: React.FC = () => {
               عرض الفهرس الكامل
             </Link>
           </div>
-        </motion.section>
+        </section>
 
         <CTASection />
       </div>

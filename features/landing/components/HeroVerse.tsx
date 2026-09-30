@@ -23,7 +23,7 @@ const HeroVerse: React.FC<HeroVerseProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         style={{ fontFamily: 'var(--font-uthmanic)' }}
-        className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(24px,2.5vw,28px)]"
+        className="text-center leading-loose w-[95%] sm:w-[80%] md:w-[70%] lg:w-[90%] text-[clamp(22px,2.5vw,40px)]"
       >
         {WORDS.map((w, i) => {
           const isDone = i < wordIdx

@@ -1,7 +1,10 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { useReveal } from '@/shared/hooks/use-reveal'
 
 const SOCIAL_LINKS = [
   { href: '#', icon: <Facebook size={18} />, label: 'Facebook' },
@@ -11,8 +14,12 @@ const SOCIAL_LINKS = [
 ]
 
 const Footer: React.FC = () => {
+  const revealRef = useReveal<HTMLElement>()
   return (
-    <footer className="flex flex-col items-center gap-4 bg-fill-contrast px-6 py-6 md:flex-row md:justify-between md:px-16 md:py-5">
+    <footer
+      ref={revealRef}
+      className="reveal flex flex-col items-center gap-4 bg-fill-contrast px-6 py-6 md:flex-row md:justify-between md:px-16 md:py-5"
+    >
       <div className="flex justify-center md:order-2 md:flex-1">
         <Link href="/">
           <Image src="/static/images/logo-icon.svg" alt="الشعار" width={23} height={40} />
@@ -34,7 +41,7 @@ const Footer: React.FC = () => {
       </ul>
 
       {/* grey-500, not grey-400: the darker token passes 4.5:1 on fill-contrast. */}
-      <p className="text-xs text-grey-500 text-center font-dubai md:order-3 md:flex-1 md:text-start md:text-sm">
+      <p className="text-xs text-grey-500 text-left font-dubai md:order-3 md:flex-1 md:text-start md:text-sm lg:text-left">
         جميع الحقوق محفوظة &copy; {new Date().getFullYear()} - مسجد جامعة باب الزوار
       </p>
     </footer>
