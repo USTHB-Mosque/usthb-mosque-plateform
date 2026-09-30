@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupLogsByDay } from './logs-core'
+import { groupLogsByDay } from './day-groups'
 
 describe('groupLogsByDay', () => {
   it('groups same-day entries and starts a new group on a different day', () => {
