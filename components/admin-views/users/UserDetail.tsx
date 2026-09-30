@@ -22,11 +22,12 @@ import { Textarea } from '@/shared/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Separator } from '@/shared/ui/separator'
 import type { Media, User } from '@/payload-types'
+import { NO_SHOW_LIMIT } from '@/utils/constants/loans'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import SettingsProfileCard from '@/features/profile/components/settings/SettingsProfileCard'
 import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
 import { approveUser, rejectUser } from '@/features/admin/server/verification'
-import { softDeleteUser, updateUserRole } from '@/features/admin/server/users'
+import { liftBorrowingBlock, softDeleteUser, updateUserRole } from '@/features/admin/server/users'
 import { usersKeys } from '@/features/users/api/users.queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -92,6 +93,9 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
     user.email ||
     'مستخدم'
   const status = user.verificationStatus || 'pending_verification'
+  const noShowCount = user.noShowCount ?? 0
+  const blocked = Boolean(user.borrowingBlockedAt)
+  const hasNoShowHistory = noShowCount > 0 || blocked
 
   const handleApprove = () => {
     startTransition(async () => {
@@ -126,6 +130,19 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
         router.refresh()
       } else {
         toast.error(result.error || 'تعذر تحديث الدور')
+      }
+    })
+  }
+
+  const handleLiftBlock = () => {
+    startTransition(async () => {
+      const result = await liftBorrowingBlock(user.id)
+      if (result.ok) {
+        toast.success('تم رفع حجب الإعارة')
+        queryClient.invalidateQueries({ queryKey: usersKeys.root })
+        router.refresh()
+      } else {
+        toast.error(result.error || 'تعذر رفع الحجب')
       }
     })
   }
@@ -237,6 +254,46 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* D2 (#153): only shown when the member has actually missed a
+                collection — otherwise there is nothing here to review. */}
+            {hasNoShowHistory ? (
+              <>
+                <Separator />
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm text-muted-foreground">غياب عن الاستلام</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="rounded-lg bg-[#FFB020]/15 text-[#B45309]">
+                      {noShowCount} من {NO_SHOW_LIMIT} غياب
+                    </Badge>
+                    <Badge
+                      className={`rounded-lg ${
+                        blocked
+                          ? 'bg-[#FF6B6B]/15 text-[#C0392B]'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {blocked ? 'الإعارة محجوبة' : 'الإعارة مسموحة'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    يمنع الحجب طلبات الإعارة الجديدة فقط. تُحتسب إعادة الجدولة استلاماً لا غياباً،
+                    وتبقى العداد قائماً بعد رفع الحجب.
+                  </p>
+                  {blocked ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={pending}
+                      onClick={handleLiftBlock}
+                      className="w-fit"
+                    >
+                      رفع حجب الإعارة
+                    </Button>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
 
             <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
               <p className="flex items-center gap-2">

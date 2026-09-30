@@ -26,6 +26,7 @@ import {
 } from './collections'
 import { Settings } from './globals'
 import { erasureJobsConfig } from './features/users/server/jobs'
+import { pickupWindowJobsConfig } from './features/library/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -68,7 +69,17 @@ export default buildConfig({
     BookRequest,
   ],
   globals: [Settings],
-  jobs: erasureJobsConfig,
+  // Two queues, one runner: each feature owns its own schedule below, and this
+  // file owns the fact that they share a single process and a single cron.
+  // `autoRun` is declared as a union of array-or-factory by Payload, so the
+  // arrays are narrowed here rather than assumed.
+  jobs: {
+    tasks: [...(erasureJobsConfig.tasks ?? []), ...(pickupWindowJobsConfig.tasks ?? [])],
+    autoRun: [
+      ...(Array.isArray(erasureJobsConfig.autoRun) ? erasureJobsConfig.autoRun : []),
+      ...(Array.isArray(pickupWindowJobsConfig.autoRun) ? pickupWindowJobsConfig.autoRun : []),
+    ],
+  },
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''],
   csrf: [process.env.NEXT_PUBLIC_SERVER_URL || ''],

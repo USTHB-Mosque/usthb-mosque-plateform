@@ -133,6 +133,7 @@ export interface Config {
   jobs: {
     tasks: {
       purgeDeletedAccounts: TaskPurgeDeletedAccounts;
+      expirePickupWindows: TaskExpirePickupWindows;
       inline: {
         input: unknown;
         output: unknown;
@@ -554,12 +555,15 @@ export interface Log {
     | 'review_deleted'
     | 'loan_approved'
     | 'loan_refused'
+    | 'loan_expired'
+    | 'loan_rescheduled'
     | 'loan_picked_up'
     | 'loan_returned'
     | 'extension_approved'
     | 'extension_refused'
     | 'user_verified'
     | 'user_rejected'
+    | 'user_block_lifted'
     | 'user_role_changed'
     | 'user_deleted'
     | 'users_imported'
@@ -678,7 +682,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'purgeDeletedAccounts';
+        taskSlug: 'inline' | 'purgeDeletedAccounts' | 'expirePickupWindows';
         taskID: string;
         input?:
           | {
@@ -711,7 +715,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'purgeDeletedAccounts') | null;
+  taskSlug?: ('inline' | 'purgeDeletedAccounts' | 'expirePickupWindows') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1325,6 +1329,21 @@ export interface TaskPurgeDeletedAccounts {
   };
   output: {
     purged?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpirePickupWindows".
+ */
+export interface TaskExpirePickupWindows {
+  input: {
+    /**
+     * Override the current time, so the job can be run against a fixed instant in a test.
+     */
+    now?: string | null;
+  };
+  output: {
+    expired?: number | null;
   };
 }
 /**

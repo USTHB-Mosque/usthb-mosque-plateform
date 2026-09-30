@@ -14,6 +14,7 @@ const {
   softDeleteUser,
   getAdminUser,
   createAdminUser,
+  liftBorrowingBlock,
   updateUserRole,
 } = await import('./users')
 
@@ -228,6 +229,84 @@ describe('features/admin/server/users.ts', () => {
     await expect(updateUserRole(4, 'admin')).resolves.toEqual({
       ok: false,
       error: 'تعذر تحديث الدور',
+    })
+  })
+
+  describe('liftBorrowingBlock (D2)', () => {
+    it('clears the block, steps the counter back one and logs it', async () => {
+      const findByID = vi
+        .fn()
+        .mockResolvedValue({ id: 4, borrowingBlockedAt: '2026-10-01', noShowCount: 2 })
+      const update = vi.fn().mockResolvedValue({})
+      context({ findByID, update })
+
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({ ok: true })
+
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'users',
+          id: 4,
+          data: { borrowingBlockedAt: null, noShowCount: 1 },
+          overrideAccess: false,
+          user,
+          req,
+        }),
+      )
+      expect(writeLog).toHaveBeenCalledWith(
+        expect.anything(),
+        user,
+        expect.objectContaining({
+          action: 'user_block_lifted',
+          targetType: 'user',
+          targetId: 4,
+          metadata: { noShowCount: 1 },
+        }),
+      )
+      expect(revalidatePath).toHaveBeenCalledWith('/admin-panel/users')
+      expect(revalidatePath).toHaveBeenCalledWith('/admin-panel/users/4')
+    })
+
+    it('refuses when there is no block to lift', async () => {
+      const findByID = vi
+        .fn()
+        .mockResolvedValue({ id: 4, borrowingBlockedAt: null, noShowCount: 0 })
+      const update = vi.fn()
+      context({ findByID, update })
+
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({
+        ok: false,
+        error: 'لا يوجد حجب إعارة مفتوح على هذا العضو',
+      })
+      expect(update).not.toHaveBeenCalled()
+      expect(writeLog).not.toHaveBeenCalled()
+    })
+
+    it('reads a counter stored as null as zero', async () => {
+      const findByID = vi
+        .fn()
+        .mockResolvedValue({ id: 4, borrowingBlockedAt: 'x', noShowCount: null })
+      const update = vi.fn().mockResolvedValue({})
+      context({ findByID, update })
+
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({ ok: true })
+      expect(update.mock.calls[0][0].data.noShowCount).toBe(0)
+    })
+
+    it('never takes the counter below zero', async () => {
+      const findByID = vi.fn().mockResolvedValue({ id: 4, borrowingBlockedAt: 'x', noShowCount: 0 })
+      const update = vi.fn().mockResolvedValue({})
+      context({ findByID, update })
+
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({ ok: true })
+      expect(update.mock.calls[0][0].data.noShowCount).toBe(0)
+    })
+
+    it('reports a lookup failure and a failure that is not an Error', async () => {
+      context({ findByID: vi.fn().mockRejectedValue(new Error('Unauthorized')) })
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({ ok: false, error: 'Unauthorized' })
+
+      context({ findByID: vi.fn().mockRejectedValue('boom') })
+      await expect(liftBorrowingBlock(4)).resolves.toEqual({ ok: false, error: 'تعذر رفع الحجب' })
     })
   })
 })

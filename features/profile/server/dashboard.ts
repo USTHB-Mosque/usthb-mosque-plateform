@@ -1,7 +1,7 @@
 'use server'
 
 import { getPayloadWithUser } from '@/shared/lib/auth'
-import { syncOverdueLoans } from '@/features/library'
+import { expirePickupWindows, syncOverdueLoans } from '@/features/library'
 
 export async function getProfileDashboardData() {
   const ctx = await getPayloadWithUser()
@@ -10,6 +10,12 @@ export async function getProfileDashboardData() {
   // Lazy overdue check on read (#19): stamp + notify exactly once before the
   // loans are fetched, so the member sees fresh derived overdue states.
   await syncOverdueLoans(ctx)
+
+  // The other half of the same safety net (#153, D1): the scheduled sweep is
+  // the normal path, but a member opening "إعاراتي" must never be shown a
+  // collection window that has already lapsed — so the read that surfaces
+  // pickup state drains the queue too, ahead of the query below.
+  await expirePickupWindows(ctx)
 
   const fullUser = await ctx.payload.findByID({
     collection: 'users',

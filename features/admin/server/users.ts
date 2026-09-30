@@ -207,3 +207,60 @@ export async function updateUserRole(
     return { ok: false, error: message }
   }
 }
+
+/**
+ * D2 (#153): the only way a no-show block ends. An admin reviews the case and
+ * lifts it — the block timestamp clears and the counter steps back one, so a
+ * member blocked at two starts again at one rather than at zero. Lifting is
+ * forgiveness of the block, not of the history behind it: it takes a third
+ * no-show to block them again, and it is the counter, not the timestamp, that
+ * decides that.
+ *
+ * The write is logged so lifting is as accountable as setting the block.
+ */
+export async function liftBorrowingBlock(userId: number): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { payload, user, req } = await getAdminCtx()
+
+    const target = await payload.findByID({
+      collection: 'users',
+      id: userId,
+      depth: 0,
+      req,
+      overrideAccess: false,
+      user,
+    })
+
+    if (!target.borrowingBlockedAt) {
+      return { ok: false, error: 'لا يوجد حجب إعارة مفتوح على هذا العضو' }
+    }
+
+    const noShowCount = Math.max(0, (target.noShowCount ?? 0) - 1)
+
+    await payload.update({
+      collection: 'users',
+      id: userId,
+      data: {
+        borrowingBlockedAt: null,
+        noShowCount,
+      },
+      req,
+      overrideAccess: false,
+      user,
+    })
+
+    revalidatePath('/admin-panel/users')
+    revalidatePath(`/admin-panel/users/${userId}`)
+    await writeLog(payload, user, {
+      action: LogAction.UserBlockLifted,
+      targetType: 'user',
+      targetId: userId,
+      message: `رفع حجب الإعارة عن عضو #${userId}`,
+      metadata: { noShowCount },
+    })
+    return { ok: true }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'تعذر رفع الحجب'
+    return { ok: false, error: message }
+  }
+}

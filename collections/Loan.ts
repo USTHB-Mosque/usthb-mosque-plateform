@@ -3,23 +3,18 @@ import { isAdmin } from '@/utils/access-helpers'
 import {
   ACTIVE_LOAN_STATUSES,
   IS_WAITLIST_PROMOTION,
+  PICKUP_WINDOW_EXPIRED,
+  PICKUP_WINDOW_EXPIRY_REASON,
   PROMOTED_USER_ID,
   RESERVED_LOAN_STATUSES,
   SKIP_LOAN_LIFECYCLE,
 } from '@/utils/constants/loans'
 import { getLoanSettings } from '@/shared/lib/settings'
-import { addDays } from '@/shared/lib/dates'
+import { addDays, formatArabicDate, formatHour } from '@/shared/lib/dates'
 import { checkRequestGates } from '@/shared/lib/loan-gates'
-import { formatArabicDate } from '@/shared/lib/dates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
-
-function formatHour(date: Date): string {
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${hours}:${minutes}`
-}
 
 /** `${bookCode}/${loanId}/${twoDigitYear}` — the loan id makes it unique. */
 async function generatePickupCode(
@@ -335,6 +330,29 @@ export const Loan: CollectionConfig = {
                 pickupCode: code,
                 pickupDate: date,
                 pickupHour: hour,
+              },
+            })
+          } else if (context?.[PICKUP_WINDOW_EXPIRED]) {
+            // D1/D2 (#153): a refusal the sweep wrote is a no-show, not an
+            // admin decision. The borrower is told what actually happened and
+            // gets the dedicated template rather than the generic refusal.
+            await createNotification({
+              req,
+              user: resolveRelationId(doc.user),
+              type: 'loan',
+              title: 'لم تُسجَّل عملية استلام الكتاب',
+              message: `انتهت مهلة استلام «${book.title}» دون تسجيل، فأُعيد الكتاب إلى الرفوف وتم ترتيب قائمة الانتظار.`,
+              link: '/user/my-loans',
+              email: true,
+              emailTemplate: {
+                kind: 'no-show-warning',
+                bookTitle: book.title,
+                // The sentence reads "انتهت المهلة بتاريخ X", so X is when the
+                // window closed, not the slot the member asked for. Guaranteed
+                // non-null: the sweep only reaches this branch through its
+                // `pickupWindowExpiresAt: { exists: true }` filter.
+                pickupDate: String(doc.pickupWindowExpiresAt),
+                reason: PICKUP_WINDOW_EXPIRY_REASON,
               },
             })
           } else {
