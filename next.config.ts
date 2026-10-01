@@ -2,6 +2,8 @@ import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 import path from 'path'
 
+const publicUrl = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000')
+
 const nextConfig: NextConfig = {
   // next dev otherwise appends a generated agent-rules block to AGENTS.md on
   // every start; AGENTS.md is hand-maintained project guidance.
@@ -31,16 +33,10 @@ const nextConfig: NextConfig = {
         pathname: '/api/media/file/**',
       },
       {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '54323',
-        pathname: '/storage/v1/object/public/media/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '54323',
-        pathname: '/storage/v1/object/public/media/**',
+        protocol: publicUrl.protocol.slice(0, -1) as 'http' | 'https',
+        hostname: publicUrl.hostname,
+        port: publicUrl.port,
+        pathname: '/api/media/file/**',
       },
       // No direct storage bucket patterns here on purpose: media is always
       // served through /api/media/file/** so collection access control applies.
@@ -96,9 +92,9 @@ const nextConfig: NextConfig = {
                     "default-src 'self'",
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
                     "style-src 'self' 'unsafe-inline'",
-                    "img-src 'self' data: blob: http://127.0.0.1:* https://*.supabase.co",
+                    "img-src 'self' data: blob:",
                     "font-src 'self' data:",
-                    "connect-src 'self' http://127.0.0.1:* https://*.supabase.co",
+                    "connect-src 'self'",
                     "frame-ancestors 'none'",
                     "base-uri 'self'",
                     "form-action 'self'",

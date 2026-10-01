@@ -27,6 +27,7 @@ Thumbs.db
 # Docker
 Dockerfile
 docker-compose.yml
+Caddyfile
 
 # Media (use volumes for persistence)
 media

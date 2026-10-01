@@ -4,6 +4,8 @@ import AdminSidebar from '@/shared/layouts/admin/AdminSidebar'
 import AdminRouteGuard from '@/shared/layouts/admin/AdminRouteGuard'
 import { getAuthenticatedUser } from '@/shared/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPanelLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthenticatedUser({ allowAdmin: true })
   if (!user) redirect('/auth/login?redirect=/admin-panel/dashboard')

@@ -2,7 +2,7 @@ import { Client } from 'pg'
 import type { Payload } from 'payload'
 
 // The scratch database name tests run against: local runs share the running
-// Postgres (Supabase CLI) but never touch development data.
+// Postgres (compose locally) but never touch development data.
 export const TEST_DATABASE_NAME = 'mosque_test'
 
 export function testDatabaseUrl(): string {

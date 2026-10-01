@@ -21,8 +21,8 @@ Where this document and Figma disagree, Figma wins and this document is wrong. W
 | Admin panel       | Full custom admin at `/admin`, matching Figma. Payload admin is not the product |
 | Loan flow         | Five states with a pickup step and a pickup code, per the Borrowings screens    |
 | Notifications     | Full subsystem: collection, SSE bell, and per-type email opt-in                 |
-| Deployment        | One root `docker-compose` that runs the app and Postgres. Host not yet chosen   |
-| Storage           | S3 compatible in every environment                                              |
+| Deployment        | One root `docker-compose` targeting a VPS with Caddy, Postgres and RustFS       |
+| Storage           | RustFS S3 locally/on VPS; Vercel Blob during preview transition                 |
 | Language          | Arabic only, RTL                                                                |
 | Password reset    | In scope. Not designed in Figma, so it follows the existing auth screens        |
 | Privacy and terms | In scope. Required by Law 18-07 since identity documents are collected          |

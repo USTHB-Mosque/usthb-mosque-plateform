@@ -52,6 +52,10 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
       PAYLOAD_SECRET: ci-test-secret
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      S3_ENDPOINT: http://127.0.0.1:9000
+      S3_REGION: local
+      S3_ACCESS_KEY_ID: mosque
+      S3_SECRET_ACCESS_KEY: mosque-secret
 
     steps:
       - uses: actions/checkout@v4
@@ -65,6 +69,18 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Start object storage for S3 integration tests
+        run: |
+          docker run -d --name mosque-ci-rustfs -p 127.0.0.1:9000:9000 \
+            -e RUSTFS_ACCESS_KEY=mosque -e RUSTFS_SECRET_KEY=mosque-secret \
+            rustfs/rustfs@sha256:8cc9801755448b71a786705ce76692c77e14936cccd87cf2fc31842e58f4d1ff
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          docker logs mosque-ci-rustfs
+          exit 1
 
       - run: pnpm test:coverage
 

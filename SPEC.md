@@ -399,7 +399,7 @@ Static pages at `/privacy` and `/terms`:
 
 ### Data Residency
 
-- Database and uploaded files stored on Supabase (S3-compatible).
+- Database on PostgreSQL 17 and uploaded files in RustFS on the VPS (S3-compatible).
 - Verification documents: private URLs only (no public access).
 - Signed URLs with short expiry for admin access.
 - Data residency in Algeria preferred; if using foreign hosting, document in privacy policy.
@@ -641,36 +641,37 @@ any row still holding 5.
 
 ### Stack Table
 
-| Layer           | Choice                                      |
-| --------------- | ------------------------------------------- |
-| Framework       | Next.js (App Router)                        |
-| Runtime         | Node (Docker)                               |
-| Language        | TypeScript                                  |
-| CMS             | Payload CMS (in-process)                    |
-| Database        | PostgreSQL 17 (local Supabase CLI / remote) |
-| Storage         | Supabase S3                                 |
-| Data fetching   | TanStack Query v5 (client)                  |
-| State           | Zustand                                     |
-| UI              | Tailwind + shadcn/ui + Base-UI              |
-| Animation       | motion                                      |
-| Forms           | react-hook-form + zod                       |
-| Toasts          | sonner                                      |
-| Email           | nodemailer (provider later)                 |
-| Auth            | Payload auth + Google OAuth                 |
-| Fonts           | Local Arabic fonts                          |
-| Package manager | pnpm                                        |
-| Lint            | ESLint                                      |
-| Local Supabase  | Supabase CLI                                |
+| Layer           | Choice                            |
+| --------------- | --------------------------------- |
+| Framework       | Next.js (App Router)              |
+| Runtime         | Node (Docker)                     |
+| Language        | TypeScript                        |
+| CMS             | Payload CMS (in-process)          |
+| Database        | PostgreSQL 17 (compose dev / VPS) |
+| Storage         | RustFS S3 (compose dev / VPS)     |
+| Data fetching   | TanStack Query v5 (client)        |
+| State           | Zustand                           |
+| UI              | Tailwind + shadcn/ui + Base-UI    |
+| Animation       | motion                            |
+| Forms           | react-hook-form + zod             |
+| Toasts          | sonner                            |
+| Email           | nodemailer (provider later)       |
+| Auth            | Payload auth + Google OAuth       |
+| Fonts           | Local Arabic fonts                |
+| Package manager | pnpm                              |
+| Lint            | ESLint                            |
+| Local services  | Docker Compose                    |
 
 ### Environments
 
-- **dev** `.env.local` -> local Supabase (DB :54322, S3 :54321, Studio :54323, Inbucket :54324 for email).
-- **preview/prod** `.env` -> remote Supabase; `NODE_ENV` switches CSP/headers.
+- **dev** `.env` -> compose Postgres (:5432) and RustFS (:9000) over loopback; `next dev` runs on the host.
+- **VPS target** `.env` -> compose network DB and RustFS, with Caddy serving HTTPS.
+- **Vercel previews during transition** -> Neon Postgres and Vercel Blob.
 
 ### Deployment
 
-- **Docker/VPS** (multi-stage standalone image; Vercel not targeted).
-- Build = `payload migrate && next build`.
+- **Docker/VPS** (multi-stage standalone image; Vercel previews remain during transition).
+- Docker build = `next build`; one-shot migrate service applies migrations before app startup.
 
 ### Scale & Performance
 

@@ -25,6 +25,7 @@ import {
 import { Settings } from '@/globals'
 import { erasureJobsConfig } from '@/features/users/server/jobs'
 import { pickupWindowJobsConfig } from '@/features/library/server/jobs'
+import { getStoragePlugin } from '@/storage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -37,8 +38,8 @@ const mediaUpload = Media.upload as Exclude<typeof Media.upload, boolean>
 /**
  * Test boot config: the real collections (so access control and hooks run for
  * real), but pointed at a scratch Postgres database with no S3/Vercel-blob
- * storage and no MCP plugin. Uploads fall back to Payload's local disk
- * storage, which is exactly what the register flow needs to be exercised.
+ * storage by default and no MCP plugin. The S3 integration test opts into
+ * the real storage adapter; other uploads use local disk for isolation.
  */
 export default buildConfig({
   admin: {
@@ -82,5 +83,5 @@ export default buildConfig({
     push: false,
     migrationDir: path.resolve(dirname, '../migrations'),
   }),
-  plugins: [],
+  plugins: process.env.PAYLOAD_TEST_S3 === 'true' ? [getStoragePlugin()] : [],
 })

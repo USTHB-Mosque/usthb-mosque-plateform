@@ -51,8 +51,3 @@ SESSION.md
 # agent scratch space and local tool settings
 .scratch/
 *.local.json
-
-# supabase
-supabase/.branches/
-supabase/.temp/
-supabase/snippets/

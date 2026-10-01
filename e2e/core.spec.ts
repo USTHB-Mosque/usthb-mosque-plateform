@@ -22,6 +22,11 @@ test.describe('public browsing', () => {
     await expect(page.getByText('آداب الدعوة إلى الله تعالى').first()).toBeVisible({
       timeout: 20_000,
     })
+    const cover = page.locator('a[href^="/library/book/"] img').first()
+    await expect(cover).toHaveAttribute('src', /api%2Fmedia%2Ffile/)
+    await expect
+      .poll(() => cover.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0)
   })
 
   test('activities page lists seeded activities', async ({ page }) => {

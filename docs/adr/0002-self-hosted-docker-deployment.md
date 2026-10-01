@@ -1,6 +1,6 @@
 # Self-hosted Docker deployment
 
-**Status:** Supersedes [0001-vercel-for-deployment.md](./0001-vercel-for-deployment.md), recorded 2026-09-05. See #76 for the deployment setup work.
+**Status:** Superseded by [0003-vps-postgres-rustfs.md](./0003-vps-postgres-rustfs.md). This decision superseded [0001-vercel-for-deployment.md](./0001-vercel-for-deployment.md) on 2026-09-05.
 
 ## Decision
 

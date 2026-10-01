@@ -1,27 +1,24 @@
-# One-command deployment of everything that is not Supabase (see ADR 0002):
-# the Next.js app, PostgreSQL 17, and an S3-compatible object store for media.
+# One stack for local Postgres + object storage and VPS deployment (see ADR 0003).
 #
-#   cp example.env .env   # fill in the values
-#   docker compose up --build
+#   docker compose up -d db rustfs     # host-run next dev
+#   docker compose up --build --detach # VPS: app + Caddy
 #
-# Migrations run in the one-shot `migrate` service; the app waits for it to
-# finish and never starts if a migration fails. Media files are stored in the
-# MinIO `media` bucket (persisted in the `minio-data` volume), so uploads and
-# reads work out of the box. To point at any other S3-compatible provider,
-# set S3_ENDPOINT / S3_BUCKET / S3_REGION / S3_ACCESS_KEY_ID /
-# S3_SECRET_ACCESS_KEY in .env — the compose overrides are all defaults, so
-# .env wins; the bundled MinIO can then be removed from this file.
+# Migrations and bucket creation run in the one-shot `migrate` service; the app
+# waits for it to finish and never starts if either step fails. Media stays in
+# the named rustfs-data volume even after docker compose down.
 
 x-deploy-env: &deploy-env
-  # Inside the compose network the database is reachable as `db`, not
-  # 127.0.0.1 — override whatever .env says.
-  DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-usthb_mosque}
-  # Bundled MinIO media store; every value yields to .env when set there.
-  S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+  # Use the host-facing URL from .env, replacing only its host and port in
+  # payload.config.ts. The URL retains percent-encoded passwords.
+  COMPOSE_DB_HOST: db
+  # A container's 127.0.0.1 is not the host's: override the host-facing .env.
+  S3_ENDPOINT: http://rustfs:9000
   S3_BUCKET: ${S3_BUCKET:-media}
   S3_REGION: ${S3_REGION:-local}
   S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-mosque}
   S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
+  NODE_ENV: production
+  PAYLOAD_PUSH: 'false'
 
 services:
   app:
@@ -29,9 +26,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
     restart: unless-stopped
-    ports:
-      - '${APP_PORT:-3000}:3000'
+    expose:
+      - '3000'
     env_file:
       - .env
     environment:
@@ -39,7 +38,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      minio:
+      rustfs:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -51,6 +50,25 @@ services:
       start_period: 30s
       retries: 3
 
+  caddy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # Ensures the media bucket exists, then applies migrations. RustFS ships no
+  # `mc` client, so the bucket is created with the same AWS SDK the app uses.
   migrate:
     build:
       context: .
@@ -64,10 +82,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    command: ['sh', '-c', 'pnpm storage:init && pnpm exec payload migrate']
 
   db:
     image: postgres:17
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -81,40 +104,27 @@ services:
       timeout: 5s
       retries: 10
 
-  minio:
-    image: quay.io/minio/minio:latest
+  rustfs:
+    image: rustfs/rustfs@sha256:8cc9801755448b71a786705ce76692c77e14936cccd87cf2fc31842e58f4d1ff
     restart: unless-stopped
-    command: server /data --console-address ":9001"
     volumes:
-      - minio-data:/data
+      - rustfs-data:/data
     ports:
-      # Admin console, optional; remove if the host does not need it.
-      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+      - '127.0.0.1:${RUSTFS_API_PORT:-9000}:9000'
+      - '127.0.0.1:${RUSTFS_CONSOLE_PORT:-9001}:9001'
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-mosque}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-mosque-secret}
+      RUSTFS_CONSOLE_ENABLE: 'true'
     healthcheck:
-      test: ['CMD', 'mc', 'ready', 'local']
+      # RustFS serves the S3-compatible liveness path MinIO clients expect.
+      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:9000/minio/health/live']
       interval: 5s
       timeout: 5s
       retries: 10
 
-  minio-init:
-    image: quay.io/minio/mc:latest
-    restart: 'no'
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      mc mb --ignore-existing local/$${S3_BUCKET:-media}
-      "
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mosque}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mosque-secret}
-      S3_BUCKET: ${S3_BUCKET:-media}
-
 volumes:
   pgdata:
-  minio-data:
+  rustfs-data:
+  caddy-data:
+  caddy-config:

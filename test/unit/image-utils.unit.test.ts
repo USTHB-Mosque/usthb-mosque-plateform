@@ -23,6 +23,11 @@ describe('getImageUrl', () => {
     ).toBe(fallback)
   })
 
+  it('uses locally served Payload media instead of the fallback', () => {
+    const url = 'http://localhost:3000/api/media/file/book-cover.png'
+    expect(getImageUrl(url)).toBe(url)
+  })
+
   it('passes through a real remote URL', () => {
     const url = 'https://media.example.com/media/x.png'
     expect(getImageUrl(url, '/static/images/fallback.png')).toBe(url)

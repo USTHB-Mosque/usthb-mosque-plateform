@@ -4,13 +4,12 @@ export function getImageUrl(
 ): string {
   if (!mediaUrl) return fallback
 
-  // If the URL contains a local address or an invalid origin, use fallback
-  if (
-    mediaUrl.includes('localhost') ||
-    mediaUrl.includes('127.0.0.1') ||
-    mediaUrl.includes('undefined') ||
-    mediaUrl.includes('null')
-  ) {
+  // Direct local storage URLs are not browser-accessible. Payload's media
+  // handler is: it serves the file on the same origin with access checks.
+  const directLocalStorage =
+    (mediaUrl.includes('localhost') || mediaUrl.includes('127.0.0.1')) &&
+    !mediaUrl.includes('/api/media/file/')
+  if (directLocalStorage || mediaUrl.includes('undefined') || mediaUrl.includes('null')) {
     return fallback
   }
 
