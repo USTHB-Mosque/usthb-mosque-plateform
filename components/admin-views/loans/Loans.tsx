@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { BookOpen, Plus, Hourglass, CalendarClock, AlertTriangle } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Button } from '@/shared/ui/button'
@@ -25,10 +26,23 @@ interface LoansPageProps {
   }
 }
 
-const statCards = [
+type LoanStatKey = keyof LoansPageProps['stats']
+
+const statCards: Array<{
+  label: string
+  key: LoanStatKey
+  icon: typeof BookOpen
+  href?: string
+}> = [
   { label: 'عدد الإعارات الإجمالي', key: 'totalLoans' as const, icon: BookOpen },
   { label: 'عدد طلبات الإعارة الحالية', key: 'pendingLoans' as const, icon: Hourglass },
-  { label: 'عدد طلبات التمديد', key: 'extensionRequests' as const, icon: CalendarClock },
+  // #144: this count has a destination now — the queue that drains it.
+  {
+    label: 'عدد طلبات التمديد',
+    key: 'extensionRequests' as const,
+    icon: CalendarClock,
+    href: '/admin-panel/loans/extensions',
+  },
   { label: 'عدد التأخرات', key: 'overdueLoans' as const, icon: AlertTriangle },
 ]
 
@@ -77,11 +91,8 @@ const Loans: React.FC<LoansPageProps> = ({ stats }) => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => {
           const Icon = stat.icon
-          return (
-            <div
-              key={stat.label}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"
-            >
+          const body = (
+            <>
               <div className="min-w-0">
                 <div className="text-2xl font-bold text-card-foreground">{stats[stat.key]}</div>
                 <div className="mt-0.5 truncate text-sm text-muted-foreground">{stat.label}</div>
@@ -89,6 +100,22 @@ const Loans: React.FC<LoansPageProps> = ({ stats }) => {
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background-2 text-primary-300">
                 <Icon className="size-5" aria-hidden />
               </div>
+            </>
+          )
+          const className =
+            'flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4'
+
+          return stat.href ? (
+            <Link
+              key={stat.label}
+              href={stat.href}
+              className={`${className} transition-colors hover:border-primary/40`}
+            >
+              {body}
+            </Link>
+          ) : (
+            <div key={stat.label} className={className}>
+              {body}
             </div>
           )
         })}

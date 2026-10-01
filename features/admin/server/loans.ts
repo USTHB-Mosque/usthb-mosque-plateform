@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
-import { writeLog } from './logs'
-import { LogAction, type LogActionValue } from './logs-core'
+import { writeLoanLog } from './loan-log-core'
+import { LogAction } from './logs-core'
+import { resolveSearchMatches } from './search-core'
 import {
   acceptLoan,
   createAcceptedLoanLogic,
@@ -15,44 +16,13 @@ import {
 import { createNotification } from '@/features/notifications'
 import { formatArabicDate, formatHour } from '@/shared/lib/dates'
 import { getLoanSettings } from '@/shared/lib/settings'
-import type { Payload, Where } from 'payload'
-import type { Book, Loan, User } from '@/payload-types'
-import type { LoanStatus } from '@/utils/constants/loans'
+import type { Where } from 'payload'
+import type { Book, Loan } from '@/payload-types'
+import { RESERVED_LOAN_STATUSES, type LoanStatus } from '@/utils/constants/loans'
 
 const revalidateAdminLoans = () => {
   revalidatePath('/admin-panel/dashboard')
   revalidatePath('/admin-panel/loans')
-}
-
-/** Writes a loan-transition log line, resolving the book title when possible. */
-async function writeLoanLog(
-  payload: Payload,
-  user: User,
-  loanId: number,
-  action: LogActionValue,
-  describe: (title: string) => string,
-): Promise<void> {
-  let title = ''
-  try {
-    const loan = await payload.findByID({
-      collection: 'loans',
-      id: Number(loanId),
-      depth: 1,
-      overrideAccess: false,
-      user,
-    })
-    if (loan && typeof loan.book === 'object' && loan.book && 'title' in loan.book) {
-      title = (loan.book as Book).title
-    }
-  } catch {
-    // Fall through with an empty title rather than failing the transition.
-  }
-  await writeLog(payload, user, {
-    action,
-    targetType: 'loan',
-    targetId: loanId,
-    message: describe(title),
-  })
 }
 
 export interface AdminLoansStats {
@@ -128,51 +98,6 @@ export interface AdminLoansQuery {
   overdue?: 'overdue' | 'not-overdue'
 }
 
-// Payload cannot `contains` through relationship fields, so a free-text search
-// first resolves matching users/books to ids, then filters loans on those ids.
-async function resolveSearchMatches(
-  payload: Payload,
-  user: User,
-  search: string,
-): Promise<{ userIds: number[]; bookIds: number[] }> {
-  const [users, books] = await Promise.all([
-    payload.find({
-      collection: 'users',
-      where: {
-        or: [
-          { email: { contains: search } },
-          { fullName: { contains: search } },
-          { firstName: { contains: search } },
-          { lastName: { contains: search } },
-        ],
-      },
-      limit: 50,
-      depth: 0,
-      overrideAccess: false,
-      user,
-    }),
-    payload.find({
-      collection: 'books',
-      where: {
-        or: [
-          { title: { contains: search } },
-          { code: { contains: search } },
-          { author: { contains: search } },
-        ],
-      },
-      limit: 50,
-      depth: 0,
-      overrideAccess: false,
-      user,
-    }),
-  ])
-
-  return {
-    userIds: users.docs.map((doc) => doc.id),
-    bookIds: books.docs.map((doc) => doc.id),
-  }
-}
-
 export async function getLoansByStatus(
   status: LoanStatus,
   params: AdminLoansQuery = {},
@@ -222,6 +147,40 @@ export async function getLoansByStatus(
     totalPages: result.totalPages,
     totalDocs: result.totalDocs,
   }
+}
+
+export interface BorrowerBudget {
+  userId: number
+  heldCount: number
+  borrowLimit: number
+}
+
+/**
+ * #100's duplicate-loan warning: what each borrower is already holding against
+ * the borrow limit, read before accepting rather than after.
+ *
+ * The count is `RESERVED_LOAN_STATUSES`, not the active ones: the warning is
+ * about a copy in the member's hands, and the request being accepted holds
+ * nothing yet — counting `pending` would put every request in its own warning.
+ */
+export async function getBorrowerLoanBudget(userIds: number[]): Promise<BorrowerBudget[]> {
+  const ctx = await getAdminCtx()
+  const { payload, user } = ctx
+  const { borrowLimit } = await getLoanSettings(payload, ctx.req)
+
+  return Promise.all(
+    userIds.map(async (userId) => {
+      const held = await payload.count({
+        collection: 'loans',
+        where: {
+          and: [{ user: { equals: userId } }, { status: { in: [...RESERVED_LOAN_STATUSES] } }],
+        },
+        overrideAccess: false,
+        user,
+      })
+      return { userId, heldCount: held.totalDocs, borrowLimit }
+    }),
+  )
 }
 
 export async function addLoan(

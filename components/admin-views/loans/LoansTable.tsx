@@ -34,11 +34,13 @@ import { cn } from '@/shared/lib/utils'
 import { LoanStatusBadge, LoanDetailsDialog } from '@/features/library'
 import {
   approveLoan,
+  getBorrowerLoanBudget,
   markLoanPickedUp,
   markLoanReturned,
   rejectLoan,
   reschedulePickup,
   sendLoanReminder,
+  type BorrowerBudget,
 } from '@/features/admin/server/loans'
 import { adminLoansKeys } from '@/features/admin/api/loans.queries'
 import { booksKeys } from '@/features/library/api/books.queries'
@@ -57,6 +59,16 @@ type LoansTableProps = {
 type LoanBulkAction = 'approve' | 'pickup' | 'return' | 'reminder'
 
 type BulkActionResult = { ok: boolean; error?: string }
+
+/**
+ * #100's duplicate-loan warning: a stop inserted between picking an approval
+ * and confirming it, when the borrower already holds unreturned books.
+ */
+type LoanWarning = {
+  loanIds: number[]
+  loanLabel: string
+  borrowers: BorrowerBudget[]
+}
 
 function getDisplayName(user: User | undefined): string {
   if (!user) return '—'
@@ -116,6 +128,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
     loanLabel?: string
   } | null>(null)
   const [reject, setReject] = useState<{ loanIds: number[]; loanLabel: string } | null>(null)
+  const [warning, setWarning] = useState<LoanWarning | null>(null)
   const [reschedule, setReschedule] = useState<Loan | null>(null)
 
   const loanIds = loans.map((l) => l.id)
@@ -143,8 +156,43 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
     return `${loanIds.length} ${plural(loanIds.length, 'إعارة', 'إعارتين', 'إعارات')}`
   }
 
+  /** The distinct borrowers behind a selection, in selection order. */
+  const userIdsOf = (loanIds: number[]) => {
+    const userIds = new Set<number>()
+    for (const id of loanIds) {
+      const user = loans.find((loan) => loan.id === id)?.user
+      if (typeof user === 'number') userIds.add(user)
+      else if (user) userIds.add(user.id)
+    }
+    return [...userIds]
+  }
+
   const openConfirm = (action: LoanBulkAction, loanIds: number[]) => {
-    setConfirm({ action, loanIds, loanLabel: labeled(loanIds) })
+    const loanLabel = labeled(loanIds)
+    if (action !== 'approve') {
+      setConfirm({ action, loanIds, loanLabel })
+      return
+    }
+
+    // #100: approving is the one decision that can put a book into hands that
+    // are already holding one, so it reads the budget before it opens anything.
+    startTransition(async () => {
+      const borrowers = await getBorrowerLoanBudget(userIdsOf(loanIds))
+      const holding = borrowers.filter((budget) => budget.heldCount >= 1)
+      if (holding.length > 0) {
+        setWarning({ loanIds, loanLabel, borrowers: holding })
+        return
+      }
+      setConfirm({ action, loanIds, loanLabel })
+    })
+  }
+
+  const describeWarning = (warning: LoanWarning) => {
+    if (warning.loanIds.length === 1) {
+      const { heldCount, borrowLimit } = warning.borrowers[0]
+      return `يحمل ${warning.loanLabel} ${heldCount} ${plural(heldCount, 'كتاباً', 'كتابين', 'كتب')} غير مؤجّل، والحد الأقصى للمستعير ${borrowLimit}. يمكنك القبول أو الرفض مع بيان السبب.`
+    }
+    return `يضم التحديد ${warning.borrowers.length} ${plural(warning.borrowers.length, 'مستفيداً', 'مستفيدين', 'مستفيدين')} من حاملي الكتب غير المؤجّلة.`
   }
 
   const openReject = (loanIds: number[]) => {
@@ -200,6 +248,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
       else toast.error(result.error || 'تعذر تنفيذ الإجراء')
     }
     setConfirm(null)
+    setWarning(null)
     setSelected(new Set())
     if (done > 0) {
       toast.success(`${success} — ${done} ${plural(done, 'إعارة', 'إعارتين', 'إعارات')}`)
@@ -536,6 +585,30 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, activeStatus }) => {
           </TableBody>
         </Table>
       </div>
+
+      {warning ? (
+        <ConfirmDialog
+          open
+          onOpenChange={() => setWarning(null)}
+          title={
+            warning.loanIds.length === 1 ? 'تنبيه قبل قبول الإعارة' : 'تنبيه قبل قبول الإعارات'
+          }
+          description={describeWarning(warning)}
+          confirmLabel={warning.loanIds.length === 1 ? 'قبول' : 'قبول الكل'}
+          cancelLabel={warning.loanIds.length === 1 ? 'رفض مع السبب' : 'راجع'}
+          busy={pending}
+          onConfirm={() => {
+            startTransition(() => runLoansAction('approve', warning.loanIds))
+          }}
+          onCancel={() => {
+            const loanIds = warning.loanIds
+            setWarning(null)
+            // The single-row alternative to confirming is a decision of its own,
+            // so it goes to the reason dialog instead of just dismissing.
+            if (loanIds.length === 1) openReject(loanIds)
+          }}
+        />
+      ) : null}
 
       {confirm ? (
         <ConfirmDialog

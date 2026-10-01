@@ -14,6 +14,7 @@ import {
   adminNavHelpers,
   adminNavForRole,
 } from '@/shared/layouts/admin/nav'
+import type { AdminNavItem } from '@/shared/layouts/admin/nav'
 
 type AdminSidebarProps = React.PropsWithChildren<{
   userName?: string
@@ -64,6 +65,34 @@ const AdminSidebarProvider: React.FC<React.PropsWithChildren<{ role?: 'admin' | 
 
 export function useAdminSidebar() {
   return React.useContext(AdminSidebarContext)
+}
+
+type SideLinkProps = {
+  item: AdminNavItem
+  active: boolean
+  collapsed: boolean
+  /** A sub-page: indented beneath its section's own link. */
+  nested?: boolean
+}
+
+const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested }) => {
+  const Icon = item.icon
+  return (
+    <Link
+      href={item.href}
+      title={collapsed ? item.label : undefined}
+      className={cn(
+        'flex h-[38px] items-center gap-3 rounded-[10px] text-sm font-medium transition-colors',
+        collapsed ? 'justify-center px-0' : nested ? 'pe-3 ps-8' : 'px-3',
+        active
+          ? 'bg-primary-main-20 text-primary-300 font-bold'
+          : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
+      )}
+    >
+      <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
+      {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+    </Link>
+  )
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, children }) => {
@@ -121,27 +150,24 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
             <p className="ps-3 pb-1 pt-2 text-[12px] font-medium text-grey-400">القائمة الرئيسية</p>
           )}
           <nav className="flex flex-col gap-1" aria-label="لوحة التحكم">
-            {mainNav.map((item) => {
-              const Icon = item.icon
-              const active = adminNavHelpers.isActive(item, pathname)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={cn(
-                    'flex h-[38px] items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-colors',
-                    collapsed && 'justify-center px-0',
-                    active
-                      ? 'bg-primary-main-20 text-primary-300 font-bold'
-                      : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
-                  )}
-                >
-                  <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
-                  {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-                </Link>
-              )
-            })}
+            {mainNav.map((item) => (
+              <div key={item.href} className="flex flex-col gap-1">
+                <SideLink
+                  item={item}
+                  active={adminNavHelpers.isActive(item, pathname)}
+                  collapsed={collapsed}
+                />
+                {item.children?.map((child) => (
+                  <SideLink
+                    key={child.href}
+                    item={child}
+                    active={adminNavHelpers.isActive(child, pathname)}
+                    collapsed={collapsed}
+                    nested
+                  />
+                ))}
+              </div>
+            ))}
           </nav>
         </div>
 
@@ -153,27 +179,14 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
               </p>
             )}
             <nav className="flex flex-col gap-1" aria-label="روابط سريعة">
-              {secondaryNav.map((item) => {
-                const Icon = item.icon
-                const active = adminNavHelpers.isActive(item, pathname)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    className={cn(
-                      'flex h-[38px] items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-colors',
-                      collapsed && 'justify-center px-0',
-                      active
-                        ? 'bg-primary-main-20 text-primary-300 font-bold'
-                        : 'text-grey-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground',
-                    )}
-                  >
-                    <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
-                    {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-                  </Link>
-                )
-              })}
+              {secondaryNav.map((item) => (
+                <SideLink
+                  key={item.href}
+                  item={item}
+                  active={adminNavHelpers.isActive(item, pathname)}
+                  collapsed={collapsed}
+                />
+              ))}
             </nav>
           </div>
 
@@ -235,14 +248,21 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
 const MobileTopbar: React.FC<{ role?: string }> = ({ role }) => {
   const pathname = usePathname()
   const { main: mainNav } = adminNavForRole(role)
-  const current = mainNav.find((i) => adminNavHelpers.isActive(i, pathname))
+  // The horizontal chip row has no room for nesting, so sub-pages are listed
+  // as peers here — the sidebar keeps the hierarchy.
+  const flatNav = mainNav.flatMap((item) =>
+    item.children?.length ? [item, ...item.children] : [item],
+  )
+  const current =
+    flatNav.find((i) => i.href === pathname) ??
+    flatNav.find((i) => pathname.startsWith(`${i.href}/`))
 
   return (
     <header className="sticky top-0 z-40 bg-background-2/95 backdrop-blur lg:hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="overflow-x-auto">
           <nav className="flex gap-2">
-            {mainNav.map((item) => {
+            {flatNav.map((item) => {
               const Icon = item.icon
               const active = adminNavHelpers.isActive(item, pathname)
               return (
