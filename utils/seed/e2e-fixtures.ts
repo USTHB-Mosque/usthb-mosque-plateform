@@ -10,6 +10,30 @@ import { E2E_GOOGLE_EMAIL, E2E_MEMBER_EMAIL } from '@/e2e/lib/test-users'
 
 const ISO_DATE = (date: Date) => date.toISOString().split('T')[0]
 
+/**
+ * The D7 borrow limit the e2e platform runs under. The shipped default is 3
+ * (`DEFAULT_BORROW_LIMIT`), which member1's three seeded active loans exhaust
+ * — the borrow dialog then renders its budget-exhausted state and the loan and
+ * notification journeys can never submit a request. Five leaves two free
+ * slots, matching the pre-D7 shipped limit the journeys were written against.
+ */
+export const E2E_BORROW_LIMIT = 5
+
+/**
+ * The lean seed truncates the settings row the migration planted, so the
+ * borrow gate would silently fall back to the shipped limit of 3. Upserting
+ * without `user` is the intentional administrative bypass (AGENTS.md).
+ */
+export async function seedE2eSettings(payload: Payload): Promise<void> {
+  await payload.updateGlobal({
+    slug: 'settings',
+    data: { borrowLimit: E2E_BORROW_LIMIT },
+    overrideAccess: true,
+  })
+
+  console.log(`⚙️ Settings: borrowLimit raised to ${E2E_BORROW_LIMIT} for the e2e journeys`)
+}
+
 /** Lookups go by email/title — ids restart at 1 every truncate+seed run. */
 async function findUser(payload: Payload, email: string): Promise<number> {
   const { docs } = await payload.find({
@@ -211,6 +235,7 @@ async function seedE2eArticleFavorite(payload: Payload): Promise<void> {
 }
 
 export async function seedE2eFixtures(payload: Payload): Promise<void> {
+  await seedE2eSettings(payload)
   await seedE2eLoans(payload)
   await seedFullE2eActivity(payload)
   await seedE2eArticleFavorite(payload)
