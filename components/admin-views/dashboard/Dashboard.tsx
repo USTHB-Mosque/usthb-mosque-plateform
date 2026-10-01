@@ -220,7 +220,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     {
       label: 'طلبات تمديد قيد الانتظار',
       value: stats.pendingExtensions,
-      href: '/admin-panel/loans',
+      href: '/admin-panel/loans/extensions',
     },
     {
       label: 'عدد التأخيرات الشهرية في الإرجاع',

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
-import { writeLog } from './logs'
-import { LogAction, type LogActionValue } from './logs-core'
+import { writeLoanLog } from './loan-log-core'
+import { LogAction } from './logs-core'
 import {
   acceptLoan,
   createAcceptedLoanLogic,
@@ -22,37 +22,6 @@ import type { LoanStatus } from '@/utils/constants/loans'
 const revalidateAdminLoans = () => {
   revalidatePath('/admin-panel/dashboard')
   revalidatePath('/admin-panel/loans')
-}
-
-/** Writes a loan-transition log line, resolving the book title when possible. */
-async function writeLoanLog(
-  payload: Payload,
-  user: User,
-  loanId: number,
-  action: LogActionValue,
-  describe: (title: string) => string,
-): Promise<void> {
-  let title = ''
-  try {
-    const loan = await payload.findByID({
-      collection: 'loans',
-      id: Number(loanId),
-      depth: 1,
-      overrideAccess: false,
-      user,
-    })
-    if (loan && typeof loan.book === 'object' && loan.book && 'title' in loan.book) {
-      title = (loan.book as Book).title
-    }
-  } catch {
-    // Fall through with an empty title rather than failing the transition.
-  }
-  await writeLog(payload, user, {
-    action,
-    targetType: 'loan',
-    targetId: loanId,
-    message: describe(title),
-  })
 }
 
 export interface AdminLoansStats {
