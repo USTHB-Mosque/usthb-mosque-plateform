@@ -51,11 +51,15 @@ async function waitlistAfter(bookId: number) {
 }
 
 /**
- * Creates an accepted Loan and then drags its window into the past. The
- * backdate is a field-only update, which the lifecycle hook ignores — so the
- * loan arrives at the sweep exactly as an acceptance left it, only late.
+ * Creates an accepted Loan and then drags its window to `expiresAt` (by
+ * default just before the real clock). The backdate is a field-only update,
+ * which the lifecycle hook ignores — so the loan arrives at the sweep exactly
+ * as an acceptance left it, only late.
  */
-async function lapsedLoan(bookId: number): Promise<Loan> {
+async function lapsedLoan(
+  bookId: number,
+  expiresAt = new Date(Date.now() - 60_000),
+): Promise<Loan> {
   const loan = await createTestLoan(payload, { book: bookId, user: member.id })
   await payload.update({
     collection: 'loans',
@@ -66,7 +70,7 @@ async function lapsedLoan(bookId: number): Promise<Loan> {
   return (await payload.update({
     collection: 'loans',
     id: loan.id,
-    data: { pickupWindowExpiresAt: new Date(Date.now() - 60_000).toISOString() },
+    data: { pickupWindowExpiresAt: expiresAt.toISOString() },
     overrideAccess: true,
   })) as Loan
 }
@@ -240,13 +244,25 @@ describe('expirePickupWindows (#153, D1/D2)', () => {
 describe('expirePickupWindows task on the jobs queue (#153)', () => {
   it('sweeps with an explicit instant and defaults to now when given no input', async () => {
     sendEmailSpy()
+    // The instant the sweep is told to judge against, and the deadline the
+    // loan carries, are both derived from the real clock rather than pinned to
+    // a literal date. Pinning one made this test expire at the moment the
+    // literal fell into the past: the loan was created "60s ago" while the
+    // sweep judged a day that was already behind it, so the window was not
+    // yet late and the loan stayed accepted.
+    //
+    // The deadline sits deliberately between the two clocks — late relative to
+    // the instant below, still in the future relative to the real one — so the
+    // loan is only refused when the task honours its input. A sweep that
+    // ignored the input and read the wall clock would leave it accepted.
+    const instant = new Date(Date.now() + 60 * 60_000)
     const book = await createTestBook(payload)
-    const loan = await lapsedLoan(book.id)
+    const loan = await lapsedLoan(book.id, new Date(instant.getTime() - 30 * 60_000))
 
     await payload.jobs.queue({
       queue: PICKUP_WINDOW_QUEUE,
       task: 'expirePickupWindows',
-      input: { now: '2026-10-01T00:00:00.000Z' },
+      input: { now: instant.toISOString() },
     })
     const explicit = await payload.jobs.run({ queue: PICKUP_WINDOW_QUEUE, limit: 5 })
     expect(Object.keys(explicit.jobStatus ?? {})).toHaveLength(1)
