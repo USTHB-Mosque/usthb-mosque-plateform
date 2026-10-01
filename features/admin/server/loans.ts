@@ -18,7 +18,7 @@ import { formatArabicDate, formatHour } from '@/shared/lib/dates'
 import { getLoanSettings } from '@/shared/lib/settings'
 import type { Where } from 'payload'
 import type { Book, Loan } from '@/payload-types'
-import type { LoanStatus } from '@/utils/constants/loans'
+import { RESERVED_LOAN_STATUSES, type LoanStatus } from '@/utils/constants/loans'
 
 const revalidateAdminLoans = () => {
   revalidatePath('/admin-panel/dashboard')
@@ -147,6 +147,40 @@ export async function getLoansByStatus(
     totalPages: result.totalPages,
     totalDocs: result.totalDocs,
   }
+}
+
+export interface BorrowerBudget {
+  userId: number
+  heldCount: number
+  borrowLimit: number
+}
+
+/**
+ * #100's duplicate-loan warning: what each borrower is already holding against
+ * the borrow limit, read before accepting rather than after.
+ *
+ * The count is `RESERVED_LOAN_STATUSES`, not the active ones: the warning is
+ * about a copy in the member's hands, and the request being accepted holds
+ * nothing yet — counting `pending` would put every request in its own warning.
+ */
+export async function getBorrowerLoanBudget(userIds: number[]): Promise<BorrowerBudget[]> {
+  const ctx = await getAdminCtx()
+  const { payload, user } = ctx
+  const { borrowLimit } = await getLoanSettings(payload, ctx.req)
+
+  return Promise.all(
+    userIds.map(async (userId) => {
+      const held = await payload.count({
+        collection: 'loans',
+        where: {
+          and: [{ user: { equals: userId } }, { status: { in: [...RESERVED_LOAN_STATUSES] } }],
+        },
+        overrideAccess: false,
+        user,
+      })
+      return { userId, heldCount: held.totalDocs, borrowLimit }
+    }),
+  )
 }
 
 export async function addLoan(

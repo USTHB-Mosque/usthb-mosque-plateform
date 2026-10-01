@@ -7,11 +7,13 @@ import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-s
 import {
   addLoan,
   getAdminLoansStats,
+  getBorrowerLoanBudget,
   getLoansByStatus,
   markLoanPickedUp,
   sendLoanReminder,
 } from '@/features/admin/server/loans'
 import { createAcceptedLoanLogic } from '@/features/library/server/loan-transitions'
+import { DEFAULT_BORROW_LIMIT } from '@/utils/constants/loans'
 
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
@@ -482,5 +484,49 @@ describe('sendLoanReminder', () => {
     expect(result.error).toBe('لا يمكن إرسال تذكير لهذه الحالة')
     const { docs } = await latestNotifications()
     expect(docs).toHaveLength(0)
+  })
+})
+
+describe('getBorrowerLoanBudget', () => {
+  it('counts the books a borrower is already holding, not the requests waiting', async () => {
+    const book = await createTestBook(payload, { available: 2, total: 3 })
+    await createTestLoan(payload, {
+      book: book.id,
+      user: member.id,
+      status: 'picked_up',
+      dueDate: '2026-11-01T09:00:00.000Z',
+    })
+    // A request still waiting holds nothing, and must stay out of its own warning.
+    await createTestLoan(payload, { book: book.id, user: member.id, status: 'pending' })
+
+    const budgets = await getBorrowerLoanBudget([member.id])
+
+    expect(budgets).toHaveLength(1)
+    expect(budgets[0].userId).toBe(member.id)
+    expect(budgets[0].heldCount).toBe(1)
+    expect(budgets[0].borrowLimit).toBe(DEFAULT_BORROW_LIMIT)
+  })
+
+  it('returns one row per borrower, including one holding nothing', async () => {
+    const other = await createTestUser(payload, { verified: true })
+
+    const budgets = await getBorrowerLoanBudget([member.id, other.id])
+
+    expect(budgets.map((budget) => budget.userId)).toEqual([member.id, other.id])
+    expect(budgets.map((budget) => budget.heldCount)).toEqual([0, 0])
+    expect(budgets.map((budget) => budget.borrowLimit)).toEqual([
+      DEFAULT_BORROW_LIMIT,
+      DEFAULT_BORROW_LIMIT,
+    ])
+  })
+
+  it('refuses a non-admin member', async () => {
+    const { token } = await loginToken(payload, {
+      email: member.email ?? '',
+      password: 'correct horse battery',
+    })
+    setNextHeaders(makeAuthHeaders(token))
+
+    await expect(getBorrowerLoanBudget([member.id])).rejects.toThrow('Unauthorized')
   })
 })

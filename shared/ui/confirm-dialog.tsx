@@ -23,8 +23,16 @@ interface ConfirmDialogProps {
   title: string
   description: string
   confirmLabel: string
+  /** Defaults to إلغاء — a plain close, which is what most callers want. */
+  cancelLabel?: string
   busy?: boolean
   onConfirm: () => void
+  /**
+   * The second out, when the alternative to confirming is an action of its own
+   * (#100's duplicate-loan warning offers refuse-with-reason, not a dismissal).
+   * Defaults to closing the dialog.
+   */
+  onCancel?: () => void
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -33,8 +41,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   title,
   description,
   confirmLabel,
+  cancelLabel = 'إلغاء',
   busy = false,
   onConfirm,
+  onCancel,
 }) => {
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : onOpenChange(false))}>
@@ -48,9 +58,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             variant="outline"
             disabled={busy}
-            onClick={() => onOpenChange(false)}
+            onClick={() => (onCancel ? onCancel() : onOpenChange(false))}
           >
-            إلغاء
+            {cancelLabel}
           </Button>
           <Button type="button" disabled={busy} className="gap-2" onClick={onConfirm}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : null}
