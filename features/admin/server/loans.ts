@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getAdminCtx } from './ctx'
 import { writeLoanLog } from './loan-log-core'
 import { LogAction } from './logs-core'
+import { resolveSearchMatches } from './search-core'
 import {
   acceptLoan,
   createAcceptedLoanLogic,
@@ -15,8 +16,8 @@ import {
 import { createNotification } from '@/features/notifications'
 import { formatArabicDate, formatHour } from '@/shared/lib/dates'
 import { getLoanSettings } from '@/shared/lib/settings'
-import type { Payload, Where } from 'payload'
-import type { Book, Loan, User } from '@/payload-types'
+import type { Where } from 'payload'
+import type { Book, Loan } from '@/payload-types'
 import type { LoanStatus } from '@/utils/constants/loans'
 
 const revalidateAdminLoans = () => {
@@ -95,51 +96,6 @@ export interface AdminLoansQuery {
   limit?: number
   search?: string
   overdue?: 'overdue' | 'not-overdue'
-}
-
-// Payload cannot `contains` through relationship fields, so a free-text search
-// first resolves matching users/books to ids, then filters loans on those ids.
-async function resolveSearchMatches(
-  payload: Payload,
-  user: User,
-  search: string,
-): Promise<{ userIds: number[]; bookIds: number[] }> {
-  const [users, books] = await Promise.all([
-    payload.find({
-      collection: 'users',
-      where: {
-        or: [
-          { email: { contains: search } },
-          { fullName: { contains: search } },
-          { firstName: { contains: search } },
-          { lastName: { contains: search } },
-        ],
-      },
-      limit: 50,
-      depth: 0,
-      overrideAccess: false,
-      user,
-    }),
-    payload.find({
-      collection: 'books',
-      where: {
-        or: [
-          { title: { contains: search } },
-          { code: { contains: search } },
-          { author: { contains: search } },
-        ],
-      },
-      limit: 50,
-      depth: 0,
-      overrideAccess: false,
-      user,
-    }),
-  ])
-
-  return {
-    userIds: users.docs.map((doc) => doc.id),
-    bookIds: books.docs.map((doc) => doc.id),
-  }
 }
 
 export async function getLoansByStatus(
