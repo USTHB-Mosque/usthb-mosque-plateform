@@ -1,5 +1,4 @@
 import ExtensionsQueue from '@/components/admin-views/loans/ExtensionsQueue'
-import LoansSectionNav from '@/components/admin-views/loans/LoansSectionNav'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 /**
@@ -8,11 +7,8 @@ import AdminPage from '@/shared/layouts/admin/AdminPage'
  */
 export default function AdminExtensionsPage() {
   return (
-    <AdminPage title="الإعارات">
-      <div className="flex flex-col gap-4">
-        <LoansSectionNav />
-        <ExtensionsQueue />
-      </div>
+    <AdminPage title="الإعارات / طلبات التمديد">
+      <ExtensionsQueue />
     </AdminPage>
   )
 }

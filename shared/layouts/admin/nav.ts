@@ -3,6 +3,8 @@ import {
   Users,
   LibraryBig,
   BookOpen,
+  ListOrdered,
+  CalendarClock,
   FileText,
   CalendarDays,
   MessageSquareQuote,
@@ -18,13 +20,23 @@ export type AdminNavItem = {
   href: string
   icon: LucideIcon
   badge?: number | string
+  /** Sub-pages of this section, rendered nested beneath it in the sidebar. */
+  children?: AdminNavItem[]
 }
 
 export const adminMainNav: AdminNavItem[] = [
   { label: 'لوحة التحكم', href: '/admin-panel/dashboard', icon: LayoutDashboard },
   { label: 'المستخدمون', href: '/admin-panel/users', icon: Users },
   { label: 'المكتبة', href: '/admin-panel/library', icon: LibraryBig },
-  { label: 'الإعارات', href: '/admin-panel/loans', icon: BookOpen },
+  {
+    label: 'الإعارات',
+    href: '/admin-panel/loans',
+    icon: BookOpen,
+    children: [
+      { label: 'قائمة الانتظار', href: '/admin-panel/loans/waitlist', icon: ListOrdered },
+      { label: 'طلبات التمديد', href: '/admin-panel/loans/extensions', icon: CalendarClock },
+    ],
+  },
   { label: 'المقالات', href: '/admin-panel/articles', icon: FileText },
   { label: 'الأنشطة', href: '/admin-panel/activities', icon: CalendarDays },
   { label: 'آراء القرّاء', href: '/admin-panel/reviews', icon: MessageSquareQuote },
@@ -39,6 +51,9 @@ export const adminSecondaryNav: AdminNavItem[] = [
 
 export const adminNavHelpers = {
   isActive: (item: AdminNavItem, pathname: string) => {
+    // A section with sub-pages only lights up on its own default page, so the
+    // current sub-page is the single highlighted row rather than both.
+    if (item.children?.length) return pathname === item.href
     return pathname === item.href || pathname.startsWith(`${item.href}/`)
   },
 }

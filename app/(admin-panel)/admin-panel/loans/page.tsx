@@ -1,6 +1,5 @@
 import { getAdminLoansStats } from '@/features/admin/server/loans'
 import Loans from '@/components/admin-views/loans/Loans'
-import LoansSectionNav from '@/components/admin-views/loans/LoansSectionNav'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function LoansPage() {
@@ -8,10 +7,7 @@ export default async function LoansPage() {
 
   return (
     <AdminPage title="الإعارات">
-      <div className="flex flex-col gap-4">
-        <LoansSectionNav />
-        <Loans stats={stats} />
-      </div>
+      <Loans stats={stats} />
     </AdminPage>
   )
 }
