@@ -399,7 +399,7 @@ Static pages at `/privacy` and `/terms`:
 
 ### Data Residency
 
-- Database on PostgreSQL 17 and uploaded files in MinIO on the VPS (S3-compatible).
+- Database on PostgreSQL 17 and uploaded files in RustFS on the VPS (S3-compatible).
 - Verification documents: private URLs only (no public access).
 - Signed URLs with short expiry for admin access.
 - Data residency in Algeria preferred; if using foreign hosting, document in privacy policy.
@@ -648,7 +648,7 @@ any row still holding 5.
 | Language        | TypeScript                        |
 | CMS             | Payload CMS (in-process)          |
 | Database        | PostgreSQL 17 (compose dev / VPS) |
-| Storage         | MinIO S3 (compose dev / VPS)      |
+| Storage         | RustFS S3 (compose dev / VPS)     |
 | Data fetching   | TanStack Query v5 (client)        |
 | State           | Zustand                           |
 | UI              | Tailwind + shadcn/ui + Base-UI    |
@@ -664,8 +664,8 @@ any row still holding 5.
 
 ### Environments
 
-- **dev** `.env` -> compose Postgres (:5432) and MinIO (:9000) over loopback; `next dev` runs on the host.
-- **VPS target** `.env` -> compose network DB and MinIO, with Caddy serving HTTPS.
+- **dev** `.env` -> compose Postgres (:5432) and RustFS (:9000) over loopback; `next dev` runs on the host.
+- **VPS target** `.env` -> compose network DB and RustFS, with Caddy serving HTTPS.
 - **Vercel previews during transition** -> Neon Postgres and Vercel Blob.
 
 ### Deployment

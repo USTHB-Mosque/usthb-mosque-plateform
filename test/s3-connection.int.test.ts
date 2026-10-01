@@ -7,7 +7,7 @@ import { expect, it } from 'vitest'
 import { ensureStorageBucket } from '@/utils/seed/ensure-bucket'
 import { getTestPayload, resetDatabase } from './setup-integration'
 
-it('uploads media through Payload into MinIO', async () => {
+it('uploads media through Payload into the S3 store', async () => {
   // Only this test opts into S3; the other integration files keep disk storage.
   process.env.PAYLOAD_TEST_S3 = 'true'
   const client = new S3Client({

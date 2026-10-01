@@ -6,18 +6,18 @@ Built Arabic-first, RTL throughout.
 
 ## Tech Stack
 
-| Layer              | Technology                                             |
-| ------------------ | ------------------------------------------------------ |
-| **Framework**      | Next.js 16 (App Router)                                |
-| **CMS**            | Payload CMS 3                                          |
-| **Database**       | PostgreSQL 17 (Docker Compose locally and on the VPS)  |
-| **File Storage**   | MinIO (S3-compatible); Vercel Blob for Vercel previews |
-| **UI**             | shadcn/ui patterns, Base UI / Radix                    |
-| **Styling**        | Tailwind CSS 4                                         |
-| **State**          | Zustand + React Query                                  |
-| **Authentication** | Payload Auth (JWT), hand-rolled Google OAuth           |
-| **Email**          | Nodemailer                                             |
-| **Testing**        | Vitest + React Testing Library                         |
+| Layer              | Technology                                              |
+| ------------------ | ------------------------------------------------------- |
+| **Framework**      | Next.js 16 (App Router)                                 |
+| **CMS**            | Payload CMS 3                                           |
+| **Database**       | PostgreSQL 17 (Docker Compose locally and on the VPS)   |
+| **File Storage**   | RustFS (S3-compatible); Vercel Blob for Vercel previews |
+| **UI**             | shadcn/ui patterns, Base UI / Radix                     |
+| **Styling**        | Tailwind CSS 4                                          |
+| **State**          | Zustand + React Query                                   |
+| **Authentication** | Payload Auth (JWT), hand-rolled Google OAuth            |
+| **Email**          | Nodemailer                                              |
+| **Testing**        | Vitest + React Testing Library                          |
 
 ## Project Structure
 
@@ -57,7 +57,7 @@ Import rules (enforced in `eslint.config.mjs`):
    ```
 
 2. Copy `example.env` to `.env` and set `PAYLOAD_SECRET`. The template points
-   host-run commands at Postgres (`127.0.0.1:5432`) and MinIO
+   host-run commands at Postgres (`127.0.0.1:5432`) and RustFS
    (`127.0.0.1:9000`). To use Payload's fast dev schema push, uncomment
    `PAYLOAD_PUSH=true` **only in your local `.env`**. Remove an old
    `.env.local`, or update **all** its DB and S3 settings (including credentials,
@@ -67,10 +67,11 @@ Import rules (enforced in `eslint.config.mjs`):
    cp example.env .env
    ```
 
-3. Start Postgres and MinIO, then apply the migrations to the new database:
+3. Start Postgres and RustFS, create the media bucket, then apply migrations:
 
    ```bash
    pnpm dev:up
+   pnpm storage:init
    pnpm payload:migrate
    ```
 
@@ -109,10 +110,11 @@ Import rules (enforced in `eslint.config.mjs`):
 | Command                              | Description                                               |
 | ------------------------------------ | --------------------------------------------------------- |
 | `pnpm dev`                           | Next.js dev server on the host (run `pnpm dev:up` first)  |
-| `pnpm dev:full`                      | Start Postgres and MinIO, then run `next dev`             |
-| `pnpm dev:up` / `pnpm dev:down`      | Start/stop local Postgres and MinIO, preserving volumes   |
+| `pnpm dev:full`                      | Start Postgres and RustFS, then run `next dev`            |
+| `pnpm dev:up` / `pnpm dev:down`      | Start/stop local Postgres and RustFS, preserving volumes  |
 | `pnpm db:psql` / `pnpm db:logs`      | Connect to Postgres / follow the data-service logs        |
-| `pnpm storage:console`               | Print the local MinIO console URL                         |
+| `pnpm storage:init`                  | Create the media bucket if it does not exist              |
+| `pnpm storage:console`               | Print the local RustFS console URL                        |
 | `pnpm dev:preview`                   | Preview mode; uses whichever `DATABASE_URL` is configured |
 | `pnpm build` / `pnpm start`          | Production build / server (Docker migrations at start)    |
 | `pnpm lint` / `pnpm typecheck`       | ESLint / `tsc --noEmit`                                   |
@@ -128,14 +130,14 @@ Import rules (enforced in `eslint.config.mjs`):
 
 | Environment           | Database              | Media                           | Configuration             |
 | --------------------- | --------------------- | ------------------------------- | ------------------------- |
-| **Local dev / e2e**   | Compose PostgreSQL 17 | Compose MinIO                   | `.env` (and `.env.local`) |
-| **VPS target**        | Compose PostgreSQL 17 | Compose MinIO                   | VPS `.env`                |
+| **Local dev / e2e**   | Compose PostgreSQL 17 | Compose RustFS                  | `.env` (and `.env.local`) |
+| **VPS target**        | Compose PostgreSQL 17 | Compose RustFS                  | VPS `.env`                |
 | **Vercel transition** | Neon PostgreSQL       | Vercel Blob (when token is set) | Vercel project settings   |
 
 `storage.ts` implements this selection: on Vercel (any `VERCEL` env) Blob wins
 whenever `BLOB_READ_WRITE_TOKEN` is present — even if stray S3 variables are
 set — elsewhere S3 wins whenever the `S3_*` credentials are set. The VPS
-deployment decision is recorded in [ADR 0003](docs/adr/0003-vps-postgres-minio.md).
+deployment decision is recorded in [ADR 0003](docs/adr/0003-vps-postgres-rustfs.md).
 
 ## Deployment (Docker)
 
@@ -144,7 +146,7 @@ Copy `example.env` to `.env` on the VPS. Set `SITE_DOMAIN` to that domain and
 `NEXT_PUBLIC_SERVER_URL` to `https://` followed by it; set strong matching
 values for `POSTGRES_PASSWORD` (URL-encoded in `DATABASE_URL`) and the `S3_*`
 credentials, plus `PAYLOAD_SECRET`. Leave `PAYLOAD_PUSH` unset. The same compose
-file builds the app, applies migrations, creates the MinIO bucket and starts
+file builds the app, creates the media bucket, applies migrations and starts
 Caddy in front of the app:
 
 ```bash
@@ -154,23 +156,24 @@ curl https://your-domain.example/api/health
 ```
 
 - **App** — HTTPS through Caddy at `SITE_DOMAIN`, admin panel at `/admin`.
-  Only Caddy listens publicly; Postgres and MinIO API/console bind to loopback.
-  Use an SSH tunnel if you need the MinIO console on a remote VPS.
+  Only Caddy listens publicly; Postgres and the RustFS API/console bind to
+  loopback. Use an SSH tunnel if you need the RustFS console on a remote VPS.
 - **Migrations** — run once in the `migrate` service before the app starts;
   the app never comes up if a migration fails. For a fresh install, create the
   first admin with `docker compose run --rm migrate pnpm bootstrap:admin` after
   setting `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`.
-- **Media** — stored in the persistent MinIO `media` bucket (Docker named
-  volume `minio-data`), served through `/api/media/file/**` so collection
-  access control applies. The app's `S3_ENDPOINT` is `http://minio:9000`
-  inside compose; host-run dev and e2e use `http://127.0.0.1:9000`.
+- **Media** — stored in the persistent `media` bucket (Docker named volume
+  `rustfs-data`), served through `/api/media/file/**` so collection access
+  control applies. The app's `S3_ENDPOINT` is `http://rustfs:9000` inside
+  compose; host-run dev and e2e use `http://127.0.0.1:9000`. The S3 adapter
+  uses path-style addressing, so no `RUSTFS_SERVER_DOMAINS` is required.
   Similarly, `COMPOSE_DB_HOST` switches only the host and port of `DATABASE_URL`
   to `db:5432` inside containers, preserving encoded credentials.
 - **Health** — `/api/health` returns 503 when the database is unreachable.
 
 This VPS stack currently stores the database and media on one host. **Before
 onboarding the first real member**, set up offsite backups of both PostgreSQL
-and MinIO and test restoring them; `pnpm seed` only recreates demo data. Configure
+RustFS and test restoring them; `pnpm seed` only recreates demo data. Configure
 `EMAIL_*` and `GOOGLE_CLIENT_*` when enabling those features.
 
 ## Contributing

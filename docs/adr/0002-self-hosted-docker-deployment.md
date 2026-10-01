@@ -1,6 +1,6 @@
 # Self-hosted Docker deployment
 
-**Status:** Superseded by [0003-vps-postgres-minio.md](./0003-vps-postgres-minio.md). This decision superseded [0001-vercel-for-deployment.md](./0001-vercel-for-deployment.md) on 2026-09-05.
+**Status:** Superseded by [0003-vps-postgres-rustfs.md](./0003-vps-postgres-rustfs.md). This decision superseded [0001-vercel-for-deployment.md](./0001-vercel-for-deployment.md) on 2026-09-05.
 
 ## Decision
 

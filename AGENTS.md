@@ -13,7 +13,7 @@ Generic Payload/Next knowledge lives upstream — do not paste it here:
 | Command                                                 | What it does                                                             |
 | ------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `pnpm dev`                                              | Host-run Next dev server (run `pnpm dev:up` first)                       |
-| `pnpm dev:up` / `pnpm dev:down` / `pnpm dev:full`       | Start/stop compose DB + MinIO, or start both and Next dev                |
+| `pnpm dev:up` / `pnpm dev:down` / `pnpm dev:full`       | Start/stop compose DB + RustFS, or start both and Next dev               |
 | `pnpm typecheck`                                        | `tsc --noEmit` — run after every code change                             |
 | `pnpm lint`                                             | ESLint                                                                   |
 | `pnpm test`                                             | Vitest — all projects once; `pnpm test:watch` while TDD-ing              |
@@ -60,7 +60,7 @@ Import rules (enforced in `eslint.config.mjs`):
 
 - **New server actions (`features/*/server/**`) and collection changes (`collections/**`) ship with tests in the same PR.** Integration tests boot a real Payload against a scratch Postgres via `getPayload` — do not mock Payload; access control and hooks must actually run. (Unit-style mocked tests like `features/admin/server/*.test.ts` are the exception for pure branching logic.)
 - Runner: Vitest, three projects — `*.test.{ts,tsx}` (RTL/jsdom for components and mocked server actions), `*.unit.test.ts` (pure functions, node), `*.int.test.ts` (real Payload + database). Commands: `pnpm test`, `pnpm test:unit`, `pnpm test:int`, `pnpm test:coverage`.
-- Integration tests live under `test/`, share `test/setup-integration.ts` (Next.js `headers`/`cookies` stubs, `@/payload.config` redirected to `test/payload-test.config.ts`), and truncate all tables between tests. They need a running Postgres: locally `pnpm dev:up` (a `mosque_test` scratch database is created automatically), in CI a `postgres:17` service container. The S3 integration test also needs MinIO.
+- Integration tests live under `test/`, share `test/setup-integration.ts` (Next.js `headers`/`cookies` stubs, `@/payload.config` redirected to `test/payload-test.config.ts`), and truncate all tables between tests. They need a running Postgres: locally `pnpm dev:up` (a `mosque_test` scratch database is created automatically), in CI a `postgres:17` service container. The S3 integration test also needs RustFS (`pnpm storage:init` creates its bucket).
 - Coverage thresholds (100% lines/branches/functions/statements) are enforced on `shared/lib/**`, `features/*/server/**`, `collections/**` — CI fails when they are missed.
 - Never pass `user` to the Local API without `overrideAccess: false` — including inside tests.
 
@@ -82,18 +82,18 @@ Import rules (enforced in `eslint.config.mjs`):
 
 ## Environment reality
 
-| Environment       | Database                         | Storage                                  | Config source           |
-| ----------------- | -------------------------------- | ---------------------------------------- | ----------------------- |
-| Development / e2e | Compose PostgreSQL 17            | Compose MinIO (`@payloadcms/storage-s3`) | `.env` / `.env.local`   |
-| VPS target        | Compose PostgreSQL 17            | Compose MinIO (`@payloadcms/storage-s3`) | VPS `.env`              |
-| Vercel transition | Neon (`@payloadcms/db-postgres`) | Vercel Blob when a token is configured   | Vercel project settings |
+| Environment       | Database                         | Storage                                   | Config source           |
+| ----------------- | -------------------------------- | ----------------------------------------- | ----------------------- |
+| Development / e2e | Compose PostgreSQL 17            | Compose RustFS (`@payloadcms/storage-s3`) | `.env` / `.env.local`   |
+| VPS target        | Compose PostgreSQL 17            | Compose RustFS (`@payloadcms/storage-s3`) | VPS `.env`              |
+| Vercel transition | Neon (`@payloadcms/db-postgres`) | Vercel Blob when a token is configured    | Vercel project settings |
 
 `storage.ts` selects by environment variables: Vercel deployments (any
 `VERCEL` env) use Vercel Blob whenever `BLOB_READ_WRITE_TOKEN` exists — even
 if stray S3 variables are set — while every other environment uses S3 when
 `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` are set, falling back to Blob on a
 non-Vercel host with only a token. Dev runs `next dev` on the host with the
-compose `db`, `minio` and `minio-init` services. Compose app/migrator force
+compose `db` and `rustfs` services. Compose app/migrator force
 `NODE_ENV=production`, `PAYLOAD_PUSH=false`, in-network DB/S3 hosts; local
 schema push requires `PAYLOAD_PUSH=true` explicitly. See ADR 0003.
 
