@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Navbar from '@/shared/layouts/navbar/Navbar'
 import Footer from '@/shared/layouts/Footer'
 import SectionBlock from '@/features/landing/components/SectionBlock'
@@ -33,8 +33,65 @@ import { staticBooks } from '@/features/library/fixtures'
 import { staticArticles } from '@/features/articles/fixtures'
 import { landingActivities, type LandingActivity } from '@/features/landing/fixtures'
 
+const ONBOARDING_SEEN_KEY = 'landing:onboarding-seen'
+
+// A refresh (F5 / Ctrl+R / Ctrl+Shift+R — browsers report them all as
+// navigation type 'reload') replays the splash exactly once per document:
+// dismissing it consumes the signal so later SPA remounts inside the same
+// document stay hidden. Module state resets on the next document load.
+let reloadReplayConsumed = false
+
+// sessionStorage: the splash plays once per browser session (so reopening the
+// site shows it again) but never again on in-site page navigation.
+const markOnboardingSeen = () => {
+  reloadReplayConsumed = true
+  try {
+    window.sessionStorage.setItem(ONBOARDING_SEEN_KEY, '1')
+  } catch {
+    // storage unavailable (private mode) — onboarding will simply replay
+  }
+}
+
+// sessionStorage cannot be read during SSR, so the flag travels through
+// useSyncExternalStore: the server snapshot stays false (hydration matches),
+// then React updates it right after hydration. `hydrated` additionally keeps
+// the splash out of the server HTML, so returning visitors never see it flash
+// before React takes over.
+const subscribeOnboarding = () => () => {}
+const serverNotSeen = () => false
+const clientHydrated = () => true
+
+// Browsers report F5, Ctrl+R and Ctrl+Shift+R alike as navigation type
+// 'reload' — any refresh within a session replays the splash, while plain
+// in-site navigation (type 'navigate') keeps it hidden.
+const isReloadNavigation = () => {
+  try {
+    const [navigation] = performance.getEntriesByType('navigation')
+    return (navigation as PerformanceNavigationTiming | undefined)?.type === 'reload'
+  } catch {
+    return false
+  }
+}
+
+const shouldSkipOnboarding = () => {
+  if (isReloadNavigation() && !reloadReplayConsumed) return false
+  try {
+    return window.sessionStorage.getItem(ONBOARDING_SEEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 const LandingPage: React.FC = () => {
-  const [onboardingPhase, setOnboardingPhase] = useState<OnboardingPhase>('ready')
+  const hydrated = useSyncExternalStore(subscribeOnboarding, clientHydrated, serverNotSeen)
+  const skipOnboarding = useSyncExternalStore(
+    subscribeOnboarding,
+    shouldSkipOnboarding,
+    serverNotSeen,
+  )
+  const [onboardingPhaseState, setOnboardingPhase] = useState<OnboardingPhase>('ready')
+  const onboardingPhase: OnboardingPhase =
+    onboardingPhaseState === 'ready' && skipOnboarding ? 'done' : onboardingPhaseState
   const [bgReady, setBgReady] = useState(false)
   const [textReady, setTextReady] = useState(false)
   const [textSettled, setTextSettled] = useState(false)
@@ -42,6 +99,7 @@ const LandingPage: React.FC = () => {
   const [navSettled, setNavSettled] = useState(false)
   const sfxContext = useRef<AudioContext | null>(null)
   const appearanceSoundPlayed = useRef(false)
+
   const {
     isRecitationPlaying,
     recitationReady,
@@ -55,7 +113,7 @@ const LandingPage: React.FC = () => {
     const context = new AudioContext()
     sfxContext.current = context
 
-    if (context.state === 'running') {
+    if (context.state === 'running' && !shouldSkipOnboarding()) {
       playSoundEffect(context, 'appear')
       appearanceSoundPlayed.current = true
     }
@@ -90,6 +148,7 @@ const LandingPage: React.FC = () => {
     }
 
     prepareAudio()
+    markOnboardingSeen()
     setOnboardingPhase('hiding')
     window.setTimeout(() => setOnboardingPhase('zooming'), 500)
     window.setTimeout(() => setOnboardingPhase('leaving'), 2400)
@@ -510,7 +569,7 @@ const LandingPage: React.FC = () => {
         <CTASection />
       </div>
       <Footer />
-      {onboardingPhase !== 'done' && (
+      {hydrated && onboardingPhase !== 'done' && (
         <OnboardingSplash phase={onboardingPhase} onContinue={continueToLanding} />
       )}
     </>

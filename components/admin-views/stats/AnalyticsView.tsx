@@ -602,6 +602,6 @@ export default function AnalyticsView({ initial }: AnalyticsViewProps) {
           )}
         </AnalyticsCard>
       </div>
-    </div>
+      </div>
   )
 }
