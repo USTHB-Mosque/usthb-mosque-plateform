@@ -2,6 +2,9 @@
 import { getPayloadWithUser } from '@/shared/lib/auth'
 import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
+import { revalidatePath } from 'next/cache'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { activityEndTime } from '../end-time'
 
 interface RegisterActivityResult {
   success: boolean
@@ -28,6 +31,12 @@ export async function registerActivityLogic(
     if (!activityResult.openForRegistration) {
       return { success: false, message: 'عذراً، التسجيل مغلق لهذا النشاط' }
     }
+    if (
+      (activityResult.kind !== 'ongoing' &&
+        new Date(activityResult.startDate).getTime() <= Date.now()) ||
+      activityEndTime(activityResult) <= Date.now()
+    )
+      return { success: false, message: 'بدأ النشاط، انتهى التسجيل' }
 
     if (activityResult.registrationDeadline) {
       const deadline = new Date(activityResult.registrationDeadline)
@@ -46,7 +55,7 @@ export async function registerActivityLogic(
     })
 
     const previous = existingRegistrationResult.docs[0]
-    if (previous?.status === 'quota_rejected') {
+    if (previous?.status === 'quota_rejected' || previous?.status === 'cancelled') {
       const max = activityResult.maxParticipants
       const current = activityResult.currentParticipants ?? 0
       if (max != null && current >= max) {
@@ -115,5 +124,51 @@ export async function getUserActivityRegistration(activityId: string) {
     overrideAccess: false,
   })
 
-  return { registered: existing.docs.some((row) => row.status !== 'quota_rejected') }
+  return {
+    registered: existing.docs.some(
+      (row) => !['quota_rejected', 'cancelled', 'refused'].includes(row.status ?? ''),
+    ),
+  }
+}
+
+export async function cancelActivityRegistration(id: number) {
+  const ctx = await getPayloadWithUser()
+  if (!ctx) return { ok: false as const, error: 'يجب تسجيل الدخول أولاً' }
+  const { payload, user, req } = ctx
+  try {
+    const row = await payload.findByID({
+      collection: 'activity-registrations',
+      id,
+      req,
+      overrideAccess: false,
+      depth: 0,
+    })
+    if (
+      resolveRelationId(row.user) !== user.id ||
+      !['pending', 'accepted'].includes(row.status ?? '')
+    )
+      return { ok: false as const, error: 'لا يمكن إلغاء هذا التسجيل' }
+    const activity = await payload.findByID({
+      collection: 'activities',
+      id: resolveRelationId(row.activity),
+      req,
+      overrideAccess: false,
+      depth: 0,
+    })
+    if (new Date(activity.startDate).getTime() <= Date.now())
+      return { ok: false as const, error: 'بدأ النشاط، لا يمكن إلغاء التسجيل' }
+    await payload.update({
+      collection: 'activity-registrations',
+      id,
+      data: { status: 'cancelled' },
+      req,
+      overrideAccess: true,
+      context: { cancelRegistration: true },
+    })
+    revalidatePath('/user/my-registrations')
+    revalidatePath(`/user/activities/${activity.id}`)
+    return { ok: true as const }
+  } catch {
+    return { ok: false as const, error: 'تعذر إلغاء التسجيل' }
+  }
 }

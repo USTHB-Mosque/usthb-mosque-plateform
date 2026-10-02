@@ -75,6 +75,7 @@ export interface Config {
     loans: Loan;
     reviews: Review;
     'activity-registrations': ActivityRegistration;
+    'activity-feedback': ActivityFeedback;
     'book-favorites': BookFavorite;
     'article-favorites': ArticleFavorite;
     notifications: Notification;
@@ -99,6 +100,7 @@ export interface Config {
     loans: LoansSelect<false> | LoansSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'activity-registrations': ActivityRegistrationsSelect<false> | ActivityRegistrationsSelect<true>;
+    'activity-feedback': ActivityFeedbackSelect<false> | ActivityFeedbackSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
@@ -134,6 +136,7 @@ export interface Config {
     tasks: {
       purgeDeletedAccounts: TaskPurgeDeletedAccounts;
       expirePickupWindows: TaskExpirePickupWindows;
+      completeActivityRegistrations: TaskCompleteActivityRegistrations;
       inline: {
         input: unknown;
         output: unknown;
@@ -338,6 +341,7 @@ export interface Activity {
   id: number;
   title: string;
   type: 'aqidah' | 'fiqh' | 'hadith' | 'tafsir' | 'sirah' | 'language' | 'other';
+  kind?: ('event' | 'ongoing') | null;
   image: number | Media;
   shortDescription: string;
   longDescription: {
@@ -374,6 +378,7 @@ export interface Activity {
   openForRegistration?: boolean | null;
   registrationDeadline?: string | null;
   startDate: string;
+  endDate?: string | null;
   maxParticipants?: number | null;
   currentParticipants?: number | null;
   updatedAt: string;
@@ -461,8 +466,21 @@ export interface ActivityRegistration {
   user: number | User;
   activity: number | Activity;
   attended?: boolean | null;
-  status?: ('pending' | 'accepted' | 'refused' | 'quota_rejected') | null;
+  status?: ('pending' | 'accepted' | 'refused' | 'quota_rejected' | 'cancelled' | 'completed') | null;
   refusalReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-feedback".
+ */
+export interface ActivityFeedback {
+  id: number;
+  activity: number | Activity;
+  user: number | User;
+  sentiment: 'positive' | 'negative';
+  comment?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -552,6 +570,7 @@ export interface Log {
     | 'activity_created'
     | 'activity_updated'
     | 'activity_deleted'
+    | 'activity_attendance'
     | 'review_deleted'
     | 'loan_approved'
     | 'loan_refused'
@@ -684,7 +703,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'purgeDeletedAccounts' | 'expirePickupWindows';
+        taskSlug: 'inline' | 'purgeDeletedAccounts' | 'expirePickupWindows' | 'completeActivityRegistrations';
         taskID: string;
         input?:
           | {
@@ -717,7 +736,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'purgeDeletedAccounts' | 'expirePickupWindows') | null;
+  taskSlug?: ('inline' | 'purgeDeletedAccounts' | 'expirePickupWindows' | 'completeActivityRegistrations') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -771,6 +790,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'activity-registrations';
         value: number | ActivityRegistration;
+      } | null)
+    | ({
+        relationTo: 'activity-feedback';
+        value: number | ActivityFeedback;
       } | null)
     | ({
         relationTo: 'book-favorites';
@@ -979,6 +1002,7 @@ export interface BooksSelect<T extends boolean = true> {
 export interface ActivitiesSelect<T extends boolean = true> {
   title?: T;
   type?: T;
+  kind?: T;
   image?: T;
   shortDescription?: T;
   longDescription?: T;
@@ -1005,6 +1029,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
   openForRegistration?: T;
   registrationDeadline?: T;
   startDate?: T;
+  endDate?: T;
   maxParticipants?: T;
   currentParticipants?: T;
   updatedAt?: T;
@@ -1076,6 +1101,18 @@ export interface ActivityRegistrationsSelect<T extends boolean = true> {
   attended?: T;
   status?: T;
   refusalReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity-feedback_select".
+ */
+export interface ActivityFeedbackSelect<T extends boolean = true> {
+  activity?: T;
+  user?: T;
+  sentiment?: T;
+  comment?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1346,6 +1383,16 @@ export interface TaskExpirePickupWindows {
   };
   output: {
     expired?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCompleteActivityRegistrations".
+ */
+export interface TaskCompleteActivityRegistrations {
+  input?: unknown;
+  output: {
+    completed?: number | null;
   };
 }
 /**

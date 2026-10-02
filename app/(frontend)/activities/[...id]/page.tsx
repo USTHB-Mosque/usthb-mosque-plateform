@@ -53,6 +53,8 @@ const ActivityDetailsPage = async ({
               location={activity.location}
               startDate={activity.startDate}
               openForRegistration={activity.openForRegistration || false}
+              currentParticipants={activity.currentParticipants}
+              maxParticipants={activity.maxParticipants}
             />
             <ActivitySchedule schedules={activity.schedules} />
           </div>

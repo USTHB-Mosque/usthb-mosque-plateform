@@ -2,6 +2,7 @@ import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
+import { activityEndTime } from '@/features/activities/end-time'
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',
@@ -17,11 +18,8 @@ export const ActivityRegistrations: CollectionConfig = {
     },
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => isAdmin(user),
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      if (isAdmin(user)) return true
-      return { user: { equals: user.id } }
-    },
+    // Member cancellation is a guarded status transition, not an unrestricted delete.
+    delete: ({ req: { user } }) => isAdmin(user),
   },
   hooks: {
     beforeChange: [
@@ -41,7 +39,10 @@ export const ActivityRegistrations: CollectionConfig = {
           })
           if (
             !activity.openForRegistration ||
-            (activity.registrationDeadline && new Date(activity.registrationDeadline) < new Date())
+            (activity.registrationDeadline &&
+              new Date(activity.registrationDeadline) < new Date()) ||
+            (activity.kind !== 'ongoing' && new Date(activity.startDate) <= new Date()) ||
+            activityEndTime(activity) <= Date.now()
           ) {
             throw new Error('التسجيل مغلق لهذا النشاط')
           }
@@ -71,7 +72,7 @@ export const ActivityRegistrations: CollectionConfig = {
           data.status !== originalDoc?.status
         ) {
           if (
-            originalDoc?.status === 'quota_rejected' &&
+            ['quota_rejected', 'cancelled'].includes(originalDoc?.status ?? '') &&
             data.status === 'pending' &&
             context?.retryQuota
           ) {
@@ -87,6 +88,8 @@ export const ActivityRegistrations: CollectionConfig = {
               !activity.openForRegistration ||
               (activity.registrationDeadline &&
                 new Date(activity.registrationDeadline) < new Date()) ||
+              (activity.kind !== 'ongoing' && new Date(activity.startDate) <= new Date()) ||
+              activityEndTime(activity) <= Date.now() ||
               (activity.maxParticipants &&
                 (activity.currentParticipants ?? 0) >= activity.maxParticipants)
             ) {
@@ -94,6 +97,29 @@ export const ActivityRegistrations: CollectionConfig = {
             }
             return data
           }
+          if (
+            context?.cancelRegistration &&
+            ['pending', 'accepted'].includes(originalDoc?.status ?? '') &&
+            data.status === 'cancelled' &&
+            resolveRelationId(originalDoc.user) === req.user.id
+          ) {
+            const activity = await req.payload.findByID({
+              collection: 'activities',
+              id: resolveRelationId(originalDoc.activity),
+              req,
+              overrideAccess: true,
+              depth: 0,
+            })
+            if (new Date(activity.startDate).getTime() <= Date.now())
+              throw new Error('بدأ النشاط، لا يمكن إلغاء التسجيل')
+            return data
+          }
+          if (
+            context?.completeActivity &&
+            data.status === 'completed' &&
+            ['pending', 'accepted'].includes(originalDoc?.status ?? '')
+          )
+            return data
           if (originalDoc?.status !== 'pending' || !['accepted', 'refused'].includes(data.status)) {
             throw new Error('لا يمكن تغيير قرار التسجيل')
           }
@@ -112,6 +138,8 @@ export const ActivityRegistrations: CollectionConfig = {
           (operation === 'create' && doc.status === 'pending') ||
           (operation === 'update' &&
             ((previousDoc?.status === 'pending' && doc.status === 'refused') ||
+              (['pending', 'accepted'].includes(previousDoc?.status ?? '') &&
+                doc.status === 'cancelled') ||
               (previousDoc?.status === 'quota_rejected' && doc.status === 'pending')))
         const resolved =
           (operation === 'create' && doc.status === 'quota_rejected') ||
@@ -222,6 +250,8 @@ export const ActivityRegistrations: CollectionConfig = {
         { label: 'مقبول', value: 'accepted' },
         { label: 'مرفوض', value: 'refused' },
         { label: 'اكتمل العدد', value: 'quota_rejected' },
+        { label: 'ملغى', value: 'cancelled' },
+        { label: 'مكتمل', value: 'completed' },
       ],
     },
     { name: 'refusalReason', type: 'text' },

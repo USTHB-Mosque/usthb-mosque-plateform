@@ -11,7 +11,10 @@ import {
 } from '../lib/factories'
 import { createTestUser, loginToken } from '../lib/seed'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
-import { registerActivityLogic } from '@/features/activities/server/activities'
+import {
+  registerActivityLogic,
+  cancelActivityRegistration,
+} from '@/features/activities/server/activities'
 import { borrowBookLogic } from '@/features/library/server/borrow-book'
 import { requestLoanExtensionLogic } from '@/features/library/server/loan-extensions'
 import {
@@ -430,12 +433,8 @@ describe('Activity registration decisions', () => {
       (await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true }))
         .currentParticipants,
     ).toBe(1)
-    await payload.delete({
-      collection: 'activity-registrations',
-      id: row.id,
-      req,
-      overrideAccess: false,
-    })
+    await signIn(member)
+    expect(await cancelActivityRegistration(row.id)).toEqual({ ok: true })
     expect(
       (await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true }))
         .currentParticipants,
@@ -517,13 +516,9 @@ describe('Activity registration decisions', () => {
       req: await boundReq(payload, admin),
       overrideAccess: false,
     })
-    // The refused row never occupied a spot, so withdrawing it changes nothing.
-    await payload.delete({
-      collection: 'activity-registrations',
-      id: row.id,
-      req: await boundReq(payload, member),
-      overrideAccess: false,
-    })
+    // Refused rows remain in the member's history and no longer occupy a spot.
+    await signIn(member)
+    expect(await cancelActivityRegistration(row.id)).toMatchObject({ ok: false })
     expect(
       (await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true }))
         .currentParticipants,
@@ -544,12 +539,8 @@ describe('Activity registration decisions', () => {
       data: { currentParticipants: null },
       overrideAccess: true,
     })
-    await payload.delete({
-      collection: 'activity-registrations',
-      id: row.id,
-      req: await boundReq(payload, member),
-      overrideAccess: false,
-    })
+    await signIn(member)
+    expect(await cancelActivityRegistration(row.id)).toEqual({ ok: true })
     expect(
       (await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true }))
         .currentParticipants,
@@ -587,12 +578,8 @@ describe('Activity registration decisions', () => {
       req: await boundReq(payload, admin),
       overrideAccess: false,
     })
-    await payload.delete({
-      collection: 'activity-registrations',
-      id: row.id,
-      req: await boundReq(payload, member),
-      overrideAccess: false,
-    })
+    await signIn(member)
+    expect(await cancelActivityRegistration(row.id)).toEqual({ ok: true })
     expect(
       (await payload.findByID({ collection: 'activities', id: activity.id, overrideAccess: true }))
         .currentParticipants,

@@ -16,6 +16,7 @@ import {
   Loan,
   Review,
   ActivityRegistrations,
+  ActivityFeedback,
   BookFavorite,
   ArticleFavorite,
   Notification,
@@ -28,6 +29,7 @@ import {
 import { Settings } from './globals'
 import { erasureJobsConfig } from './features/users/server/jobs'
 import { pickupWindowJobsConfig } from './features/library/server/jobs'
+import { activityCompletionJobsConfig } from './features/activities/server/jobs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -64,6 +66,7 @@ export default buildConfig({
     Loan,
     Review,
     ActivityRegistrations,
+    ActivityFeedback,
     BookFavorite,
     ArticleFavorite,
     Notification,
@@ -79,10 +82,17 @@ export default buildConfig({
   // `autoRun` is declared as a union of array-or-factory by Payload, so the
   // arrays are narrowed here rather than assumed.
   jobs: {
-    tasks: [...(erasureJobsConfig.tasks ?? []), ...(pickupWindowJobsConfig.tasks ?? [])],
+    tasks: [
+      ...(erasureJobsConfig.tasks ?? []),
+      ...(pickupWindowJobsConfig.tasks ?? []),
+      ...(activityCompletionJobsConfig.tasks ?? []),
+    ],
     autoRun: [
       ...(Array.isArray(erasureJobsConfig.autoRun) ? erasureJobsConfig.autoRun : []),
       ...(Array.isArray(pickupWindowJobsConfig.autoRun) ? pickupWindowJobsConfig.autoRun : []),
+      ...(Array.isArray(activityCompletionJobsConfig.autoRun)
+        ? activityCompletionJobsConfig.autoRun
+        : []),
     ],
   },
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',

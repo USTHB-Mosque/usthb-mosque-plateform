@@ -13,6 +13,7 @@ import {
   Loan,
   Review,
   ActivityRegistrations,
+  ActivityFeedback,
   BookFavorite,
   ArticleFavorite,
   Notification,
@@ -25,6 +26,7 @@ import {
 import { Settings } from '@/globals'
 import { erasureJobsConfig } from '@/features/users/server/jobs'
 import { pickupWindowJobsConfig } from '@/features/library/server/jobs'
+import { activityCompletionJobsConfig } from '@/features/activities/server/jobs'
 import { getStoragePlugin } from '@/storage'
 
 const filename = fileURLToPath(import.meta.url)
@@ -56,6 +58,7 @@ export default buildConfig({
     Loan,
     Review,
     ActivityRegistrations,
+    ActivityFeedback,
     BookFavorite,
     ArticleFavorite,
     Notification,
@@ -70,7 +73,11 @@ export default buildConfig({
   // erasure and Pickup Window jobs for real, but no autoRun: a background
   // runner would race the suite's own truncate-between-tests.
   jobs: {
-    tasks: [...(erasureJobsConfig.tasks ?? []), ...(pickupWindowJobsConfig.tasks ?? [])],
+    tasks: [
+      ...(erasureJobsConfig.tasks ?? []),
+      ...(pickupWindowJobsConfig.tasks ?? []),
+      ...(activityCompletionJobsConfig.tasks ?? []),
+    ],
   },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'test-secret',

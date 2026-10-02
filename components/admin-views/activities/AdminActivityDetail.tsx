@@ -16,6 +16,8 @@ import AddActivityDialog from './AddActivityDialog'
 import { deleteActivity } from '@/features/admin'
 import { activitiesKeys } from '@/features/activities/api/activities.queries'
 import type { Activity } from '@/payload-types'
+import { Users, Clock3 } from 'lucide-react'
+import { activityEndTime } from '@/features/activities/end-time'
 
 interface AdminActivityDetailProps {
   activity: Activity
@@ -27,6 +29,12 @@ const AdminActivityDetail: React.FC<AdminActivityDetailProps> = ({ activity }) =
   const [editOpen, setEditOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmPending, setConfirmPending] = useState(false)
+  const durationHours = activity.endDate
+    ? Math.max(
+        0,
+        (new Date(activity.endDate).getTime() - new Date(activity.startDate).getTime()) / 3_600_000,
+      )
+    : null
 
   const runDelete = async () => {
     setConfirmPending(true)
@@ -64,6 +72,33 @@ const AdminActivityDetail: React.FC<AdminActivityDetailProps> = ({ activity }) =
           حذف
         </Button>
       </div>
+      <div
+        dir="rtl"
+        className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4 text-sm text-foreground"
+      >
+        <span className="rounded-lg bg-primary/10 px-3 py-2 text-primary-300">
+          {activity.kind === 'ongoing' ? 'نشاط مستمر' : 'فعالية'}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <Users className="size-4" /> المسجلون: {activity.currentParticipants ?? 0}
+          {activity.maxParticipants ? ` / ${activity.maxParticipants}` : ''}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <Clock3 className="size-4" />{' '}
+          {durationHours !== null
+            ? `المدة: ${durationHours.toLocaleString('ar-DZ')} ساعة`
+            : activity.kind === 'ongoing'
+              ? 'نشاط مستمر'
+              : 'جلسة واحدة'}
+        </span>
+        <span>
+          {activityEndTime(activity) < Date.now()
+            ? 'مكتمل'
+            : activity.openForRegistration
+              ? 'مفتوح للتسجيل'
+              : 'قادم'}
+        </span>
+      </div>
 
       <div className="flex gap-8">
         <div className="flex flex-3 flex-col gap-8">
@@ -84,6 +119,8 @@ const AdminActivityDetail: React.FC<AdminActivityDetailProps> = ({ activity }) =
             startDate={activity.startDate}
             openForRegistration={activity.openForRegistration || false}
             hideRegister
+            currentParticipants={activity.currentParticipants}
+            maxParticipants={activity.maxParticipants}
           />
           <ActivitySchedule schedules={activity.schedules} />
         </div>

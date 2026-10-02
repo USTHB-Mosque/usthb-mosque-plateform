@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getTestPayload, resetDatabase } from '../setup-integration'
 import { createTestUser, loginToken } from '../lib/seed'
+import { createTestActivity } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 import {
   bulkDeleteActivities,
@@ -115,6 +116,7 @@ describe('getAdminActivitiesStats', () => {
       upcomingActivities: 1,
       completedActivities: 1,
       openForRegistrationActivities: 1,
+      enrolledMembers: 0,
     })
   })
 
@@ -125,7 +127,29 @@ describe('getAdminActivitiesStats', () => {
       upcomingActivities: 0,
       completedActivities: 0,
       openForRegistrationActivities: 0,
+      enrolledMembers: 0,
     })
+  })
+
+  it('counts active registrations and supplies activities for the calendar', async () => {
+    const activity = await createTestActivity(payload)
+    const attendee = await createTestUser(payload, { email: 'calendar-attendee@usthb.dz' })
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: attendee.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    const result = await getAdminActivitiesStats()
+    expect(result.stats.enrolledMembers).toBe(1)
+    expect(result.calendarActivities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: activity.id,
+          title: activity.title,
+          startDate: activity.startDate,
+        }),
+      ]),
+    )
   })
 })
 

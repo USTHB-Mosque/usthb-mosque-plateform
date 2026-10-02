@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, MoreVertical, SlidersHorizontal } from 'lucide-react'
@@ -27,6 +27,9 @@ import RegistrationStatusBadge, {
   isPastRegistration,
   statusConfig,
 } from './RegistrationStatusBadge'
+import { cancelActivityRegistration } from '../server/activities'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { toast } from 'sonner'
 
 type RegistrationsFilters = {
   period: 'upcoming' | 'past'
@@ -37,6 +40,7 @@ type RegistrationsFilters = {
 
 type RegistrationsTableProps = {
   registrations: ActivityRegistration[]
+  now: number
 }
 
 const PAGE_SIZE = 8
@@ -47,12 +51,29 @@ const statusOptions = [
   { value: 'registered', label: 'مسجّل' },
   { value: 'refused', label: 'مرفوض' },
   { value: 'quota_rejected', label: 'اكتمل العدد' },
+  { value: 'cancelled', label: 'ملغى' },
   { value: 'attended', label: 'تم الحضور' },
   { value: 'passed', label: 'مكتمل' },
 ]
 
-const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }) => {
+const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations, now }) => {
   const router = useRouter()
+  const [cancellingId, setCancellingId] = useState<number | null>(null)
+  const [pending, startTransition] = useTransition()
+  const canCancel = (registration: ActivityRegistration) =>
+    ['pending', 'accepted'].includes(registration.status ?? '') &&
+    new Date((registration.activity as Activity).startDate).getTime() > now
+  const cancel = () => {
+    if (cancellingId === null) return
+    startTransition(async () => {
+      const result = await cancelActivityRegistration(cancellingId)
+      if (result.ok) {
+        toast.success('تم إلغاء التسجيل')
+        setCancellingId(null)
+        router.refresh()
+      } else toast.error(result.error)
+    })
+  }
 
   const { values, searchValues, setValue, reset } = useSearch<RegistrationsFilters>({
     initialValues: {
@@ -222,11 +243,25 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                     <span className="w-[92px] shrink-0 text-start text-sm text-muted-foreground">
                       {start ? format(start, 'd MMM yyyy', { locale: arDZ }) : 'غير محدد'}
                     </span>
-                    <span
-                      className={`size-2.5 shrink-0 rounded-full ${config.dotClassName}`}
-                      title={config.label}
-                      aria-label={config.label}
-                    />
+                    {canCancel(registration) ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setCancellingId(registration.id)
+                        }}
+                      >
+                        إلغاء
+                      </Button>
+                    ) : (
+                      <span
+                        className={`size-2.5 shrink-0 rounded-full ${config.dotClassName}`}
+                        title={config.label}
+                        aria-label={config.label}
+                      />
+                    )}
                   </li>
                 )
               })}
@@ -333,6 +368,16 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
                             >
                               تفاصيل النشاط
                             </DropdownMenuItem>
+                            {canCancel(registration) && (
+                              <DropdownMenuItem
+                                onClick={(event: React.MouseEvent) => {
+                                  event.stopPropagation()
+                                  setCancellingId(registration.id)
+                                }}
+                              >
+                                إلغاء التسجيل
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -353,6 +398,29 @@ const RegistrationsTable: React.FC<RegistrationsTableProps> = ({ registrations }
               previousButtonLabel="السابق"
             />
           ) : null}
+          <Dialog
+            open={cancellingId !== null}
+            onOpenChange={(open) => {
+              if (!open) setCancellingId(null)
+            }}
+          >
+            <DialogContent dir="rtl">
+              <DialogHeader>
+                <DialogTitle>إلغاء التسجيل</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                هل تريد إلغاء تسجيلك؟ سيتاح مكانك لعضو آخر.
+              </p>
+              <DialogFooter>
+                <Button variant="outline" disabled={pending} onClick={() => setCancellingId(null)}>
+                  تراجع
+                </Button>
+                <Button variant="destructive" disabled={pending} onClick={cancel}>
+                  تأكيد الإلغاء
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { ActivityRegistration, User } from '@/payload-types'
-import { decideActivityRegistration } from '@/features/admin'
+import { decideActivityRegistration, markActivityAttendance } from '@/features/admin'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
 
@@ -13,6 +13,8 @@ const labels: Record<NonNullable<ActivityRegistration['status']>, string> = {
   accepted: 'مقبول',
   refused: 'مرفوض',
   quota_rejected: 'اكتمل العدد',
+  cancelled: 'ملغى',
+  completed: 'مكتمل',
 }
 
 export default function AdminRegistrations({
@@ -34,6 +36,16 @@ export default function AdminRegistrations({
         toast.success('تم تحديث التسجيل')
         setRefusing(null)
         setReason('')
+        router.refresh()
+      } else toast.error(result.error)
+    })
+  }
+
+  function attendance(id: number, attended: boolean) {
+    startTransition(async () => {
+      const result = await markActivityAttendance(id, attended)
+      if (result.ok) {
+        toast.success('تم تحديث الحضور')
         router.refresh()
       } else toast.error(result.error)
     })
@@ -80,6 +92,20 @@ export default function AdminRegistrations({
                     رفض
                   </Button>
                 </div>
+              )}
+              {canDecide && ['accepted', 'completed'].includes(registration.status ?? '') && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => attendance(registration.id, !registration.attended)}
+                >
+                  {registration.attended ? 'إلغاء الحضور' : 'تسجيل الحضور'}
+                </Button>
+              )}
+              {registration.attended && (
+                <span className="text-sm text-primary-300">حضر النشاط</span>
               )}
             </li>
           ))}

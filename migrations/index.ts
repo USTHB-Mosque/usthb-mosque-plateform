@@ -26,6 +26,8 @@ import * as migration_20260930_010000_pickup_window_enums from './20260930_01000
 import * as migration_20260930_020000_backfill_pickup_window from './20260930_020000_backfill_pickup_window'
 import * as migration_20260930_030000_member_cancellation from './20260930_030000_member_cancellation'
 import * as migration_20260930_040000_log_target_indexes from './20260930_040000_log_target_indexes'
+import * as migration_20261001_000000_activity_lifecycle from './20261001_000000_activity_lifecycle'
+import * as migration_20261001_010000_activity_completion_job from './20261001_010000_activity_completion_job'
 
 export const migrations = [
   {
@@ -167,5 +169,15 @@ export const migrations = [
     up: migration_20260930_040000_log_target_indexes.up,
     down: migration_20260930_040000_log_target_indexes.down,
     name: '20260930_040000_log_target_indexes',
+  },
+  {
+    up: migration_20261001_000000_activity_lifecycle.up,
+    down: migration_20261001_000000_activity_lifecycle.down,
+    name: '20261001_000000_activity_lifecycle',
+  },
+  {
+    up: migration_20261001_010000_activity_completion_job.up,
+    down: migration_20261001_010000_activity_completion_job.down,
+    name: '20261001_010000_activity_completion_job',
   },
 ]

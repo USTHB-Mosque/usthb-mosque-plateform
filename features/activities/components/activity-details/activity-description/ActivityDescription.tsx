@@ -1,7 +1,7 @@
 'use client'
 import { Card, CardHeader } from '@/shared/ui/card'
 import { Separator } from '@/shared/ui/separator'
-import { Calendar, CheckCircle2, MapPin, User } from 'lucide-react'
+import { Calendar, CheckCircle2, MapPin, User, Users } from 'lucide-react'
 import ActivityDescriptionLine from './ActivityDescriptionLine'
 import LandingCtaButton from '@/shared/ui/LandingCtaButton'
 import { Activity } from '@/payload-types'
@@ -21,6 +21,8 @@ interface ActivityDescriptionProps {
   openForRegistration: boolean
   isRegistered?: boolean
   hideRegister?: boolean
+  maxParticipants?: number | null
+  currentParticipants?: number | null
 }
 
 const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
@@ -31,6 +33,8 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
   openForRegistration,
   isRegistered = false,
   hideRegister = false,
+  maxParticipants,
+  currentParticipants,
 }) => {
   const router = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
@@ -86,6 +90,12 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
                   })
                 : 'تاريخ غير محدد'
             }
+          />
+          <Separator />
+          <ActivityDescriptionLine
+            icon={<Users />}
+            title="المشاركون"
+            description={`${currentParticipants ?? 0}${maxParticipants != null ? ` / ${maxParticipants}` : ''}`}
           />
         </div>
 

@@ -19,6 +19,7 @@ import ViewSwitch, { CatalogView } from '@/features/library/components/ViewSwitc
 import StatCards from '@/components/admin-views/shared/StatCards'
 import { Pagination } from '@/shared/common/Pagination'
 import type { Activity } from '@/payload-types'
+import CalendarWidget from '@/features/profile/components/dashboard/CalendarWidget'
 
 interface ActivitiesProps {
   stats: {
@@ -26,12 +27,17 @@ interface ActivitiesProps {
     upcomingActivities: number
     completedActivities: number
     openForRegistrationActivities: number
+    enrolledMembers: number
   }
+  calendarActivities: Pick<
+    Activity,
+    'id' | 'title' | 'startDate' | 'type' | 'location' | 'schedules'
+  >[]
 }
 
 const VIEW_KEY = 'admin-activities-view'
 
-const Activities: React.FC<ActivitiesProps> = ({ stats }) => {
+const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) => {
   const [view, setView] = useState<CatalogView>(() => {
     if (typeof window === 'undefined') return 'table'
     return localStorage.getItem(VIEW_KEY) === 'table' ? 'table' : 'grid'
@@ -49,6 +55,7 @@ const Activities: React.FC<ActivitiesProps> = ({ stats }) => {
       limit: 10,
       search: '',
       types: [],
+      kind: undefined,
     },
     scope: 'admin-activities',
   })
@@ -78,12 +85,16 @@ const Activities: React.FC<ActivitiesProps> = ({ stats }) => {
     <div className="flex flex-col gap-6">
       <StatCards
         items={[
-          { label: 'عدد الأنشطة', value: stats.totalActivities, icon: CalendarCheck },
+          { label: 'عدد المسجلين', value: stats.enrolledMembers, icon: CalendarCheck },
           { label: 'أنشطة قادمة', value: stats.upcomingActivities, icon: CalendarClock },
-          { label: 'أنشطة مكتملة', value: stats.completedActivities, icon: CalendarX2 },
           {
-            label: 'مفتوحة للتسجيل',
+            label: 'أنشطة حالية (مفتوحة)',
             value: stats.openForRegistrationActivities,
+            icon: CalendarX2,
+          },
+          {
+            label: 'عدد الأنشطة الإجمالي',
+            value: stats.totalActivities,
             icon: TicketCheck,
           },
         ]}
@@ -91,6 +102,27 @@ const Activities: React.FC<ActivitiesProps> = ({ stats }) => {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div />
+        <div className="flex items-center gap-2" aria-label="طبيعة النشاط">
+          {(
+            [
+              { value: undefined, label: 'الكل' },
+              { value: 'event', label: 'فعاليات' },
+              { value: 'ongoing', label: 'أنشطة مستمرة' },
+            ] as const
+          ).map(({ value, label }) => (
+            <Button
+              key={label}
+              size="sm"
+              variant={values.kind === value ? 'default' : 'outline'}
+              onClick={() => {
+                setValue('kind', value)
+                setValue('page', 1)
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
         <div className="flex items-center gap-3">
           <Button
             size="lg"
@@ -129,55 +161,74 @@ const Activities: React.FC<ActivitiesProps> = ({ stats }) => {
         />
       </div>
 
-      <ListingRenderer
-        isEmpty={totalDocs === 0}
-        isError={isError}
-        isLoading={isLoading}
-        emptyFallback={<EmptyData title="لم يتم العثور على أي أنشطة" />}
-        errorFallback={<ErrorData />}
-        loader={
-          view === 'grid' ? (
-            <div className="grid grid-cols-1 gap-6">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <ActivityCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : (
-            rowSkeleton()
-          )
-        }
-      >
-        {view === 'grid' ? (
-          <div className="grid grid-cols-1 gap-6">
-            {activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                activity={activity}
-                href={`/admin-panel/activities/${activity.id}`}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <ActivitiesTable
-              activities={activities}
-              detailHref={(id) => `/admin-panel/activities/${id}`}
-              onEdit={(activity) => {
-                setEditingActivity(activity)
-                setAddOpen(true)
-              }}
+      <div className="flex flex-col gap-5 xl:flex-row" dir="rtl">
+        <div className="w-full shrink-0 xl:w-[360px]">
+          <CalendarWidget
+            events={calendarActivities.flatMap((activity) =>
+              (activity.schedules?.length
+                ? activity.schedules
+                : [{ dateAndTime: activity.startDate }]
+              ).map((schedule) => ({
+                date: schedule.dateAndTime,
+                label: activity.title,
+                type: activity.type,
+                location: activity.location ?? undefined,
+              })),
+            )}
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <ListingRenderer
+            isEmpty={totalDocs === 0}
+            isError={isError}
+            isLoading={isLoading}
+            emptyFallback={<EmptyData title="لم يتم العثور على أي أنشطة" />}
+            errorFallback={<ErrorData />}
+            loader={
+              view === 'grid' ? (
+                <div className="grid grid-cols-1 gap-6">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <ActivityCardSkeleton key={index} />
+                  ))}
+                </div>
+              ) : (
+                rowSkeleton()
+              )
+            }
+          >
+            {view === 'grid' ? (
+              <div className="grid grid-cols-1 gap-6">
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    href={`/admin-panel/activities/${activity.id}`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                <ActivitiesTable
+                  activities={activities}
+                  detailHref={(id) => `/admin-panel/activities/${id}`}
+                  onEdit={(activity) => {
+                    setEditingActivity(activity)
+                    setAddOpen(true)
+                  }}
+                />
+              </div>
+            )}
+            <Pagination
+              totalPages={totalPages}
+              onPageChange={(value) => setValue('page', value)}
+              page={values.page || 1}
+              dir="rtl"
+              nextButtonLabel="التالي"
+              previousButtonLabel="السابق"
             />
-          </div>
-        )}
-        <Pagination
-          totalPages={totalPages}
-          onPageChange={(value) => setValue('page', value)}
-          page={values.page || 1}
-          dir="rtl"
-          nextButtonLabel="التالي"
-          previousButtonLabel="السابق"
-        />
-      </ListingRenderer>
+          </ListingRenderer>
+        </div>
+      </div>
 
       <AddActivityDialog
         key={editingActivity ? `edit-${editingActivity.id}` : 'add'}

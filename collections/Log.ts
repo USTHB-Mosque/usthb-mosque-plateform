@@ -12,6 +12,7 @@ export const LogAction = {
   ActivityCreated: 'activity_created',
   ActivityUpdated: 'activity_updated',
   ActivityDeleted: 'activity_deleted',
+  ActivityAttendance: 'activity_attendance',
   ReviewDeleted: 'review_deleted',
   LoanApproved: 'loan_approved',
   LoanRefused: 'loan_refused',

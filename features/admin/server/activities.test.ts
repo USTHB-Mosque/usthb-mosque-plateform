@@ -27,6 +27,7 @@ type PayloadStub = {
   findByID?: ReturnType<typeof vi.fn>
   delete?: ReturnType<typeof vi.fn>
   count?: ReturnType<typeof vi.fn>
+  find?: ReturnType<typeof vi.fn>
 }
 
 function staffMock(
@@ -77,7 +78,9 @@ describe('features/admin/server/activities.ts', () => {
         .mockResolvedValueOnce({ totalDocs: 5 })
         .mockResolvedValueOnce({ totalDocs: 3 })
         .mockResolvedValueOnce({ totalDocs: 2 })
-      staffMock({ count })
+      count.mockResolvedValueOnce({ totalDocs: 12 })
+      const find = vi.fn().mockResolvedValue({ docs: [] })
+      staffMock({ count, find })
 
       const { stats } = await getAdminActivitiesStats()
 
@@ -86,8 +89,10 @@ describe('features/admin/server/activities.ts', () => {
         upcomingActivities: 5,
         completedActivities: 3,
         openForRegistrationActivities: 2,
+        enrolledMembers: 12,
       })
-      expect(count).toHaveBeenCalledTimes(4)
+      expect(count).toHaveBeenCalledTimes(5)
+      expect(find).toHaveBeenCalledOnce()
     })
   })
 

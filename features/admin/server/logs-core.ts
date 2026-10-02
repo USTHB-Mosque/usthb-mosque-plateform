@@ -15,6 +15,7 @@ export const logActionLabels: Record<LogActionValue, string> = {
   [LogAction.ActivityCreated]: 'إضافة نشاط',
   [LogAction.ActivityUpdated]: 'تعديل نشاط',
   [LogAction.ActivityDeleted]: 'حذف نشاط',
+  [LogAction.ActivityAttendance]: 'تسجيل حضور نشاط',
   [LogAction.ReviewDeleted]: 'حذف تقييم',
   [LogAction.LoanApproved]: 'قبول طلب إعارة',
   [LogAction.LoanRefused]: 'رفض طلب إعارة',

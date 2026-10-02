@@ -30,11 +30,13 @@ interface AddActivityDialogProps {
 const EMPTY_FORM = {
   title: '',
   type: '',
+  kind: 'event',
   location: '',
   supervisor: '',
   shortDescription: '',
   longDescription: '',
   startDate: '',
+  endDate: '',
   registrationDeadline: '',
   maxParticipants: '',
   openForRegistration: false,
@@ -55,6 +57,7 @@ function activityToForm(activity?: Activity | null) {
   return {
     title: activity.title ?? '',
     type: activity.type ?? '',
+    kind: activity.kind ?? 'event',
     location: activity.location ?? '',
     supervisor: activity.supervisor ?? '',
     shortDescription: activity.shortDescription ?? '',
@@ -62,6 +65,7 @@ function activityToForm(activity?: Activity | null) {
       activity.longDescription as SerializedEditorState | null | undefined,
     ),
     startDate: toDatetimeLocal(activity.startDate),
+    endDate: toDatetimeLocal(activity.endDate),
     registrationDeadline: toDatetimeLocal(activity.registrationDeadline),
     maxParticipants: activity.maxParticipants != null ? String(activity.maxParticipants) : '',
     openForRegistration: activity.openForRegistration === true,
@@ -170,6 +174,10 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
       toast.error('يرجى اختيار صورة للنشاط')
       return
     }
+    if (form.endDate && new Date(form.endDate) < new Date(form.startDate)) {
+      toast.error('تاريخ الانتهاء يجب أن يكون بعد تاريخ البداية')
+      return
+    }
 
     if (activity && clearImage && !imageFile) {
       toast.error('يرجى اختيار صورة جديدة للنشاط بعد إزالة الصورة الحالية')
@@ -181,6 +189,7 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
         const fd = new FormData()
         fd.set('title', form.title.trim())
         fd.set('type', form.type)
+        fd.set('kind', form.kind)
         fd.set('shortDescription', form.shortDescription.trim())
         fd.set('longDescription', JSON.stringify(plainTextToLexical(form.longDescription)))
         fd.set(
@@ -200,6 +209,7 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
         fd.set('openForRegistration', String(form.openForRegistration))
         if (form.registrationDeadline) fd.set('registrationDeadline', form.registrationDeadline)
         fd.set('startDate', form.startDate)
+        if (form.endDate) fd.set('endDate', form.endDate)
         if (form.maxParticipants) fd.set('maxParticipants', form.maxParticipants)
         if (imageFile) {
           const compressed = await compressImage(imageFile)
@@ -330,6 +340,18 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
               )}
 
               <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label>طبيعة النشاط</Label>
+                  <Select value={form.kind} onValueChange={(v) => v && update('kind', v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="event">فعالية</SelectItem>
+                      <SelectItem value="ongoing">نشاط مستمر</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="flex flex-col gap-1.5">
                     <Label>العنوان *</Label>
@@ -468,6 +490,14 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
                     type="datetime-local"
                     value={form.registrationDeadline}
                     onChange={(e) => update('registrationDeadline', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>تاريخ الانتهاء</Label>
+                  <Input
+                    type="datetime-local"
+                    value={form.endDate}
+                    onChange={(e) => update('endDate', e.target.value)}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">

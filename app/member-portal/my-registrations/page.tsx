@@ -14,7 +14,7 @@ export default async function DashboardMyRegistrationsPage() {
 
   return (
     <UserPage title="تسجيلاتي">
-      <RegistrationsTable registrations={data.registrations} />
+      <RegistrationsTable registrations={data.registrations} now={data.now} />
     </UserPage>
   )
 }

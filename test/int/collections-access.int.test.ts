@@ -284,8 +284,8 @@ describe('row-scoped collections: book-favorites, activity-registrations, review
     expect(await canDeleteAs(admin, collection, id)).toBe(true)
   })
 
-  // #154: registrations are readable by the owner but resolvable only by
-  // admins — a member may withdraw (delete) their own row, never decide it.
+  // #155: the owner cancels through a guarded action; direct deletion could
+  // bypass the start-time check and erase the registration history.
   it('scopes activity-registrations reads to the owner, decisions to admins', async () => {
     const activity = await createTestActivity(payload)
     const doc = await payload.create({
@@ -305,14 +305,7 @@ describe('row-scoped collections: book-favorites, activity-registrations, review
     expect(await canWriteAs(admin, 'activity-registrations', id, {})).toBe(true)
     expect(await canDeleteAs(otherMember, 'activity-registrations', id)).toBe(false)
 
-    // A successful delete removes the row, so each permitted delete gets its
-    // own row.
-    const owned = await payload.create({
-      collection: 'activity-registrations',
-      data: { user: owner.id, activity: activity.id },
-      overrideAccess: true,
-    })
-    expect(await canDeleteAs(owner, 'activity-registrations', owned.id)).toBe(true)
+    expect(await canDeleteAs(owner, 'activity-registrations', id)).toBe(false)
     const adminRow = await payload.create({
       collection: 'activity-registrations',
       data: { user: otherMember.id, activity: activity.id },
