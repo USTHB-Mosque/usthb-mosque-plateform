@@ -1,6 +1,8 @@
 import type { Payload, PayloadRequest } from 'payload'
 import type { User, Activity } from '@/payload-types'
-import { activityEndTime } from '../end-time'
+import { activityEndTime } from '@/utils/constants/activities'
+
+const UNRESOLVED_REASON = 'انتهى النشاط دون معالجة التسجيل'
 
 /** Idempotent sweep, also used as a lazy safety net on member/admin reads. */
 export async function completeFinishedRegistrations(
@@ -32,7 +34,10 @@ export async function completeFinishedRegistrations(
     await payload.update({
       collection: 'activity-registrations',
       id: row.id,
-      data: { status: 'completed' },
+      data:
+        row.status === 'pending'
+          ? { status: 'refused', refusalReason: UNRESOLVED_REASON }
+          : { status: 'completed' },
       req,
       overrideAccess: true,
       context: { completeActivity: true },

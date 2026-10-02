@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { resolveRelationId } from '@/shared/lib/relations'
-import { activityEndTime } from '@/features/activities/end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 export const ActivityFeedback: CollectionConfig = {
   slug: 'activity-feedback',

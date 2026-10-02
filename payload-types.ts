@@ -1393,6 +1393,7 @@ export interface TaskCompleteActivityRegistrations {
   input?: unknown;
   output: {
     completed?: number | null;
+    reminded?: number | null;
   };
 }
 /**

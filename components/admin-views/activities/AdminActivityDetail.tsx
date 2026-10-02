@@ -17,7 +17,7 @@ import { deleteActivity } from '@/features/admin'
 import { activitiesKeys } from '@/features/activities/api/activities.queries'
 import type { Activity } from '@/payload-types'
 import { Users, Clock3 } from 'lucide-react'
-import { activityEndTime } from '@/features/activities/end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 interface AdminActivityDetailProps {
   activity: Activity

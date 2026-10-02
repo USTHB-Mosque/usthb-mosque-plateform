@@ -90,6 +90,7 @@ describe('features/admin/server/activities.ts', () => {
         completedActivities: 3,
         openForRegistrationActivities: 2,
         enrolledMembers: 12,
+        currentActivities: 0,
       })
       expect(count).toHaveBeenCalledTimes(5)
       expect(find).toHaveBeenCalledOnce()
@@ -202,6 +203,16 @@ describe('features/admin/server/activities.ts', () => {
   })
 
   describe('updateActivity', () => {
+    it('clears an existing end date when the editor removes it', async () => {
+      const update = vi.fn().mockResolvedValue({ id: 21 })
+      staffMock({ update })
+      await updateActivity(21, activityFormData({ endDate: '' }))
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ endDate: null }),
+        }),
+      )
+    })
     it('updates the activity without touching the image', async () => {
       const update = vi.fn().mockResolvedValue({ id: 21 })
       staffMock({ update })

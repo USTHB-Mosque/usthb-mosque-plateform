@@ -117,6 +117,7 @@ describe('getAdminActivitiesStats', () => {
       completedActivities: 1,
       openForRegistrationActivities: 1,
       enrolledMembers: 0,
+      currentActivities: 0,
     })
   })
 
@@ -128,6 +129,7 @@ describe('getAdminActivitiesStats', () => {
       completedActivities: 0,
       openForRegistrationActivities: 0,
       enrolledMembers: 0,
+      currentActivities: 0,
     })
   })
 

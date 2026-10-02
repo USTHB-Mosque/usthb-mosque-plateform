@@ -2,7 +2,7 @@ import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
-import { activityEndTime } from '@/features/activities/end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',

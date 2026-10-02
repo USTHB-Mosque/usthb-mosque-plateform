@@ -5,7 +5,7 @@ import { getPayloadWithUser } from '@/shared/lib/auth'
 import type { ActivityFeedback } from '@/payload-types'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { activityEndTime } from '../end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 export async function leaveActivityFeedback(
   activityId: number,

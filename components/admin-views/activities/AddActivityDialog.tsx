@@ -209,7 +209,7 @@ const AddActivityDialog: React.FC<AddActivityDialogProps> = ({ open, onOpenChang
         fd.set('openForRegistration', String(form.openForRegistration))
         if (form.registrationDeadline) fd.set('registrationDeadline', form.registrationDeadline)
         fd.set('startDate', form.startDate)
-        if (form.endDate) fd.set('endDate', form.endDate)
+        fd.set('endDate', form.endDate)
         if (form.maxParticipants) fd.set('maxParticipants', form.maxParticipants)
         if (imageFile) {
           const compressed = await compressImage(imageFile)

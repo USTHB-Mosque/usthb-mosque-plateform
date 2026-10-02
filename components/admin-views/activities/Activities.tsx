@@ -28,6 +28,7 @@ interface ActivitiesProps {
     completedActivities: number
     openForRegistrationActivities: number
     enrolledMembers: number
+    currentActivities: number
   }
   calendarActivities: Pick<
     Activity,
@@ -89,7 +90,7 @@ const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) =>
           { label: 'أنشطة قادمة', value: stats.upcomingActivities, icon: CalendarClock },
           {
             label: 'أنشطة حالية (مفتوحة)',
-            value: stats.openForRegistrationActivities,
+            value: stats.currentActivities,
             icon: CalendarX2,
           },
           {

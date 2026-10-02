@@ -6,6 +6,7 @@ import { writeLog } from './logs'
 import { LogAction } from './logs-core'
 import type { Payload } from 'payload'
 import type { Activity, User } from '@/payload-types'
+import { activityEndTime } from '@/utils/constants/activities'
 
 type ActivityFormData = {
   title: string
@@ -21,7 +22,7 @@ type ActivityFormData = {
   openForRegistration?: boolean
   registrationDeadline?: string
   startDate: string
-  endDate?: string
+  endDate?: string | null
   maxParticipants?: number
 }
 
@@ -68,7 +69,7 @@ function parseActivityFields(formData: FormData): ActivityFormData {
     openForRegistration,
     registrationDeadline: registrationDeadline || undefined,
     startDate: startDate ?? '',
-    endDate: endDate || undefined,
+    endDate: endDate || null,
     maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
   }
 }
@@ -157,6 +158,12 @@ export async function getAdminActivitiesStats() {
       completedActivities: completed.totalDocs,
       openForRegistrationActivities: openForRegistration.totalDocs,
       enrolledMembers: enrolled.totalDocs,
+      currentActivities: calendar.docs.filter(
+        (activity) =>
+          activity.openForRegistration &&
+          new Date(activity.startDate).getTime() <= Date.now() &&
+          activityEndTime(activity) > Date.now(),
+      ).length,
     },
     calendarActivities: calendar.docs.map(
       ({ id, title, startDate, type, location, schedules }) => ({

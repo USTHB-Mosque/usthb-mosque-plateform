@@ -4,7 +4,7 @@ import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 import { revalidatePath } from 'next/cache'
 import { resolveRelationId } from '@/shared/lib/relations'
-import { activityEndTime } from '../end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 interface RegisterActivityResult {
   success: boolean

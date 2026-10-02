@@ -221,6 +221,63 @@ describe('Activity lifecycle', () => {
     ).toBe('completed')
   })
 
+  it('does not grant participation to a request nobody decided before the event ended', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { endDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'pending' },
+      overrideAccess: true,
+    })
+    expect(await completeFinishedRegistrations({ payload, req: await boundReq(payload) })).toBe(1)
+    expect(
+      (
+        await payload.findByID({
+          collection: 'activity-registrations',
+          id: row.id,
+          overrideAccess: true,
+        })
+      ).status,
+    ).toBe('refused')
+    await signIn(member)
+    expect(await leaveActivityFeedback(activity.id, 'positive')).toMatchObject({ ok: false })
+  })
+
+  it('reminds an accepted member of an upcoming scheduled session only once', async () => {
+    const activity = await createTestActivity(payload)
+    const soon = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { startDate: soon, schedules: [{ dateAndTime: soon }] },
+      overrideAccess: true,
+    })
+    const registration = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    for (let i = 0; i < 2; i++) {
+      await payload.jobs.queue({
+        queue: ACTIVITY_COMPLETION_QUEUE,
+        task: 'completeActivityRegistrations',
+        input: {},
+      })
+      await payload.jobs.run({ queue: ACTIVITY_COMPLETION_QUEUE, limit: 1 })
+    }
+    const reminders = await payload.find({
+      collection: 'notifications',
+      where: { eventKey: { equals: `activity-reminder:${registration.id}:${soon}` } },
+      overrideAccess: true,
+    })
+    expect(reminders.totalDocs).toBe(1)
+  })
+
   it('accepts one feedback after completion, permits revision, and denies a second member-owned row', async () => {
     const activity = await createTestActivity(payload)
     await payload.update({

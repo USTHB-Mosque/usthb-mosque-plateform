@@ -11,7 +11,7 @@ import { getUserActivityRegistration } from '@/features/activities/server/activi
 import { getActivityFeedback } from '@/features/activities/server/feedback'
 import ActivityFeedbackPanel from '@/features/activities/components/ActivityFeedbackPanel'
 import { getPayloadWithUser } from '@/shared/lib/auth'
-import { activityEndTime } from '@/features/activities/end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params

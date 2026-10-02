@@ -3,7 +3,7 @@
 import React from 'react'
 import { Badge } from '@/shared/ui/badge'
 import type { Activity, ActivityRegistration } from '@/payload-types'
-import { activityEndTime } from '../end-time'
+import { activityEndTime } from '@/utils/constants/activities'
 
 export type EffectiveRegistrationStatus =
   'pending' | 'registered' | 'refused' | 'quota_rejected' | 'cancelled' | 'attended' | 'passed'
