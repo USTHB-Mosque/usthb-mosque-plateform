@@ -8,9 +8,13 @@ import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-s
 import {
   registerActivityLogic,
   cancelActivityRegistration,
+  getUserActivityRegistration,
 } from '@/features/activities/server/activities'
-import { markActivityAttendance } from '@/features/admin/server/activity-registrations'
-import { leaveActivityFeedback } from '@/features/activities/server/feedback'
+import {
+  markActivityAttendance,
+  decideActivityRegistration,
+} from '@/features/admin/server/activity-registrations'
+import { leaveActivityFeedback, getActivityFeedback } from '@/features/activities/server/feedback'
 import { completeFinishedRegistrations } from '@/features/activities/server/completion'
 import { ACTIVITY_COMPLETION_QUEUE } from '@/features/activities/server/jobs'
 
@@ -355,5 +359,343 @@ describe('Activity lifecycle', () => {
     await signIn(other)
     expect(await cancelActivityRegistration(row.id)).toMatchObject({ ok: false })
     await expect(markActivityAttendance(row.id, true)).rejects.toThrow('Unauthorized')
+  })
+})
+
+describe('Registration and feedback guards on the collections themselves', () => {
+  it('refuses registration through the API once the activity has started', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { startDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    expect(
+      (
+        await registerActivityLogic(String(activity.id), {
+          payload,
+          user: member,
+          req: await boundReq(payload, member),
+        })
+      ).success,
+    ).toBe(false)
+    await expect(
+      payload.create({
+        collection: 'activity-registrations',
+        data: { activity: activity.id, user: member.id },
+        req: await boundReq(payload, member),
+        overrideAccess: false,
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('refuses a cancellation the collection guard catches after the activity started', async () => {
+    const activity = await createTestActivity(payload)
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { startDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    await expect(
+      payload.update({
+        collection: 'activity-registrations',
+        id: row.id,
+        data: { status: 'cancelled' },
+        req: await boundReq(payload, member),
+        overrideAccess: true,
+        context: { cancelRegistration: true },
+      }),
+    ).rejects.toThrow('بدأ النشاط')
+  })
+
+  it('refuses an automated completion for a registration already settled', async () => {
+    const activity = await createTestActivity(payload)
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'cancelled' },
+      overrideAccess: true,
+    })
+    await expect(
+      payload.update({
+        collection: 'activity-registrations',
+        id: row.id,
+        data: { status: 'completed' },
+        req: await boundReq(payload, member),
+        overrideAccess: true,
+        context: { completeActivity: true },
+      }),
+    ).rejects.toThrow('لا يمكن تغيير قرار التسجيل')
+  })
+
+  it('refuses feedback written straight through the collection, and a rewrite of its owner', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    await expect(
+      payload.create({
+        collection: 'activity-feedback',
+        data: { activity: activity.id, sentiment: 'positive', user: member.id },
+        req: await boundReq(payload, member),
+        overrideAccess: false,
+      }),
+    ).rejects.toThrow('قبل انتهائه')
+
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { endDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    const feedback = await payload.create({
+      collection: 'activity-feedback',
+      data: { activity: activity.id, sentiment: 'positive', user: member.id },
+      overrideAccess: true,
+    })
+    const other = await createTestUser(payload, { email: 'feedback-owner@usthb.dz' })
+    for (const change of [
+      { user: other.id },
+      { activity: (await createTestActivity(payload)).id },
+    ]) {
+      await expect(
+        payload.update({
+          collection: 'activity-feedback',
+          id: feedback.id,
+          data: change,
+          req: await boundReq(payload, member),
+          overrideAccess: true,
+        }),
+      ).rejects.toThrow()
+    }
+  })
+
+  it('rejects an unusable sentiment and a failing write, and reads the aggregate for a visitor', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { endDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    await signIn(member)
+    expect(await leaveActivityFeedback(activity.id, 'sideways' as 'positive')).toEqual({
+      ok: false,
+      error: 'التقييم غير صالح',
+    })
+    expect(await leaveActivityFeedback(9999, 'positive')).toMatchObject({ ok: false })
+
+    await payload.create({
+      collection: 'activity-feedback',
+      data: { activity: activity.id, sentiment: 'negative', user: member.id },
+      overrideAccess: true,
+    })
+    expect(await getActivityFeedback(activity.id)).toMatchObject({
+      positive: 0,
+      negative: 1,
+      mine: expect.objectContaining({ sentiment: 'negative' }),
+    })
+    clearNextContext()
+    expect(await getActivityFeedback(activity.id)).toMatchObject({
+      positive: 0,
+      negative: 1,
+      mine: null,
+    })
+  })
+
+  it('reminds a session with no schedule from the start date, and skips far-off sessions', async () => {
+    const activity = await createTestActivity(payload)
+    const soon = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { startDate: soon, schedules: [] },
+      overrideAccess: true,
+    })
+    const registration = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    const distant = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: distant.id,
+      data: { startDate: new Date(Date.now() + 5 * 86_400_000).toISOString(), schedules: [] },
+      overrideAccess: true,
+    })
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: distant.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    await payload.jobs.queue({
+      queue: ACTIVITY_COMPLETION_QUEUE,
+      task: 'completeActivityRegistrations',
+      input: {},
+    })
+    await payload.jobs.run({ queue: ACTIVITY_COMPLETION_QUEUE, limit: 1 })
+    const reminded = await payload.find({
+      collection: 'notifications',
+      where: { eventKey: { equals: `activity-reminder:${registration.id}:${soon}` } },
+      overrideAccess: true,
+    })
+    expect(reminded.totalDocs).toBe(1)
+  })
+
+  it('reports a friendly error when attendance targets an undecided registration', async () => {
+    const activity = await createTestActivity(payload)
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'pending' },
+      overrideAccess: true,
+    })
+    await signIn(admin)
+    expect(await markActivityAttendance(row.id, true)).toMatchObject({
+      ok: false,
+      error: 'لا يمكن تسجيل الحضور لهذا التسجيل',
+    })
+    expect(await markActivityAttendance(9999, true)).toMatchObject({
+      ok: false,
+      error: 'تعذر تحديث الحضور',
+    })
+  })
+
+  it('also clears attendance when an admin withdraws it', async () => {
+    const activity = await createTestActivity(payload)
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted', attended: true },
+      overrideAccess: true,
+    })
+    await signIn(admin)
+    expect(await markActivityAttendance(row.id, false)).toEqual({ ok: true })
+    expect(
+      (
+        await payload.findByID({
+          collection: 'activity-registrations',
+          id: row.id,
+          overrideAccess: true,
+        })
+      ).attended,
+    ).toBe(false)
+  })
+
+  it('releases the spot only when an admin deletes a registration that held one', async () => {
+    const activity = await createTestActivity(payload, { maxParticipants: 3 })
+    const pending = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'pending' },
+      overrideAccess: true,
+    })
+    const cancelled = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: admin.id, status: 'cancelled' },
+      overrideAccess: true,
+    })
+    const participants = async () =>
+      (
+        await payload.findByID({
+          collection: 'activities',
+          id: activity.id,
+          overrideAccess: true,
+        })
+      ).currentParticipants
+    expect(await participants()).toBe(1)
+
+    await payload.delete({
+      collection: 'activity-registrations',
+      id: cancelled.id,
+      overrideAccess: true,
+    })
+    expect(await participants()).toBe(1)
+
+    await signIn(admin)
+    expect(await decideActivityRegistration(pending.id, 'accepted')).toEqual({ ok: true })
+    expect(await participants()).toBe(1)
+
+    await payload.delete({
+      collection: 'activity-registrations',
+      id: pending.id,
+      overrideAccess: true,
+    })
+    expect(await participants()).toBe(0)
+  })
+
+  it('refuses a cancellation the member has already resolved, and an anonymous one', async () => {
+    const activity = await createTestActivity(payload)
+    const row = await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'cancelled' },
+      overrideAccess: true,
+    })
+    await signIn(member)
+    expect(await cancelActivityRegistration(row.id)).toMatchObject({
+      ok: false,
+      error: 'لا يمكن إلغاء هذا التسجيل',
+    })
+    expect(await getUserActivityRegistration(String(activity.id))).toEqual({ registered: false })
+    clearNextContext()
+    expect(await cancelActivityRegistration(row.id)).toEqual({
+      ok: false,
+      error: 'يجب تسجيل الدخول أولاً',
+    })
+    expect(await leaveActivityFeedback(activity.id, 'positive')).toEqual({
+      ok: false,
+      error: 'يجب تسجيل الدخول أولاً',
+    })
+  })
+
+  it('refuses a direct feedback write by someone who never registered', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { endDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    const stranger = await createTestUser(payload, { email: 'stranger-feedback@usthb.dz' })
+    await expect(
+      payload.create({
+        collection: 'activity-feedback',
+        data: { activity: activity.id, sentiment: 'positive', user: stranger.id },
+        req: await boundReq(payload, stranger),
+        overrideAccess: false,
+      }),
+    ).rejects.toThrow('للمسجلين')
+  })
+
+  it('stores a blank comment as no comment', async () => {
+    const activity = await createTestActivity(payload)
+    await payload.update({
+      collection: 'activities',
+      id: activity.id,
+      data: { endDate: new Date(Date.now() - 60_000).toISOString() },
+      overrideAccess: true,
+    })
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: member.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    await signIn(member)
+    expect(await leaveActivityFeedback(activity.id, 'positive', '   ')).toEqual({ ok: true })
+    expect(
+      (await payload.find({ collection: 'activity-feedback', overrideAccess: true })).docs[0]
+        .comment,
+    ).toBeNull()
   })
 })

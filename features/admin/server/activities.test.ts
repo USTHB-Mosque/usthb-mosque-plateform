@@ -200,6 +200,16 @@ describe('features/admin/server/activities.ts', () => {
 
       await expect(createActivity(fd)).rejects.toThrow()
     })
+
+    it('refuses an end date earlier than the start date', async () => {
+      staffMock({})
+      const fd = activityFormData({
+        startDate: '2026-03-01T10:00:00.000Z',
+        endDate: '2026-02-01T10:00:00.000Z',
+      })
+      fd.set('image', pngFile())
+      await expect(createActivity(fd)).rejects.toThrow('تاريخ الانتهاء')
+    })
   })
 
   describe('updateActivity', () => {
@@ -246,6 +256,19 @@ describe('features/admin/server/activities.ts', () => {
           data: expect.objectContaining({ image: 77 }),
         }),
       )
+    })
+
+    it('refuses an end date earlier than the start date', async () => {
+      staffMock({})
+      await expect(
+        updateActivity(
+          21,
+          activityFormData({
+            startDate: '2026-03-01T10:00:00.000Z',
+            endDate: '2026-02-01T10:00:00.000Z',
+          }),
+        ),
+      ).rejects.toThrow('تاريخ الانتهاء')
     })
   })
 

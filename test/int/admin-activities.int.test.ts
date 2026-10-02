@@ -121,6 +121,28 @@ describe('getAdminActivitiesStats', () => {
     })
   })
 
+  it('counts only open-for-registration activities that are running now', async () => {
+    const running = activityFormData({
+      startDate: new Date(Date.now() - 3_600_000).toISOString(),
+      endDate: new Date(Date.now() + 3_600_000).toISOString(),
+    })
+    running.set('image', imageFile())
+    await createActivity(running)
+
+    const closed = activityFormData({
+      startDate: new Date(Date.now() - 3_600_000).toISOString(),
+      endDate: new Date(Date.now() + 3_600_000).toISOString(),
+      openForRegistration: 'false',
+    })
+    closed.set('image', imageFile())
+    await createActivity(closed)
+
+    const stats = await getAdminActivitiesStats()
+
+    expect(stats.stats.currentActivities).toBe(1)
+    expect(stats.calendarActivities).toHaveLength(2)
+  })
+
   it('starts at zero on an empty database', async () => {
     const stats = await getAdminActivitiesStats()
     expect(stats.stats).toEqual({
