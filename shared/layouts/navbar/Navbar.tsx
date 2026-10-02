@@ -81,18 +81,26 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <header
-      dir="rtl"
-      className="sticky top-0 start-0 end-0 z-50 w-full bg-background/20 backdrop-blur "
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
+    <header dir="rtl" className="sticky top-0 start-0 end-0 z-50 w-full">
+      {/* Feathered backdrop: the tint+blur band extends past the navbar and
+          masks out over its last 32px, so there is no sharp edge where the
+          navbar ends. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -bottom-8 bg-background/20 backdrop-blur"
+        style={{
+          maskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent)',
+        }}
+      />
+      <div className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
         <Link href="/" className="shrink-0">
           <Image
             src="/static/images/logo-horizontal.svg"
             alt="الشعار"
             width={90}
             height={40}
-            className="h-10 w-auto"
+            className="h-7 w-auto"
           />
         </Link>
 
@@ -111,11 +119,11 @@ const Navbar: React.FC = () => {
             <>
               <div className="hidden lg:flex flex-col items-end">
                 <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-xs text-muted-foreground leading-none">{user.email}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger className="outline-none">
-                  <Avatar className="h-9 w-9 border-2 border-primary/10 hover:border-primary/30 transition-all">
+                  <Avatar className="h-7 w-7 border-2 border-primary/10 hover:border-primary/30 transition-all">
                     <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold">
                       {user?.fullName?.substring(0, 2).toUpperCase()}
@@ -160,6 +168,7 @@ const Navbar: React.FC = () => {
               <LandingCtaButton
                 label="تسجيل الدخول"
                 onClick={() => router.push('/auth/login')}
+                size="sm"
                 className="[&_span]:text-base"
               />
             </div>
@@ -169,16 +178,16 @@ const Navbar: React.FC = () => {
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted lg:hidden"
+            className="rounded-md p-1 text-foreground transition-colors hover:bg-muted lg:hidden"
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
       <div
         className={cn(
-          'overflow-hidden transition-all duration-300 lg:hidden',
+          'relative overflow-hidden transition-all duration-300 lg:hidden',
           menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0',
         )}
       >
