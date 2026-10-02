@@ -6,4 +6,5 @@ export { ActivityType }
 export interface ActivitySearchParams extends BaseSearchParams {
   types?: ActivityType[]
   openForRegistration?: boolean
+  kind?: 'event' | 'ongoing'
 }

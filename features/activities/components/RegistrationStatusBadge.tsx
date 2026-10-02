@@ -3,9 +3,10 @@
 import React from 'react'
 import { Badge } from '@/shared/ui/badge'
 import type { Activity, ActivityRegistration } from '@/payload-types'
+import { activityEndTime } from '@/utils/constants/activities'
 
 export type EffectiveRegistrationStatus =
-  'pending' | 'registered' | 'refused' | 'quota_rejected' | 'attended' | 'passed'
+  'pending' | 'registered' | 'refused' | 'quota_rejected' | 'cancelled' | 'attended' | 'passed'
 
 export const statusConfig: Record<
   EffectiveRegistrationStatus,
@@ -31,6 +32,11 @@ export const statusConfig: Record<
     className: 'bg-red-500/15 text-red-700 dark:text-red-200',
     dotClassName: 'bg-red-500',
   },
+  cancelled: {
+    label: 'ملغى',
+    className: 'bg-muted text-muted-foreground',
+    dotClassName: 'bg-muted-foreground',
+  },
   attended: {
     label: 'تم الحضور',
     className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
@@ -46,23 +52,25 @@ export const statusConfig: Record<
 export function getEffectiveRegistrationStatus(
   registration: ActivityRegistration,
 ): EffectiveRegistrationStatus {
-  if (registration.status === 'refused' || registration.status === 'quota_rejected')
+  if (
+    registration.status === 'refused' ||
+    registration.status === 'quota_rejected' ||
+    registration.status === 'cancelled'
+  )
     return registration.status
   if (registration.status === 'pending') return 'pending'
   if (registration.attended) return 'attended'
 
   const activity = registration.activity as Activity | undefined
-  const start = activity?.startDate
-    ? new Date(activity.startDate).getTime()
-    : Number.POSITIVE_INFINITY
-  if (start < Date.now()) return 'passed'
+  const end = activity?.startDate ? activityEndTime(activity) : Number.POSITIVE_INFINITY
+  if (registration.status === 'completed' || end < Date.now()) return 'passed'
 
   return 'registered'
 }
 
 export function isPastRegistration(registration: ActivityRegistration): boolean {
   const status = getEffectiveRegistrationStatus(registration)
-  return status === 'attended' || status === 'passed'
+  return status === 'attended' || status === 'passed' || status === 'cancelled'
 }
 
 type RegistrationStatusBadgeProps = {

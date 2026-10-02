@@ -27,6 +27,7 @@ type PayloadStub = {
   findByID?: ReturnType<typeof vi.fn>
   delete?: ReturnType<typeof vi.fn>
   count?: ReturnType<typeof vi.fn>
+  find?: ReturnType<typeof vi.fn>
 }
 
 function staffMock(
@@ -77,7 +78,9 @@ describe('features/admin/server/activities.ts', () => {
         .mockResolvedValueOnce({ totalDocs: 5 })
         .mockResolvedValueOnce({ totalDocs: 3 })
         .mockResolvedValueOnce({ totalDocs: 2 })
-      staffMock({ count })
+      count.mockResolvedValueOnce({ totalDocs: 12 })
+      const find = vi.fn().mockResolvedValue({ docs: [] })
+      staffMock({ count, find })
 
       const { stats } = await getAdminActivitiesStats()
 
@@ -86,8 +89,11 @@ describe('features/admin/server/activities.ts', () => {
         upcomingActivities: 5,
         completedActivities: 3,
         openForRegistrationActivities: 2,
+        enrolledMembers: 12,
+        currentActivities: 0,
       })
-      expect(count).toHaveBeenCalledTimes(4)
+      expect(count).toHaveBeenCalledTimes(5)
+      expect(find).toHaveBeenCalledOnce()
     })
   })
 
@@ -194,9 +200,29 @@ describe('features/admin/server/activities.ts', () => {
 
       await expect(createActivity(fd)).rejects.toThrow()
     })
+
+    it('refuses an end date earlier than the start date', async () => {
+      staffMock({})
+      const fd = activityFormData({
+        startDate: '2026-03-01T10:00:00.000Z',
+        endDate: '2026-02-01T10:00:00.000Z',
+      })
+      fd.set('image', pngFile())
+      await expect(createActivity(fd)).rejects.toThrow('تاريخ الانتهاء')
+    })
   })
 
   describe('updateActivity', () => {
+    it('clears an existing end date when the editor removes it', async () => {
+      const update = vi.fn().mockResolvedValue({ id: 21 })
+      staffMock({ update })
+      await updateActivity(21, activityFormData({ endDate: '' }))
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ endDate: null }),
+        }),
+      )
+    })
     it('updates the activity without touching the image', async () => {
       const update = vi.fn().mockResolvedValue({ id: 21 })
       staffMock({ update })
@@ -230,6 +256,19 @@ describe('features/admin/server/activities.ts', () => {
           data: expect.objectContaining({ image: 77 }),
         }),
       )
+    })
+
+    it('refuses an end date earlier than the start date', async () => {
+      staffMock({})
+      await expect(
+        updateActivity(
+          21,
+          activityFormData({
+            startDate: '2026-03-01T10:00:00.000Z',
+            endDate: '2026-02-01T10:00:00.000Z',
+          }),
+        ),
+      ).rejects.toThrow('تاريخ الانتهاء')
     })
   })
 

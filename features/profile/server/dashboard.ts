@@ -2,6 +2,7 @@
 
 import { getPayloadWithUser } from '@/shared/lib/auth'
 import { expirePickupWindows, syncOverdueLoans } from '@/features/library'
+import { completeFinishedRegistrations } from '@/features/activities'
 
 export async function getProfileDashboardData() {
   const ctx = await getPayloadWithUser()
@@ -16,6 +17,7 @@ export async function getProfileDashboardData() {
   // collection window that has already lapsed — so the read that surfaces
   // pickup state drains the queue too, ahead of the query below.
   await expirePickupWindows(ctx)
+  await completeFinishedRegistrations(ctx)
 
   const fullUser = await ctx.payload.findByID({
     collection: 'users',
@@ -96,6 +98,7 @@ export async function getProfileDashboardData() {
     ])
 
   return {
+    now: Date.now(),
     user: fullUser,
     favorites: favorites.docs,
     articleFavorites: articleFavorites.docs,

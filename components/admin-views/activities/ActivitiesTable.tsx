@@ -25,6 +25,7 @@ import { bulkDeleteActivities, deleteActivity } from '@/features/admin'
 import { activitiesKeys } from '@/features/activities/api/activities.queries'
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
 import { cn } from '@/shared/lib/utils'
+import { activityEndTime } from '@/utils/constants/activities'
 
 const typeLabelMap = Object.fromEntries(activitiesTypesConfigArray.map((t) => [t.value, t.label]))
 
@@ -35,11 +36,17 @@ interface ActivitiesTableProps {
 }
 
 function activityStatus(activity: Activity): { label: string; className: string } {
+  if (activityEndTime(activity) < Date.now())
+    return { label: 'مكتمل', className: 'bg-muted text-muted-foreground rounded-lg' }
   if (activity.openForRegistration) {
     return { label: 'قائم', className: 'bg-[#00FF92] text-[#243245] rounded-lg' }
   }
   const started = activity.startDate ? new Date(activity.startDate).getTime() < Date.now() : false
-  if (started) return { label: 'مكتمل', className: 'bg-muted text-muted-foreground rounded-lg' }
+  if (started)
+    return {
+      label: 'قائم',
+      className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg',
+    }
   return {
     label: 'قادم',
     className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg',

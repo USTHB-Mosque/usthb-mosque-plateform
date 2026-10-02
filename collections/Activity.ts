@@ -42,6 +42,15 @@ export const Activity: CollectionConfig = {
       required: true,
     },
     {
+      name: 'kind',
+      type: 'select',
+      defaultValue: 'event',
+      options: [
+        { label: 'فعالية', value: 'event' },
+        { label: 'نشاط مستمر', value: 'ongoing' },
+      ],
+    },
+    {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
@@ -130,6 +139,7 @@ export const Activity: CollectionConfig = {
         },
       },
     },
+    { name: 'endDate', type: 'date', label: 'تاريخ الانتهاء' },
     {
       name: 'maxParticipants',
       type: 'number',

@@ -17,6 +17,7 @@ export async function fetchActivities(params?: ActivitySearchParams) {
   if (params?.types) {
     andFilters.push({ type: { in: params.types } })
   }
+  if (params?.kind) andFilters.push({ kind: { equals: params.kind } })
 
   if (params?.search) {
     andFilters.push({

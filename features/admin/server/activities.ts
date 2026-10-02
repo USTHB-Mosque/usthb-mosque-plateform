@@ -6,10 +6,12 @@ import { writeLog } from './logs'
 import { LogAction } from './logs-core'
 import type { Payload } from 'payload'
 import type { Activity, User } from '@/payload-types'
+import { activityEndTime } from '@/utils/constants/activities'
 
 type ActivityFormData = {
   title: string
   type: NonNullable<Activity['type']>
+  kind?: Activity['kind']
   shortDescription: string
   longDescription: NonNullable<Activity['longDescription']>
   benefits: NonNullable<Activity['benefits']>
@@ -20,6 +22,7 @@ type ActivityFormData = {
   openForRegistration?: boolean
   registrationDeadline?: string
   startDate: string
+  endDate?: string | null
   maxParticipants?: number
 }
 
@@ -34,6 +37,7 @@ function parseOptionalJsonArray(
 function parseActivityFields(formData: FormData): ActivityFormData {
   const title = formData.get('title') as string
   const type = formData.get('type') as string | null
+  const kind = formData.get('kind') as Activity['kind']
   const shortDescription = formData.get('shortDescription') as string
   const longDescriptionRaw = formData.get('longDescription') as string | null
   const benefitsRaw = formData.get('benefits') as string | null
@@ -44,11 +48,13 @@ function parseActivityFields(formData: FormData): ActivityFormData {
   const openForRegistration = formData.get('openForRegistration') === 'true'
   const registrationDeadline = formData.get('registrationDeadline') as string | null
   const startDate = formData.get('startDate') as string | null
+  const endDate = formData.get('endDate') as string | null
   const maxParticipants = formData.get('maxParticipants') as string | null
 
   return {
     title,
     type: type as NonNullable<Activity['type']>,
+    kind: kind || 'event',
     shortDescription,
     longDescription: JSON.parse(longDescriptionRaw ?? '') as NonNullable<
       Activity['longDescription']
@@ -63,6 +69,7 @@ function parseActivityFields(formData: FormData): ActivityFormData {
     openForRegistration,
     registrationDeadline: registrationDeadline || undefined,
     startDate: startDate ?? '',
+    endDate: endDate || null,
     maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
   }
 }
@@ -97,7 +104,7 @@ export async function getAdminActivitiesStats() {
 
   const now = new Date().toISOString()
 
-  const [total, upcoming, completed, openForRegistration] = await Promise.all([
+  const [total, upcoming, completed, openForRegistration, enrolled, calendar] = await Promise.all([
     payload.count({ collection: 'activities', overrideAccess: false, user }),
     payload.count({
       collection: 'activities',
@@ -107,13 +114,38 @@ export async function getAdminActivitiesStats() {
     }),
     payload.count({
       collection: 'activities',
-      where: { startDate: { less_than: now } },
+      where: {
+        or: [
+          { endDate: { less_than: now } },
+          {
+            and: [
+              { endDate: { exists: false } },
+              { kind: { not_equals: 'ongoing' } },
+              { startDate: { less_than: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() } },
+            ],
+          },
+        ],
+      },
       overrideAccess: false,
       user,
     }),
     payload.count({
       collection: 'activities',
       where: { openForRegistration: { equals: true } },
+      overrideAccess: false,
+      user,
+    }),
+    payload.count({
+      collection: 'activity-registrations',
+      where: { status: { in: ['pending', 'accepted'] } },
+      overrideAccess: false,
+      user,
+    }),
+    payload.find({
+      collection: 'activities',
+      sort: 'startDate',
+      limit: 0,
+      depth: 0,
       overrideAccess: false,
       user,
     }),
@@ -125,7 +157,24 @@ export async function getAdminActivitiesStats() {
       upcomingActivities: upcoming.totalDocs,
       completedActivities: completed.totalDocs,
       openForRegistrationActivities: openForRegistration.totalDocs,
+      enrolledMembers: enrolled.totalDocs,
+      currentActivities: calendar.docs.filter(
+        (activity) =>
+          activity.openForRegistration &&
+          new Date(activity.startDate).getTime() <= Date.now() &&
+          activityEndTime(activity) > Date.now(),
+      ).length,
     },
+    calendarActivities: calendar.docs.map(
+      ({ id, title, startDate, type, location, schedules }) => ({
+        id,
+        title,
+        startDate,
+        type,
+        location,
+        schedules,
+      }),
+    ),
   }
 }
 
@@ -133,6 +182,8 @@ export async function createActivity(formData: FormData) {
   const { payload, user } = await getStaffCtx()
 
   const fields = parseActivityFields(formData)
+  if (fields.endDate && new Date(fields.endDate) < new Date(fields.startDate))
+    throw new Error('تاريخ الانتهاء يجب أن يكون بعد تاريخ البداية')
   const imageId = await uploadActivityImage(payload, formData.get('image'), user, fields.title)
   if (!imageId) throw new Error('صورة النشاط مطلوبة')
 
@@ -161,6 +212,8 @@ export async function updateActivity(activityId: number, formData: FormData) {
   const { payload, user } = await getStaffCtx()
 
   const fields = parseActivityFields(formData)
+  if (fields.endDate && new Date(fields.endDate) < new Date(fields.startDate))
+    throw new Error('تاريخ الانتهاء يجب أن يكون بعد تاريخ البداية')
   const imageId = await uploadActivityImage(payload, formData.get('image'), user, fields.title)
 
   const activity = await payload.update({

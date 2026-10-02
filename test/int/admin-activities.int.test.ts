@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getTestPayload, resetDatabase } from '../setup-integration'
 import { createTestUser, loginToken } from '../lib/seed'
+import { createTestActivity } from '../lib/factories'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 import {
   bulkDeleteActivities,
@@ -115,7 +116,31 @@ describe('getAdminActivitiesStats', () => {
       upcomingActivities: 1,
       completedActivities: 1,
       openForRegistrationActivities: 1,
+      enrolledMembers: 0,
+      currentActivities: 0,
     })
+  })
+
+  it('counts only open-for-registration activities that are running now', async () => {
+    const running = activityFormData({
+      startDate: new Date(Date.now() - 3_600_000).toISOString(),
+      endDate: new Date(Date.now() + 3_600_000).toISOString(),
+    })
+    running.set('image', imageFile())
+    await createActivity(running)
+
+    const closed = activityFormData({
+      startDate: new Date(Date.now() - 3_600_000).toISOString(),
+      endDate: new Date(Date.now() + 3_600_000).toISOString(),
+      openForRegistration: 'false',
+    })
+    closed.set('image', imageFile())
+    await createActivity(closed)
+
+    const stats = await getAdminActivitiesStats()
+
+    expect(stats.stats.currentActivities).toBe(1)
+    expect(stats.calendarActivities).toHaveLength(2)
   })
 
   it('starts at zero on an empty database', async () => {
@@ -125,7 +150,30 @@ describe('getAdminActivitiesStats', () => {
       upcomingActivities: 0,
       completedActivities: 0,
       openForRegistrationActivities: 0,
+      enrolledMembers: 0,
+      currentActivities: 0,
     })
+  })
+
+  it('counts active registrations and supplies activities for the calendar', async () => {
+    const activity = await createTestActivity(payload)
+    const attendee = await createTestUser(payload, { email: 'calendar-attendee@usthb.dz' })
+    await payload.create({
+      collection: 'activity-registrations',
+      data: { activity: activity.id, user: attendee.id, status: 'accepted' },
+      overrideAccess: true,
+    })
+    const result = await getAdminActivitiesStats()
+    expect(result.stats.enrolledMembers).toBe(1)
+    expect(result.calendarActivities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: activity.id,
+          title: activity.title,
+          startDate: activity.startDate,
+        }),
+      ]),
+    )
   })
 })
 

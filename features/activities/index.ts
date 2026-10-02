@@ -14,5 +14,6 @@ export { default as ActivityDescription } from './components/activity-details/ac
 
 export * from './api/activities.queries'
 export * from './server/activities'
+export { completeFinishedRegistrations } from './server/completion'
 export * from './types'
 export * as activitiesFixtures from './fixtures'
