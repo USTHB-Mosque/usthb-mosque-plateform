@@ -376,7 +376,7 @@ const LandingPage: React.FC = () => {
             onAnimationEnd={(event) => {
               if (event.target === event.currentTarget) setTextSettled(true)
             }}
-            className={`absolute top-0 left-0 z-[3] w-full h-auto min-h-[70%] sm:min-h-[90%] md:min-h-[60%] flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 pt-8 pb-16 ${
+            className={`absolute inset-0 z-[3] w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 ${
               textReady ? (textSettled ? '' : 'hero-text-visible') : 'opacity-0'
             }`}
           >
