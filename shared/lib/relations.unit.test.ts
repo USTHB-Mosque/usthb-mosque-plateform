@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveRelationId } from './relations'
+import { resolveDocument, resolveRelationId } from './relations'
 
 describe('resolveRelationId', () => {
   it('passes a raw id straight through', () => {
@@ -15,5 +15,19 @@ describe('resolveRelationId', () => {
     expect(resolveRelationId(undefined)).toBeNaN()
     expect(resolveRelationId('nope')).toBeNaN()
     expect(resolveRelationId({})).toBeNaN()
+  })
+})
+
+describe('resolveDocument', () => {
+  it('returns the populated relationship document', () => {
+    const book = { id: 3, title: 'صحيح مسلم' }
+    expect(resolveDocument<{ id: number; title: string }>(book)).toBe(book)
+  })
+
+  it('returns null when the relation is a bare id or missing', () => {
+    expect(resolveDocument(3)).toBeNull()
+    expect(resolveDocument(null)).toBeNull()
+    expect(resolveDocument(undefined)).toBeNull()
+    expect(resolveDocument({})).toBeNull()
   })
 })

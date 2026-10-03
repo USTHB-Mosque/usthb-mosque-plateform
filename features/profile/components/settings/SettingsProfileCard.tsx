@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
-import { LogOut, Shield, Bell, Keyboard, Trash2, User } from 'lucide-react'
+import { LogOut, Shield, Bell, BookMarked, Trash2, User } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { Media, User as UserType } from '@/payload-types'
 import { getImageUrl } from '@/shared/lib/image-utils'
@@ -17,28 +17,40 @@ import { toast } from 'sonner'
 
 type SettingsProfileCardProps = {
   user: UserType
-  activeTab?: 'info' | 'security' | 'notifications' | 'shortcuts'
+  activeTab?: SettingsTab
   hrefBase?: string
   hideDeleteAccount?: boolean
+  /** Tabs to render; a tab whose page does not exist must not be listed. */
+  availableTabs?: SettingsTab[]
 }
 
-function getTabs(hrefBase: string) {
-  return [
-    { id: 'info' as const, label: 'المعلومات', icon: User, href: hrefBase },
-    { id: 'security' as const, label: 'الحماية', icon: Shield, href: `${hrefBase}/security` },
+/**
+ * #156: `shortcuts` is gone. It linked to a route that has never existed in
+ * either the member or the admin panel, so it was a tab that 404'd — SPEC §7.9
+ * still wants keyboard shortcuts, but shipping a dead link is worse than not
+ * shipping the tab. Admin panels get `loans` (loan configuration) instead,
+ * which does exist.
+ */
+export type SettingsTab = 'info' | 'security' | 'notifications' | 'loans'
+
+function getTabs(hrefBase: string, available: SettingsTab[]) {
+  const all: Array<{ id: SettingsTab; label: string; icon: React.ElementType; href: string }> = [
+    { id: 'info', label: 'المعلومات', icon: User, href: hrefBase },
+    { id: 'security', label: 'الحماية', icon: Shield, href: `${hrefBase}/security` },
     {
-      id: 'notifications' as const,
+      id: 'notifications',
       label: 'الإشعارات',
       icon: Bell,
       href: `${hrefBase}/notifications`,
     },
     {
-      id: 'shortcuts' as const,
-      label: 'اختصارات',
-      icon: Keyboard,
-      href: `${hrefBase}/shortcuts`,
+      id: 'loans',
+      label: 'إعدادات الإعارة',
+      icon: BookMarked,
+      href: `${hrefBase}/loans`,
     },
   ]
+  return all.filter((tab) => available.includes(tab.id))
 }
 
 const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
@@ -46,9 +58,10 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
   activeTab = 'info',
   hrefBase = '/user/settings',
   hideDeleteAccount = false,
+  availableTabs = ['info', 'security', 'notifications'],
 }) => {
   const router = useRouter()
-  const tabs = getTabs(hrefBase)
+  const tabs = getTabs(hrefBase, availableTabs)
   const profileMedia = user.profilePicture as Media | undefined
   const avatarUrl = getImageUrl(profileMedia?.url)
   const displayName = user.fullName || user.email || 'مستخدم'

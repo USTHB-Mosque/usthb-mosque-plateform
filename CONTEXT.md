@@ -150,7 +150,11 @@ Audit trail of admin actions. Collection: `logs` with actor, action, target, tim
 _Aavoid_: Audit log, activity log (use "logs" as the collection name)
 
 **Analytics**:
-Computed from DB via Postgres aggregation. No external service. `analytics-events` collection for article reads, feedback, views. KPIs = GROUP BY queries.
+Computed from DB via Postgres aggregation. No external service. KPIs = GROUP BY queries. Article
+reads come from the `article-reads` counter (#156): one row per (article, member) holding
+`readCount` and `lastReadAt`, written when a member opens the article. Anonymous reads are not
+counted — a counter nobody can be attributed to would be forgeable — so the screen reports member
+reads, and it reports them for all time because a cumulative counter cannot be split by period.
 _Avoid_: Metrics, dashboard analytics
 
 **Settings**:

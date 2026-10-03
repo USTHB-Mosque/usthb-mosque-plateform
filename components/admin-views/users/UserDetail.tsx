@@ -26,6 +26,7 @@ import { NO_SHOW_LIMIT } from '@/utils/constants/loans'
 import { getImageUrl } from '@/shared/lib/image-utils'
 import SettingsProfileCard from '@/features/profile/components/settings/SettingsProfileCard'
 import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
+import UserHistory from '@/components/admin-views/users/UserHistory'
 import { approveUser, rejectUser } from '@/features/admin/server/verification'
 import { liftBorrowingBlock, softDeleteUser, updateUserRole } from '@/features/admin/server/users'
 import { usersKeys } from '@/features/users/api/users.queries'
@@ -74,9 +75,10 @@ function InfoRow({
 
 interface UserDetailProps {
   user: User
+  history: React.ComponentProps<typeof UserHistory>['history']
 }
 
-const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
+const UserDetail: React.FC<UserDetailProps> = ({ user, history }) => {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [pending, startTransition] = useTransition()
@@ -336,6 +338,11 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* #156, SPEC §7.3: borrowings, reviews and extension requests. Before
+            this the page could not answer "does this person have something
+            overdue", which is the question an admin opens it for. */}
+        <UserHistory history={history} />
       </div>
 
       {/* Reject dialog */}
