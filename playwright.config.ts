@@ -1,12 +1,14 @@
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig } from '@playwright/test'
 
 import {
   E2E_BASE_URL,
   E2E_DEV,
   E2E_GOOGLE_IDP_URL,
   E2E_MAILPIT_API_URL,
+  E2E_SKIP_VISUAL,
   e2eServerEnv,
 } from './e2e/lib/env'
+import { buildProjects } from './e2e/lib/projects'
 
 const serverEnv = e2eServerEnv()
 
@@ -59,35 +61,12 @@ export default defineConfig({
           command: 'pnpm exec tsx e2e/prepare-db.ts && pnpm build && next start',
           url: E2E_BASE_URL,
           reuseExistingServer: false,
-          timeout: 600_000,
+          // Dropping the database, migrating and the production build all run
+          // before the URL answers. CI runners are slower than a dev machine, so
+          // the budget is sized for them rather than for a local run.
+          timeout: 900_000,
           env: serverEnv,
         },
   ],
-  projects: [
-    {
-      name: 'setup',
-      testMatch: /auth\.setup\.ts/,
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      // Visual shots read the untouched seed state, so they run right after
-      // setup and before every journey spec that writes to the database.
-      name: 'visual',
-      testMatch: /visual\.spec\.ts/,
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'chromium',
-      testIgnore: /visual\.spec\.ts/,
-      dependencies: ['setup', 'visual'],
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'webkit',
-      testMatch: /core\.spec\.ts/,
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  projects: buildProjects({ skipVisual: E2E_SKIP_VISUAL }),
 })
