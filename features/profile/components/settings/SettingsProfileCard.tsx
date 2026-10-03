@@ -205,9 +205,9 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
           </button>
         </div>
 
-        {/* Delete Account */}
+        {/* Delete Account — hidden in the desktop view per #164 */}
         {!hideDeleteAccount ? (
-          <div className="hidden flex-col items-stretch lg:flex">
+          <div className="hidden flex-col items-stretch">
             <button
               type="button"
               onClick={onDeleteAccount}
