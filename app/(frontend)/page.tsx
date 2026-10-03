@@ -267,6 +267,11 @@ const LandingPage: React.FC = () => {
         setPageLock(true)
         return
       }
+      // The page-level lock exists only for the hero. Releasing it here also
+      // covers a scroll position restored by the browser on back navigation:
+      // the lock is applied while y is still 0 (before restoration) and the
+      // scroll event that lands below the hero must free the page again.
+      setPageLock(false)
       if (y >= nextTop - EDGE_EPS) return
       if (lastDirection < 0 && y >= nextTop - OVERSHOOT_PX) {
         window.scrollTo({ top: nextTop, behavior: 'instant' })
@@ -721,7 +726,7 @@ const LandingPage: React.FC = () => {
                 onAnimationEnd={(event) => {
                   if (event.target === event.currentTarget) setTextSettled(true)
                 }}
-                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 ${
+                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 -translate-y-[137px] sm:-translate-y-[105px] 2xl:-translate-y-[148px] ${
                   textReady ? (textSettled ? '' : 'hero-text-visible') : 'opacity-0'
                 }`}
               >

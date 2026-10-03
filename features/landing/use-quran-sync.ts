@@ -117,8 +117,30 @@ export function useQuranSync() {
   }
 
   function toggleRecitation() {
-    const audio = activeVerse.current === 36 ? audio36.current : audio37.current
-    if (!audio) return
+    const a36 = audio36.current
+    const a37 = audio37.current
+    if (!a36 || !a37) return
+
+    // The whole recitation finished (verse 36 and verse 37 both ended):
+    // pressing play again must start over from the first verse and chain
+    // into the second exactly like the initial load, instead of replaying
+    // only the second verse from its own beginning.
+    if (a37.ended) {
+      activeVerse.current = 36
+      a36.currentTime = 0
+      a37.currentTime = 0
+      setWordIdx(-1)
+      a36
+        .play()
+        .then(() => {
+          setIsRecitationPlaying(true)
+          syncWordsToAudio()
+        })
+        .catch(() => setIsRecitationPlaying(false))
+      return
+    }
+
+    const audio = activeVerse.current === 36 ? a36 : a37
 
     if (!audio.paused) {
       audio.pause()

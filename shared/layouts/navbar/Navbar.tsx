@@ -32,6 +32,12 @@ const navLinks = [
   { label: 'تواصل معنا', href: '/contact-us' },
 ]
 
+// Eased multi-stop falloff for the navbar's feathered backdrop: the alpha
+// follows a smoothstep curve over the band's last 36px (several breakpoints
+// instead of one straight ramp), so the bottom edge dissolves without a kink.
+const FEATHER_MASK =
+  'linear-gradient(to bottom, black 0, black calc(100% - 36px), rgba(0,0,0,0.93) calc(100% - 30px), rgba(0,0,0,0.74) calc(100% - 24px), rgba(0,0,0,0.5) calc(100% - 18px), rgba(0,0,0,0.26) calc(100% - 12px), rgba(0,0,0,0.07) calc(100% - 6px), transparent 100%)'
+
 const Navbar: React.FC = () => {
   const { data: { user } = { user: undefined } } = useGetProfileQuery()
   const router = useRouter()
@@ -60,11 +66,11 @@ const Navbar: React.FC = () => {
         className={
           mobile
             ? cn(
-                'block text-base font-medium transition-colors',
+                'block text-base font-normal transition-colors',
                 isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
               )
             : cn(
-                'relative text-sm font-medium transition-colors duration-200',
+                'relative text-base font-normal transition-colors duration-200',
                 isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
               )
         }
@@ -83,24 +89,21 @@ const Navbar: React.FC = () => {
   return (
     <header dir="rtl" className="sticky top-0 start-0 end-0 z-50 w-full">
       {/* Feathered backdrop: the tint+blur band extends past the navbar and
-          masks out over its last 32px, so there is no sharp edge where the
-          navbar ends. */}
+          dissolves through FEATHER_MASK's eased multi-stop falloff, so the
+          bottom edge fades softly instead of ending abruptly. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -bottom-8 bg-background/20 backdrop-blur"
-        style={{
-          maskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent)',
-        }}
+        className="pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-background/20 backdrop-blur"
+        style={{ maskImage: FEATHER_MASK, WebkitMaskImage: FEATHER_MASK }}
       />
-      <div className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
+      <div className="relative flex items-center justify-between px-6 pt-[20px] pb-[15px] md:px-12 xl:px-[140px]">
         <Link href="/" className="shrink-0">
           <Image
             src="/static/images/logo-horizontal.svg"
             alt="الشعار"
             width={90}
             height={40}
-            className="h-7 w-auto"
+            className="h-10 w-auto"
           />
         </Link>
 
@@ -169,7 +172,7 @@ const Navbar: React.FC = () => {
                 label="تسجيل الدخول"
                 onClick={() => router.push('/auth/login')}
                 size="sm"
-                className="[&_span]:text-base"
+                className="h-[35px] rounded-[8px] px-8 [&_span]:text-base"
               />
             </div>
           )}
