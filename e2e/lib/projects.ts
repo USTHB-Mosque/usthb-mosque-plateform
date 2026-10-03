@@ -1,7 +1,5 @@
 import { devices, type Project } from '@playwright/test'
 
-export type ProjectPlan = { skipVisual: boolean }
-
 /**
  * The Playwright project plan, as data.
  *
@@ -17,7 +15,7 @@ export type ProjectPlan = { skipVisual: boolean }
  * baselines generated on a developer's machine. The suite's real coverage is
  * the behaviour specs; the visual pass stays a local gate (AGENTS.md).
  */
-export function buildProjects({ skipVisual }: ProjectPlan): Project[] {
+export function buildProjects({ skipVisual }: { skipVisual: boolean }): Project[] {
   const visual: Project = {
     // Visual shots read the untouched seed state, so they run right after
     // setup and before every journey spec that writes to the database.
