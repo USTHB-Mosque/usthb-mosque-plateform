@@ -96,7 +96,9 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
         {quickFilterSections.length > 0 ? (
           <div
             className={cn(
-              'flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl',
+              // #164: phones keep the chips on one scrolling line under the
+              // search box; from sm up they wrap beside it as before.
+              'flex w-full flex-nowrap gap-4 overflow-x-auto sm:w-auto sm:max-w-2xl sm:flex-wrap sm:overflow-x-visible',
               quickFiltersClassName,
             )}
           >
@@ -117,7 +119,7 @@ const ListingToolbar: React.FC<ListingToolbarProps> = ({
         ) : !useDialog && !hasQuickFilters && visible.length === 1 ? (
           <div
             className={cn(
-              'flex flex-wrap gap-4 w-full sm:w-auto sm:max-w-2xl',
+              'flex w-full flex-nowrap gap-4 overflow-x-auto sm:w-auto sm:max-w-2xl sm:flex-wrap sm:overflow-x-visible',
               quickFiltersClassName,
             )}
           >

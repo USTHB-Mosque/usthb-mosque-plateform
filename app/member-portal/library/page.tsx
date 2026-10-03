@@ -73,7 +73,6 @@ const LibraryMemberPage: React.FC = () => {
       <div className="mt-6">
         <ListingToolbar
           onApplyFilters={() => setValue('page', 1)}
-          quickFiltersClassName="hidden lg:flex"
           quickFilterSections={[
             {
               id: 'types-quick',
