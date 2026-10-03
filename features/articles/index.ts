@@ -3,6 +3,7 @@
 
 export { default as BlogArticleCard } from './components/BlogArticleCard'
 export { default as ArticleCardSkeleton } from './components/ArticleCardSkeleton'
+export { default as ArticleDetailClient } from './components/ArticleDetailClient'
 
 export * from './api/articles.queries'
 export * from './types'

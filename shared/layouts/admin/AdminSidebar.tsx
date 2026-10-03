@@ -20,6 +20,13 @@ type AdminSidebarProps = React.PropsWithChildren<{
   userName?: string
   userEmail?: string
   role?: 'admin' | 'librarian'
+  /**
+   * Counts keyed by a nav item's `href` (#65). Kept out of `nav.ts` on purpose:
+   * the nav tree is static, these numbers are read per request, and merging the
+   * two would make every screen that imports the nav depend on the database.
+   * A missing key — or a zero — renders no badge at all.
+   */
+  badges?: Record<string, number>
 }>
 
 const STORAGE_KEY = 'admin-panel:sidebar-collapsed'
@@ -73,9 +80,36 @@ type SideLinkProps = {
   collapsed: boolean
   /** A sub-page: indented beneath its section's own link. */
   nested?: boolean
+  /** Pending work on this section, from `badges`. */
+  badge?: number
 }
 
-const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested }) => {
+/**
+ * The number sighted users read at a glance, and the phrase a screen reader
+ * announces — a bare "4" beside an icon says nothing about what is waiting.
+ * The count itself is `aria-hidden` so the number is not read twice.
+ */
+const NavBadge: React.FC<{ count: number; label: string; className?: string }> = ({
+  count,
+  label,
+  className,
+}) => (
+  <span
+    className={cn(
+      'shrink-0 rounded-full px-1.5 py-0.5 font-bold tabular-nums',
+      'bg-primary-main-20 text-primary-300',
+      className ?? 'ms-auto text-[11px]',
+    )}
+  >
+    <span aria-hidden="true">{count}</span>
+    <span className="sr-only">{label}</span>
+  </span>
+)
+
+const badgeLabelFor = (item: AdminNavItem, count: number) =>
+  `${count} ${item.badgeLabel ?? 'عناصر بانتظار القرار'}`
+
+const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested, badge }) => {
   const Icon = item.icon
   return (
     <Link
@@ -91,21 +125,34 @@ const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested }) 
     >
       <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
       {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+      {!!badge && badge > 0 && <NavBadge count={badge} label={badgeLabelFor(item, badge)} />}
     </Link>
   )
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, children }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  userName,
+  userEmail,
+  role,
+  badges,
+  children,
+}) => {
   return (
     <AdminSidebarProvider role={role}>
-      <SidebarShell userName={userName} userEmail={userEmail} role={role}>
+      <SidebarShell userName={userName} userEmail={userEmail} role={role} badges={badges}>
         {children}
       </SidebarShell>
     </AdminSidebarProvider>
   )
 }
 
-const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, children }) => {
+const SidebarShell: React.FC<AdminSidebarProps> = ({
+  userName,
+  userEmail,
+  role,
+  badges,
+  children,
+}) => {
   const pathname = usePathname()
   const { collapsed, toggle } = useAdminSidebar()
   const { main: mainNav, secondary: secondaryNav } = adminNavForRole(role)
@@ -156,6 +203,7 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
                   item={item}
                   active={adminNavHelpers.isActive(item, pathname)}
                   collapsed={collapsed}
+                  badge={badges?.[item.href]}
                 />
                 {item.children?.map((child) => (
                   <SideLink
@@ -238,14 +286,17 @@ const SidebarShell: React.FC<AdminSidebarProps> = ({ userName, userEmail, role, 
       </aside>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:bg-background-2">
-        <MobileTopbar role={role} />
+        <MobileTopbar role={role} badges={badges} />
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </div>
   )
 }
 
-const MobileTopbar: React.FC<{ role?: string }> = ({ role }) => {
+const MobileTopbar: React.FC<{ role?: string; badges?: Record<string, number> }> = ({
+  role,
+  badges,
+}) => {
   const pathname = usePathname()
   const { main: mainNav } = adminNavForRole(role)
   // The horizontal chip row has no room for nesting, so sub-pages are listed
@@ -278,6 +329,13 @@ const MobileTopbar: React.FC<{ role?: string }> = ({ role }) => {
                 >
                   <Icon className="size-4" />
                   <span>{item.label}</span>
+                  {!!badges?.[item.href] && badges[item.href] > 0 && (
+                    <NavBadge
+                      count={badges[item.href]}
+                      label={badgeLabelFor(item, badges[item.href])}
+                      className="text-[10px]"
+                    />
+                  )}
                 </Link>
               )
             })}

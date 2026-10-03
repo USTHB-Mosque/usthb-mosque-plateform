@@ -1,5 +1,5 @@
 import { getAdminActivitiesStats } from '@/features/admin'
-import Activities from '@/components/admin-views/activities/Activities'
+import Activities from '@/features/admin/components/views/activities/Activities'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminActivitiesPage() {

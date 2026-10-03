@@ -4,7 +4,7 @@ import {
   revokeAdminSession,
 } from '@/features/admin/server/account'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
 import SecuritySection from '@/features/profile/components/settings/SecuritySection'
 
 export default async function AdminSecuritySettingsPage() {

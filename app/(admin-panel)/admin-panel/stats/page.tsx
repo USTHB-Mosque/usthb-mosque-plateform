@@ -1,5 +1,5 @@
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import AnalyticsView from '@/components/admin-views/stats/AnalyticsView'
+import AnalyticsView from '@/features/admin/components/views/stats/AnalyticsView'
 import { getAdminAnalytics } from '@/features/admin/server/analytics'
 
 export const dynamic = 'force-dynamic'

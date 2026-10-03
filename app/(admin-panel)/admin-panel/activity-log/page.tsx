@@ -1,5 +1,5 @@
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import ActivityLogView from '@/components/admin-views/logs/ActivityLogView'
+import ActivityLogView from '@/features/admin/components/views/logs/ActivityLogView'
 import { getAdminLogs } from '@/features/admin/server/logs'
 
 export const dynamic = 'force-dynamic'

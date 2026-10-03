@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getAdminArticle } from '@/features/admin'
-import AdminArticleDetail from '@/components/admin-views/articles/AdminArticleDetail'
+import AdminArticleDetail from '@/features/admin/components/views/articles/AdminArticleDetail'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminArticleDetailPage({

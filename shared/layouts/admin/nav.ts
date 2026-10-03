@@ -21,6 +21,12 @@ export type AdminNavItem = {
   href: string
   icon: LucideIcon
   badge?: number | string
+  /**
+   * What the badge counts, in Arabic, for the screen-reader announcement
+   * (`<count> <badgeLabel>`). Sits next to the item so the wording lives with
+   * the section it describes rather than in the sidebar that renders it.
+   */
+  badgeLabel?: string
   /** Sub-pages of this section, rendered nested beneath it in the sidebar. */
   children?: AdminNavItem[]
 }
@@ -34,6 +40,7 @@ export const adminMainNav: AdminNavItem[] = [
     label: 'الإعارات',
     href: '/admin-panel/loans',
     icon: BookOpen,
+    badgeLabel: 'إعارات بانتظار القرار',
     children: [
       { label: 'قائمة الانتظار', href: '/admin-panel/loans/waitlist', icon: ListOrdered },
       { label: 'طلبات التمديد', href: '/admin-panel/loans/extensions', icon: CalendarClock },

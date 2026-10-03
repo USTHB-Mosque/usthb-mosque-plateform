@@ -1,6 +1,6 @@
 import { getAdminSettingsData, updateAdminPhone } from '@/features/admin/server/account'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
 import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
 
 export default async function AdminSettingsPage() {

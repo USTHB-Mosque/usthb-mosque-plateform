@@ -1,5 +1,5 @@
 import { getAdminUsersStats } from '@/features/admin/server/users'
-import Users from '@/components/admin-views/users/Users'
+import Users from '@/features/admin/components/views/users/Users'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function UsersPage() {
