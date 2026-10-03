@@ -258,14 +258,17 @@ const MobileNavigation: React.FC<{
           />
         </Link>
 
-        <button
-          aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
-          aria-expanded={open}
-          onClick={() => setOpen((prev) => !prev)}
-          className="rounded-md p-2 text-foreground transition-colors hover:bg-muted"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <button
+            aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
+            aria-expanded={open}
+            onClick={() => setOpen((prev) => !prev)}
+            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </header>
 
       <div
