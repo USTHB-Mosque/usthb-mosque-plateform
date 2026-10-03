@@ -96,14 +96,23 @@ const Navbar: React.FC = () => {
         className="pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-background/20 backdrop-blur"
         style={{ maskImage: FEATHER_MASK, WebkitMaskImage: FEATHER_MASK }}
       />
-      <div className="relative flex items-center justify-between px-6 pt-[20px] pb-[15px] md:px-12 xl:px-[140px]">
+      {/* Phones (#164): row-reversed so the logo sits left and the menu right —
+          matching the member portal's phone bar; ≥md restores the RTL order. */}
+      <div className="relative flex flex-row-reverse items-center justify-between px-6 pt-[20px] pb-[15px] md:flex-row md:px-12 xl:px-[140px]">
         <Link href="/" className="shrink-0">
+          <Image
+            src="/static/images/logo-icon.svg"
+            alt="الشعار"
+            width={32}
+            height={40}
+            className="h-10 w-auto md:hidden"
+          />
           <Image
             src="/static/images/logo-horizontal.svg"
             alt="الشعار"
             width={90}
             height={40}
-            className="h-10 w-auto"
+            className="hidden h-10 w-auto md:block"
           />
         </Link>
 
@@ -124,47 +133,50 @@ const Navbar: React.FC = () => {
                 <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
                 <p className="text-xs text-muted-foreground leading-none">{user.email}</p>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="outline-none">
-                  <Avatar className="h-7 w-7 border-2 border-primary/10 hover:border-primary/30 transition-all">
-                    <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                      {user?.fullName?.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
+              {/* #164: the profile leaves the phone bar — the drawer carries it. */}
+              <div className="hidden md:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="outline-none">
+                    <Avatar className="h-7 w-7 border-2 border-primary/10 hover:border-primary/30 transition-all">
+                      <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {user?.fullName?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-56 mt-2">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="font-bold">حسابي</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="font-bold">حسابي</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
 
-                    <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/user/dashboard" className="flex items-center gap-2 w-full">
-                        <LayoutDashboard className="size-4" />
-                        <span>لوحة التحكم</span>
-                      </Link>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer gap-2">
+                        <Link href="/user/dashboard" className="flex items-center gap-2 w-full">
+                          <LayoutDashboard className="size-4" />
+                          <span>لوحة التحكم</span>
+                        </Link>
+                      </DropdownMenuItem>
 
-                    <DropdownMenuItem className="cursor-pointer gap-2">
-                      <Link href="/user/settings" className="flex items-center gap-2 w-full">
-                        <Settings className="size-4" />
-                        <span>الإعدادات</span>
-                      </Link>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer gap-2">
+                        <Link href="/user/settings" className="flex items-center gap-2 w-full">
+                          <Settings className="size-4" />
+                          <span>الإعدادات</span>
+                        </Link>
+                      </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+                      <DropdownMenuSeparator />
 
-                    <DropdownMenuItem
-                      className="cursor-pointer gap-2 text-destructive focus:text-destructive"
-                      onClick={onLogout}
-                    >
-                      <LogOut className="size-4" />
-                      <span>تسجيل الخروج</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <DropdownMenuItem
+                        className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                        onClick={onLogout}
+                      >
+                        <LogOut className="size-4" />
+                        <span>تسجيل الخروج</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </>
           ) : (
             <div className="hidden lg:block">
