@@ -3,6 +3,9 @@ import { isAdmin } from '@/utils/access-helpers'
 import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
 import { maintainReviewAggregates } from '@/shared/lib/review-aggregate'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 /**
  * One review model covering books and articles (#103): a row targets exactly
@@ -41,6 +44,14 @@ export const Review: CollectionConfig = {
     // against the target, so an article review maintains the article the same
     // way a book review maintains the book (#103).
     afterChange: [
+      // A review targets exactly one side of the pair (enforced in
+      // `beforeValidate`), so the event carries whichever content was rated —
+      // admins may delete the review row, and the member's record stays (#178).
+      memberEventOnCreate(MemberEventAction.ReviewCreated, (doc) =>
+        doc.book
+          ? { type: 'book', id: resolveRelationId(doc.book) }
+          : { type: 'article', id: resolveRelationId(doc.article) },
+      ),
       async ({ doc, previousDoc, operation, req, context }) => {
         if (!context?.[SKIP_REVIEW_AGGREGATE]) {
           await maintainReviewAggregates(req, { doc, previousDoc })

@@ -6,6 +6,8 @@ import { resolveRelationId } from '@/shared/lib/relations'
 import { formatArabicDate } from '@/shared/lib/dates'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 /**
  * Loan extension requests (#19). A member requests an extension on a loan they
@@ -88,6 +90,19 @@ export const LoanExtension: CollectionConfig = {
       },
     ],
     afterChange: [
+      // The member asked to hold one specific book longer: the event carries
+      // the book, resolved through the loan at write time, rather than the
+      // extension row that can disappear (#178).
+      memberEventOnCreate(MemberEventAction.ExtensionRequested, async (doc, req) => {
+        const loan = await req.payload.findByID({
+          collection: 'loans',
+          id: resolveRelationId(doc.loan),
+          req,
+          overrideAccess: true,
+          depth: 0,
+        })
+        return { type: 'book', id: resolveRelationId(loan.book) }
+      }),
       async ({ doc, previousDoc, operation, req, context }) => {
         // Auto-approved requests never sit in the admin queue, so they never
         // page the admins; the flag is stamped by requestLoanExtensionLogic.

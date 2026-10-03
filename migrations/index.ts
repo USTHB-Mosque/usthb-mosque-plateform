@@ -28,6 +28,7 @@ import * as migration_20260930_030000_member_cancellation from './20260930_03000
 import * as migration_20260930_040000_log_target_indexes from './20260930_040000_log_target_indexes'
 import * as migration_20261001_000000_activity_lifecycle from './20261001_000000_activity_lifecycle'
 import * as migration_20261001_010000_activity_completion_job from './20261001_010000_activity_completion_job'
+import * as migration_20261002_000000_member_events from './20261002_000000_member_events'
 
 export const migrations = [
   {
@@ -179,5 +180,10 @@ export const migrations = [
     up: migration_20261001_010000_activity_completion_job.up,
     down: migration_20261001_010000_activity_completion_job.down,
     name: '20261001_010000_activity_completion_job',
+  },
+  {
+    up: migration_20261002_000000_member_events.up,
+    down: migration_20261002_000000_member_events.down,
+    name: '20261002_000000_member_events',
   },
 ]

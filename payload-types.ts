@@ -84,6 +84,7 @@ export interface Config {
     logs: Log;
     'library-cards': LibraryCard;
     'book-requests': BookRequest;
+    'member-events': MemberEvent;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -109,6 +110,7 @@ export interface Config {
     logs: LogsSelect<false> | LogsSelect<true>;
     'library-cards': LibraryCardsSelect<false> | LibraryCardsSelect<true>;
     'book-requests': BookRequestsSelect<false> | BookRequestsSelect<true>;
+    'member-events': MemberEventsSelect<false> | MemberEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -636,6 +638,27 @@ export interface BookRequest {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-events".
+ */
+export interface MemberEvent {
+  id: number;
+  user: number | User;
+  action:
+    | 'loan_requested'
+    | 'extension_requested'
+    | 'waitlist_joined'
+    | 'registration_created'
+    | 'book_favorited'
+    | 'article_favorited'
+    | 'review_created';
+  targetType: string;
+  targetId: string;
+  timestamp: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -826,6 +849,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'book-requests';
         value: number | BookRequest;
+      } | null)
+    | ({
+        relationTo: 'member-events';
+        value: number | MemberEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1218,6 +1245,19 @@ export interface BookRequestsSelect<T extends boolean = true> {
   description?: T;
   status?: T;
   adminNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-events_select".
+ */
+export interface MemberEventsSelect<T extends boolean = true> {
+  user?: T;
+  action?: T;
+  targetType?: T;
+  targetId?: T;
+  timestamp?: T;
   updatedAt?: T;
   createdAt?: T;
 }

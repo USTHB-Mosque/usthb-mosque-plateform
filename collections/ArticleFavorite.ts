@@ -1,6 +1,9 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 export const ArticleFavorite: CollectionConfig = {
   slug: 'article-favorites',
@@ -43,6 +46,13 @@ export const ArticleFavorite: CollectionConfig = {
     },
   ],
   hooks: {
+    afterChange: [
+      // Same durability contract as the book favorite (#178).
+      memberEventOnCreate(MemberEventAction.ArticleFavorited, (doc) => ({
+        type: 'article',
+        id: resolveRelationId(doc.article),
+      })),
+    ],
     beforeValidate: [
       async ({ data, req, operation }) => {
         if (operation !== 'create' || !data?.article) return

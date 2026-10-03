@@ -15,6 +15,8 @@ import { checkPickupGate, checkRequestGates } from '@/shared/lib/loan-gates'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 /** `${bookCode}/${loanId}/${twoDigitYear}` — the loan id makes it unique. */
 async function generatePickupCode(
@@ -212,6 +214,13 @@ export const Loan: CollectionConfig = {
       },
     ],
     afterChange: [
+      // A loan request is the member's own action however it arrives — they
+      // write it themselves, or an admin/seed writes it *for* them — so the
+      // event names the row's owner, not the performing session (#178).
+      memberEventOnCreate(MemberEventAction.LoanRequested, (doc) => ({
+        type: 'book',
+        id: resolveRelationId(doc.book),
+      })),
       async ({ doc, req, operation, previousDoc, context }) => {
         if (context?.[SKIP_LOAN_LIFECYCLE]) return doc
         if (operation === 'create' && doc.status === 'pending') {
