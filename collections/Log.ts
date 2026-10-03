@@ -14,6 +14,13 @@ export const LogAction = {
   ActivityDeleted: 'activity_deleted',
   ActivityAttendance: 'activity_attendance',
   ReviewDeleted: 'review_deleted',
+  // #156: copying a review onto the same target is an admin write too, and an
+  // audit trail that skipped it would be a hole exactly where reviews are
+  // curated by hand.
+  ReviewCopied: 'review_copied',
+  // #156: loan duration and borrow limit are enforced from the Settings global,
+  // so changing them changes what every member may do — worth an audit row.
+  LoanSettingsUpdated: 'loan_settings_updated',
   LoanApproved: 'loan_approved',
   LoanRefused: 'loan_refused',
   LoanExpired: 'loan_expired',

@@ -7,13 +7,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Badge } from '@/shared/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import StatCards from '@/components/admin-views/shared/StatCards'
-import { MessageSquareQuote, ThumbsUp, ThumbsDown, Trash2, Star } from 'lucide-react'
+import {
+  BookMarked,
+  MessageSquareQuote,
+  Newspaper,
+  Star,
+  ThumbsDown,
+  ThumbsUp,
+  Copy,
+  Trash2,
+} from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import type { Review, User } from '@/payload-types'
 import {
+  copyReview,
   deleteReview,
   getAdminReviews,
   getReviewKpis,
@@ -58,6 +68,7 @@ export default function ReviewsView({ initialKpis, initialReviews }: ReviewsView
     all: initialReviews,
   })
   const [confirmTarget, setConfirmTarget] = useState<Review | null>(null)
+  const [copyTarget, setCopyTarget] = useState<Review | null>(null)
 
   const activeTarget = (targetType?: ReviewsQuery['targetType']) =>
     targetType === 'article' ? 'article' : targetType === 'book' ? 'book' : 'all'
@@ -93,8 +104,34 @@ export default function ReviewsView({ initialKpis, initialReviews }: ReviewsView
     })
   }
 
+  const handleCopy = () => {
+    const target = copyTarget
+    if (!target) return
+    startTransition(async () => {
+      const result = await copyReview(target.id)
+      if (result.ok) {
+        setCopyTarget(null)
+        toast.success('تم نسخ التقييم')
+        router.refresh()
+        loadSection()
+        loadSection('book')
+        loadSection('article')
+      } else {
+        toast.error(result.error || 'تعذر نسخ التقييم')
+      }
+    })
+  }
+
+  // #156, SPEC §7.10: counts and an average per category, next to the existing
+  // totals. Both categories are always shown even at zero so the pair reads as
+  // "books vs articles", not "what happens to be there".
   const kpiItems = [
     { label: 'إجمالي الآراء', value: kpis.totalReviews, icon: MessageSquareQuote },
+    { label: 'المتوسط العام', value: kpis.averageRating, icon: Star },
+    { label: 'تقييمات الكتب', value: kpis.bookReviews, icon: BookMarked },
+    { label: 'متوسط تقييمات الكتب', value: kpis.bookAverageRating, icon: Star },
+    { label: 'تقييمات المقالات', value: kpis.articleReviews, icon: Newspaper },
+    { label: 'متوسط تقييمات المقالات', value: kpis.articleAverageRating, icon: Star },
     { label: 'آراء إيجابية', value: kpis.positiveReviews, icon: ThumbsUp },
     { label: 'نسبة الآراء الإيجابية', value: `${kpis.positivePercent}%`, icon: ThumbsUp },
     { label: 'نسبة الآراء السلبية', value: `${kpis.negativePercent}%`, icon: ThumbsDown },
@@ -149,14 +186,25 @@ export default function ReviewsView({ initialKpis, initialReviews }: ReviewsView
                     <p className="mt-2 text-sm text-muted-foreground/60">بدون تعليق</p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="حذف التقييم"
-                  onClick={() => setConfirmTarget(review)}
-                >
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="نسخ التقييم"
+                    title="نسخ التقييم"
+                    onClick={() => setCopyTarget(review)}
+                  >
+                    <Copy className="size-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="حذف التقييم"
+                    onClick={() => setConfirmTarget(review)}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )
@@ -226,6 +274,28 @@ export default function ReviewsView({ initialKpis, initialReviews }: ReviewsView
               onClick={() => confirmTarget && handleDelete(confirmTarget)}
             >
               حذف
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* #156, SPEC §7.10: the second admin action. It says up front whose name
+          the copy will carry, because that is what the new row will say. */}
+      <Dialog open={copyTarget !== null} onOpenChange={(open) => !open && setCopyTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>نسخ التقييم</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            سيُنشر نسخة من هذا التقييم على «{copyTarget ? targetTitle(copyTarget).title : ''}»
+            باسمك، ويبقى تقييم العضو الأصلي كما هو.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCopyTarget(null)} disabled={pending}>
+              إلغاء
+            </Button>
+            <Button disabled={pending} onClick={handleCopy}>
+              تأكيد النسخ
             </Button>
           </DialogFooter>
         </DialogContent>

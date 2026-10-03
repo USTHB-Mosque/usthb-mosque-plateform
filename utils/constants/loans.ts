@@ -44,6 +44,14 @@ export const DEFAULT_BORROW_LIMIT = 3
 export const MAX_EXTENSION_DAYS = 21
 
 /**
+ * #156: bounds for the admin loan-configuration form (SPEC §7.9). They live here
+ * with the rest of the loan vocabulary because a `'use server'` module may only
+ * export async functions, and a client component has to be able to read them.
+ */
+export const MAX_LOAN_DURATION_DAYS = 90
+export const MAX_BORROW_LIMIT = 20
+
+/**
  * D1: how long an accepted Loan holds its reserved copy for collection,
  * measured from acceptance. Configurable per platform in Settings.
  */

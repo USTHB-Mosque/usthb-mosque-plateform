@@ -22,6 +22,8 @@ import {
   Log,
   LibraryCard,
   BookRequest,
+  MemberEvent,
+  ArticleRead,
 } from '@/collections'
 import { Settings } from '@/globals'
 import { erasureJobsConfig } from '@/features/users/server/jobs'
@@ -61,12 +63,14 @@ export default buildConfig({
     ActivityFeedback,
     BookFavorite,
     ArticleFavorite,
+    ArticleRead,
     Notification,
     WaitlistEntry,
     LoanExtension,
     Log,
     LibraryCard,
     BookRequest,
+    MemberEvent,
   ],
   globals: [Settings],
   // Same task registry as production so the integration suite can run the

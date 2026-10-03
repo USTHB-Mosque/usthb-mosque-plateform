@@ -420,4 +420,61 @@ describe('getActivityLog', () => {
     )
     expect(labels).toEqual(['رُفض طلب التوثيق'])
   })
+
+  // ---- #178: the member's own events outlive their source rows ----
+
+  it('keeps the favorite event after the favorite row is deleted (#178)', async () => {
+    await seedFixture()
+    await signIn(member)
+
+    // A deleted *target* needs no test here because the schema forbids it:
+    // every source column referencing a book is NOT NULL under an ON DELETE
+    // SET NULL FK (and `reviews` carries an exactly-one-target CHECK), so a
+    // referenced book cannot be deleted at all — `deleteBook` catches that and
+    // tells the admin to archive instead. The reachable lossiness is exactly
+    // the source row going away, which is what this and the next test cover.
+    const req = await boundReq(payload, member)
+    const favorite = await payload.find({
+      collection: 'book-favorites',
+      where: { user: { equals: member.id } },
+      limit: 1,
+      req,
+      overrideAccess: false,
+    })
+    await payload.delete({
+      collection: 'book-favorites',
+      id: favorite.docs[0].id,
+      req,
+      overrideAccess: false,
+    })
+
+    const events = allEvents(await getActivityLog({ page: 1, limit: 50 }))
+    const favorited = events.filter((event) => event.label === 'أضفت كتاباً إلى المفضلة')
+    expect(favorited).toHaveLength(1)
+    // The book itself still exists, so the title resolves at render time.
+    expect(favorited[0].detail).toBe('الفوائد لابن القيم')
+  })
+
+  it('keeps the registration event after the registration row is removed (#178)', async () => {
+    await seedFixture()
+    await signIn(member)
+
+    // Withdrawal keeps the row (a guarded status transition), so the case an
+    // append-only stream must survive is the row going away entirely: an
+    // administrator clearing it. The write is an administrative bypass.
+    const registration = await payload.find({
+      collection: 'activity-registrations',
+      where: { user: { equals: member.id } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    await payload.delete({
+      collection: 'activity-registrations',
+      id: registration.docs[0].id,
+      overrideAccess: true,
+    })
+
+    const events = allEvents(await getActivityLog({ page: 1, limit: 50 }))
+    expect(events.some((event) => event.label === 'سجّلت في نشاط')).toBe(true)
+  })
 })

@@ -274,4 +274,15 @@ describe('AdminDashboard activity log', () => {
 
     expect(screen.getByText(/تسجيل دخول — عنوان الشبكة/)).toBeInTheDocument()
   })
+
+  // #156: the PRD describes a "+145% more than last month" delta on the KPI
+  // cards. Nothing in this codebase ever measured it, so nothing may render a
+  // signed percentage — a card that claims a trend nobody computed is worse than
+  // a card that only counts.
+  it('shows no unmeasured trend percentage on any card', () => {
+    const { container } = renderDashboard({ upcomingPickups: [], recentActivityLogs: [] })
+
+    expect(container.textContent ?? '').not.toMatch(/[+\u2212-]\s*\d+(\.\d+)?\s*%/)
+    expect(container.textContent ?? '').not.toMatch(/145\s*%/)
+  })
 })

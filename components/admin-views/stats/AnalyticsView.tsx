@@ -10,30 +10,21 @@ import {
   Bar,
   AreaChart,
   Area,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   type TooltipContentProps,
 } from 'recharts'
-import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { arDZ } from 'date-fns/locale'
 import { bookCategoriesConfig, bookTypesConfig, BookCategory } from '@/utils/constants/books'
 import { getAdminAnalytics, type AnalyticsResult } from '@/features/admin/server/analytics'
-
-const periodOptions = [
-  { label: 'منذ بداية السنة', months: 12, startOfYear: true },
-  { label: 'آخر 6 أشهر', months: 6 },
-  { label: 'آخر 3 أشهر', months: 3 },
-  { label: 'آخر شهر', months: 1 },
-]
-
-function resolveFrom(months: number, startOfYear: boolean): Date {
-  if (startOfYear) return new Date(new Date().getFullYear(), 0, 1)
-  return new Date()
-}
+import {
+  PERIOD_OPTIONS,
+  resolveFrom,
+  type AnalyticsPeriod,
+} from '@/components/admin-views/stats/periods'
 
 function labelOf(value: string | null, map: Record<string, string>): string {
   if (!value) return 'غير مصنف'
@@ -54,13 +45,26 @@ function CategoryPill({ value }: { value: string | null }) {
   )
 }
 
+/** The word every chart on this screen counts in, unless it says otherwise. */
+const UNIT = 'طلب'
+
+/**
+ * Every card fed by `loans` rows grouped over `loan_date` counts *requests* —
+ * a pending or refused row included — because that is what "the day most people
+ * asked for a book" means. Only the borrowed-books table narrows to collected
+ * copies, and it says so. A monthly chart of loans and a monthly chart of
+ * requests are different numbers, so the label has to say which one this is.
+ */
+const REQUEST_SUBTITLE = 'كل طلبات الإعارة في الفترة — بما فيها الطلبات المرفوضة'
+
 interface ChartTooltipProps {
   active?: boolean
   payload?: TooltipContentProps<number, string>['payload']
   label?: string | number
+  unit?: string
 }
 
-function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
+function ChartTooltip({ active, payload, label, unit = UNIT }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const item = payload[0]
   return (
@@ -68,7 +72,9 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
       <p className="mb-1 font-semibold text-popover-foreground">{label}</p>
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <span className="size-1.5 rounded-full bg-primary-200" />
-        <span>{item.value} طلباً</span>
+        <span>
+          {item.value} {unit}
+        </span>
       </div>
     </div>
   )
@@ -86,105 +92,41 @@ const weekdayLabels: Record<number, string> = {
 
 const WEEKDAY_ORDER = [7, 1, 2, 3, 4, 5, 6]
 
-type WeekdayRow = AnalyticsResult['busiestWeekdays'][number]
+type WeekdayCount = { day: string; count: number }
 
-function fillWeekdays(rows: WeekdayRow[]): Array<{ day: string; requests: number }> {
-  const byDay = new Map(rows.map((row) => [row.weekday, row.requests]))
+/** One weekday row per day of the week, in the RTL order the charts read in. */
+function fillWeekdays(
+  rows: Array<{ weekday: number } & Record<string, number>>,
+  countKey: 'requests' | 'pickups',
+): WeekdayCount[] {
+  const byDay = new Map(rows.map((row) => [row.weekday, row[countKey] ?? 0]))
   return WEEKDAY_ORDER.map((weekday) => ({
     day: weekdayLabels[weekday],
-    requests: byDay.get(weekday) ?? 0,
+    count: byDay.get(weekday) ?? 0,
   }))
 }
 
-function fillHours(
-  rows: AnalyticsResult['busiestHours'],
-): Array<{ hour: string; requests: number }> {
-  const byHour = new Map(rows.map((row) => [row.hour, row.requests]))
-  return Array.from({ length: 10 }, (_, index) => {
-    const hour = index + 8
-    return { hour: `${hour}:00`, requests: byHour.get(hour) ?? 0 }
-  })
+function monthLabel(value: string | Date): string {
+  return format(new Date(value), 'MMM yyyy', { locale: arDZ })
 }
 
-const attendanceDays = [
-  'السبت',
-  'الأحد',
-  'الإثنين',
-  'الثلاثاء',
-  'الأربعاء',
-  'الخميس',
-  'الجمعة',
-] as const
-
-const attendanceByDay: Record<string, { beforeDhuhr: number; beforeAsr: number }> = {
-  السبت: { beforeDhuhr: 12, beforeAsr: 9 },
-  الأحد: { beforeDhuhr: 15, beforeAsr: 10 },
-  الإثنين: { beforeDhuhr: 18, beforeAsr: 14 },
-  الثلاثاء: { beforeDhuhr: 14, beforeAsr: 11 },
-  الأربعاء: { beforeDhuhr: 20, beforeAsr: 16 },
-  الخميس: { beforeDhuhr: 16, beforeAsr: 12 },
-  الجمعة: { beforeDhuhr: 10, beforeAsr: 7 },
+type BookRow = {
+  bookId: number
+  title: string
+  author: string
+  publisher: string | null
+  category: string | null
 }
 
-type BookRow = AnalyticsResult['topRequestedBooks'][number]
-
-const topBorrowedBooks: BookRow[] = [
-  {
-    bookId: 101,
-    title: 'تفسير القرآن العظيم',
-    author: 'ابن كثير الدمشقي',
-    publisher: 'دار طيبة',
-    category: BookCategory.Religious,
-    requests: 64,
-  },
-  {
-    bookId: 102,
-    title: 'صحيح مسلم',
-    author: 'مسلم بن الحجاج النيسابوري',
-    publisher: 'دار إحياء التراث العربي',
-    category: BookCategory.Religious,
-    requests: 57,
-  },
-  {
-    bookId: 103,
-    title: 'الرحيق المختوم',
-    author: 'صفي الرحمن المباركفوري',
-    publisher: 'مكتبة الرشد',
-    category: BookCategory.Religious,
-    requests: 48,
-  },
-  {
-    bookId: 104,
-    title: 'في ظلال القرآن',
-    author: 'سيد قطب',
-    publisher: 'دار الشروق',
-    category: BookCategory.Religious,
-    requests: 41,
-  },
-  {
-    bookId: 105,
-    title: 'مقدمة ابن خلدون',
-    author: 'عبد الرحمن بن خلدون',
-    publisher: 'مؤسسة المعارف',
-    category: BookCategory.Scientific,
-    requests: 35,
-  },
-  {
-    bookId: 106,
-    title: 'الأحياء',
-    author: 'أبو حامد الغزالي',
-    publisher: 'دار المعرفة',
-    category: BookCategory.Religious,
-    requests: 29,
-  },
-]
-
-interface BooksTableProps {
-  books: BookRow[]
+function BooksTable({
+  books,
+  countHeader,
+  countKey,
+}: {
+  books: Array<BookRow & { requests?: number; loans?: number }>
   countHeader: string
-}
-
-function BooksTable({ books, countHeader }: BooksTableProps) {
+  countKey: 'requests' | 'loans'
+}) {
   if (books.length === 0) {
     return <p className="py-6 text-center text-sm text-muted-foreground">لا توجد بيانات</p>
   }
@@ -193,19 +135,19 @@ function BooksTable({ books, countHeader }: BooksTableProps) {
       <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
         <thead>
           <tr className="border-b border-border bg-background-2">
-            <th className="sticky top-0 z-10 w-[32%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+            <th className="sticky top-0 z-10 w-[34%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
               اسم الكتاب
             </th>
-            <th className="sticky top-0 z-10 w-[22%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+            <th className="sticky top-0 z-10 w-[24%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
               المؤلف
             </th>
-            <th className="sticky top-0 z-10 w-[18%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+            <th className="sticky top-0 z-10 w-[20%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
               دار النشر
             </th>
-            <th className="sticky top-0 z-10 w-[15%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+            <th className="sticky top-0 z-10 w-[16%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
               التصنيف
             </th>
-            <th className="sticky top-0 z-10 w-[13%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+            <th className="sticky top-0 z-10 w-[12%] bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
               {countHeader}
             </th>
           </tr>
@@ -222,7 +164,7 @@ function BooksTable({ books, countHeader }: BooksTableProps) {
               <td className="px-4 py-3">
                 <CategoryPill value={book.category} />
               </td>
-              <td className="px-4 py-3">{book.requests}</td>
+              <td className="px-4 py-3">{book[countKey]}</td>
             </tr>
           ))}
         </tbody>
@@ -231,56 +173,156 @@ function BooksTable({ books, countHeader }: BooksTableProps) {
   )
 }
 
-interface BusyDayBarLabelProps {
-  x?: number | string
-  y?: number | string
-  width?: number | string
-  height?: number | string
-  index?: number
-  rows: Array<{ day: string; requests: number }>
+function AnalyticsCard({
+  title,
+  subtitle,
+  children,
+}: React.PropsWithChildren<{ title: string; subtitle?: string }>) {
+  return (
+    <Card className="rounded-2xl border border-border bg-background ring-0">
+      <CardHeader>
+        <CardTitle className="text-lg">{title}</CardTitle>
+        {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col">{children}</CardContent>
+    </Card>
+  )
 }
 
-function BusyDayBarLabel({ x, y, width, height, index, rows }: BusyDayBarLabelProps) {
-  const nx = Number(x)
-  const ny = Number(y)
-  const nw = Number(width)
-  const nh = Number(height)
-  const entry = index == null ? undefined : rows[index]
-  if (
-    !Number.isFinite(nx) ||
-    !Number.isFinite(ny) ||
-    !Number.isFinite(nw) ||
-    !Number.isFinite(nh) ||
-    !entry
-  ) {
-    return null
-  }
-  const barRight = nw >= 0 ? nx + nw : nx
-  const barLeft = nw >= 0 ? nx : nx + nw
-  const cy = ny + nh / 2
+function Empty({ message = 'لا توجد بيانات' }: { message?: string }) {
+  return <p className="py-6 text-center text-sm text-muted-foreground">{message}</p>
+}
+
+/**
+ * The weekday and hour histograms each appear twice — once for loan requests and
+ * once for pickups (SPEC §7.8 asks for both). Same chart, same axes, different
+ * rows and a different unit in the tooltip, so they are one component here
+ * rather than four near-identical blocks.
+ */
+function WeekdayBar({
+  data,
+  unit = UNIT,
+}: {
+  data: Array<{ day: string; value: number }>
+  unit?: string
+}) {
+  if (data.every((row) => row.value === 0)) return <Empty />
   return (
-    <g>
-      <text
-        x={barRight - 8}
-        y={cy}
-        textAnchor="start"
-        dominantBaseline="central"
-        style={{ fontSize: 12, fontWeight: 500 }}
-        fill="#fff"
-      >
-        {entry.day}
-      </text>
-      <text
-        x={barLeft - 8}
-        y={cy}
-        textAnchor="start"
-        dominantBaseline="central"
-        style={{ fontSize: 12 }}
-        fill="var(--foreground)"
-      >
-        {entry.requests}
-      </text>
-    </g>
+    <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+          <XAxis
+            dataKey="day"
+            reversed
+            interval={0}
+            tick={{ style: { fontSize: 10 } }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis width={28} allowDecimals={false} orientation="right" />
+          <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} content={<ChartTooltip unit={unit} />} />
+          <Bar dataKey="value" barSize={28} fill="var(--primary-300)" radius={4} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function HourArea({
+  data,
+  unit = UNIT,
+}: {
+  data: Array<{ hour: string; value: number }>
+  unit?: string
+}) {
+  if (data.every((row) => row.value === 0)) return <Empty />
+  return (
+    <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="hour"
+            reversed
+            interval={0}
+            tick={{ style: { fontSize: 10 } }}
+            tickMargin={8}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis width={28} allowDecimals={false} />
+          <Tooltip content={<ChartTooltip unit={unit} />} />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="var(--primary-300)"
+            fill="var(--primary-200)"
+            fillOpacity={0.4}
+            strokeWidth={2}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function CountBar({ data }: { data: Array<{ category: string; value: number }> }) {
+  if (data.length === 0) return <Empty />
+  return (
+    <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main p-5">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+          <XAxis
+            dataKey="category"
+            reversed
+            interval={0}
+            tick={{ style: { fontSize: 10, fontWeight: 500 } }}
+            tickMargin={8}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis width={28} allowDecimals={false} />
+          <Tooltip
+            cursor={{ fill: 'var(--primary-main-10)' }}
+            content={<ChartTooltip unit={UNIT} />}
+          />
+          <Bar dataKey="value" fill="var(--primary-200)" radius={4} barSize={48} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function MonthArea({ data }: { data: Array<{ month: string; value: number }> }) {
+  if (data.length === 0) return <Empty />
+  return (
+    <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="month"
+            reversed
+            interval={0}
+            tick={{ style: { fontSize: 10 } }}
+            tickMargin={8}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis width={28} allowDecimals={false} />
+          <Tooltip content={<ChartTooltip unit={UNIT} />} />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="var(--primary-300)"
+            fill="var(--primary-200)"
+            fillOpacity={0.4}
+            strokeWidth={2}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -291,46 +333,68 @@ interface AnalyticsViewProps {
 export default function AnalyticsView({ initial }: AnalyticsViewProps) {
   const [pending, startTransition] = useTransition()
   const [data, setData] = useState<AnalyticsResult>(initial)
-  const [period, setPeriod] = useState(periodOptions[0])
-  const [attendanceDay, setAttendanceDay] = useState<string>('الأحد')
+  const [period, setPeriod] = useState<AnalyticsPeriod>(PERIOD_OPTIONS[0])
 
-  const attendance = attendanceByDay[attendanceDay]
-  const attendanceTotal = attendance.beforeDhuhr + attendance.beforeAsr
-  const attendancePieData = [
-    { name: 'قبل العصر', value: attendance.beforeAsr },
-    { name: 'قبل الظهر', value: attendance.beforeDhuhr },
-  ]
-
-  const changePeriod = (option: (typeof periodOptions)[number]) => {
+  const changePeriod = (option: AnalyticsPeriod) => {
     setPeriod(option)
-    const from = resolveFrom(option.months, Boolean(option.startOfYear))
+    const from = resolveFrom(option.months, option.startOfYear)
     startTransition(async () => {
-      const result = await getAdminAnalytics({ from: from.toISOString() })
-      setData(result)
+      setData(await getAdminAnalytics({ from: from.toISOString() }))
     })
   }
 
-  const categoryChartData = data.topTypes.map((row) => ({
+  const typeChartData = data.topTypes.map((row) => ({
     category: labelOf(row.type, bookTypesConfig),
     value: row.requests,
   }))
 
-  const busiestHoursData = fillHours(data.busiestHours)
+  const categoryChartData = data.topCategories.map((row) => ({
+    category: labelOf(row.category, bookCategoriesConfig),
+    value: row.requests,
+  }))
 
-  const busiestWeekdaysData = fillWeekdays(data.busiestWeekdays)
+  const monthlyData = data.monthlyBorrowings.map((row) => ({
+    month: monthLabel(row.month),
+    value: row.loans,
+  }))
+
+  const borrowHourData = Array.from({ length: 10 }, (_, index) => {
+    const hour = index + 8
+    return {
+      hour: `${hour}:00`,
+      value: data.busiestHours.find((row) => row.hour === hour)?.requests ?? 0,
+    }
+  })
+
+  const pickupHourData = Array.from({ length: 24 }, (_, hour) => ({
+    hour: `${hour}:00`,
+    value: data.pickupHours.find((row) => row.hour === hour)?.pickups ?? 0,
+  }))
+
+  const borrowWeekdayData = fillWeekdays(data.busiestWeekdays, 'requests').map((row) => ({
+    day: row.day,
+    value: row.count,
+  }))
+
+  const pickupWeekdayData = fillWeekdays(data.pickupWeekdays, 'pickups').map((row) => ({
+    day: row.day,
+    value: row.count,
+  }))
+
+  const periodLabel = period.startOfYear ? 'منذ بداية السنة الحالية' : `آخر ${period.months} شهراً`
 
   return (
     <div className="flex flex-col gap-6">
-      {/* <Card className="rounded-2xl">
+      <Card className="rounded-2xl">
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
           <p className="text-sm text-muted-foreground">
-            الفترة المحسوبة:{' '}
-            <span className="font-semibold text-foreground">
-              {period.startOfYear ? 'منذ بداية السنة الحالية' : `آخر ${period.months} شهراً`}
+            الفترة المحسوبة: <span className="font-semibold text-foreground">{periodLabel}</span>
+            <span className="ms-2 text-xs">
+              (من {format(new Date(data.from), 'd MMM yyyy', { locale: arDZ })})
             </span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {periodOptions.map((option) => (
+            {PERIOD_OPTIONS.map((option) => (
               <Button
                 key={option.label}
                 size="sm"
@@ -343,201 +407,200 @@ export default function AnalyticsView({ initial }: AnalyticsViewProps) {
             ))}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[repeat(8,1fr)] lg:grid-rows-[auto_400px]">
-        <Card className="rounded-xl border border-border bg-background ring-0 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>الكتب الأكثر طلباً</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BooksTable books={data.topRequestedBooks} countHeader="عدد الطلبات" />
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AnalyticsCard title="الكتب الأكثر طلباً" subtitle="كل الطلبات، بما فيها المرفوضة">
+          <BooksTable books={data.topRequestedBooks} countHeader="الطلبات" countKey="requests" />
+        </AnalyticsCard>
 
-        <Card className="rounded-2xl border border-border bg-background ring-0 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>الأصناف الأكثر قراءة</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col px-5">
-            {categoryChartData.length === 0 ? (
-              <p className="py-6 text-center text-2 text-muted-foreground">لا توجد بيانات</p>
-            ) : (
-              <div className="min-h-0 w-full flex-1 rounded-xl bg-fill-main p-5">
-                <div className="mx-auto h-full w-4/5">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={categoryChartData}
-                      barCategoryGap={8}
-                      margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        <AnalyticsCard
+          title="الكتب الأكثر إعارة"
+          subtitle="الكتب التي خرجت فعلاً من المكتبة (مأخوذة أو مُرجَعة)"
+        >
+          <BooksTable books={data.topBorrowedBooks} countHeader="الإعارات" countKey="loans" />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="تطوّر الإعارات الشهري" subtitle={REQUEST_SUBTITLE}>
+          <MonthArea data={monthlyData} />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="الأصناف الأكثر قراءة" subtitle={REQUEST_SUBTITLE}>
+          <CountBar data={categoryChartData} />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="أكثر أنواع الكتب طلباً" subtitle={REQUEST_SUBTITLE}>
+          <CountBar data={typeChartData} />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="الأيام التي تكثر فيها طلبات الإعارة" subtitle={REQUEST_SUBTITLE}>
+          <WeekdayBar data={borrowWeekdayData} />
+        </AnalyticsCard>
+
+        <AnalyticsCard
+          title="ساعات طلبات الإعارة"
+          subtitle="من 8 صباحاً إلى 6 مساءً — كل الطلبات في الفترة"
+        >
+          <HourArea data={borrowHourData} />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="أيام ذروة الاستلام" subtitle="اليوم الذي قُبل فيه الاستلام لكل إعارة">
+          <WeekdayBar data={pickupWeekdayData} unit="استلام" />
+        </AnalyticsCard>
+
+        <AnalyticsCard title="ساعات ذروة الاستلام" subtitle="على مدار 24 ساعة — وقت قبول الاستلام">
+          <HourArea data={pickupHourData} unit="استلام" />
+        </AnalyticsCard>
+
+        <AnalyticsCard
+          title="المقالات الأكثر تفاعلاً"
+          subtitle="قراءات الأعضاء (كل الفترات) + التقييمات + المفضلة"
+        >
+          {data.topArticleByInteraction ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-base font-medium text-card-foreground">
+                «{data.topArticleByInteraction.title}»
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="rounded-lg bg-primary-main-15 text-primary-300">
+                  {data.topArticleByInteraction.reads} قراءة
+                </Badge>
+                <Badge className="rounded-lg bg-primary-main-15 text-primary-300">
+                  {data.topArticleByInteraction.reviews} تقييم
+                </Badge>
+                <Badge className="rounded-lg bg-primary-main-15 text-primary-300">
+                  {data.topArticleByInteraction.favorites} في المفضلة
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <Empty message="لا يوجد تفاعل على المقالات بعد" />
+          )}
+        </AnalyticsCard>
+
+        <AnalyticsCard
+          title="المقالات الأكثر قراءة"
+          subtitle="القراءات والتقييمات والمفضلة لكل مقال"
+        >
+          {data.articleEngagement.length === 0 ? (
+            <Empty message="لا يوجد تفاعل على المقالات بعد" />
+          ) : (
+            <div className="max-h-96 overflow-auto rounded-xl">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-background-2">
+                    <th className="sticky top-0 z-10 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      المقال
+                    </th>
+                    <th className="sticky top-0 z-10 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      القراءات
+                    </th>
+                    <th className="sticky top-0 z-10 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      التقييمات
+                    </th>
+                    <th className="sticky top-0 z-10 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      المفضلة
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.articleEngagement.map((article) => (
+                    <tr
+                      key={article.articleId}
+                      className="border-b border-border last:border-0 hover:bg-muted/40"
                     >
-                      <XAxis
-                        dataKey="category"
-                        tick={{ style: { fontSize: 8, fontWeight: 500 } }}
-                        tickMargin={8}
-                        reversed
-                        interval={0}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <Tooltip
-                        cursor={{ fill: 'var(--primary-main-10)' }}
-                        content={<ChartTooltip />}
-                      />
-                      <Bar dataKey="value" fill="var(--primary-200)" radius={4} barSize={50} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-xl border border-border bg-background ring-0 lg:col-span-5">
-          <CardHeader>
-            <CardTitle>الأيام التي تكثر فيها طلبات الإعارة</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col">
-            {!busiestHoursData.some((entry) => entry.requests > 0) ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">لا توجد بيانات</p>
-            ) : (
-              <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={busiestHoursData}
-                    margin={{ top: 5, right: 20, bottom: 5, left: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="hour"
-                      reversed
-                      interval={0}
-                      tick={{ style: { fontSize: 10 } }}
-                      tickMargin={8}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} content={<ChartTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="requests"
-                      stroke="var(--primary-300)"
-                      fill="var(--primary-200)"
-                      fillOpacity={0.4}
-                      strokeWidth={2}
-                      activeDot={{ r: 4 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-xl border border-border bg-background ring-0 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>الأيام التي تكثر فيها طلبات الإعارة</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col">
-            {!busiestWeekdaysData.some((entry) => entry.requests > 0) ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">لا توجد بيانات</p>
-            ) : (
-              <div className="min-h-64 w-full flex-1 rounded-xl bg-fill-main">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={busiestWeekdaysData}
-                    layout="vertical"
-                    margin={{ top: 8, right: 8, bottom: 8, left: 32 }}
-                  >
-                    <XAxis type="number" reversed hide />
-                    <YAxis type="category" dataKey="day" hide />
-                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} content={<ChartTooltip />} />
-                    <Bar
-                      dataKey="requests"
-                      barSize={30}
-                      fill="var(--primary-300)"
-                      radius={4}
-                      label={(props: Omit<BusyDayBarLabelProps, 'rows'>) => (
-                        <BusyDayBarLabel {...props} rows={busiestWeekdaysData} />
-                      )}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-border bg-background ring-0 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>أوقات المداومة التي يكثر فيها الاستلام</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="flex flex-wrap gap-2">
-              {attendanceDays.map((day) => {
-                const isSelected = day === attendanceDay
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => setAttendanceDay(day)}
-                    className={`rounded-lg border px-3.5 py-1.5 text-sm transition-colors ${
-                      isSelected
-                        ? 'border-transparent bg-primary-200 font-medium text-primary-foreground'
-                        : 'border-border bg-background text-muted-foreground hover:bg-background-2'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                )
-              })}
+                      <td className="truncate px-4 py-3 font-medium text-card-foreground">
+                        {article.title}
+                      </td>
+                      <td className="px-4 py-3">{article.reads}</td>
+                      <td className="px-4 py-3">{article.reviews}</td>
+                      <td className="px-4 py-3">{article.favorites}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          )}
+        </AnalyticsCard>
 
-            <p className="text-right text-sm text-muted-foreground">
-              عدد الاستلامات الإجمالي:{' '}
-              <span className="font-semibold text-foreground">{attendanceTotal}</span>
-            </p>
+        <AnalyticsCard title="الأنشطة الأكثر تسجيلاً" subtitle="عدد التسجيلات في الفترة">
+          {data.activityRegistrations.length === 0 ? (
+            <Empty message="لا توجد تسجيلات في هذه الفترة" />
+          ) : (
+            <div className="max-h-96 overflow-auto rounded-xl">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-background-2">
+                    <th className="sticky top-0 z-10 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      النشاط
+                    </th>
+                    <th className="sticky top-0 z-10 w-32 bg-background-2 px-4 py-3 text-right font-medium text-muted-foreground">
+                      التسجيلات
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.activityRegistrations.map((activity) => (
+                    <tr
+                      key={activity.activityId}
+                      className="border-b border-border last:border-0 hover:bg-muted/40"
+                    >
+                      <td className="truncate px-4 py-3 font-medium text-card-foreground">
+                        {activity.title}
+                      </td>
+                      <td className="px-4 py-3">{activity.registrations}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </AnalyticsCard>
 
-            <div className="h-72 w-full rounded-xl bg-background">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={attendancePieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="70%"
+        <AnalyticsCard title="آراء الأنشطة" subtitle="تغذية راجعة إيجابية مقابل سلبية">
+          {data.activityFeedback.length === 0 ? (
+            <Empty message="لا توجد تغذية راجعة في هذه الفترة" />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-3 rounded-[3px] bg-[var(--primary-500)]" />
+                  إيجابي:{' '}
+                  <span className="font-semibold text-foreground">
+                    {data.activityFeedback.reduce((sum, row) => sum + row.positive, 0)}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="size-3 rounded-[3px] bg-destructive" />
+                  سلبي:{' '}
+                  <span className="font-semibold text-foreground">
+                    {data.activityFeedback.reduce((sum, row) => sum + row.negative, 0)}
+                  </span>
+                </span>
+              </div>
+              <ul className="flex flex-col divide-y divide-border">
+                {data.activityFeedback.map((activity) => (
+                  <li
+                    key={activity.activityId}
+                    className="flex items-center justify-between gap-3 py-3"
                   >
-                    <Cell fill="var(--primary-500)" />
-                    <Cell fill="var(--primary-200)" />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+                    <span className="truncate text-sm font-medium text-card-foreground">
+                      {activity.title}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                      <Badge className="rounded-lg bg-[#00FF92]/15 text-[#0B7A4B] dark:text-[#7dffc4]">
+                        {activity.positive} إيجابي
+                      </Badge>
+                      <Badge className="rounded-lg bg-destructive/10 text-destructive">
+                        {activity.negative} سلبي
+                      </Badge>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-3 rounded-[3px] bg-[var(--primary-500)]" />
-                قبل العصر
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="size-3 rounded-[3px] bg-[var(--primary-200)]" />
-                قبل الظهر
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-xl border border-border bg-background ring-0 lg:col-span-5">
-          <CardHeader>
-            <CardTitle>الكتب الأكثر إعارة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BooksTable books={topBorrowedBooks} countHeader="عدد الإعارات" />
-          </CardContent>
-        </Card>
+          )}
+        </AnalyticsCard>
       </div>
     </div>
   )

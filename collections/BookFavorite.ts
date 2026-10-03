@@ -1,6 +1,9 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
@@ -43,6 +46,14 @@ export const BookFavorite: CollectionConfig = {
     },
   ],
   hooks: {
+    afterChange: [
+      // The favorite row is deletable by design; the record that the member
+      // once added the book is not (#178).
+      memberEventOnCreate(MemberEventAction.BookFavorited, (doc) => ({
+        type: 'book',
+        id: resolveRelationId(doc.book),
+      })),
+    ],
     beforeValidate: [
       async ({ data, req, operation }) => {
         if (operation !== 'create' || !data?.book) return

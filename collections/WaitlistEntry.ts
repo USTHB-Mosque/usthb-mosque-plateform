@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 /**
  * FIFO waitlist for a book (#19). Rows are only ever written through the loan
@@ -21,6 +24,14 @@ export const WaitlistEntry: CollectionConfig = {
     delete: ({ req: { user } }) => isAdmin(user),
   },
   hooks: {
+    afterChange: [
+      // The queue row is admin-managed and can be dropped; the record that the
+      // member joined stays (#178).
+      memberEventOnCreate(MemberEventAction.WaitlistJoined, (doc) => ({
+        type: 'book',
+        id: resolveRelationId(doc.book),
+      })),
+    ],
     beforeChange: [
       async ({ data, req, operation }) => {
         if (operation !== 'create') return data

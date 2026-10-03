@@ -3,6 +3,8 @@ import { isAdmin } from '@/utils/access-helpers'
 import { resolveRelationId } from '@/shared/lib/relations'
 import { createNotification } from '@/features/notifications/server/create-notification'
 import { activityEndTime } from '@/utils/constants/activities'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',
@@ -132,6 +134,13 @@ export const ActivityRegistrations: CollectionConfig = {
       },
     ],
     afterChange: [
+      // Written whatever the row's starting status — including the quota
+      // rejection — because the record that the member signed up is the
+      // member's own action, not an outcome (#178).
+      memberEventOnCreate(MemberEventAction.RegistrationCreated, (doc) => ({
+        type: 'activity',
+        id: resolveRelationId(doc.activity),
+      })),
       async ({ doc, previousDoc, operation, req }) => {
         const activityId = resolveRelationId(doc.activity)
         const counterChanged =

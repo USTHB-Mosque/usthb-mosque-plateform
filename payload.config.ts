@@ -25,6 +25,8 @@ import {
   Log,
   LibraryCard,
   BookRequest,
+  MemberEvent,
+  ArticleRead,
 } from './collections'
 import { Settings } from './globals'
 import { erasureJobsConfig } from './features/users/server/jobs'
@@ -69,12 +71,14 @@ export default buildConfig({
     ActivityFeedback,
     BookFavorite,
     ArticleFavorite,
+    ArticleRead,
     Notification,
     WaitlistEntry,
     LoanExtension,
     Log,
     LibraryCard,
     BookRequest,
+    MemberEvent,
   ],
   globals: [Settings],
   // Two queues, one runner: each feature owns its own schedule below, and this

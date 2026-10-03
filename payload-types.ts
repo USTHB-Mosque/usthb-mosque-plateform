@@ -78,12 +78,14 @@ export interface Config {
     'activity-feedback': ActivityFeedback;
     'book-favorites': BookFavorite;
     'article-favorites': ArticleFavorite;
+    'article-reads': ArticleRead;
     notifications: Notification;
     'waitlist-entries': WaitlistEntry;
     'loan-extensions': LoanExtension;
     logs: Log;
     'library-cards': LibraryCard;
     'book-requests': BookRequest;
+    'member-events': MemberEvent;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -103,12 +105,14 @@ export interface Config {
     'activity-feedback': ActivityFeedbackSelect<false> | ActivityFeedbackSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
+    'article-reads': ArticleReadsSelect<false> | ArticleReadsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'waitlist-entries': WaitlistEntriesSelect<false> | WaitlistEntriesSelect<true>;
     'loan-extensions': LoanExtensionsSelect<false> | LoanExtensionsSelect<true>;
     logs: LogsSelect<false> | LogsSelect<true>;
     'library-cards': LibraryCardsSelect<false> | LibraryCardsSelect<true>;
     'book-requests': BookRequestsSelect<false> | BookRequestsSelect<true>;
+    'member-events': MemberEventsSelect<false> | MemberEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -508,6 +512,19 @@ export interface ArticleFavorite {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-reads".
+ */
+export interface ArticleRead {
+  id: number;
+  article: number | Article;
+  user: number | User;
+  readCount: number;
+  lastReadAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "notifications".
  */
 export interface Notification {
@@ -572,6 +589,8 @@ export interface Log {
     | 'activity_deleted'
     | 'activity_attendance'
     | 'review_deleted'
+    | 'review_copied'
+    | 'loan_settings_updated'
     | 'loan_approved'
     | 'loan_refused'
     | 'loan_expired'
@@ -633,6 +652,27 @@ export interface BookRequest {
   description?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   adminNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-events".
+ */
+export interface MemberEvent {
+  id: number;
+  user: number | User;
+  action:
+    | 'loan_requested'
+    | 'extension_requested'
+    | 'waitlist_joined'
+    | 'registration_created'
+    | 'book_favorited'
+    | 'article_favorited'
+    | 'review_created';
+  targetType: string;
+  targetId: string;
+  timestamp: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -806,6 +846,10 @@ export interface PayloadLockedDocument {
         value: number | ArticleFavorite;
       } | null)
     | ({
+        relationTo: 'article-reads';
+        value: number | ArticleRead;
+      } | null)
+    | ({
         relationTo: 'notifications';
         value: number | Notification;
       } | null)
@@ -828,6 +872,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'book-requests';
         value: number | BookRequest;
+      } | null)
+    | ({
+        relationTo: 'member-events';
+        value: number | MemberEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1140,6 +1188,18 @@ export interface ArticleFavoritesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-reads_select".
+ */
+export interface ArticleReadsSelect<T extends boolean = true> {
+  article?: T;
+  user?: T;
+  readCount?: T;
+  lastReadAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "notifications_select".
  */
 export interface NotificationsSelect<T extends boolean = true> {
@@ -1220,6 +1280,19 @@ export interface BookRequestsSelect<T extends boolean = true> {
   description?: T;
   status?: T;
   adminNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-events_select".
+ */
+export interface MemberEventsSelect<T extends boolean = true> {
+  user?: T;
+  action?: T;
+  targetType?: T;
+  targetId?: T;
+  timestamp?: T;
   updatedAt?: T;
   createdAt?: T;
 }

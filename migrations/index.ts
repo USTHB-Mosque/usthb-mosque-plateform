@@ -28,6 +28,8 @@ import * as migration_20260930_030000_member_cancellation from './20260930_03000
 import * as migration_20260930_040000_log_target_indexes from './20260930_040000_log_target_indexes'
 import * as migration_20261001_000000_activity_lifecycle from './20261001_000000_activity_lifecycle'
 import * as migration_20261001_010000_activity_completion_job from './20261001_010000_activity_completion_job'
+import * as migration_20261002_000000_member_events from './20261002_000000_member_events'
+import * as migration_20261002_000000_admin_panel_analytics from './20261002_000000_admin_panel_analytics'
 import * as migration_20261002_000000_library_card_inactive_status from './20261002_000000_library_card_inactive_status'
 
 export const migrations = [
@@ -180,6 +182,16 @@ export const migrations = [
     up: migration_20261001_010000_activity_completion_job.up,
     down: migration_20261001_010000_activity_completion_job.down,
     name: '20261001_010000_activity_completion_job',
+  },
+  {
+    up: migration_20261002_000000_member_events.up,
+    down: migration_20261002_000000_member_events.down,
+    name: '20261002_000000_member_events',
+  },
+  {
+    up: migration_20261002_000000_admin_panel_analytics.up,
+    down: migration_20261002_000000_admin_panel_analytics.down,
+    name: '20261002_000000_admin_panel_analytics',
   },
   {
     up: migration_20261002_000000_library_card_inactive_status.up,
