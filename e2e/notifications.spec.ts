@@ -132,16 +132,25 @@ test.describe('notification bell and inbox', () => {
       .then(() => true)
       .catch(() => false)
     if (pendingVisible) {
+      // #100 reads the borrower's budget before approving, so a member already
+      // holding an unreturned book stops at a warning whose confirm approves
+      // directly — the plain `قبول طلب الإعارة` confirm is never reached.
+      // member1 is seeded with active loans on purpose, so the warning is the
+      // only path here; LoansTable.test.tsx covers the branch without it.
+      const warning = adminPage.getByRole('dialog', { name: 'تنبيه قبل قبول الإعارة' })
       await expect(async () => {
-        await pendingRow
-          .getByRole('button', { name: `قبول طلب ${MEMBER_NAME}` })
-          .click({ timeout: 5_000 })
-        await expect(adminPage.getByRole('dialog', { name: 'قبول طلب الإعارة' })).toBeVisible()
+        // A previous attempt can have left the warning open, and an open modal
+        // hides the table from the a11y tree — so only click accept while it
+        // is closed, or the retry could never resolve the button.
+        if (!(await warning.isVisible().catch(() => false))) {
+          await pendingRow
+            .getByRole('button', { name: `قبول طلب ${MEMBER_NAME}` })
+            .click({ timeout: 5_000 })
+          await expect(warning).toBeVisible()
+        }
+        // exact: the bulk variant's confirm is `قبول الكل`.
+        await warning.getByRole('button', { name: 'قبول', exact: true }).click()
       }).toPass({ timeout: 45_000 })
-      await adminPage
-        .getByRole('dialog', { name: 'قبول طلب الإعارة' })
-        .getByRole('button', { name: 'قبول الطلب' })
-        .click()
       await expect(adminPage.getByText('تم قبول الطلب')).toBeVisible({ timeout: 30_000 })
       approved = true
     }
