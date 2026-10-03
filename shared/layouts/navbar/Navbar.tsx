@@ -32,6 +32,12 @@ const navLinks = [
   { label: 'تواصل معنا', href: '/contact-us' },
 ]
 
+// Eased multi-stop falloff for the navbar's feathered backdrop: the alpha
+// follows a smoothstep curve over the band's last 36px (several breakpoints
+// instead of one straight ramp), so the bottom edge dissolves without a kink.
+const FEATHER_MASK =
+  'linear-gradient(to bottom, black 0, black calc(100% - 36px), rgba(0,0,0,0.93) calc(100% - 30px), rgba(0,0,0,0.74) calc(100% - 24px), rgba(0,0,0,0.5) calc(100% - 18px), rgba(0,0,0,0.26) calc(100% - 12px), rgba(0,0,0,0.07) calc(100% - 6px), transparent 100%)'
+
 const Navbar: React.FC = () => {
   const { data: { user } = { user: undefined } } = useGetProfileQuery()
   const router = useRouter()
@@ -60,11 +66,11 @@ const Navbar: React.FC = () => {
         className={
           mobile
             ? cn(
-                'block text-base font-medium transition-colors',
+                'block text-base font-normal transition-colors',
                 isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
               )
             : cn(
-                'relative text-sm font-medium transition-colors duration-200',
+                'relative text-base font-normal transition-colors duration-200',
                 isActive ? 'text-primary-300' : 'text-foreground hover:text-primary-300',
               )
         }
@@ -81,11 +87,16 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <header
-      dir="rtl"
-      className="sticky top-0 start-0 end-0 z-50 w-full bg-background/20 backdrop-blur "
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-16">
+    <header dir="rtl" className="sticky top-0 start-0 end-0 z-50 w-full">
+      {/* Feathered backdrop: the tint+blur band extends past the navbar and
+          dissolves through FEATHER_MASK's eased multi-stop falloff, so the
+          bottom edge fades softly instead of ending abruptly. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-background/20 backdrop-blur"
+        style={{ maskImage: FEATHER_MASK, WebkitMaskImage: FEATHER_MASK }}
+      />
+      <div className="relative flex items-center justify-between px-6 pt-[20px] pb-[15px] md:px-12 xl:px-[140px]">
         <Link href="/" className="shrink-0">
           <Image
             src="/static/images/logo-horizontal.svg"
@@ -111,11 +122,11 @@ const Navbar: React.FC = () => {
             <>
               <div className="hidden lg:flex flex-col items-end">
                 <p className="text-sm font-bold font-dubai leading-none">{user.fullName}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-xs text-muted-foreground leading-none">{user.email}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger className="outline-none">
-                  <Avatar className="h-9 w-9 border-2 border-primary/10 hover:border-primary/30 transition-all">
+                  <Avatar className="h-7 w-7 border-2 border-primary/10 hover:border-primary/30 transition-all">
                     <AvatarImage src={avatarUrl} alt={media?.alt || 'User profile picture'} />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold">
                       {user?.fullName?.substring(0, 2).toUpperCase()}
@@ -160,7 +171,8 @@ const Navbar: React.FC = () => {
               <LandingCtaButton
                 label="تسجيل الدخول"
                 onClick={() => router.push('/auth/login')}
-                className="[&_span]:text-base"
+                size="sm"
+                className="h-[35px] rounded-[8px] px-8 [&_span]:text-base"
               />
             </div>
           )}
@@ -169,16 +181,16 @@ const Navbar: React.FC = () => {
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted lg:hidden"
+            className="rounded-md p-1 text-foreground transition-colors hover:bg-muted lg:hidden"
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
       <div
         className={cn(
-          'overflow-hidden transition-all duration-300 lg:hidden',
+          'relative overflow-hidden transition-all duration-300 lg:hidden',
           menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0',
         )}
       >
