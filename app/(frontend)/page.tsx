@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import Navbar from '@/shared/layouts/navbar/Navbar'
 import Footer from '@/shared/layouts/Footer'
 import SectionBlock from '@/features/landing/components/SectionBlock'
@@ -330,7 +331,9 @@ const LandingPage: React.FC = () => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isEditableTarget(event.target)) return
       const isDown =
-        event.key === 'ArrowDown' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey)
+        event.key === 'ArrowDown' ||
+        event.key === 'PageDown' ||
+        (event.key === ' ' && !event.shiftKey)
       const isUp =
         event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)
       if (!isDown && !isUp) return
@@ -828,9 +831,13 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/library"
-              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
+              className="group mt-10 flex items-center gap-2 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline transition-all duration-200 hover:border-primary-main-60 hover:bg-primary-main-20 hover:text-primary-200"
             >
               عرض الفهرس الكامل
+              <ArrowLeft
+                size={16}
+                className="shrink-0 transition-transform duration-200 group-hover:-translate-x-1"
+              />
             </Link>
           </div>
         </section>
@@ -853,9 +860,13 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/activities"
-              className="mt-10 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
+              className="group mt-10 flex items-center gap-2 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline transition-all duration-200 hover:border-primary-main-60 hover:bg-primary-main-20 hover:text-primary-200"
             >
               عرض الفهرس الكامل
+              <ArrowLeft
+                size={16}
+                className="shrink-0 transition-transform duration-200 group-hover:-translate-x-1"
+              />
             </Link>
           </div>
         </section>
@@ -906,9 +917,13 @@ const LandingPage: React.FC = () => {
 
             <Link
               href="/articles"
-              className="mt-6 flex items-center gap-1 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-500 no-underline"
+              className="group mt-6 flex items-center gap-2 rounded-lg border border-white bg-primary-main-10 px-6 py-1 text-base font-bold leading-loose text-primary-300 no-underline transition-all duration-200 hover:border-primary-main-60 hover:bg-primary-main-20 hover:text-primary-200"
             >
               عرض الفهرس الكامل
+              <ArrowLeft
+                size={16}
+                className="shrink-0 transition-transform duration-200 group-hover:-translate-x-1"
+              />
             </Link>
           </div>
         </section>
