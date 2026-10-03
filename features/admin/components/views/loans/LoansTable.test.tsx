@@ -33,9 +33,13 @@ vi.mock('@/features/admin/server/loans', () => ({
   sendLoanReminder: (...args: unknown[]) => sendLoanReminder(...args),
 }))
 
+// `booksKeys` now arrives through the same barrel as the rest of the library
+// surface, so it belongs to that mock rather than to a leaf path that is no
+// longer imported.
 vi.mock('@/features/library', () => ({
   LoanStatusBadge: () => null,
   LoanDetailsDialog: () => null,
+  booksKeys: { root: ['books'] },
   // PickupWindowTag reads the palette off this config on the two collection
   // tabs, so a stub without it fails with an unrelated-looking crash.
   statusConfig: {
@@ -46,10 +50,6 @@ vi.mock('@/features/library', () => ({
 
 vi.mock('@/features/admin/api/loans.queries', () => ({
   adminLoansKeys: { root: ['admin-loans'] },
-}))
-
-vi.mock('@/features/library/api/books.queries', () => ({
-  booksKeys: { root: ['books'] },
 }))
 
 import LoansTable from './LoansTable'

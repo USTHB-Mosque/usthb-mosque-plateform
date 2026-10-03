@@ -88,17 +88,23 @@ type SideLinkProps = {
  * The number sighted users read at a glance, and the phrase a screen reader
  * announces — a bare "4" beside an icon says nothing about what is waiting.
  * The count itself is `aria-hidden` so the number is not read twice.
+ *
+ * `size` only varies the type scale; the caller owns placement, because the
+ * desktop rail wants the badge pushed to the row's end and the mobile chip row
+ * wants it sitting against the label.
  */
-const NavBadge: React.FC<{ count: number; label: string; className?: string }> = ({
+const NavBadge: React.FC<{ count: number; label: string; size: string; className?: string }> = ({
   count,
   label,
+  size,
   className,
 }) => (
   <span
     className={cn(
       'shrink-0 rounded-full px-1.5 py-0.5 font-bold tabular-nums',
       'bg-primary-main-20 text-primary-300',
-      className ?? 'ms-auto text-[11px]',
+      size,
+      className,
     )}
   >
     <span aria-hidden="true">{count}</span>
@@ -109,8 +115,12 @@ const NavBadge: React.FC<{ count: number; label: string; className?: string }> =
 const badgeLabelFor = (item: AdminNavItem, count: number) =>
   `${count} ${item.badgeLabel ?? 'عناصر بانتظار القرار'}`
 
+/** A zero count is not worth a badge; a missing one means "we never asked". */
+const visibleBadge = (count?: number) => (count && count > 0 ? count : null)
+
 const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested, badge }) => {
   const Icon = item.icon
+  const pending = visibleBadge(badge)
   return (
     <Link
       href={item.href}
@@ -125,7 +135,14 @@ const SideLink: React.FC<SideLinkProps> = ({ item, active, collapsed, nested, ba
     >
       <Icon className={cn('shrink-0', collapsed ? 'size-5' : 'size-[18px]')} />
       {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
-      {!!badge && badge > 0 && <NavBadge count={badge} label={badgeLabelFor(item, badge)} />}
+      {pending && (
+        <NavBadge
+          count={pending}
+          label={badgeLabelFor(item, pending)}
+          size="text-[11px]"
+          className="ms-auto"
+        />
+      )}
     </Link>
   )
 }
@@ -316,6 +333,7 @@ const MobileTopbar: React.FC<{ role?: string; badges?: Record<string, number> }>
             {flatNav.map((item) => {
               const Icon = item.icon
               const active = adminNavHelpers.isActive(item, pathname)
+              const pending = visibleBadge(badges?.[item.href])
               return (
                 <Link
                   key={item.href}
@@ -329,11 +347,11 @@ const MobileTopbar: React.FC<{ role?: string; badges?: Record<string, number> }>
                 >
                   <Icon className="size-4" />
                   <span>{item.label}</span>
-                  {!!badges?.[item.href] && badges[item.href] > 0 && (
+                  {pending && (
                     <NavBadge
-                      count={badges[item.href]}
-                      label={badgeLabelFor(item, badges[item.href])}
-                      className="text-[10px]"
+                      count={pending}
+                      label={badgeLabelFor(item, pending)}
+                      size="text-[10px]"
                     />
                   )}
                 </Link>

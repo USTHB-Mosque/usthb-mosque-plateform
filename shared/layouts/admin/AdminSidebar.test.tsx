@@ -36,13 +36,13 @@ describe('AdminSidebar loan badge', () => {
   it('shows the pending count on الإعارات (#65)', () => {
     renderSidebar({ [LOANS_HREF]: 4 })
 
-    expect(screen.getAllByText('4 إعارات بانتظار القرار').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('4 إعارات بانتظار الموافقة').length).toBeGreaterThan(0)
   })
 
   it('hides the badge entirely on a quiet desk', () => {
     renderSidebar({ [LOANS_HREF]: 0 })
 
-    expect(screen.queryByText(/بانتظار القرار/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/بانتظار الموافقة/)).not.toBeInTheDocument()
   })
 
   it('carries the badge on both the desktop rail and the mobile chip row', () => {
@@ -50,13 +50,13 @@ describe('AdminSidebar loan badge', () => {
     // absent on mobile is the same inconsistency #164 raises for the portal.
     renderSidebar({ [LOANS_HREF]: 3 })
 
-    expect(screen.getAllByText('3 إعارات بانتظار القرار')).toHaveLength(2)
+    expect(screen.getAllByText('3 إعارات بانتظار الموافقة')).toHaveLength(2)
   })
 
   it('keeps the visible count but hides it from the announcement', () => {
     renderSidebar({ [LOANS_HREF]: 7 })
 
-    for (const phrase of screen.getAllByText('7 إعارات بانتظار القرار')) {
+    for (const phrase of screen.getAllByText('7 إعارات بانتظار الموافقة')) {
       expect(phrase).toHaveClass('sr-only')
     }
 
@@ -67,6 +67,23 @@ describe('AdminSidebar loan badge', () => {
       .getAllByText('7')
       .filter((el) => el.getAttribute('aria-hidden') === 'true')
     expect(digits).toHaveLength(2)
+  })
+
+  it('pins the badge to the rail row but not to the mobile chip', () => {
+    // The badge takes its placement from the caller: the desktop rail pushes it
+    // to the far end of the row, while the mobile chip row keeps it against the
+    // label — `ms-auto` there would tear the chip away from its own text. The
+    // implementation used to default the placement and let a caller-supplied
+    // class replace the whole list, which made each caller's intent implicit.
+    renderSidebar({ [LOANS_HREF]: 2 })
+
+    const pinnedIn = (container: HTMLElement) =>
+      Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) =>
+        el.parentElement?.className.includes('ms-auto'),
+      ).length
+
+    expect(pinnedIn(screen.getByRole('complementary'))).toBe(1)
+    expect(pinnedIn(screen.getByRole('banner'))).toBe(0)
   })
 
   it('still renders the whole main nav when badges are omitted', () => {

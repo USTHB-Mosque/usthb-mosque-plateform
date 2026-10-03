@@ -32,8 +32,11 @@ vi.mock('@/features/library', () => ({
     ) : null,
 }))
 
-vi.mock('@/features/profile/components/dashboard/CalendarWidget', () => ({
-  default: () => <div data-testid="calendar" />,
+// The dashboard reads the calendar through the profile barrel, not the leaf —
+// mocking the leaf would leave the real barrel (and the server modules it
+// re-exports, which pull in payload.config) to load for real.
+vi.mock('@/features/profile', () => ({
+  CalendarWidget: () => <div data-testid="calendar" />,
 }))
 
 vi.mock('./calendar-events', () => ({ buildCalendarEvents: () => [] }))

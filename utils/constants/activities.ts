@@ -35,20 +35,17 @@ export type ActivityLifecycle = { label: string; className: string }
 export function activityLifecycleStatus(
   activity: Pick<Activity, 'startDate' | 'endDate' | 'schedules' | 'kind' | 'openForRegistration'>,
 ): ActivityLifecycle {
+  // قائم and قادم differ in wording but share a bed: both are "not finished",
+  // and a third colour for them would be decoration, not information.
+  const tealBed = 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg'
+
   if (activityEndTime(activity) < Date.now())
     return { label: 'مكتمل', className: 'bg-muted text-muted-foreground rounded-lg' }
   if (activity.openForRegistration)
     return { label: 'قائم', className: 'bg-[#00FF92] text-[#243245] rounded-lg' }
   const started = activity.startDate ? new Date(activity.startDate).getTime() < Date.now() : false
-  if (started)
-    return {
-      label: 'قائم',
-      className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg',
-    }
-  return {
-    label: 'قادم',
-    className: 'bg-[#0DEAC2]/10 text-[#0AAFC2] dark:text-[#4dedff] rounded-lg',
-  }
+  if (started) return { label: 'قائم', className: tealBed }
+  return { label: 'قادم', className: tealBed }
 }
 export enum ActivityType {
   Aqidah = 'aqidah',
