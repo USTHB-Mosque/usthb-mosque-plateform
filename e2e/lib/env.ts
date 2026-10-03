@@ -34,6 +34,13 @@ export const E2E_MAILPIT_API_URL = `http://127.0.0.1:${E2E_MAILPIT_API_PORT}`
 // e2e database). Canonical mode (default): migrate + build + start.
 export const E2E_DEV = process.env.E2E_DEV === '1'
 
+// Opt out of the visual-regression project. Pixel baselines are host-dependent
+// (font rasterisation, skia output, the runner's installed font set), so CI —
+// which runs on a different machine from the one that generated the baselines —
+// sets this and keeps the behavioural specs as its gate. See
+// e2e/lib/projects.ts.
+export const E2E_SKIP_VISUAL = process.env.E2E_SKIP_VISUAL === '1'
+
 export function e2eDatabaseUrl(): string {
   const base = process.env.DATABASE_URL
   if (!base) {
