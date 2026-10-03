@@ -23,9 +23,13 @@ import ErrorData from '@/shared/common/ErrorData'
 import BooksTable from '@/features/library/components/BooksTable'
 import BooksTableSkeleton from '@/features/library/components/BooksTableSkeleton'
 import ViewSwitch, { CatalogView } from '@/features/library/components/ViewSwitch'
+import { useMediaQuery } from '@/shared/hooks/use-media-query'
 
 const LibraryMemberPage: React.FC = () => {
   const [view, setView] = useState<CatalogView>('grid')
+  // #164: below md the switch is hidden, so the grid is the only view.
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const effectiveView: CatalogView = isDesktop ? view : 'grid'
 
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
     initialValues: {
@@ -140,7 +144,7 @@ const LibraryMemberPage: React.FC = () => {
               resetValue: '',
             },
           ]}
-          actions={<ViewSwitch view={view} onViewChange={setView} />}
+          actions={<ViewSwitch view={effectiveView} onViewChange={setView} />}
           filterButtonClassName="bg-card"
         />
       </div>
@@ -153,7 +157,7 @@ const LibraryMemberPage: React.FC = () => {
           emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
           errorFallback={<ErrorData />}
           loader={
-            view === 'grid' ? (
+            effectiveView === 'grid' ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 12 }).map((_, index) => (
                   <BookCardSkeleton key={index} />
@@ -164,7 +168,7 @@ const LibraryMemberPage: React.FC = () => {
             )
           }
         >
-          {view === 'grid' ? (
+          {effectiveView === 'grid' ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} href={`/user/library/book/${book.id}`} />

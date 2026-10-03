@@ -13,7 +13,8 @@ type ViewSwitchProps = {
 
 const ViewSwitch: React.FC<ViewSwitchProps> = ({ view, onViewChange }) => {
   return (
-    <div className="flex h-10 shrink-0 items-center gap-1 rounded-lg bg-background-2 p-1">
+    // #164: phones get the grid only — the switch hides below md.
+    <div className="hidden h-10 shrink-0 items-center gap-1 rounded-lg bg-background-2 p-1 md:flex">
       <SwitchButton
         active={view === 'grid'}
         label="عرض شبكة"
