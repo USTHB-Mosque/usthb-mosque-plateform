@@ -93,7 +93,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
       tabIndex={0}
       role="link"
     >
-      <div className="relative aspect-[16/9] w-full flex-none shrink-0 overflow-hidden border-b border-b-stroke-grey bg-cover bg-[50%_50%] sm:h-full sm:w-[45%] sm:max-w-[500px] sm:aspect-auto sm:border-e sm:border-b-0 sm:border-e-stroke-grey">
+      {/* #164: no sm:h-full — the card only has min-h, so a percentage
+          height collapses to 0 and hides the photo above 640px. Flex
+          stretch on the row gives the image the card's real height. */}
+      <div className="relative aspect-[16/9] w-full flex-none shrink-0 overflow-hidden border-b border-b-stroke-grey bg-cover bg-[50%_50%] sm:w-[45%] sm:max-w-[500px] sm:aspect-auto sm:border-e sm:border-b-0 sm:border-e-stroke-grey">
         {imageUrl && (
           <Image
             src={imageUrl}
