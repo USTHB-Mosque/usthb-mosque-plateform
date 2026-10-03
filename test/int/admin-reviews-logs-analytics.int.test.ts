@@ -8,7 +8,12 @@ import { createTestLoan } from '../lib/factories'
 import { createTestUser, loginToken } from '../lib/seed'
 import { clearNextContext, makeAuthHeaders, setNextHeaders } from '../lib/next-stubs'
 import { getAdminAnalytics } from '@/features/admin/server/analytics'
-import { deleteReview, getAdminReviews, getReviewKpis } from '@/features/admin/server/reviews'
+import {
+  copyReview,
+  deleteReview,
+  getAdminReviews,
+  getReviewKpis,
+} from '@/features/admin/server/reviews'
 import { getAdminLogs } from '@/features/admin/server/logs'
 import { LogAction } from '@/features/admin/server/logs-core'
 
@@ -69,6 +74,13 @@ describe('admin reviews (#103)', () => {
       positivePercent: 60,
       negativePercent: 40,
     })
+    // #156: an average per category, from the rows themselves.
+    const kpis = await getReviewKpis()
+    expect(kpis.bookReviews).toBe(5)
+    expect(kpis.articleReviews).toBe(1)
+    expect(kpis.bookAverageRating).toBe(3)
+    expect(kpis.articleAverageRating).toBe(5)
+    expect(kpis.averageRating).toBeCloseTo(20 / 6, 1)
     await expect(getAdminReviews({ targetType: 'article' })).resolves.toMatchObject({
       docs: [expect.objectContaining({ article: expect.anything() })],
       totalDocs: 1,
@@ -76,6 +88,52 @@ describe('admin reviews (#103)', () => {
     await expect(getAdminReviews({ targetType: 'book' })).resolves.toMatchObject({
       totalDocs: 5,
     })
+  })
+
+  it('copies a review onto the same target as the admin and records it', async () => {
+    await loginAs(admin)
+    const book = await createTestBook(payload)
+    const review = await createTestReview(payload, {
+      user: member.id,
+      book: book.id,
+      rating: 5,
+      comment: 'ممتاز',
+    })
+
+    await expect(copyReview(review.id)).resolves.toEqual({ ok: true, reviewId: expect.any(Number) })
+
+    const after = await payload.find({
+      collection: 'reviews',
+      where: { book: { equals: book.id } },
+      depth: 0,
+      overrideAccess: true,
+    })
+    expect(after.totalDocs).toBe(2)
+    expect(after.docs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ user: member.id, comment: 'ممتاز' }),
+        expect.objectContaining({ user: admin.id, rating: 5, comment: 'ممتاز' }),
+      ]),
+    )
+
+    const logs = await payload.find({
+      collection: 'logs',
+      where: { action: { equals: LogAction.ReviewCopied } },
+      overrideAccess: true,
+    })
+    expect(logs.docs).toHaveLength(1)
+    expect(logs.docs[0]).toMatchObject({ targetType: 'book', targetId: String(book.id) })
+
+    // The copy moves the target's denormalised aggregates, so the average the
+    // book shows still matches its rows.
+    const updated = await payload.findByID({
+      collection: 'books',
+      id: book.id,
+      overrideAccess: true,
+    })
+    expect(updated.ratingCount).toBe(2)
+
+    await expect(copyReview(9999)).resolves.toEqual({ ok: false, error: 'التقييم غير موجود' })
   })
 
   it('deletes a review and records the admin action in the append-only event log', async () => {
@@ -190,7 +248,6 @@ describe('admin analytics (#103)', () => {
       title: 'كتاب العقيدة',
       requests: 2,
     })
-    expect(result.busiestDays).toHaveLength(1)
-    expect(result.busiestDays[0].requests).toBe(3)
+    expect(result.monthlyBorrowings.reduce((sum, row) => sum + row.loans, 0)).toBe(3)
   })
 })

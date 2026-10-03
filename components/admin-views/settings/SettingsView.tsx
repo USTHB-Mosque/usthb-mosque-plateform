@@ -1,10 +1,12 @@
 import React from 'react'
 import type { User } from '@/payload-types'
-import SettingsProfileCard from '@/features/profile/components/settings/SettingsProfileCard'
+import SettingsProfileCard, {
+  type SettingsTab,
+} from '@/features/profile/components/settings/SettingsProfileCard'
 
 type SettingsViewProps = React.PropsWithChildren<{
   user: User
-  activeTab: 'info' | 'security' | 'notifications' | 'shortcuts'
+  activeTab: SettingsTab
 }>
 
 const SettingsView: React.FC<SettingsViewProps> = ({ user, activeTab, children }) => {
@@ -18,6 +20,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ user, activeTab, children }
         activeTab={activeTab}
         hrefBase="/admin-panel/settings"
         hideDeleteAccount
+        // #156: loan configuration is admin-only; the member portal has no such
+        // screen, so the tab is offered here and not there.
+        availableTabs={['info', 'security', 'notifications', 'loans']}
       />
       {children}
     </div>

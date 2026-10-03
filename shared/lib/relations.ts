@@ -11,3 +11,16 @@ export function resolveRelationId(value: unknown): number {
   }
   return Number.NaN
 }
+
+/**
+ * The same relationship, as a document rather than an id. Admin views receive
+ * relations already populated (the query asked for a `depth`), but the same
+ * field reads as a bare number whenever the query did not — so a screen that
+ * wants the title has to handle both, and this is where that decision lives.
+ * `null` means "not populated": the caller decides what to show for it, which
+ * is usually a dash rather than a crash.
+ */
+export function resolveDocument<T extends { id: number }>(value: unknown): T | null {
+  if (value && typeof value === 'object' && 'id' in value) return value as T
+  return null
+}

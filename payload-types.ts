@@ -78,6 +78,7 @@ export interface Config {
     'activity-feedback': ActivityFeedback;
     'book-favorites': BookFavorite;
     'article-favorites': ArticleFavorite;
+    'article-reads': ArticleRead;
     notifications: Notification;
     'waitlist-entries': WaitlistEntry;
     'loan-extensions': LoanExtension;
@@ -104,6 +105,7 @@ export interface Config {
     'activity-feedback': ActivityFeedbackSelect<false> | ActivityFeedbackSelect<true>;
     'book-favorites': BookFavoritesSelect<false> | BookFavoritesSelect<true>;
     'article-favorites': ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
+    'article-reads': ArticleReadsSelect<false> | ArticleReadsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'waitlist-entries': WaitlistEntriesSelect<false> | WaitlistEntriesSelect<true>;
     'loan-extensions': LoanExtensionsSelect<false> | LoanExtensionsSelect<true>;
@@ -510,6 +512,19 @@ export interface ArticleFavorite {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-reads".
+ */
+export interface ArticleRead {
+  id: number;
+  article: number | Article;
+  user: number | User;
+  readCount: number;
+  lastReadAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "notifications".
  */
 export interface Notification {
@@ -574,6 +589,8 @@ export interface Log {
     | 'activity_deleted'
     | 'activity_attendance'
     | 'review_deleted'
+    | 'review_copied'
+    | 'loan_settings_updated'
     | 'loan_approved'
     | 'loan_refused'
     | 'loan_expired'
@@ -825,6 +842,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'article-favorites';
         value: number | ArticleFavorite;
+      } | null)
+    | ({
+        relationTo: 'article-reads';
+        value: number | ArticleRead;
       } | null)
     | ({
         relationTo: 'notifications';
@@ -1160,6 +1181,18 @@ export interface BookFavoritesSelect<T extends boolean = true> {
 export interface ArticleFavoritesSelect<T extends boolean = true> {
   user?: T;
   article?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-reads_select".
+ */
+export interface ArticleReadsSelect<T extends boolean = true> {
+  article?: T;
+  user?: T;
+  readCount?: T;
+  lastReadAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
