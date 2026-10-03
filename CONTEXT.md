@@ -132,6 +132,17 @@ Star rating (1-5) + comment, on a **book or an article** - the target is one or 
 On a book it is only allowed for a book the user has loaned. Distinct from the cut Article Feedback above.
 _Avoid_: Rating, feedback (keep "review" for the formal star+comment)
 
+## Member History
+
+**Member Event**:
+One immutable row per action a member performs (loan request, extension, waitlist join, registration,
+book/article favorite, review). Collection: `member-events`, written by hooks on the seven source
+collections; the target is the **content** (book / activity / article) stored as plain text, never a
+snapshot of the title. Append-only like `logs`: a favorite may be un-favorited and a registration
+withdrawn, but the record that it happened does not die with the row that caused it (#178). The
+member's own timeline reads `member-events` + `logs`; it never re-derives from the seven sources.
+_Avoid_: Activity event stream, event sourcing (this is one fixed collection, not a general store)
+
 ## Admin Panels
 
 **Logs**:
