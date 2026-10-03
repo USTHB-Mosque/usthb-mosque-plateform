@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
           <Image
             src="/static/images/logo-icon.svg"
             alt="الشعار"
-            width={32}
+            width={23}
             height={40}
             className="h-10 w-auto md:hidden"
           />

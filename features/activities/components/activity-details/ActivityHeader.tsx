@@ -31,10 +31,10 @@ const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps)
         <Badge className="px-6 py-2 text-xl bg-primary/40 border border-background">
           {activitiesTypesConfig[type]}
         </Badge>
-        <p className="text-background text-3xl font-bold">{title}</p>
+        <p className="text-fill-white text-3xl font-bold">{title}</p>
         <div className="flex gap-2.5">
           <User className="text-primary size-4" />
-          <p className="text-background">تحت إشراف {supervisor}</p>
+          <p className="text-fill-white">تحت إشراف {supervisor}</p>
         </div>
       </div>
     </div>

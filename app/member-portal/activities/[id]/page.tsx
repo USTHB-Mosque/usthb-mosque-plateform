@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import UserPage from '@/shared/layouts/user/UserPage'
-import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import ActivityHeader from '@/features/activities/components/activity-details/ActivityHeader'
 import ActivityInformations from '@/features/activities/components/activity-details/ActivityInformations'
 import ActivityDescription from '@/features/activities/components/activity-details/activity-description/ActivityDescription'
@@ -49,8 +48,7 @@ const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: str
   return (
     <UserPage title="تفاصيل النشاط">
       <div>
-        <ReturnToIndex title="فهرس الأنشطة" value={activity.title} href="/user/activities" />
-
+        {/* #164: no breadcrumb — phone users swipe back. */}
         <div className="mt-6 flex flex-col gap-5 lg:flex-row">
           <div className="flex flex-3 flex-col gap-5">
             <ActivityHeader

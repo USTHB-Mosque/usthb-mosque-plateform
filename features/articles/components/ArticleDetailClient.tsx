@@ -58,7 +58,7 @@ export default function ArticleDetailClient({
 
   return (
     <div className={cn('mx-auto', wide ? 'max-w-6xl' : 'max-w-4xl')}>
-      <h1 className="text-center font-khalid text-2xl font-bold text-secondary md:text-3xl">
+      <h1 className="text-center font-khalid text-2xl font-bold text-foreground md:text-3xl">
         {title}
       </h1>
 

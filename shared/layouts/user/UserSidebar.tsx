@@ -252,7 +252,7 @@ const MobileNavigation: React.FC<{
           <Image
             src="/static/images/logo-icon.svg"
             alt="بوابة المستخدم"
-            width={32}
+            width={23}
             height={40}
             className="h-10 w-auto"
           />
