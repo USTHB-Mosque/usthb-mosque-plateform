@@ -769,6 +769,7 @@ const LandingPage: React.FC = () => {
               cardTitle="«نور الهداية»"
               cardBody="فِي بُيُوتٍ أَذِنَ اللهُ أَنْ تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ يُسَبِّحُ لَهُ فِيهَا بِالْغُدُوِّ وَالْآصَالِ."
               imagePosition="right"
+              ctaHref="/about-us"
             />
           </div>
 
@@ -782,6 +783,7 @@ const LandingPage: React.FC = () => {
               cardBody="المسجد منارة تُنير القلوب بالإيمان وتجمع المسلمين على الخير والمحبة."
               imagePosition="left"
               backgroundColor="#E8F2F8"
+              ctaHref="/library"
               stats={[
                 { value: '5000+', label: 'كتاب ومرجع' },
                 { value: '8+', label: 'نشاط سنوي' },
