@@ -497,6 +497,7 @@ const LandingPage: React.FC = () => {
   }
 
   const beginRecitationRef = useRef(beginRecitation)
+  const prepareAudioRef = useRef(prepareAudio)
   const refCommunity = useReveal<HTMLDivElement>()
   const refMessage = useReveal<HTMLDivElement>()
   const refBooks = useReveal<HTMLElement>()
@@ -505,10 +506,16 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     beginRecitationRef.current = beginRecitation
+    prepareAudioRef.current = prepareAudio
   })
 
   useEffect(() => {
     if (onboardingPhase !== 'done') return
+    // Visitors who skip the splash never run continueToLanding, which is the
+    // only other caller of prepareAudio() — without priming the audio here,
+    // beginRecitation() early-returns and the play button stays disabled
+    // forever. Idempotent: a no-op when the splash already prepared it.
+    prepareAudioRef.current()
     const t1 = window.setTimeout(() => setBgReady(true), 100)
     const t2 = window.setTimeout(() => setTextReady(true), 450)
     const t3 = window.setTimeout(() => setNavReady(true), 1200)
@@ -722,11 +729,15 @@ const LandingPage: React.FC = () => {
               className="absolute inset-0 z-[3]"
               style={{ y: contentY, opacity: contentOpacity }}
             >
+              {/* Phones: no base pull-up — the old -translate-y-[137px]
+                  pushed this block behind the sticky navbar on ≤360×640
+                  viewports (fully hidden at 320×568). ≥sm keeps the
+                  designer's vertical offsets where there's headroom. */}
               <div
                 onAnimationEnd={(event) => {
                   if (event.target === event.currentTarget) setTextSettled(true)
                 }}
-                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 -translate-y-[137px] sm:-translate-y-[105px] 2xl:-translate-y-[148px] ${
+                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 sm:-translate-y-[105px] 2xl:-translate-y-[148px] ${
                   textReady ? (textSettled ? '' : 'hero-text-visible') : 'opacity-0'
                 }`}
               >
@@ -769,6 +780,7 @@ const LandingPage: React.FC = () => {
               cardTitle="«نور الهداية»"
               cardBody="فِي بُيُوتٍ أَذِنَ اللهُ أَنْ تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ يُسَبِّحُ لَهُ فِيهَا بِالْغُدُوِّ وَالْآصَالِ."
               imagePosition="right"
+              ctaHref="/about-us"
             />
           </div>
 
@@ -782,6 +794,7 @@ const LandingPage: React.FC = () => {
               cardBody="المسجد منارة تُنير القلوب بالإيمان وتجمع المسلمين على الخير والمحبة."
               imagePosition="left"
               backgroundColor="#E8F2F8"
+              ctaHref="/library"
               stats={[
                 { value: '5000+', label: 'كتاب ومرجع' },
                 { value: '8+', label: 'نشاط سنوي' },

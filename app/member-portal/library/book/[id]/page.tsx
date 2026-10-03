@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import UserPage from '@/shared/layouts/user/UserPage'
-import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
 import BookDetailedInformation from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
 import BookPreview from '@/features/library/components/book-details/BookPreview'
@@ -41,8 +40,7 @@ const MemberBookDetailsPage = async ({ params }: { params: Promise<{ id: string 
   return (
     <UserPage title="تفاصيل الكتاب">
       <div>
-        <ReturnToIndex title="فهرس الكتب" value={book.title} href="/user/library" />
-
+        {/* #164: no breadcrumb — phone users swipe back. */}
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
           <div className="flex flex-col gap-5 lg:col-span-4 xl:col-span-3">
             <BookPreview

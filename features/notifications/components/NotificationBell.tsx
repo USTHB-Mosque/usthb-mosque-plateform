@@ -17,6 +17,7 @@ import {
 import { getBellState, type BellState } from '@/features/notifications/server/get-notifications'
 import { markNotificationRead } from '@/features/notifications/server/mark-notifications-read'
 import { onBellRefresh } from '@/features/notifications/lib/bell-refresh'
+import { subscribeBellStream } from '@/features/notifications/lib/bell-stream'
 import { NOTIFICATIONS_PAGE } from '@/utils/notifications'
 import { useInitialBellState } from './bell-context'
 
@@ -79,19 +80,12 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
     }
   }, [refetchKey, serverState])
 
-  React.useEffect(() => {
-    // The stream pushes the unread count every 30s (or on change); refetching
-    // the full state keeps the dropdown in sync with server data.
-    const source = new EventSource('/api/notifications/stream')
-    source.addEventListener('unread', refresh)
-    // The inbox nudges the bell on mark-read so the badge drops immediately
-    // instead of waiting for the next tick.
-    return () => {
-      source.close()
-    }
-  }, [refresh])
-
+  // One shared stream serves every bell on the page (#164); it nudges the
+  // bell-refresh bus, which this listener answers with a refetch — the inbox's
+  // mark-read nudge flows through the same bus so the badge drops immediately
+  // instead of waiting for the next tick.
   React.useEffect(() => onBellRefresh(refresh), [refresh])
+  React.useEffect(() => subscribeBellStream(), [])
 
   const markRead = React.useCallback(
     async (id: number, seen: boolean, link: string | null) => {

@@ -286,14 +286,15 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
           <div className="overflow-hidden rounded-lg border border-border bg-card lg:hidden">
             <ul className="divide-y divide-border">
               <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
-                <span className="flex-1 font-medium text-muted-foreground">الكتاب</span>
-                <span className="w-[92px] shrink-0 font-medium text-muted-foreground">
+                <span className="flex-1 whitespace-nowrap font-medium text-muted-foreground">
+                  الكتاب
+                </span>
+                <span className="w-[92px] shrink-0 whitespace-nowrap font-medium text-muted-foreground">
                   تاريخ الإعارة
                 </span>
-                <span className="w-[92px] shrink-0 font-medium text-muted-foreground">
+                <span className="w-[92px] shrink-0 whitespace-nowrap font-medium text-muted-foreground">
                   موعد الإرجاع
                 </span>
-                <span className="size-2 shrink-0" />
               </li>
               {pageItems.map((loan) => {
                 const book = loan.book as Book | undefined
@@ -311,7 +312,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
                     onClick={() => {
                       openLoanDetails(loan)
                     }}
-                    className="flex cursor-pointer items-center justify-between gap-3 bg-background px-4 py-3"
+                    className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-3 ${config.tintClassName}`}
                   >
                     <span className="min-w-0 flex-1 truncate font-medium text-card-foreground">
                       {book?.title || '—'}
@@ -324,11 +325,7 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
                     <span className="w-[92px] shrink-0 text-start text-sm text-muted-foreground">
                       {mobileDueDate ? format(mobileDueDate, 'd MMM yyyy', { locale: arDZ }) : '—'}
                     </span>
-                    <span
-                      className={`size-2 shrink-0 rounded-full ${config.dotClassName}`}
-                      title={config.label}
-                      aria-label={config.label}
-                    />
+                    <span className="sr-only">{config.label}</span>
                   </li>
                 )
               })}
@@ -487,16 +484,6 @@ const LoansTable: React.FC<LoansTableProps> = ({ loans, extensions = [] }) => {
                 })}
               </TableBody>
             </Table>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 lg:hidden">
-            <span className="text-xs font-medium text-muted-foreground">الحالة:</span>
-            {Object.entries(statusConfig).map(([status, config]) => (
-              <span key={status} className="flex items-center gap-1.5 text-xs text-card-foreground">
-                <span className={`inline-block size-2.5 rounded-full ${config.dotClassName}`} />
-                {config.label}
-              </span>
-            ))}
           </div>
 
           {totalPages > 1 ? (

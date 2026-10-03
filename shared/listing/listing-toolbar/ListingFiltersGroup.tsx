@@ -47,7 +47,9 @@ const ListingFiltersGroup: React.FC<ListingFiltersGroupProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    // shrink-0 keeps a group's chips on one line when the toolbar row is a
+    // horizontal scroller (#164); it is inert in the dialog's vertical stack.
+    <div className="flex shrink-0 flex-col gap-4">
       {title || icon ? (
         <div className="flex items-center gap-2.5">
           {icon ? <div className="[&>svg]:w-6 [&>svg]:h-6 [&>svg]:text-primary">{icon}</div> : null}

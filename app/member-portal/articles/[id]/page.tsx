@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import UserPage from '@/shared/layouts/user/UserPage'
-import ReturnToIndex from '@/shared/common/ReturnToIndex'
 import { Media } from '@/payload-types'
 import ArticleDetailClient from '@/features/articles/components/ArticleDetailClient'
 
@@ -23,7 +22,7 @@ const MemberArticleDetailsPage = async ({ params }: { params: Promise<{ id: stri
   return (
     <UserPage title="المقال">
       <div>
-        <ReturnToIndex title="فهرس المقالات" value={article.title} href="/user/articles" />
+        {/* #164: no breadcrumb — phone users swipe back. */}
         <div className="mt-8">
           <ArticleDetailClient
             title={article.title}

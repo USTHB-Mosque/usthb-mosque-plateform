@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { LogOut, Menu, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/shared/lib/utils'
 import {
   userMainNav,
@@ -13,6 +14,7 @@ import {
   type UserNavItem,
 } from '@/shared/layouts/user/nav'
 import { UserSidebarProvider, useUserSidebar } from '@/shared/layouts/user/sidebar-context'
+import { logout } from '@/features/auth'
 import { BellStateProvider } from '@/features/notifications'
 import { NotificationBell } from '@/features/notifications'
 import type { BellState } from '@/features/notifications'
@@ -155,7 +157,7 @@ const SidebarShell: React.FC<UserSidebarProps> = ({
       </aside>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:bg-background-2">
-        <MobileNavigation mainNav={mainNav} userName={userName} userEmail={userEmail} />
+        <MobileNavigation mainNav={mainNav} />
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </div>
@@ -225,13 +227,19 @@ const NavGroup: React.FC<{
 
 const MobileNavigation: React.FC<{
   mainNav: UserNavItem[]
-  userName?: string
-  userEmail?: string
-}> = ({ mainNav, userName, userEmail }) => {
+}> = ({ mainNav }) => {
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
 
   const close = () => setOpen(false)
+
+  const onLogout = async () => {
+    await logout()
+    toast.success('تم تسجيل الخروج بنجاح')
+    close()
+    router.push('/auth/login')
+  }
 
   useEffect(() => {
     if (!open) return
@@ -252,20 +260,23 @@ const MobileNavigation: React.FC<{
           <Image
             src="/static/images/logo-icon.svg"
             alt="بوابة المستخدم"
-            width={32}
+            width={23}
             height={40}
             className="h-10 w-auto"
           />
         </Link>
 
-        <button
-          aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
-          aria-expanded={open}
-          onClick={() => setOpen((prev) => !prev)}
-          className="rounded-md p-2 text-foreground transition-colors hover:bg-muted"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <button
+            aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
+            aria-expanded={open}
+            onClick={() => setOpen((prev) => !prev)}
+            className="rounded-md p-2 text-foreground transition-colors hover:bg-muted"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </header>
 
       <div
@@ -309,23 +320,14 @@ const MobileNavigation: React.FC<{
 
           <motion.div variants={drawerSectionVariants} className="mt-auto flex flex-col gap-3 pt-4">
             <ThemeSwitcher />
-            {userName ? (
-              <div className="rounded-[10px] bg-fill-contrast px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-200 text-sm font-bold text-[#243245]">
-                    {userName.trim().charAt(0) || 'م'}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold font-dubai text-foreground">
-                      {userName}
-                    </p>
-                    {userEmail ? (
-                      <p className="truncate text-[11px] text-grey-500">{userEmail}</p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => void onLogout()}
+              className="flex items-center justify-center gap-1.5 rounded-[10px] border border-border bg-background py-2 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+              <span>تسجيل الخروج</span>
+            </button>
           </motion.div>
         </motion.nav>
       </div>

@@ -16,8 +16,9 @@ interface ActivityHeaderProps {
 const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps) => {
   const media = image as Media
   const imageUrl = getImageUrl(media?.url)
+  // #164: tighter side padding and a smaller title and tag on phones
   return (
-    <div className="flex flex-col h-75 p-8 relative">
+    <div className="flex flex-col h-75 py-8 px-4 sm:px-8 relative">
       <Image
         src={imageUrl}
         alt={media?.alt || 'Activity'}
@@ -28,13 +29,13 @@ const ActivityHeader = ({ title, supervisor, image, type }: ActivityHeaderProps)
       />
       <div className="flex-1" />
       <div className="flex-1 flex flex-col gap-4 z-10">
-        <Badge className="px-6 py-2 text-xl bg-primary/40 border border-background">
+        <Badge className="px-4 py-1 text-base sm:px-6 sm:py-2 sm:text-xl bg-primary/40 border border-background">
           {activitiesTypesConfig[type]}
         </Badge>
-        <p className="text-background text-3xl font-bold">{title}</p>
+        <p className="text-fill-white text-2xl font-bold sm:text-3xl">{title}</p>
         <div className="flex gap-2.5">
           <User className="text-primary size-4" />
-          <p className="text-background">تحت إشراف {supervisor}</p>
+          <p className="text-fill-white">تحت إشراف {supervisor}</p>
         </div>
       </div>
     </div>

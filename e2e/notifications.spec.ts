@@ -132,16 +132,27 @@ test.describe('notification bell and inbox', () => {
       .then(() => true)
       .catch(() => false)
     if (pendingVisible) {
+      // #100/#144: approving reads the borrower's budget first, and a member
+      // already holding a book gets the warning instead of the plain confirm —
+      // its own `قبول` approves outright. A full parallel run leaves the
+      // seeded member holding books, so the journey settles whichever of the
+      // two confirmations the click produces.
+      const warningDialog = adminPage.getByRole('dialog', { name: 'تنبيه قبل قبول' })
+      const confirmDialog = adminPage.getByRole('dialog', { name: 'قبول طلب الإعارة' })
       await expect(async () => {
-        await pendingRow
-          .getByRole('button', { name: `قبول طلب ${MEMBER_NAME}` })
-          .click({ timeout: 5_000 })
-        await expect(adminPage.getByRole('dialog', { name: 'قبول طلب الإعارة' })).toBeVisible()
+        // Re-opening on top of a half-open dialog would only get intercepted.
+        if ((await warningDialog.count()) === 0 && (await confirmDialog.count()) === 0) {
+          await pendingRow
+            .getByRole('button', { name: `قبول طلب ${MEMBER_NAME}` })
+            .click({ timeout: 5_000 })
+        }
+        await expect(warningDialog.or(confirmDialog).first()).toBeVisible({ timeout: 10_000 })
       }).toPass({ timeout: 45_000 })
-      await adminPage
-        .getByRole('dialog', { name: 'قبول طلب الإعارة' })
-        .getByRole('button', { name: 'قبول الطلب' })
-        .click()
+      if ((await warningDialog.count()) > 0) {
+        await warningDialog.getByRole('button', { name: 'قبول', exact: true }).click()
+      } else {
+        await confirmDialog.getByRole('button', { name: 'قبول الطلب' }).click()
+      }
       await expect(adminPage.getByText('تم قبول الطلب')).toBeVisible({ timeout: 30_000 })
       approved = true
     }

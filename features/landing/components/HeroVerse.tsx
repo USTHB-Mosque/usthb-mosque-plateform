@@ -55,11 +55,16 @@ const HeroVerse: React.FC<HeroVerseProps> = ({
         </span>
       </motion.p>
 
+      {/* suppressHydrationWarning: `disabled` tracks client-only audio
+          readiness (recitationReady starts false on both server and client,
+          but rehydrating against an already-started DOM — dev HMR races or
+          extension DOM tweaks — reported a false attribute mismatch). */}
       <button
         aria-label={isRecitationPlaying ? 'إيقاف التلاوة مؤقتًا' : 'تشغيل التلاوة'}
         className="quran-audio-control mt-3"
         disabled={!recitationReady}
         onClick={onToggleRecitation}
+        suppressHydrationWarning
         type="button"
       >
         {isRecitationPlaying ? (
