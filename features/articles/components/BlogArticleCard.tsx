@@ -83,7 +83,8 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
           </div>
           <div className="relative flex w-full flex-none flex-col items-start gap-2 self-stretch">
             <div className="relative flex w-full flex-none items-center justify-center gap-2.5 self-stretch px-4 py-0">
-              <h2 className="relative mt-[-1.00px] flex flex-1 items-center justify-start font-khalid text-xl font-normal leading-[normal] tracking-[0.20px] text-blue-400 line-clamp-1">
+              {/* #164: titles wrap instead of being clipped to one line. */}
+              <h2 className="relative mt-[-1.00px] flex flex-1 items-center justify-start font-khalid text-xl font-normal leading-[normal] tracking-[0.20px] text-blue-400">
                 {title}
               </h2>
             </div>

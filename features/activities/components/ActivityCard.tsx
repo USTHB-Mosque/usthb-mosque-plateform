@@ -84,7 +84,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer sm:h-[320px] sm:flex-row ${className}`}
+      className={`group/activity relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer sm:min-h-[320px] sm:flex-row ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
       onClick={handleOpen}
       onKeyDown={(e) => {
@@ -129,9 +129,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
                 </span>
               </span>
             </div>
+            {/* #164: titles wrap instead of being clipped to one line. */}
             <h2
               id={`activity-title-${activity.id}`}
-              className="relative w-full max-w-full items-center self-start text-2xl leading-[28px] font-khalid text-blue-400 line-clamp-1"
+              className="relative w-full max-w-full items-center self-start text-2xl leading-[28px] font-khalid text-blue-400"
             >
               {activity.title}
             </h2>

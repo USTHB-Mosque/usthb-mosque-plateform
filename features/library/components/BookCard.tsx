@@ -91,7 +91,8 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
         </div>
 
         <div className="relative flex w-full flex-none flex-col items-start gap-0.5 self-stretch">
-          <h2 className="relative mt-[-1.00px] flex w-fit items-center justify-center font-alyamama text-base font-bold leading-[normal] tracking-[0.16px] text-blue-400 line-clamp-1">
+          {/* #164: titles wrap instead of being clipped to one line. */}
+          <h2 className="relative mt-[-1.00px] flex w-fit items-center justify-center font-alyamama text-base font-bold leading-[normal] tracking-[0.16px] text-blue-400">
             {title}
           </h2>
           <div className="relative flex w-full flex-none items-center justify-start gap-2 self-stretch">
