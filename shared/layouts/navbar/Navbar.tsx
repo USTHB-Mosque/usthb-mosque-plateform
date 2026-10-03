@@ -90,10 +90,13 @@ const Navbar: React.FC = () => {
     <header dir="rtl" className="sticky top-0 start-0 end-0 z-50 w-full">
       {/* Feathered backdrop: the tint+blur band extends past the navbar and
           dissolves through FEATHER_MASK's eased multi-stop falloff, so the
-          bottom edge fades softly instead of ending abruptly. */}
+          bottom edge fades softly instead of ending abruptly. The tint is
+          deliberately strong (/70): backdrop-blur alone is invisible over the
+          flat page backgrounds that sit behind the navbar at rest — only the
+          20% wash showed, which read as "no blur effect" (#164). */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-background/20 backdrop-blur"
+        className="pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-background/70 backdrop-blur"
         style={{ maskImage: FEATHER_MASK, WebkitMaskImage: FEATHER_MASK }}
       />
       {/* Phones (#164): row-reversed so the logo sits left and the menu right —
