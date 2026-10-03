@@ -497,6 +497,7 @@ const LandingPage: React.FC = () => {
   }
 
   const beginRecitationRef = useRef(beginRecitation)
+  const prepareAudioRef = useRef(prepareAudio)
   const refCommunity = useReveal<HTMLDivElement>()
   const refMessage = useReveal<HTMLDivElement>()
   const refBooks = useReveal<HTMLElement>()
@@ -505,10 +506,16 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     beginRecitationRef.current = beginRecitation
+    prepareAudioRef.current = prepareAudio
   })
 
   useEffect(() => {
     if (onboardingPhase !== 'done') return
+    // Visitors who skip the splash never run continueToLanding, which is the
+    // only other caller of prepareAudio() — without priming the audio here,
+    // beginRecitation() early-returns and the play button stays disabled
+    // forever. Idempotent: a no-op when the splash already prepared it.
+    prepareAudioRef.current()
     const t1 = window.setTimeout(() => setBgReady(true), 100)
     const t2 = window.setTimeout(() => setTextReady(true), 450)
     const t3 = window.setTimeout(() => setNavReady(true), 1200)
