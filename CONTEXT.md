@@ -24,7 +24,7 @@ Identity document uploaded during registration - either a student card or regist
 _Aavoid_: Card image, student card (too narrow - also accepts registration certificates)
 
 **Verification Status**:
-Three-state field on User: `pending_verification`, `verified`, `rejected`. Admin reviews the verification document and approves or rejects.
+Three-state field on User: `pending_verification`, `verified`, `rejected`. Admin reviews the verification document and approves or rejects. A rejection always carries a reason in `verificationNote` — the collection refuses a `rejected` write without one on every path, including an admin editing the row in `/admin`, because the member is told the reason in the bell and in the email (#145).
 _Avoid_: Account status, approval state
 
 **Verified User**:
@@ -56,8 +56,12 @@ Automatic. Minting happens the moment a user becomes `verified` (`ensureLibraryC
 _Avoid_: Creating cards by hand; "one card per issue of a book"
 
 **Card Status**:
-Three stored states (#145, Figma `cards` 1606:14136): `active` (فعالة — in circulation), `inactive` (غير فعالة — withdrawn but recoverable: lost, being replaced, under review) and `archived` (مأرشفة — retired for good, the member graduated or left). Only `archived` stamps `archivedAt`, and it keeps the first stamp if the card is archived again. The members index reports the four Figma counts: total, active, inactive, archived.
+Three stored states (#145, Figma `cards` 1606:14136): `active` (فعالة — in circulation), `inactive` (غير فعالة — withdrawn but recoverable: lost, being replaced, under review) and `archived` (مأرشفة — retired for good, the member graduated or left). A card is always in exactly one of them; `status` is never null. Only `archived` stamps `archivedAt`, and leaving `archived` clears the stamp, so the date reads as the last time the card left circulation — a redundant re-archive of an untouched card keeps its stamp rather than inventing a second one. The cards index reports the four Figma counts: total, active, inactive, archived.
 _Avoid_: "expired"/"suspended" as separate card states; treating `inactive` and `archived` as the same thing
+
+**Card Transition**:
+Which state a card may move to from where, in `LIBRARY_CARD_TRANSITIONS`: an `active` card can be withdrawn or retired, a withdrawn one reinstated or retired, a retired one only reinstated. The row menu and the `setCardStatus` action read the same table, so the server refuses the moves the UI does not offer.
+_Avoid_: Letting an admin set any status from any status and calling it the same feature
 
 ## Loan Lifecycle
 

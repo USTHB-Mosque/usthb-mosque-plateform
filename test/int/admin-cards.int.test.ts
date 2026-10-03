@@ -236,15 +236,37 @@ describe('the cards admin screen (#145)', () => {
     expect((await cardFor(member.id)).archivedAt).toBeTruthy()
   })
 
-  it('lists verified members as add-card candidates, flagging the ones who hold a card', async () => {
+  it('lists verified members with the real state of the card they hold', async () => {
     await signIn(admin)
     const pending = await createTestUser(payload, { email: 'cards-candidate-pending@usthb.dz' })
+    await setCardStatus((await cardFor(member.id)).id, 'inactive')
 
     const candidates = await getCardCandidates()
 
     expect(candidates.map((candidate) => candidate.email)).toContain(member.email)
-    expect(candidates.find((c) => c.email === member.email)?.hasCard).toBe(true)
+    // A withdrawn card must still show as such, or the picker's "reissue" action
+    // would never be offered for the members who need it.
+    expect(candidates.find((c) => c.email === member.email)?.cardStatus).toBe('inactive')
     expect(candidates.map((candidate) => candidate.email)).not.toContain(pending.email)
+  })
+
+  it('offers the picker a member with no card at all', async () => {
+    await signIn(admin)
+    const cardless = await createTestUser(payload, {
+      email: 'cards-candidate-none@usthb.dz',
+      verified: true,
+    })
+    await payload.delete({
+      collection: 'library-cards',
+      id: (await cardFor(cardless.id)).id,
+      overrideAccess: true,
+    })
+
+    const candidates = await getCardCandidates()
+
+    expect(candidates.find((c) => c.email === 'cards-candidate-none@usthb.dz')).toMatchObject({
+      cardStatus: null,
+    })
   })
 
   it('narrows the candidates by the search term', async () => {
@@ -348,8 +370,8 @@ describe('verification decisions notify the member (#145)', () => {
     })
   }
 
-  async function pendingApplicant() {
-    const applicant = await createTestUser(payload, { email: 'verif-applicant@usthb.dz' })
+  async function pendingApplicant(email = 'verif-applicant@usthb.dz') {
+    const applicant = await createTestUser(payload, { email })
     const media = await createTestMedia(payload, { isPrivate: true, owner: applicant.id })
     await payload.update({
       collection: 'users',
@@ -402,6 +424,83 @@ describe('verification decisions notify the member (#145)', () => {
       const mail = send.mock.calls[0][0] as { html?: string }
       expect(mail.html).toContain('الصورة غير واضحة')
       expect(mail.html).toContain('href="/user/settings"')
+    } finally {
+      send.mockRestore()
+    }
+  })
+
+  it('refuses a rejection with no reason, from the panel and from the Payload admin alike', async () => {
+    const { applicant } = await pendingApplicant()
+    await signIn(admin)
+
+    // The panel action always supplies a reason, defaulting when the dialog is
+    // left empty...
+    await expect(rejectUser(applicant.id)).resolves.toEqual({ ok: true })
+    expect(
+      (
+        await payload.findByID({
+          collection: 'users',
+          id: applicant.id,
+          depth: 0,
+          overrideAccess: true,
+        })
+      ).verificationNote,
+    ).toBe('تم رفض الطلب')
+
+    // ...but writing the status straight onto the collection cannot bypass the
+    // reason, which is what an admin editing the row in /admin would do.
+    const other = await pendingApplicant('verif-applicant-second@usthb.dz')
+    await expect(
+      payload.update({
+        collection: 'users',
+        id: other.applicant.id,
+        data: { verificationStatus: 'rejected' },
+        overrideAccess: true,
+      }),
+    ).rejects.toThrow(/verificationNote/)
+
+    const reread = await payload.findByID({
+      collection: 'users',
+      id: other.applicant.id,
+      depth: 0,
+      overrideAccess: true,
+    })
+    expect(reread.verificationStatus).toBe('pending_verification')
+    expect(reread.verificationNote).toBeFalsy()
+  })
+
+  it('accepts an edit to an already-rejected member that does not resend the reason', async () => {
+    const { applicant } = await pendingApplicant()
+    await signIn(admin)
+    await rejectUser(applicant.id, 'الصورة غير واضحة')
+
+    // The guard reads the stored reason too, so renaming a rejected member does
+    // not trip it.
+    await expect(
+      payload.update({
+        collection: 'users',
+        id: applicant.id,
+        data: { fullName: 'اسم جديد' },
+        overrideAccess: true,
+      }),
+    ).resolves.toMatchObject({ fullName: 'اسم جديد' })
+  })
+
+  it('notifies the member when the decision is taken in the Payload admin, not just the panel', async () => {
+    const { applicant } = await pendingApplicant()
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    try {
+      // No cookie, no server action: the same write an admin makes in /admin.
+      await payload.update({
+        collection: 'users',
+        id: applicant.id,
+        data: { verificationStatus: 'verified' },
+        overrideAccess: true,
+      })
+
+      const notices = await notificationsFor(applicant)
+      expect(notices.docs.some((doc) => doc.title === 'تم توثيق الحساب')).toBe(true)
+      expect(send).toHaveBeenCalledTimes(1)
     } finally {
       send.mockRestore()
     }

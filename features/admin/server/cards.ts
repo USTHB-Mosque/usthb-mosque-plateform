@@ -6,6 +6,7 @@ import type { LibraryCard, User } from '@/payload-types'
 import type { UserSituation } from '@/utils/constants/users'
 import {
   ARCHIVED_CARD_STATUS,
+  canTransitionCard,
   LIBRARY_CARD_STATUS_LABELS,
   type LibraryCardStatus,
 } from '@/utils/constants/library-cards'
@@ -42,18 +43,27 @@ export interface CardActionResult {
   cardId?: string
 }
 
-/** One row in the add-card picker: a verified member and whether they hold a card. */
+/**
+ * One row in the add-card picker: a verified member and the state of the card
+ * they hold. `status` is the card's real state, read from `library-cards` rather
+ * than from the denormalised `users.cardId`, because the two can drift and the
+ * admin has to see the truth: a member whose card was withdrawn still needs the
+ * action, and only a member with an *active* card is blocked.
+ */
 export interface CardCandidate {
   id: number
   fullName: string
   email: string
   situation: UserSituation | null
-  hasCard: boolean
+  cardStatus: LibraryCardStatus | null
 }
 
-const MEMBER_SEARCH_FIELDS = ['fullName', 'firstName', 'lastName', 'email'] as const
-
 const CARDS_ROUTE = '/admin-panel/cards'
+
+/** The picker shows a page of members and narrows further through the search box. */
+const CANDIDATE_PAGE_SIZE = 20
+
+const MEMBER_SEARCH_FIELDS = ['fullName', 'firstName', 'lastName', 'email'] as const
 
 function memberNameFilter(term: string): Where {
   return { or: MEMBER_SEARCH_FIELDS.map((field) => ({ [field]: { contains: term } })) }
@@ -244,6 +254,11 @@ export async function setCardStatus(
 
   const from = card.status
   if (from === status) return { ok: false, error: 'البطاقة في هذه الحالة بالفعل' }
+  // The row menu only offers the moves in the table, so this is the server
+  // refusing the one the UI cannot reach rather than an unknown target.
+  if (!canTransitionCard(from, status)) {
+    return { ok: false, error: 'لا يمكن نقل البطاقة إلى هذه الحالة' }
+  }
 
   await payload.update({
     collection: 'library-cards',
@@ -266,8 +281,8 @@ export async function setCardStatus(
 }
 
 /**
- * The add-card picker: verified members, whether or not they already hold a
- * card, so an admin can see at a glance who is actually missing one.
+ * The add-card picker: verified members and the state of the card each one
+ * holds, so an admin can see at a glance who is genuinely missing one.
  */
 export async function getCardCandidates(search?: string): Promise<CardCandidate[]> {
   const { payload, user } = await getAdminCtx()
@@ -285,16 +300,38 @@ export async function getCardCandidates(search?: string): Promise<CardCandidate[
     where: { and: andFilters },
     sort: 'fullName',
     depth: 0,
-    limit: 20,
+    limit: CANDIDATE_PAGE_SIZE,
     overrideAccess: false,
     user,
   })
 
-  return (result.docs as User[]).map((doc) => ({
+  const members = result.docs as User[]
+  const ids = members.map((doc) => doc.id)
+
+  // One read for the whole page rather than one per member.
+  const cards = ids.length
+    ? await payload.find({
+        collection: 'library-cards',
+        where: { user: { in: ids } },
+        depth: 0,
+        limit: 0,
+        overrideAccess: false,
+        user,
+      })
+    : { docs: [] }
+
+  const statusByMember = new Map<number, LibraryCardStatus>()
+  for (const card of cards.docs as LibraryCard[]) {
+    if (card.user != null && typeof card.user !== 'object') {
+      statusByMember.set(Number(card.user), card.status)
+    }
+  }
+
+  return members.map((doc) => ({
     id: doc.id,
     fullName: doc.fullName ?? '',
     email: doc.email,
     situation: doc.situation ?? null,
-    hasCard: Boolean(doc.cardId),
+    cardStatus: statusByMember.get(doc.id) ?? null,
   }))
 }

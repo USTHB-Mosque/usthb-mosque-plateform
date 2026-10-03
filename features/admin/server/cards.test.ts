@@ -333,6 +333,21 @@ describe('features/admin/server/cards.ts', () => {
       expect(writeLog).not.toHaveBeenCalled()
     })
 
+    it('refuses to pull a retired card back into the withdrawn state', async () => {
+      const findByID = vi.fn().mockResolvedValue({ id: 5, cardId: 'M-00012', status: 'archived' })
+      const update = vi.fn()
+      getAdminCtx.mockResolvedValue({ payload: { findByID, update }, user })
+
+      // `archived` is retired for good: its only way out is reinstatement, so
+      // the row menu never offers this and the server refuses it too.
+      await expect(setCardStatus(5, 'inactive')).resolves.toEqual({
+        ok: false,
+        error: 'لا يمكن نقل البطاقة إلى هذه الحالة',
+      })
+      expect(update).not.toHaveBeenCalled()
+      expect(writeLog).not.toHaveBeenCalled()
+    })
+
     it('reports a card that does not exist', async () => {
       const findByID = vi.fn().mockRejectedValue(new Error('not found'))
       getAdminCtx.mockResolvedValue({ payload: { findByID }, user })
@@ -345,25 +360,21 @@ describe('features/admin/server/cards.ts', () => {
   })
 
   describe('getCardCandidates', () => {
-    it('lists verified members with their current card state', async () => {
-      const find = vi.fn().mockResolvedValue({
-        docs: [
-          {
-            id: 4,
-            fullName: 'كريم عمر',
-            email: 'karim@usthb.dz',
-            cardId: null,
-            situation: 'student',
-          },
-          {
-            id: 9,
-            fullName: 'أمينة بلقاسم',
-            email: 'amina@usthb.dz',
-            cardId: 'M-00009',
-            situation: 'doctoral',
-          },
-        ],
-      })
+    it('lists verified members with the real state of the card they hold', async () => {
+      const find = vi
+        .fn()
+        .mockResolvedValueOnce({
+          docs: [
+            { id: 4, fullName: 'كريم عمر', email: 'karim@usthb.dz', situation: 'student' },
+            {
+              id: 9,
+              fullName: 'أمينة بلقاسم',
+              email: 'amina@usthb.dz',
+              situation: 'doctoral',
+            },
+          ],
+        })
+        .mockResolvedValueOnce({ docs: [{ user: 9, status: 'inactive' }] })
       getAdminCtx.mockResolvedValue({ payload: { find }, user })
 
       await expect(getCardCandidates()).resolves.toEqual([
@@ -372,43 +383,55 @@ describe('features/admin/server/cards.ts', () => {
           fullName: 'كريم عمر',
           email: 'karim@usthb.dz',
           situation: 'student',
-          hasCard: false,
+          cardStatus: null,
         },
         {
           id: 9,
           fullName: 'أمينة بلقاسم',
           email: 'amina@usthb.dz',
           situation: 'doctoral',
-          hasCard: true,
+          cardStatus: 'inactive',
         },
       ])
-      expect(find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: 'users',
-          where: {
-            and: [
-              { deletedAt: { exists: false } },
-              { role: { equals: 'user' } },
-              { verificationStatus: { equals: 'verified' } },
-            ],
-          },
-          sort: 'fullName',
-          limit: 20,
-          depth: 0,
-          overrideAccess: false,
-          user,
-        }),
-      )
+      // The card state comes from library-cards, not the denormalised users copy.
+      expect(find.mock.calls[1][0]).toMatchObject({
+        collection: 'library-cards',
+        where: { user: { in: [4, 9] } },
+        limit: 0,
+      })
     })
 
-    it('falls back to the email when a member never gave a name', async () => {
-      const find = vi.fn().mockResolvedValue({
-        docs: [{ id: 11, fullName: null, email: 'anon@usthb.dz', cardId: null }],
-      })
+    it('does not query cards when no member matched', async () => {
+      const find = vi.fn().mockResolvedValue({ docs: [] })
+      getAdminCtx.mockResolvedValue({ payload: { find }, user })
+
+      await expect(getCardCandidates('nobody')).resolves.toEqual([])
+      expect(find).toHaveBeenCalledTimes(1)
+    })
+
+    it('ignores a card whose user relation came back populated', async () => {
+      const find = vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [{ id: 4, email: 'karim@usthb.dz' }] })
+        .mockResolvedValueOnce({ docs: [{ user: { id: 4 }, status: 'active' }] })
       getAdminCtx.mockResolvedValue({ payload: { find }, user })
 
       await expect(getCardCandidates()).resolves.toEqual([
-        { id: 11, fullName: '', email: 'anon@usthb.dz', situation: null, hasCard: false },
+        { id: 4, fullName: '', email: 'karim@usthb.dz', situation: null, cardStatus: null },
+      ])
+    })
+
+    it('falls back to the email when a member never gave a name', async () => {
+      const find = vi
+        .fn()
+        .mockResolvedValueOnce({
+          docs: [{ id: 11, fullName: null, email: 'anon@usthb.dz' }],
+        })
+        .mockResolvedValueOnce({ docs: [] })
+      getAdminCtx.mockResolvedValue({ payload: { find }, user })
+
+      await expect(getCardCandidates()).resolves.toEqual([
+        { id: 11, fullName: '', email: 'anon@usthb.dz', situation: null, cardStatus: null },
       ])
     })
 

@@ -8,3 +8,10 @@ export const userSituationsConfigArray: { value: UserSituation; label: string }[
   { value: 'teacher', label: 'أستاذ' },
   { value: 'staff', label: 'موظف' },
 ]
+
+export const USER_SITUATION_LABELS: Record<UserSituation, string> = Object.fromEntries(
+  userSituationsConfigArray.map((option) => [option.value, option.label]),
+) as Record<UserSituation, string>
+
+/** What to show for a member whose `situation` was never filled in. */
+export const UNKNOWN_SITUATION_LABEL = '—'

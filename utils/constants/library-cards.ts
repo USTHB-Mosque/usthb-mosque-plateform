@@ -16,7 +16,8 @@
  *   under review. Nothing stops the member borrowing on paper terms; an admin
  *   returns it to `active` when it turns up.
  * - `archived` — retired for good (the member graduated or left). It is the only
- *   state that stamps `archivedAt`.
+ *   state that stamps `archivedAt`, and it is the only state with no way out:
+ *   an archived card is kept for the history, not handed back.
  */
 export const LIBRARY_CARD_STATUSES = [
   { value: 'active', label: 'فعالة' },
@@ -26,13 +27,35 @@ export const LIBRARY_CARD_STATUSES = [
 
 export type LibraryCardStatus = (typeof LIBRARY_CARD_STATUSES)[number]['value']
 
-export const LIBRARY_CARD_STATUS_VALUES: LibraryCardStatus[] = LIBRARY_CARD_STATUSES.map(
-  (status) => status.value,
-)
-
 export const LIBRARY_CARD_STATUS_LABELS: Record<LibraryCardStatus, string> = Object.fromEntries(
   LIBRARY_CARD_STATUSES.map((status) => [status.value, status.label]),
 ) as Record<LibraryCardStatus, string>
 
 /** The retired-for-good state; the only one that keeps an `archivedAt` stamp. */
 export const ARCHIVED_CARD_STATUS = 'archived' as const
+
+/**
+ * Which states each card can move to, and what the admin is told happened.
+ *
+ * The row menu and the server action both read this table so the two can never
+ * disagree about what an admin may do: an archived card has exactly one way out,
+ * and an active one cannot be reinstated because it never left.
+ */
+export const LIBRARY_CARD_TRANSITIONS: Record<
+  LibraryCardStatus,
+  Array<{ to: LibraryCardStatus; label: string; done: string }>
+> = {
+  active: [
+    { to: 'inactive', label: 'سحب البطاقة', done: 'تم سحب البطاقة' },
+    { to: 'archived', label: 'أرشفة البطاقة', done: 'تمت أرشفة البطاقة' },
+  ],
+  inactive: [
+    { to: 'active', label: 'إعادة البطاقة للخدمة', done: 'أُعيدت البطاقة للخدمة' },
+    { to: 'archived', label: 'أرشفة البطاقة', done: 'تمت أرشفة البطاقة' },
+  ],
+  archived: [{ to: 'active', label: 'إعادة البطاقة للخدمة', done: 'أُعيدت البطاقة للخدمة' }],
+}
+
+export function canTransitionCard(from: LibraryCardStatus, to: LibraryCardStatus): boolean {
+  return LIBRARY_CARD_TRANSITIONS[from].some((transition) => transition.to === to)
+}

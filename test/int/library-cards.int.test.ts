@@ -129,10 +129,11 @@ describe('library cards auto-issue per verified user (#19/#101)', () => {
       data: { verificationStatus: 'verified', fullName: 'Updated Again' },
       overrideAccess: true,
     })
+    // A rejection needs a reason (#145); it must not disturb the card either way.
     await payload.update({
       collection: 'users',
       id: user.id,
-      data: { verificationStatus: 'rejected' },
+      data: { verificationStatus: 'rejected', verificationNote: 'بيانات ناقصة' },
       overrideAccess: true,
     })
 

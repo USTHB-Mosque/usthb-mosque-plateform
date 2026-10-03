@@ -41,6 +41,12 @@ it('uploads media through Payload into the S3 store', async () => {
       overrideAccess: true,
     })
 
+    // With a real bucket behind the adapter, `media.url` still points at
+    // Payload's own handler, not at the bucket: that is what makes a private
+    // document readable through the collection's access check rather than
+    // through a direct, unauthorised S3 read (#145).
+    expect(new URL(media.url as string).pathname.startsWith('/api/media/file/')).toBe(true)
+
     try {
       const bucket = process.env.S3_BUCKET || 'media'
       const objects = await client.send(

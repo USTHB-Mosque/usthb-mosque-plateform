@@ -1,10 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
-import {
-  ARCHIVED_CARD_STATUS,
-  LIBRARY_CARD_STATUSES,
-  type LibraryCardStatus,
-} from '@/utils/constants/library-cards'
+import { ARCHIVED_CARD_STATUS, LIBRARY_CARD_STATUSES } from '@/utils/constants/library-cards'
 
 /**
  * Library cards (#101, finished in #145). Cards are issued automatically when a
@@ -33,14 +29,12 @@ export const LibraryCard: CollectionConfig = {
   hooks: {
     beforeChange: [
       ({ data, originalDoc }) => {
-        // On create there is no previous row, so a card born retired is stamped
-        // now and a card born in circulation starts with no stamp. On update an
-        // omitted `status` means "unchanged", not "clear it" — which is exactly
-        // what falling back to the stored status does.
-        const previousStatus: LibraryCardStatus | null = originalDoc ? originalDoc.status : null
-        const nextStatus = data.status ?? previousStatus
-
-        if (nextStatus !== ARCHIVED_CARD_STATUS) return { ...data, archivedAt: null }
+        // Payload hands `beforeChange` the document as it will look *after* the
+        // change, so `data.status` is already the next state and an edit that
+        // never mentions it keeps it. On create it is the field default, which
+        // is `active` — so a card born retired is stamped, and one born in
+        // circulation starts with no stamp.
+        if (data.status !== ARCHIVED_CARD_STATUS) return { ...data, archivedAt: null }
 
         // Re-archiving must not overwrite the original stamp: the card was
         // retired once, and the date that matters is when it left circulation.

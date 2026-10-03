@@ -2,19 +2,16 @@
 
 import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Loader2, Plus, Search, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import { userSituationsConfigArray } from '@/utils/constants/users'
-import { getCardCandidates, issueCard } from '@/features/admin/server/cards'
-import { adminCardsKeys } from '@/features/admin/api/cards.queries'
-
-const SITUATION_LABELS: Record<string, string> = Object.fromEntries(
-  userSituationsConfigArray.map((option) => [option.value, option.label]),
-)
+import { USER_SITUATION_LABELS } from '@/utils/constants/users'
+import { LIBRARY_CARD_STATUS_LABELS } from '@/utils/constants/library-cards'
+import { issueCard } from '@/features/admin/server/cards'
+import { adminCardsKeys, useCardCandidatesQuery } from '@/features/admin/api/cards.queries'
 
 interface AddCardDialogProps {
   open: boolean
@@ -24,9 +21,9 @@ interface AddCardDialogProps {
 /**
  * "إضافة بطاقة" (#145). Cards are minted automatically on verification, so this
  * is the repair flow: pick a verified member and either the one card they were
- * missing is issued, or a withdrawn one is put back in service. A member who
- * already holds an active card is listed but not selectable, so the action the
- * server would refuse is never offered in the first place.
+ * missing is issued, or a withdrawn one is put back in service. Only a member who
+ * already holds an *active* card is blocked, so the action the server would
+ * refuse is never offered in the first place.
  */
 const AddCardDialog: React.FC<AddCardDialogProps> = ({ open, onOpenChange }) => {
   const router = useRouter()
@@ -34,11 +31,7 @@ const AddCardDialog: React.FC<AddCardDialogProps> = ({ open, onOpenChange }) => 
   const [search, setSearch] = useState('')
   const [pending, startTransition] = useTransition()
 
-  const { data: candidates = [], isFetching } = useQuery({
-    queryKey: [...adminCardsKeys.root, 'candidates', search],
-    queryFn: () => getCardCandidates(search),
-    enabled: open,
-  })
+  const { data: candidates = [], isFetching } = useCardCandidatesQuery(search, open)
 
   const close = () => {
     setSearch('')
@@ -99,15 +92,20 @@ const AddCardDialog: React.FC<AddCardDialogProps> = ({ open, onOpenChange }) => 
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {candidate.email}
-                        {candidate.situation ? ` — ${SITUATION_LABELS[candidate.situation]}` : ''}
+                        {candidate.cardStatus
+                          ? ` — بطاقة ${LIBRARY_CARD_STATUS_LABELS[candidate.cardStatus]}`
+                          : ''}
+                        {candidate.situation
+                          ? ` — ${USER_SITUATION_LABELS[candidate.situation]}`
+                          : ''}
                       </p>
                     </div>
                   </div>
 
-                  {candidate.hasCard ? (
+                  {candidate.cardStatus === 'active' ? (
                     <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                       <CheckCircle2 className="size-3.5" />
-                      لديه بطاقة
+                      لديه بطاقة فعالة
                     </span>
                   ) : (
                     <Button
@@ -121,7 +119,7 @@ const AddCardDialog: React.FC<AddCardDialogProps> = ({ open, onOpenChange }) => 
                       ) : (
                         <Plus className="size-4" />
                       )}
-                      إصدار
+                      {candidate.cardStatus ? 'إعادة الإصدار' : 'إصدار'}
                     </Button>
                   )}
                 </li>
