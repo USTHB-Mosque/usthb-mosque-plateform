@@ -336,6 +336,21 @@ Computed **from the DB** (Postgres aggregation) - no external service.
 - Admin actions: delete / copy.
 - KPIs (counts, avg per category).
 
+### 7.11 Library Cards _(New, #145)_
+
+Figma `cards` `1606:14136`. Table: معرف البطاقة, الإسم واللقب, الوضعية, الصورة, تاريخ الإنشاء, الحالة,
+plus a row menu for the state transitions. KPIs: عدد البطاقات, الفعالة, الغير فعالة, المأرشفة. Action:
+إضافة بطاقة.
+
+- **One card per user.** `cardId` is `M-` plus the user id padded to five digits, so it is stable and
+  denormalised onto `users.cardId` for the users table.
+- **Issued automatically** when a user becomes verified. The admin action is a repair, not a mint: it
+  issues the card a verified member is missing, or returns a withdrawn one to service. It never issues a
+  second card for the same person.
+- **Three states:** `active` (in circulation), `inactive` (withdrawn but recoverable), `archived`
+  (retired for good). Only `archived` stamps `archivedAt`.
+- Every decision is written to the activity log (`card_issued`, `card_status_changed`, `card_archived`).
+
 ---
 
 ## 8. Activities - Complete Flows (documented for both views)

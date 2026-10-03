@@ -10,7 +10,6 @@ import {
   UserCheck,
   UserX,
   Trash2,
-  FileText,
   CheckCircle2,
   Loader2,
 } from 'lucide-react'
@@ -23,7 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/shared/ui/separator'
 import type { Media, User } from '@/payload-types'
 import { NO_SHOW_LIMIT } from '@/utils/constants/loans'
-import { getImageUrl } from '@/shared/lib/image-utils'
 import SettingsProfileCard from '@/features/profile/components/settings/SettingsProfileCard'
 import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
 import { approveUser, rejectUser } from '@/features/admin/server/verification'
@@ -31,6 +29,7 @@ import { liftBorrowingBlock, softDeleteUser, updateUserRole } from '@/features/a
 import { usersKeys } from '@/features/users/api/users.queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import CertificatePreview from '@/components/admin-views/verification/CertificatePreview'
 
 const STATUS_LABELS: Record<string, string> = {
   pending_verification: 'قيد الانتظار',
@@ -85,7 +84,6 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   const docMedia = user.verificationDocument as Media | undefined
-  const docUrl = getImageUrl(docMedia?.url)
 
   const displayName =
     user.fullName ||
@@ -201,17 +199,7 @@ const UserDetail: React.FC<UserDetailProps> = ({ user }) => {
               </div>
             ) : null}
 
-            {docUrl ? (
-              <a
-                href={docUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-fit items-center gap-1.5 text-sm text-primary-300 hover:underline"
-              >
-                <FileText className="size-4" />
-                وثيقة التحقق
-              </a>
-            ) : null}
+            <CertificatePreview document={docMedia} />
 
             {status === 'pending_verification' ? (
               <div className="flex flex-wrap items-center gap-2">

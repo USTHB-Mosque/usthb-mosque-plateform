@@ -3,6 +3,7 @@ import {
   Users,
   LibraryBig,
   BookOpen,
+  CreditCard,
   ListOrdered,
   CalendarClock,
   FileText,
@@ -28,6 +29,7 @@ export const adminMainNav: AdminNavItem[] = [
   { label: 'لوحة التحكم', href: '/admin-panel/dashboard', icon: LayoutDashboard },
   { label: 'المستخدمون', href: '/admin-panel/users', icon: Users },
   { label: 'المكتبة', href: '/admin-panel/library', icon: LibraryBig },
+  { label: 'البطاقات', href: '/admin-panel/cards', icon: CreditCard },
   {
     label: 'الإعارات',
     href: '/admin-panel/loans',

@@ -143,7 +143,9 @@ export const User: CollectionConfig = {
             message: verified
               ? 'تم قبول وثيقة التحقق وتوثيق حسابك.'
               : `تم رفض وثيقة التحقق.${doc.verificationNote ? ` السبب: ${doc.verificationNote}.` : ''}`,
-            link: '/user/settings',
+            // A rejected member has a document to re-upload; an approved one has
+            // a library to open. Sending both to settings was a dead end (#145).
+            link: verified ? '/user/library' : '/user/settings',
             emailTemplate: verified
               ? { kind: 'verification-approved' }
               : { kind: 'verification-rejected', reason: doc.verificationNote },

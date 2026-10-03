@@ -588,6 +588,8 @@ export interface Log {
     | 'user_role_changed'
     | 'user_deleted'
     | 'users_imported'
+    | 'card_issued'
+    | 'card_status_changed'
     | 'card_archived';
   targetType?: string | null;
   targetId?: string | null;
@@ -613,7 +615,7 @@ export interface LibraryCard {
   id: number;
   cardId: string;
   user: number | User;
-  status?: ('active' | 'archived') | null;
+  status: 'active' | 'inactive' | 'archived';
   issueDate: string;
   archivedAt?: string | null;
   updatedAt: string;

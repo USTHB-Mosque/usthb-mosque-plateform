@@ -45,6 +45,20 @@ _Aavoid_: Category, genre
 One Book doc with `totalBooks`/`availableBooks` counters. Individual copies are NOT tracked in v1. A copy code is generated at pickup time if needed. Per-copy records deferred to v2.
 _Avoid_: Copy tracking, barcode system
 
+## Library Cards
+
+**Library Card**:
+The `library-cards` row that lets a Verified User borrow. Exactly one per user, and its `cardId` is derived from the user id (`M-` + the id zero-padded to five digits), so the identity is stable and readable. The same id is denormalised onto `users.cardId` for the users table.
+_Avoid_: Membership, subscription
+
+**Card Issuance**:
+Automatic. Minting happens the moment a user becomes `verified` (`ensureLibraryCard`, run from the User hook) and the migration backfilled the rows for everyone verified earlier. The admin "إضافة بطاقة" action is only a repair: it issues the one card a verified member is missing, or puts a withdrawn one back in service. An admin never hands out a second card for the same person.
+_Avoid_: Creating cards by hand; "one card per issue of a book"
+
+**Card Status**:
+Three stored states (#145, Figma `cards` 1606:14136): `active` (فعالة — in circulation), `inactive` (غير فعالة — withdrawn but recoverable: lost, being replaced, under review) and `archived` (مأرشفة — retired for good, the member graduated or left). Only `archived` stamps `archivedAt`, and it keeps the first stamp if the card is archived again. The members index reports the four Figma counts: total, active, inactive, archived.
+_Avoid_: "expired"/"suspended" as separate card states; treating `inactive` and `archived` as the same thing
+
 ## Loan Lifecycle
 
 **Loan**:

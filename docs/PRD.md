@@ -175,7 +175,7 @@ On site borrowing and the librarian view, per copy tracking beyond a pickup code
 
 1. Pickup window length, and what happens when it lapses. Figma shows a pickup date and hour but no expiry rule.
 2. Extension policy: how many per loan, and how close to the due date.
-3. Library cards: are they issued per user automatically, or created by an admin, and what does archived mean.
+3. ~~Library cards: are they issued per user automatically, or created by an admin, and what does archived mean.~~ **Answered in #145.** Cards are issued automatically when a user is verified, never created by hand; there is exactly one per user and its id is `M-` plus the user id. The admin "إضافة بطاقة" action only repairs that — it issues a card a verified member is missing, or returns a withdrawn one to service. `archived` means retired for good (the member graduated or left) and is the only state that stamps `archivedAt`; `inactive` is the recoverable middle state, withdrawn because the card is lost or under review. See "Library Cards" in `CONTEXT.md`.
 4. Overdue: reminder cadence, and whether an overdue loan blocks new requests.
 5. SMTP sender for production.
 6. The user Settings frames show admin sidebar entries (المستخدمون، آراء القرّاء، الإحصائيات). Assumed a copy paste artifact in the design, to confirm with the designer.
