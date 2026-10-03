@@ -47,7 +47,9 @@ const MemberActivityDetailsPage = async ({ params }: { params: Promise<{ id: str
 
   return (
     <UserPage title="تفاصيل النشاط">
-      <div>
+      {/* #164: pb below lg so the fixed registration bar never sits on the
+          schedule or the feedback panel at the end of the scroll. */}
+      <div className="max-lg:pb-24">
         {/* #164: no breadcrumb — phone users swipe back. */}
         <div className="mt-6 flex flex-col gap-5 lg:flex-row">
           <div className="flex flex-3 flex-col gap-5">
