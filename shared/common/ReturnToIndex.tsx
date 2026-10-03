@@ -11,7 +11,8 @@ interface ReturnToIndexProps {
 
 const ReturnToIndex: React.FC<ReturnToIndexProps> = ({ title, value, href }) => {
   return (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+    // #164: phones swipe back — the breadcrumb shows from md up only.
+    <div className="hidden flex-wrap items-center gap-2 sm:gap-3 md:flex">
       {href ? (
         <Link href={href}>
           <span className="text-lg hover:underline sm:text-2xl">{title}</span>

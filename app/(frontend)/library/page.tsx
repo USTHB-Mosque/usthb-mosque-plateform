@@ -1,9 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import LibraryShell from '@/shared/layouts/user/LibraryShell'
-import UserPage from '@/shared/layouts/user/UserPage'
-import { useGetProfileQuery } from '@/features/auth/api/profile.queries'
+import Layout from '@/shared/layouts'
 import { Pagination } from '@/shared/common/Pagination'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import ListingContent from '@/shared/listing/ListingContent'
@@ -25,7 +23,6 @@ import {
 import { Languages, Tag, User } from 'lucide-react'
 
 const LibraryPage: React.FC = () => {
-  const { data: { user } = { user: undefined } } = useGetProfileQuery()
   const { searchValues, values, setValue } = useSearch<BookSearchParams>({
     initialValues: {
       page: 1,
@@ -81,7 +78,6 @@ const LibraryPage: React.FC = () => {
     <ListingContent>
       <ListingToolbar
         onApplyFilters={() => setValue('page', 1)}
-        quickFiltersClassName="hidden lg:flex"
         quickFilterSections={[
           {
             id: 'types-quick',
@@ -164,22 +160,15 @@ const LibraryPage: React.FC = () => {
     </ListingContent>
   )
 
+  // #164: this is a visitor page — it keeps the public shell whether or not
+  // the visitor holds a session (the portal view lives at /user/library).
   return (
-    <LibraryShell user={user}>
-      {user ? (
-        <UserPage
-          title="فهرس الكتب"
-          description="استكشف الكنوز المعرفية والكتب النادرة في مكتبة المسجد."
-        >
-          {listing}
-        </UserPage>
-      ) : (
-        <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
-          {hero}
-          {listing}
-        </div>
-      )}
-    </LibraryShell>
+    <Layout>
+      <div className="flex flex-col space-y-8 sm:space-y-12 lg:space-y-14">
+        {hero}
+        {listing}
+      </div>
+    </Layout>
   )
 }
 

@@ -47,9 +47,11 @@ const BookDetailsPage = async ({
     getUserBookLoanState(book.id),
   ])
 
+  // #164: 16px side margins on phones — the shell's px-6 plus the old px-3
+  // stacked to 36px and squeezed the columns.
   return (
-    <Layout>
-      <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+    <Layout containerClassName="px-4 sm:px-6">
+      <div className="md:px-6 lg:px-8">
         <ReturnToIndex title="فهرس الكتب" value={book.title} href="/library" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-4 lg:mt-6">
