@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getImageUrl } from '@/shared/lib/image-utils'
+import { getImageUrl, getProtectedMediaUrl } from '@/shared/lib/image-utils'
 
 describe('getImageUrl', () => {
   it('returns the fallback for undefined and null', () => {
@@ -31,5 +31,35 @@ describe('getImageUrl', () => {
   it('passes through a real remote URL', () => {
     const url = 'https://media.example.com/media/x.png'
     expect(getImageUrl(url, '/static/images/fallback.png')).toBe(url)
+  })
+})
+
+describe('getProtectedMediaUrl', () => {
+  it('keeps a same-origin Payload media path', () => {
+    const url = '/api/media/file/certificate.png'
+    expect(getProtectedMediaUrl(url)).toBe(url)
+  })
+
+  it('rebuilds an absolute Payload media URL as a same-origin path', () => {
+    expect(getProtectedMediaUrl('https://mosque.example.dz/api/media/file/cert.png')).toBe(
+      '/api/media/file/cert.png',
+    )
+  })
+
+  it('refuses a storage bucket URL', () => {
+    expect(getProtectedMediaUrl('http://127.0.0.1:9000/media/media/cert.png')).toBeNull()
+    expect(getProtectedMediaUrl('https://s3.example.com/bucket/media/cert.png')).toBeNull()
+  })
+
+  it('refuses a missing or malformed URL', () => {
+    expect(getProtectedMediaUrl(undefined)).toBeNull()
+    expect(getProtectedMediaUrl(null)).toBeNull()
+    expect(getProtectedMediaUrl('')).toBeNull()
+    expect(getProtectedMediaUrl('undefined')).toBeNull()
+    expect(getProtectedMediaUrl('/uploads/cert.png')).toBeNull()
+  })
+
+  it('refuses an absolute URL it cannot even parse', () => {
+    expect(getProtectedMediaUrl('http://')).toBeNull()
   })
 })

@@ -1,10 +1,14 @@
 import { CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
+import { ARCHIVED_CARD_STATUS, LIBRARY_CARD_STATUSES } from '@/utils/constants/library-cards'
 
 /**
- * Library cards (#101). Cards are issued automatically when a user is
- * verified (see `utils/library-cards.ts`); the migration backfills the rows
- * for users verified before the feature existed.
+ * Library cards (#101, finished in #145). Cards are issued automatically when a
+ * user is verified (see `utils/library-cards.ts`); the migration backfills the
+ * rows for users verified before the feature existed. The admin "add card"
+ * action only repairs that automatic issue, so there is exactly one card per
+ * member — see `utils/constants/library-cards.ts` for why, and for what each
+ * status means.
  */
 export const LibraryCard: CollectionConfig = {
   slug: 'library-cards',
@@ -21,6 +25,25 @@ export const LibraryCard: CollectionConfig = {
     create: ({ req: { user } }) => isAdmin(user),
     update: ({ req: { user } }) => isAdmin(user),
     delete: ({ req: { user } }) => isAdmin(user),
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, originalDoc }) => {
+        // Payload hands `beforeChange` the document as it will look *after* the
+        // change, so `data.status` is already the next state and an edit that
+        // never mentions it keeps it. On create it is the field default, which
+        // is `active` — so a card born retired is stamped, and one born in
+        // circulation starts with no stamp.
+        if (data.status !== ARCHIVED_CARD_STATUS) return { ...data, archivedAt: null }
+
+        // Re-archiving must not overwrite the original stamp: the card was
+        // retired once, and the date that matters is when it left circulation.
+        return {
+          ...data,
+          archivedAt: originalDoc?.archivedAt ?? new Date().toISOString(),
+        }
+      },
+    ],
   },
   fields: [
     {
@@ -40,12 +63,10 @@ export const LibraryCard: CollectionConfig = {
     {
       name: 'status',
       type: 'select',
+      required: true,
       defaultValue: 'active',
       index: true,
-      options: [
-        { label: 'فعالة', value: 'active' },
-        { label: 'مأرشفة', value: 'archived' },
-      ],
+      options: [...LIBRARY_CARD_STATUSES],
     },
     {
       name: 'issueDate',
@@ -57,7 +78,7 @@ export const LibraryCard: CollectionConfig = {
       name: 'archivedAt',
       type: 'date',
       admin: {
-        condition: ({ siblingData }) => siblingData?.status === 'archived',
+        condition: ({ siblingData }) => siblingData?.status === ARCHIVED_CARD_STATUS,
       },
     },
   ],

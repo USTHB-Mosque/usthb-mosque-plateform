@@ -1,4 +1,4 @@
-import { AuthenticationError, Forbidden, type CollectionConfig } from 'payload'
+import { AuthenticationError, Forbidden, ValidationError, type CollectionConfig } from 'payload'
 import { isAdmin } from '@/utils/access-helpers'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
 import { logActivity } from '@/utils/activity-log'
@@ -32,13 +32,36 @@ export const User: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {
-        if (operation !== 'create' || !data) return data
+        // Payload always hands `beforeValidate` the incoming document on create
+        // and update; only a delete omits it, and no hook runs for that.
+        const incoming = data as NonNullable<typeof data>
+
+        // A member is told *why* a rejection happened, in the bell and in the
+        // email, so a decision to reject has to carry the reason with it (#145).
+        // This is the one guard on the field-level update that `rejectUser`
+        // respects and that an admin editing the status directly in `/admin`
+        // cannot bypass — which would otherwise store `rejected` with no
+        // explanation at all.
+        // Payload merges the stored document into `data` before this hook runs,
+        // so both fields already read as the row will look after the change: an
+        // edit that never mentions the reason keeps the one already stored.
+        if (incoming.verificationStatus === 'rejected' && !incoming.verificationNote?.trim()) {
+          throw new ValidationError(
+            {
+              errors: [{ message: 'سبب الرفض مطلوب', path: 'verificationNote' }],
+              req,
+            },
+            req.t,
+          )
+        }
+
+        if (operation !== 'create') return incoming
 
         // An anonymous HTTP signup must supply its own affirmative consent.
         // Only trusted creation paths (bootstrap, seeds, and the server-side
         // registration action, which already checks the consent checkbox) may
         // have it stamped on their behalf.
-        if (isExternalWrite(req) && !isAdmin(req.user) && data.consentGiven !== true) {
+        if (isExternalWrite(req) && !isAdmin(req.user) && incoming.consentGiven !== true) {
           throw new Forbidden(req.t)
         }
 
@@ -46,19 +69,19 @@ export const User: CollectionConfig = {
         // admin-created, seeded and bootstrapped accounts carry the same
         // evidence as a member who ticked the box, and so the schema-required
         // `consentGiven` is satisfied on every path.
-        if (!data.consentGiven) {
-          data.consentGiven = true
-          data.consentTimestamp = new Date().toISOString()
-        } else if (!data.consentTimestamp || (isExternalWrite(req) && !isAdmin(req.user))) {
-          data.consentTimestamp = new Date().toISOString()
+        if (!incoming.consentGiven) {
+          incoming.consentGiven = true
+          incoming.consentTimestamp = new Date().toISOString()
+        } else if (!incoming.consentTimestamp || (isExternalWrite(req) && !isAdmin(req.user))) {
+          incoming.consentTimestamp = new Date().toISOString()
         }
 
         // Payload applies the field default before collection `beforeValidate`,
         // so `role` is already populated by the time this hook runs.
-        const role = String(data.role)
+        const role = String(incoming.role)
         if (
           SELF_REGISTERED_ROLES.includes(role) &&
-          !data.verificationDocument &&
+          !incoming.verificationDocument &&
           isExternalWrite(req) &&
           !isAdmin(req.user)
         ) {
@@ -140,10 +163,14 @@ export const User: CollectionConfig = {
             type: 'verification',
             email: true,
             title: verified ? 'تم توثيق الحساب' : 'تم رفض توثيق الحساب',
+            // A `rejected` row always carries a note: the guard above refuses
+            // the write otherwise, so there is no "no reason given" wording.
             message: verified
               ? 'تم قبول وثيقة التحقق وتوثيق حسابك.'
-              : `تم رفض وثيقة التحقق.${doc.verificationNote ? ` السبب: ${doc.verificationNote}.` : ''}`,
-            link: '/user/settings',
+              : `تم رفض وثيقة التحقق. السبب: ${doc.verificationNote}.`,
+            // A rejected member has a document to re-upload; an approved one has
+            // a library to open. Sending both to settings was a dead end (#145).
+            link: verified ? '/user/library' : '/user/settings',
             emailTemplate: verified
               ? { kind: 'verification-approved' }
               : { kind: 'verification-rejected', reason: doc.verificationNote },

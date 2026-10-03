@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
 import { Textarea } from '@/shared/ui/textarea'
-import { CheckCircle2, XCircle, FileText } from 'lucide-react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { arDZ } from 'date-fns/locale'
 import type { User, Media } from '@/payload-types'
@@ -14,7 +14,7 @@ import { usersKeys } from '@/features/users/api/users.queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { getImageUrl } from '@/shared/lib/image-utils'
+import CertificatePreview from './CertificatePreview'
 
 interface VerificationQueueProps {
   initialUsers?: User[]
@@ -72,7 +72,6 @@ const VerificationQueue: React.FC<VerificationQueueProps> = ({ initialUsers }) =
         <div className="flex flex-col gap-4">
           {users.map((user) => {
             const doc = user.verificationDocument as Media | undefined
-            const docUrl = getImageUrl(doc?.url)
             const displayName =
               user.fullName ||
               [user.firstName, user.lastName].filter(Boolean).join(' ') ||
@@ -104,17 +103,7 @@ const VerificationQueue: React.FC<VerificationQueueProps> = ({ initialUsers }) =
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {docUrl && (
-                      <a
-                        href={docUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-xs text-primary-300 hover:underline"
-                      >
-                        <FileText className="size-4" />
-                        وثيقة التحقق
-                      </a>
-                    )}
+                    <CertificatePreview document={doc} />
                     <Button
                       size="sm"
                       disabled={pending}

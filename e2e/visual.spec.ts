@@ -57,6 +57,7 @@ const memberRoutes: Route[] = [
 const adminRoutes: Route[] = [
   { name: 'admin-dashboard', path: '/admin-panel/dashboard', settle: 'h1' },
   { name: 'admin-library', path: '/admin-panel/library', settle: 'h1' },
+  { name: 'admin-cards', path: '/admin-panel/cards', settle: 'h1' },
   { name: 'admin-users', path: '/admin-panel/users', settle: 'h1' },
   { name: 'admin-loans', path: '/admin-panel/loans', settle: 'h1' },
 ]

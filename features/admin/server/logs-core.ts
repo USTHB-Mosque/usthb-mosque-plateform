@@ -35,6 +35,8 @@ export const logActionLabels: Record<LogActionValue, string> = {
   [LogAction.UserRoleChanged]: 'تغيير دور',
   [LogAction.UserDeleted]: 'حذف عضو',
   [LogAction.UsersImported]: 'استيراد أعضاء',
+  [LogAction.CardIssued]: 'إصدار بطاقة',
+  [LogAction.CardStatusChanged]: 'تغيير حالة بطاقة',
   [LogAction.CardArchived]: 'أرشفة بطاقة',
 }
 

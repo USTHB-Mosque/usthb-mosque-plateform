@@ -83,4 +83,35 @@ describe('the seven loan-lifecycle email templates (#152)', () => {
     })
     expect(without.html).not.toContain('السبب:')
   })
+
+  it('every book template calls back to the loans page', () => {
+    const { html } = renderLoanEmail({ kind: 'loan-overdue', bookTitle: 'الفوائد', dueDate })
+    expect(html).toContain('href="/user/my-loans"')
+    expect(html).toContain('عرض إعاراتي')
+  })
+})
+
+describe('the verification email templates (#145)', () => {
+  it('verification-approved sends the member to the library, not to their loans', () => {
+    const { subject, html } = renderLoanEmail({ kind: 'verification-approved' })
+    expect(subject).toBe('تم توثيق الحساب')
+    expect(html).toContain('href="/user/library"')
+    expect(html).not.toContain('عرض إعاراتي')
+  })
+
+  it('verification-rejected keeps the reason and sends the member to their settings', () => {
+    const { html } = renderLoanEmail({
+      kind: 'verification-rejected',
+      reason: 'الصورة غير واضحة <b>',
+    })
+    expect(html).toContain('الصورة غير واضحة &lt;b&gt;')
+    expect(html).not.toContain('<b>')
+    expect(html).toContain('href="/user/settings"')
+  })
+
+  it('verification-rejected without a reason still says how to fix it', () => {
+    const { html } = renderLoanEmail({ kind: 'verification-rejected' })
+    expect(html).not.toContain('السبب:')
+    expect(html).toContain('إعدادات حسابك')
+  })
 })

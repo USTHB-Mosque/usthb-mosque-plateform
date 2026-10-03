@@ -37,6 +37,8 @@ export const LogAction = {
   UserRoleChanged: 'user_role_changed',
   UserDeleted: 'user_deleted',
   UsersImported: 'users_imported',
+  CardIssued: 'card_issued',
+  CardStatusChanged: 'card_status_changed',
   CardArchived: 'card_archived',
 } as const
 

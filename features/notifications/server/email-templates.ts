@@ -19,6 +19,23 @@ export type LoanEmail =
   | { kind: 'verification-approved' }
   | { kind: 'verification-rejected'; reason?: string | null }
 
+/**
+ * Where the call to action sends the member. A verification email has nothing to
+ * do with a loan, so pointing it at the loans page was a dead end (#145): the
+ * decision itself is what the member has to act on.
+ */
+const CALL_TO_ACTION: Record<LoanEmail['kind'], { href: string; label: string }> = {
+  'reservation-available': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'pickup-reminder': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'loan-due-soon': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'loan-overdue': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'extension-approved': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'extension-rejected': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'no-show-warning': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'verification-approved': { href: '/user/library', label: 'تصفّح المكتبة' },
+  'verification-rejected': { href: '/user/settings', label: 'إعدادات حسابي' },
+}
+
 export function renderLoanEmail(template: LoanEmail): { subject: string; html: string } {
   // Verification emails carry no book; the book title only exists on the
   // lifecycle variants.
@@ -63,8 +80,9 @@ export function renderLoanEmail(template: LoanEmail): { subject: string; html: s
       body = `<p>تعذر توثيق حسابك بعد مراجعة الوثيقة المرفقة.</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}<p>يمكنك إعادة رفع وثيقة جديدة من إعدادات حسابك.</p>`
       break
   }
+  const cta = CALL_TO_ACTION[template.kind]
   return {
     subject,
-    html: `<div dir="rtl" style="font-family:sans-serif;text-align:right"><h2>${subject}</h2>${body}<p><a href="/user/my-loans">عرض إعاراتي</a></p><p>مسجد الجامعة USTHB</p></div>`,
+    html: `<div dir="rtl" style="font-family:sans-serif;text-align:right"><h2>${subject}</h2>${body}<p><a href="${cta.href}">${cta.label}</a></p><p>مسجد الجامعة USTHB</p></div>`,
   }
 }
