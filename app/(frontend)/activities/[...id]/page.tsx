@@ -35,7 +35,10 @@ const ActivityDetailsPage = async ({
       <div className="space-y-6">
         <ReturnToIndex title="فهرس الأنشطة" value={activity.title} href="/activities" />
 
-        <div className="flex gap-8">
+        {/* #164: the two columns stack on phones like the member portal
+            does — a fixed side-by-side squeezed the header image to a
+            180px strip on a 390px screen. */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-8">
           <div className="flex-3 flex flex-col gap-8">
             <ActivityHeader
               title={activity.title}
