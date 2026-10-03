@@ -722,11 +722,15 @@ const LandingPage: React.FC = () => {
               className="absolute inset-0 z-[3]"
               style={{ y: contentY, opacity: contentOpacity }}
             >
+              {/* Phones: no base pull-up — the old -translate-y-[137px]
+                  pushed this block behind the sticky navbar on ≤360×640
+                  viewports (fully hidden at 320×568). ≥sm keeps the
+                  designer's vertical offsets where there's headroom. */}
               <div
                 onAnimationEnd={(event) => {
                   if (event.target === event.currentTarget) setTextSettled(true)
                 }}
-                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 -translate-y-[137px] sm:-translate-y-[105px] 2xl:-translate-y-[148px] ${
+                className={`absolute inset-0 w-full flex flex-col items-center justify-center gap-4 md:gap-6 px-6 md:px-16 py-8 sm:-translate-y-[105px] 2xl:-translate-y-[148px] ${
                   textReady ? (textSettled ? '' : 'hero-text-visible') : 'opacity-0'
                 }`}
               >
