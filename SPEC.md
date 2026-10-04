@@ -32,7 +32,7 @@
 - User core: notifications, loans (waitlist + extension + pickup), dashboards + calendars, articles (bookmarks, feedback, reviews), onboarding/helpers.
 - Full admin panel: dashboard, loans, users, books, articles, activities, reviews, logs, analytics, settings.
 - Landing polish (force autoplay).
-- **Google OAuth** in scope; **password reset deferred** (not v1).
+- **Google OAuth** and password reset are built; admin email-OTP security is in scope under #146.
 - Algerian data protection compliance (Law 18-07): consent, privacy policy, terms of use, soft delete.
 - Security fixes from audit.
 
@@ -45,8 +45,7 @@
 - **User-side audit activity log** - v2 (admin logs in scope).
 - **Tasks** - v2.
 - **Book damage tracking** - v2.
-- **Password reset / forgot password** - deferred.
-- **2FA** - deferred.
+- **Member 2FA enrollment and SMS factors** - deferred. Admin email OTP and recovery codes are in #146.
 - **Multi-language / i18n** - Arabic-only for v1.
 - **External analytics tools** - analytics computed from the DB only.
 - **Payment integration** - not needed for v1.
@@ -239,7 +238,7 @@ Each item tagged **New / Extend / Polish**, with data impact.
 - **Bookmarks** tab: books (exists as favorites). Articles were cut - see Section 2.
 - **Notifications** tab: per-channel opt-in for the matrix in Section 5.
 - **Info** tab: personal data (existing account tab).
-- **Security** tab: change password (exists). **Password reset + 2FA deferred.**
+- **Security** tab: change password and password reset exist. Member 2FA enrollment remains deferred; admin email OTP is described in §7.9.
 
 ### 6.10 Onboarding / Helpers _(Undecided)_
 
@@ -323,7 +322,7 @@ Computed **from the DB** (Postgres aggregation) - no external service.
 ### 7.9 Settings _(New)_
 
 - Admin info (name, email, pfp).
-- **Security**: change password, **2FA deferred**, logged-in devices/link device - **must verify identity first** (edit/manage as pages; verifications as dialogs).
+- **Security (#146)**: manage verified contact emails and choose one primary login/recovery address; change password; opt-in admin email OTP with single-use recovery codes; real linked sessions and this admin's account logs. **Must confirm identity first** for sensitive management: five-minute, device-bound password proof plus the enabled second factor (manage as pages, confirmation as dialogs). SMS is a separate follow-up. See [the account-security contract](docs/admin-account-security.md).
 - **Notifications**: toggles for logs, borrowing/extension/user requests, reviews, severe overdues, daily activities.
 - **Loan configuration (New):** default loan duration + **borrow limit** (max concurrent loans).
 - **Keyboard shortcuts** (add new borrowing, etc.).
@@ -545,27 +544,27 @@ disagree, this section wins. The PRD checklist is kept for its resolved answers 
 
 **Resolved in this spec:**
 
-| ID                         | Decision                                      | Resolution                    |
-| -------------------------- | --------------------------------------------- | ----------------------------- |
-| Multi-copy model           | Counters (totalBooks/availableBooks)          | Section 9                     |
-| Loan duration              | Configurable in Settings (default 14 days)    | Section 4                     |
-| Borrow limit               | Configurable max concurrent loans             | Section 4, **D7** (default 3) |
-| **D1** - Pickup window     | 48h from acceptance, admin reschedules        | Section 4, **D1**             |
-| **D2** - No-show           | 2 no-shows; borrowing only; until admin lifts | Section 4, **D2**             |
-| **D3** - Finishing read    | Resolved by removal (article feedback cut)    | Section 2, **D3**             |
-| **D4** - Activity overflow | Hard refusal, no waitlist                     | Section 8, **D4**             |
-| **D5** - Extension         | 1 per loan, 2x base, from 3 days out          | Section 4, **D5**             |
-| **D6** - Cancelability     | Per operation, cancel is never punished       | Section 4, **D6**             |
-| **D7** - Borrow default    | 3                                             | Section 4, **D7**             |
-| Publisher role             | None - all admins edit all content            | Section 1                     |
-| Deployment                 | Docker/VPS                                    | Section 15                    |
-| Scale                      | Thousands of users                            | Section 15                    |
-| Language                   | Arabic-only v1                                | Section 2                     |
-| Admin panel location       | Contested - see note below                    | Section 15, see note below    |
-| Password reset / 2FA       | Deferred                                      | Section 2                     |
-| Email provider             | Nodemailer (provider TBD)                     | Section 5                     |
-| Extension auto-approve     | Auto-approve when queue empty                 | Section 4                     |
-| Article feedback/reviews   | **Cut from v1** - see Section 2               | -                             |
+| ID                         | Decision                                                             | Resolution                    |
+| -------------------------- | -------------------------------------------------------------------- | ----------------------------- |
+| Multi-copy model           | Counters (totalBooks/availableBooks)                                 | Section 9                     |
+| Loan duration              | Configurable in Settings (default 14 days)                           | Section 4                     |
+| Borrow limit               | Configurable max concurrent loans                                    | Section 4, **D7** (default 3) |
+| **D1** - Pickup window     | 48h from acceptance, admin reschedules                               | Section 4, **D1**             |
+| **D2** - No-show           | 2 no-shows; borrowing only; until admin lifts                        | Section 4, **D2**             |
+| **D3** - Finishing read    | Resolved by removal (article feedback cut)                           | Section 2, **D3**             |
+| **D4** - Activity overflow | Hard refusal, no waitlist                                            | Section 8, **D4**             |
+| **D5** - Extension         | 1 per loan, 2x base, from 3 days out                                 | Section 4, **D5**             |
+| **D6** - Cancelability     | Per operation, cancel is never punished                              | Section 4, **D6**             |
+| **D7** - Borrow default    | 3                                                                    | Section 4, **D7**             |
+| Publisher role             | None - all admins edit all content                                   | Section 1                     |
+| Deployment                 | Docker/VPS                                                           | Section 15                    |
+| Scale                      | Thousands of users                                                   | Section 15                    |
+| Language                   | Arabic-only v1                                                       | Section 2                     |
+| Admin panel location       | Contested - see note below                                           | Section 15, see note below    |
+| Password reset / 2FA       | Reset built; admin email OTP in #146; member/SMS enrollment deferred | Section 7.9                   |
+| Email provider             | Nodemailer (provider TBD)                                            | Section 5                     |
+| Extension auto-approve     | Auto-approve when queue empty                                        | Section 4                     |
+| Article feedback/reviews   | **Cut from v1** - see Section 2                                      | -                             |
 
 > **Admin panel location, contested.** This spec and the design both say `/admin`. The shipped panel is
 > served from `/admin-panel`, moved to avoid colliding with Payload's own admin. The move was deliberate

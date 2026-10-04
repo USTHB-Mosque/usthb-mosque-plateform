@@ -104,6 +104,7 @@ const AdminSettingsNotificationPreferences: React.FC<AdminSettingsNotificationPr
                 <span className="text-sm font-alyamama text-grey-500">{item.description}</span>
               </div>
               <Switch
+                aria-label={item.label}
                 checked={preferences[item.id]}
                 onCheckedChange={(checked) => handleToggle(item.id, checked)}
                 disabled={isPending}

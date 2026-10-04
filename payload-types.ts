@@ -86,6 +86,9 @@ export interface Config {
     'library-cards': LibraryCard;
     'book-requests': BookRequest;
     'member-events': MemberEvent;
+    'account-security': AccountSecurity;
+    'auth-challenges': AuthChallenge;
+    'account-emails': AccountEmail;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -113,6 +116,9 @@ export interface Config {
     'library-cards': LibraryCardsSelect<false> | LibraryCardsSelect<true>;
     'book-requests': BookRequestsSelect<false> | BookRequestsSelect<true>;
     'member-events': MemberEventsSelect<false> | MemberEventsSelect<true>;
+    'account-security': AccountSecuritySelect<false> | AccountSecuritySelect<true>;
+    'auth-challenges': AuthChallengesSelect<false> | AuthChallengesSelect<true>;
+    'account-emails': AccountEmailsSelect<false> | AccountEmailsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -609,7 +615,8 @@ export interface Log {
     | 'users_imported'
     | 'card_issued'
     | 'card_status_changed'
-    | 'card_archived';
+    | 'card_archived'
+    | 'account_security_updated';
   targetType?: string | null;
   targetId?: string | null;
   timestamp: string;
@@ -673,6 +680,77 @@ export interface MemberEvent {
   targetType: string;
   targetId: string;
   timestamp: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "account-security".
+ */
+export interface AccountSecurity {
+  id: number;
+  user: number | User;
+  reauthenticatedSessions:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  emailTwoFactorEnabled: boolean;
+  revision: number;
+  recoveryCodeHashes:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  assuredSessions:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auth-challenges".
+ */
+export interface AuthChallenge {
+  id: number;
+  user: number | User;
+  purpose: 'enroll' | 'login' | 'reauth' | 'email';
+  nonceHash: string;
+  codeHash: string;
+  email: string;
+  sessionId?: string | null;
+  revision: number;
+  attempts: number;
+  expiresAt: string;
+  consumedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "account-emails".
+ */
+export interface AccountEmail {
+  id: number;
+  user: number | User;
+  address: string;
+  verifiedAt?: string | null;
+  pendingUntil?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -876,6 +954,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'member-events';
         value: number | MemberEvent;
+      } | null)
+    | ({
+        relationTo: 'account-security';
+        value: number | AccountSecurity;
+      } | null)
+    | ({
+        relationTo: 'auth-challenges';
+        value: number | AuthChallenge;
+      } | null)
+    | ({
+        relationTo: 'account-emails';
+        value: number | AccountEmail;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1293,6 +1383,50 @@ export interface MemberEventsSelect<T extends boolean = true> {
   targetType?: T;
   targetId?: T;
   timestamp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "account-security_select".
+ */
+export interface AccountSecuritySelect<T extends boolean = true> {
+  user?: T;
+  reauthenticatedSessions?: T;
+  emailTwoFactorEnabled?: T;
+  revision?: T;
+  recoveryCodeHashes?: T;
+  assuredSessions?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auth-challenges_select".
+ */
+export interface AuthChallengesSelect<T extends boolean = true> {
+  user?: T;
+  purpose?: T;
+  nonceHash?: T;
+  codeHash?: T;
+  email?: T;
+  sessionId?: T;
+  revision?: T;
+  attempts?: T;
+  expiresAt?: T;
+  consumedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "account-emails_select".
+ */
+export interface AccountEmailsSelect<T extends boolean = true> {
+  user?: T;
+  address?: T;
+  verifiedAt?: T;
+  pendingUntil?: T;
   updatedAt?: T;
   createdAt?: T;
 }

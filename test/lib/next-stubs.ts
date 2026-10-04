@@ -14,19 +14,31 @@ interface StoredCookie {
 export const nextContext = {
   headers: {} as Record<string, string>,
   cookies: new Map<string, StoredCookie>(),
+  requestCookies: new Map<string, string>(),
 }
 
 export function setNextHeaders(headers: Record<string, string>): void {
   nextContext.headers = headers
+  nextContext.requestCookies.clear()
+  for (const part of (headers.cookie ?? '').split(';')) {
+    const index = part.indexOf('=')
+    if (index >= 0)
+      nextContext.requestCookies.set(
+        part.slice(0, index).trim(),
+        decodeURIComponent(part.slice(index + 1).trim()),
+      )
+  }
 }
 
 export function setNextCookie(name: string, value: string): void {
   nextContext.cookies.set(name, { value })
+  nextContext.requestCookies.set(name, value)
 }
 
 export function clearNextContext(): void {
   nextContext.headers = {}
   nextContext.cookies.clear()
+  nextContext.requestCookies.clear()
 }
 
 export function getLastSetCookieOptions(name: string): StoredCookie | undefined {
@@ -47,19 +59,21 @@ vi.mock('next/headers', () => ({
   cookies: () =>
     Promise.resolve({
       get: (name: string) => {
-        const stored = nextContext.cookies.get(name)
-        return stored ? { name, value: stored.value } : undefined
+        const value = nextContext.requestCookies.get(name)
+        return value === undefined ? undefined : { name, value }
       },
       getAll: () =>
-        [...nextContext.cookies.entries()].map(([name, stored]) => ({
+        [...nextContext.requestCookies.entries()].map(([name, value]) => ({
           name,
-          value: stored.value,
+          value,
         })),
       set: (name: string, value: string, options?: Record<string, unknown>) => {
         nextContext.cookies.set(name, { value, options })
+        nextContext.requestCookies.set(name, value)
       },
       delete: (name: string) => {
         nextContext.cookies.delete(name)
+        nextContext.requestCookies.delete(name)
       },
     }),
 }))

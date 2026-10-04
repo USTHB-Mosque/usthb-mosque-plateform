@@ -31,6 +31,26 @@ _Avoid_: Account status, approval state
 A user whose verification document has been approved by an admin. Verified users can borrow books (subject to borrow limit). Unverified users can browse and waitlist but cannot reach the `picked_up` loan state.
 _Avoid_: Approved user, confirmed user
 
+**Verified Email**:
+An address whose mailbox ownership has been confirmed by its account holder. It
+does not mean that the holder's Verification Document has been approved.
+_Avoid_: Verified account, approved email
+
+**Primary Email**:
+The account's chosen address for signing in, password recovery and ordinary
+notifications. Other verified addresses remain contacts until promoted.
+_Avoid_: Login alias, recovery alias
+
+**Identity Confirmation**:
+The admin's recent proof of identity before managing sensitive account settings.
+It belongs to one device and is distinct from Verification Document approval.
+_Avoid_: Account verification, student verification
+
+**Recovery Code**:
+A single-use backup second factor used with the password when the email OTP is
+unavailable. It is not a password-reset token.
+_Avoid_: Reset code, recovery password
+
 ## Books & Copies
 
 **Book**:

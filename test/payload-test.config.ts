@@ -24,6 +24,9 @@ import {
   BookRequest,
   MemberEvent,
   ArticleRead,
+  AccountSecurity,
+  AuthChallenge,
+  AccountEmail,
 } from '@/collections'
 import { Settings } from '@/globals'
 import { erasureJobsConfig } from '@/features/users/server/jobs'
@@ -71,6 +74,9 @@ export default buildConfig({
     LibraryCard,
     BookRequest,
     MemberEvent,
+    AccountSecurity,
+    AuthChallenge,
+    AccountEmail,
   ],
   globals: [Settings],
   // Same task registry as production so the integration suite can run the

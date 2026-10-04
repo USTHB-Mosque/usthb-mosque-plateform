@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { randomUUID } from 'crypto'
 import type { User } from '@/payload-types'
 import { TOKEN_EXPIRATION_SECONDS } from '@/utils/auth-constants'
+import { withAccountLock, assertSessionIssuance, recordSessionAssurance } from './account-security'
 
 export interface AuthOptions {
   allowAdmin?: boolean
@@ -33,9 +34,19 @@ export interface ActionCtx {
   req: PayloadRequest
 }
 
+async function authenticationHeaders() {
+  const headers = new Headers(await nextHeaders())
+  const token = (await nextCookies()).get('payload-token')?.value
+  // cookies() reflects mutations during a Server Action's subsequent render;
+  // the original headers() cookie can still name the just-revoked session.
+  if (token) headers.set('cookie', `payload-token=${encodeURIComponent(token)}`)
+  else headers.delete('cookie')
+  return headers
+}
+
 export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | undefined> {
   const payload = await getPayload({ config })
-  const headers = await nextHeaders()
+  const headers = await authenticationHeaders()
   const response = await payload.auth({ headers })
 
   if (!response.user) return undefined
@@ -53,7 +64,7 @@ export async function getAuthenticatedUser(opts?: AuthOptions): Promise<User | u
 
 export async function getPayloadWithUser(opts?: AuthOptions): Promise<ActionCtx | null> {
   const payload = await getPayload({ config })
-  const headers = await nextHeaders()
+  const headers = await authenticationHeaders()
   const auth = await payload.auth({ headers })
 
   if (!auth.user) return null
@@ -89,6 +100,11 @@ export async function setPayloadTokenCookie(token: string, exp?: number) {
   })
 }
 
+export async function clearPayloadTokenCookie() {
+  const cookieStore = await nextCookies()
+  cookieStore.delete('payload-token')
+}
+
 /**
  * Issues a real Payload session (JWT + `sessions` array entry) for a user who has
  * already proven their identity through another channel, without a password
@@ -100,42 +116,59 @@ export async function setPayloadTokenCookie(token: string, exp?: number) {
 export async function createSessionForUser(
   payload: Payload,
   user: User,
+  options?: { req?: PayloadRequest; allowedRoles?: User['role'][] },
 ): Promise<{ token: string; exp: number }> {
-  const collectionConfig = payload.collections['users'].config
-  const sid = randomUUID()
-  const now = new Date()
-  const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
-  // Auth docs always carry the sessions array; the fallback only satisfies
-  // the optional type.
-  /* v8 ignore next */
-  const activeSessions = (user.sessions ?? []).filter(
-    (session) => new Date(session.expiresAt) > now,
-  )
+  return withAccountLock(
+    payload,
+    user.id,
+    async (req) => {
+      const passwordProof = user
+      user = await payload.findByID({ collection: 'users', id: user.id, depth: 0, req })
+      if (options?.allowedRoles && !options.allowedRoles.includes(user.role))
+        throw new Error('غير مصرح')
+      await assertSessionIssuance(payload, user, req, passwordProof)
+      const collectionConfig = payload.collections['users'].config
+      const sid = randomUUID()
+      const now = new Date()
+      const expiresAt = new Date(now.getTime() + TOKEN_EXPIRATION_SECONDS * 1000)
+      // Auth docs always carry the sessions array; the fallback only satisfies
+      // the optional type.
+      /* v8 ignore next */
+      const activeSessions = (user.sessions ?? []).filter(
+        (session) => new Date(session.expiresAt) > now,
+      )
 
-  await payload.update({
-    collection: 'users',
-    id: user.id,
-    data: {
-      sessions: [
-        ...activeSessions,
-        { id: sid, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() },
-      ],
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: {
+          sessions: [
+            ...activeSessions,
+            { id: sid, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString() },
+          ],
+        },
+        overrideAccess: true,
+        req,
+      })
+
+      await recordSessionAssurance(payload, user.id, sid, req)
+      req.user = { ...user, collection: 'users', _sid: sid } as User & { _sid: string }
+
+      const fieldsToSign = getFieldsToSign({
+        collectionConfig,
+        email: user.email,
+        sid,
+        user,
+      })
+
+      return jwtSign({
+        fieldsToSign,
+        secret: payload.secret,
+        tokenExpiration: TOKEN_EXPIRATION_SECONDS,
+      })
     },
-    overrideAccess: true,
-  })
-
-  const fieldsToSign = getFieldsToSign({
-    collectionConfig,
-    email: user.email,
-    sid,
-    user,
-  })
-
-  return jwtSign({
-    fieldsToSign,
-    secret: payload.secret,
-    tokenExpiration: TOKEN_EXPIRATION_SECONDS,
-  })
+    options?.req,
+  )
 }
 
 /**
@@ -156,6 +189,9 @@ export async function revokeAllSessions(
   await logoutOperation({
     allSessions: true,
     collection: payload.collections['users'],
-    req: req ?? (await createLocalReq({ user }, payload)),
+    req:
+      req?.user?.id === user.id
+        ? req
+        : await createLocalReq({ req: req ? { ...req } : undefined, user }, payload),
   })
 }

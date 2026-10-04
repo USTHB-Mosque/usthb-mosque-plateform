@@ -3,6 +3,7 @@ import type { User } from '@/payload-types'
 import SettingsProfileCard, {
   type SettingsTab,
 } from '@/features/profile/components/settings/SettingsProfileCard'
+import ProfilePictureControl from '@/features/admin/components/settings/ProfilePictureControl'
 
 type SettingsViewProps = React.PropsWithChildren<{
   user: User
@@ -23,6 +24,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ user, activeTab, children }
         // #156: loan configuration is admin-only; the member portal has no such
         // screen, so the tab is offered here and not there.
         availableTabs={['info', 'security', 'notifications', 'loans']}
+        avatarActions={<ProfilePictureControl hasPicture={Boolean(user.profilePicture)} />}
       />
       {children}
     </div>
