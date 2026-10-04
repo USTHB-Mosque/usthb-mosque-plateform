@@ -38,6 +38,7 @@ export const logActionLabels: Record<LogActionValue, string> = {
   [LogAction.CardIssued]: 'إصدار بطاقة',
   [LogAction.CardStatusChanged]: 'تغيير حالة بطاقة',
   [LogAction.CardArchived]: 'أرشفة بطاقة',
+  [LogAction.AccountSecurityUpdated]: 'تحديث حماية الحساب',
 }
 
 export interface LogInput {

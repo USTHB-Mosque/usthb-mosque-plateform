@@ -1,7 +1,14 @@
 import type { Payload } from 'payload'
 
 import { addDays } from '@/shared/lib/dates'
-import { E2E_GOOGLE_EMAIL, E2E_MEMBER_EMAIL } from '@/e2e/lib/test-users'
+import {
+  E2E_GOOGLE_EMAIL,
+  E2E_MEMBER_EMAIL,
+  E2E_SETTINGS_ADMIN_EMAIL,
+  E2E_MFA_ADMIN_EMAIL,
+  E2E_SECURITY_PASSWORD,
+  E2E_ADMIN_EMAIL,
+} from '@/e2e/lib/test-users'
 
 // Deterministic fixtures for the flows milestone (#138). The lean e2e seed
 // truncates and rebuilds, so ids restart at 1 every run; lookups here go by
@@ -234,9 +241,60 @@ async function seedE2eArticleFavorite(payload: Payload): Promise<void> {
   console.log('Created the seeded article favorite')
 }
 
+async function seedAdminSettingsVisuals(payload: Payload): Promise<void> {
+  const owner = await findUser(payload, E2E_SETTINGS_ADMIN_EMAIL)
+  const book = await findBook(payload, 'تفسير السعدي')
+  // Explicit test fixtures, not a migration/backfill claim about mailbox proof.
+  // The legacy primary remains unverified; screenshots exercise two contacts.
+  for (const address of ['visual.one@e2e.mosque', 'visual.two@e2e.mosque'])
+    await payload.create({
+      collection: 'account-emails',
+      data: { user: owner, address, verifiedAt: new Date().toISOString() },
+      overrideAccess: true,
+    })
+  for (const offset of [0, 0, -1, -2])
+    await payload.create({
+      collection: 'logs',
+      data: {
+        actor: owner,
+        action: 'book_created',
+        targetType: 'book',
+        targetId: String(book),
+        message: 'أضاف كتاباً: تفسير السعدي',
+        timestamp: addDays(new Date(), offset).toISOString(),
+      },
+      overrideAccess: true,
+    })
+  await payload.create({
+    collection: 'logs',
+    data: {
+      actor: await findUser(payload, E2E_ADMIN_EMAIL),
+      action: 'book_updated',
+      targetType: 'book',
+      targetId: String(book),
+      message: 'حدث خاص بمشرف آخر',
+      timestamp: new Date().toISOString(),
+    },
+    overrideAccess: true,
+  })
+}
+
 export async function seedE2eFixtures(payload: Payload): Promise<void> {
+  // Mutating settings journeys own these identities; they never rotate the
+  // shared admin session that other journeys and visual baselines reuse.
+  for (const [email, fullName] of [
+    [E2E_SETTINGS_ADMIN_EMAIL, 'مشرف الإعدادات'],
+    [E2E_MFA_ADMIN_EMAIL, 'مشرف الحماية'],
+  ]) {
+    await payload.create({
+      collection: 'users',
+      data: { email, fullName, role: 'admin', password: E2E_SECURITY_PASSWORD, consentGiven: true },
+      overrideAccess: true,
+    })
+  }
   await seedE2eSettings(payload)
   await seedE2eLoans(payload)
   await seedFullE2eActivity(payload)
   await seedE2eArticleFavorite(payload)
+  await seedAdminSettingsVisuals(payload)
 }

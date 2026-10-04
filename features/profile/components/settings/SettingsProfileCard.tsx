@@ -22,6 +22,7 @@ type SettingsProfileCardProps = {
   hideDeleteAccount?: boolean
   /** Tabs to render; a tab whose page does not exist must not be listed. */
   availableTabs?: SettingsTab[]
+  avatarActions?: React.ReactNode
 }
 
 /**
@@ -59,6 +60,7 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
   hrefBase = '/user/settings',
   hideDeleteAccount = false,
   availableTabs = ['info', 'security', 'notifications'],
+  avatarActions,
 }) => {
   const router = useRouter()
   const tabs = getTabs(hrefBase, availableTabs)
@@ -133,6 +135,7 @@ const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
               </div>
             )}
           </div>
+          {avatarActions && <div className="absolute -bottom-2 -end-3">{avatarActions}</div>}
         </div>
       </div>
 

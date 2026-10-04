@@ -40,6 +40,7 @@ export const LogAction = {
   CardIssued: 'card_issued',
   CardStatusChanged: 'card_status_changed',
   CardArchived: 'card_archived',
+  AccountSecurityUpdated: 'account_security_updated',
 } as const
 
 export const logActionOptions = Object.entries(LogAction).map(([key, value]) => ({

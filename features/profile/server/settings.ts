@@ -10,7 +10,7 @@ export async function updateProfileField(formData: FormData, field: string) {
   const value = (formData.get(field) as string)?.trim()
   if (!value) return { ok: false as const, error: 'القيمة مطلوبة' }
 
-  const allowedFields = ['fullName', 'phone', 'email'] as const
+  const allowedFields = ['fullName', 'phone'] as const
   if (!allowedFields.includes(field as (typeof allowedFields)[number])) {
     return { ok: false as const, error: 'حقل غير صالح' }
   }

@@ -3,12 +3,20 @@ import path from 'path'
 
 import { expect, test as setup, type Page } from '@playwright/test'
 
-import { adminStorageState, userStorageState } from './lib/auth-state'
+import {
+  adminStorageState,
+  userStorageState,
+  settingsAdminStorageState,
+  mfaAdminStorageState,
+} from './lib/auth-state'
 import {
   E2E_ADMIN_EMAIL,
   E2E_ADMIN_PASSWORD,
   E2E_MEMBER_EMAIL,
   E2E_MEMBER_PASSWORD,
+  E2E_SETTINGS_ADMIN_EMAIL,
+  E2E_MFA_ADMIN_EMAIL,
+  E2E_SECURITY_PASSWORD,
 } from './lib/test-users'
 import { loginThroughUi } from './lib/ui'
 
@@ -28,3 +36,14 @@ setup('authenticate as admin', async ({ page }) => {
   await expect(page).toHaveURL(/\/admin/, { timeout: 30_000 })
   await page.context().storageState({ path: adminStorageState })
 })
+
+for (const [email, state] of [
+  [E2E_SETTINGS_ADMIN_EMAIL, settingsAdminStorageState],
+  [E2E_MFA_ADMIN_EMAIL, mfaAdminStorageState],
+]) {
+  setup(`authenticate dedicated ${email}`, async ({ page }) => {
+    await loginThroughUi(page, email, E2E_SECURITY_PASSWORD)
+    await expect(page).toHaveURL(/\/admin-panel\/dashboard/, { timeout: 30_000 })
+    await page.context().storageState({ path: state })
+  })
+}

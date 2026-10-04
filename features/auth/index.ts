@@ -8,6 +8,7 @@ export { default as ResetPasswordForm } from './components/ResetPasswordForm'
 
 export * from './api/profile.queries'
 export * from './server/login'
+export * from './server/mfa'
 export * from './server/logout'
 export * from './server/register'
 export * from './server/forgot-password'

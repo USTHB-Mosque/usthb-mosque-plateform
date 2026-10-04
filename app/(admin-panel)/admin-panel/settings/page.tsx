@@ -1,7 +1,7 @@
-import { getAdminSettingsData, updateAdminPhone } from '@/features/admin/server/account'
+import { getAdminSettingsData } from '@/features/admin/server/account'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 import SettingsView from '@/features/admin/components/views/settings/SettingsView'
-import AccountInfoSection from '@/features/profile/components/settings/AccountInfoSection'
+import AccountInfoForm from '@/features/admin/components/settings/AccountInfoForm'
 
 export default async function AdminSettingsPage() {
   const data = await getAdminSettingsData()
@@ -16,7 +16,7 @@ export default async function AdminSettingsPage() {
   return (
     <AdminPage title="الإعدادات">
       <SettingsView user={data.user} activeTab="info">
-        <AccountInfoSection user={data.user} onSavePhone={updateAdminPhone} />
+        <AccountInfoForm user={data.user} />
       </SettingsView>
     </AdminPage>
   )

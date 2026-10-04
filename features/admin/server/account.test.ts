@@ -40,7 +40,7 @@ describe('features/admin/server/account.ts', () => {
       const ctx = { user: { role: 'admin' }, payload: {}, req: {} }
       getPayloadWithUser.mockResolvedValue(ctx)
 
-      expect(await getAdminUser()).toBe(ctx)
+      expect(await getAdminUser()).toBe(ctx.user)
     })
   })
 
@@ -128,7 +128,7 @@ describe('features/admin/server/account.ts', () => {
       expect(await updateAdminPassword('secret')).toEqual({ ok: false, error: 'غير مصرح' })
     })
 
-    it('updates password on the users collection', async () => {
+    it('refuses the legacy password action without recent identity proof', async () => {
       const update = vi.fn().mockResolvedValue({})
       getPayloadWithUser.mockResolvedValue({
         user: { id: 7, role: 'admin' },
@@ -136,17 +136,10 @@ describe('features/admin/server/account.ts', () => {
         req: {},
       })
 
-      const result = await updateAdminPassword('secret')
+      const result = await updateAdminPassword('a-long-new-password')
 
-      expect(result).toEqual({ ok: true })
-      expect(update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: 'users',
-          id: 7,
-          data: { password: 'secret' },
-          overrideAccess: false,
-        }),
-      )
+      expect(result).toEqual({ ok: false, error: 'أعد تأكيد هويتك قبل تغيير إعدادات الحماية' })
+      expect(update).not.toHaveBeenCalled()
     })
   })
 

@@ -1,6 +1,6 @@
 'use server'
 
-import type { Payload, Where } from 'payload'
+import type { Payload, PayloadRequest, Where } from 'payload'
 import type { User } from '@/payload-types'
 import { getAdminCtx } from './ctx'
 import { groupLogsByDay } from '@/shared/lib/day-groups'
@@ -11,7 +11,12 @@ import { type LogActionValue, type LogInput, type LogsQuery } from './logs-core'
  * composed at the call site so the human-readable `message` mirrors the
  * screen wording (#103 example: "عبدالرحمن أضاف كتاباً: الفوائد ...").
  */
-export async function writeLog(payload: Payload, user: User, input: LogInput): Promise<void> {
+export async function writeLog(
+  payload: Payload,
+  user: User,
+  input: LogInput,
+  req?: PayloadRequest,
+): Promise<void> {
   await payload.create({
     collection: 'logs',
     data: {
@@ -24,7 +29,7 @@ export async function writeLog(payload: Payload, user: User, input: LogInput): P
       metadata: input.metadata,
     },
     overrideAccess: false,
-    user,
+    ...(req ? { req } : { user }),
   })
 }
 

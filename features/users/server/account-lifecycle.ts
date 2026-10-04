@@ -2,6 +2,7 @@ import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 import { addDays } from '@/shared/lib/dates'
 import { resolveRelationId } from '@/shared/lib/relations'
+import { deleteUnusedOwnedPicture } from '@/shared/lib/profile-picture'
 
 /** The grace period a soft-deleted account survives before the purge. */
 export const ERASURE_GRACE_DAYS = 30
@@ -72,7 +73,19 @@ async function destroyVerificationDocument(
     ...(req ? { req } : {}),
   })) as User
 
-  for (const id of mediaIds) {
+  for (const id of new Set(mediaIds)) {
+    const media = await payload.findByID({
+      collection: 'media',
+      id,
+      depth: 0,
+      req,
+      overrideAccess: true,
+    })
+    if (Number(resolveRelationId(media.owner)) !== user.id) continue
+    if (!media.isPrivate) {
+      await deleteUnusedOwnedPicture(payload, user.id, Number(id), req)
+      continue
+    }
     // A member's own uploads are not theirs to keep past erasure, so the
     // deletion runs with the access override the admin panel would otherwise
     // gate behind `isAdmin`.

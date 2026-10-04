@@ -18,8 +18,8 @@ import * as migration_20260925_100000_phase_2_admin_screens from './20260925_100
 import * as migration_20260928_000000_book_requests from './20260928_000000_book_requests'
 import * as migration_20260928_010000_payload_jobs from './20260928_010000_payload_jobs'
 import * as migration_20260928_020000_user_consent_required from './20260928_020000_user_consent_required'
-import * as migration_20260929_000000_review_aggregates from './20260929_000000_review_aggregates'
 import * as migration_20260929_000000_notification_coverage from './20260929_000000_notification_coverage'
+import * as migration_20260929_000000_review_aggregates from './20260929_000000_review_aggregates'
 import * as migration_20260929_010000_notification_event_key from './20260929_010000_notification_event_key'
 import * as migration_20260930_000000_loan_pickup_window from './20260930_000000_loan_pickup_window'
 import * as migration_20260930_010000_pickup_window_enums from './20260930_010000_pickup_window_enums'
@@ -31,6 +31,10 @@ import * as migration_20261001_010000_activity_completion_job from './20261001_0
 import * as migration_20261002_000000_member_events from './20261002_000000_member_events'
 import * as migration_20261002_000000_admin_panel_analytics from './20261002_000000_admin_panel_analytics'
 import * as migration_20261002_000000_library_card_inactive_status from './20261002_000000_library_card_inactive_status'
+import * as migration_20261002_195735_account_reauthentication from './20261002_195735_account_reauthentication'
+import * as migration_20261002_202135_email_otp_challenges from './20261002_202135_email_otp_challenges'
+import * as migration_20261002_211242_account_email_registry from './20261002_211242_account_email_registry'
+import * as migration_20261003_002808_account_security_audit from './20261003_002808_account_security_audit'
 
 export const migrations = [
   {
@@ -134,14 +138,14 @@ export const migrations = [
     name: '20260928_020000_user_consent_required',
   },
   {
-    up: migration_20260929_000000_review_aggregates.up,
-    down: migration_20260929_000000_review_aggregates.down,
-    name: '20260929_000000_review_aggregates',
-  },
-  {
     up: migration_20260929_000000_notification_coverage.up,
     down: migration_20260929_000000_notification_coverage.down,
     name: '20260929_000000_notification_coverage',
+  },
+  {
+    up: migration_20260929_000000_review_aggregates.up,
+    down: migration_20260929_000000_review_aggregates.down,
+    name: '20260929_000000_review_aggregates',
   },
   {
     up: migration_20260929_010000_notification_event_key.up,
@@ -197,5 +201,25 @@ export const migrations = [
     up: migration_20261002_000000_library_card_inactive_status.up,
     down: migration_20261002_000000_library_card_inactive_status.down,
     name: '20261002_000000_library_card_inactive_status',
+  },
+  {
+    up: migration_20261002_195735_account_reauthentication.up,
+    down: migration_20261002_195735_account_reauthentication.down,
+    name: '20261002_195735_account_reauthentication',
+  },
+  {
+    up: migration_20261002_202135_email_otp_challenges.up,
+    down: migration_20261002_202135_email_otp_challenges.down,
+    name: '20261002_202135_email_otp_challenges',
+  },
+  {
+    up: migration_20261002_211242_account_email_registry.up,
+    down: migration_20261002_211242_account_email_registry.down,
+    name: '20261002_211242_account_email_registry',
+  },
+  {
+    up: migration_20261003_002808_account_security_audit.up,
+    down: migration_20261003_002808_account_security_audit.down,
+    name: '20261003_002808_account_security_audit',
   },
 ]

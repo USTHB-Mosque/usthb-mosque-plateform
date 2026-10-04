@@ -56,7 +56,9 @@ export async function GET(request: NextRequest) {
       return redirectClearingState(request, '/auth/login')
     }
 
-    const { token, exp } = await createSessionForUser(payload, user)
+    const { token, exp } = await createSessionForUser(payload, user, {
+      allowedRoles: ['user', 'librarian'],
+    })
     await setPayloadTokenCookie(token, exp)
 
     return respondWithSameOriginDashboardNavigation()

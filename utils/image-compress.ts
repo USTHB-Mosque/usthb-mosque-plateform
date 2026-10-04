@@ -3,9 +3,13 @@
  * JPEG of the given `quality`, so uploads stay small. Purely client-side.
  */
 export async function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<File> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new window.Image()
     const url = URL.createObjectURL(file)
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('ملف الصورة غير صالح'))
+    }
     img.onload = () => {
       URL.revokeObjectURL(url)
       let w = img.width
@@ -17,11 +21,19 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.8): 
       const canvas = document.createElement('canvas')
       canvas.width = w
       canvas.height = h
-      const ctx = canvas.getContext('2d')!
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('تعذر معالجة الصورة'))
+        return
+      }
       ctx.drawImage(img, 0, 0, w, h)
       canvas.toBlob(
         (blob) => {
-          resolve(new File([blob!], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
+          if (!blob) {
+            reject(new Error('تعذر معالجة الصورة'))
+            return
+          }
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
         },
         'image/jpeg',
         quality,

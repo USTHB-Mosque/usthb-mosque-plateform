@@ -6,6 +6,16 @@ import { ensureLibraryCard } from '@/utils/library-cards'
 import { userSituationsConfigArray } from '@/utils/constants/users'
 import { notifyAdmins } from '@/features/notifications/server/audiences'
 import { createNotification } from '@/features/notifications/server/create-notification'
+import {
+  securityBeforeLogin,
+  securityBeforeValidate,
+  filterAssuredSessions,
+  securityBeforeOperation,
+  securityAfterLogin,
+  securityAfterUserChange,
+} from '@/shared/lib/account-security'
+import { syncPrimaryEmail } from '@/shared/lib/account-emails'
+import { validateProfilePicture } from '@/shared/lib/profile-picture'
 
 /**
  * Roles a User self-registers as. Law 18-07 requires a reviewed identity
@@ -30,6 +40,9 @@ function isExternalWrite(req: { payloadAPI?: string }): boolean {
 export const User: CollectionConfig = {
   slug: 'users',
   hooks: {
+    beforeOperation: [securityBeforeOperation],
+    afterLogin: [securityAfterLogin],
+    afterRead: [filterAssuredSessions],
     beforeValidate: [
       async ({ data, operation, req }) => {
         // Payload always hands `beforeValidate` the incoming document on create
@@ -90,6 +103,8 @@ export const User: CollectionConfig = {
 
         return data
       },
+      securityBeforeValidate,
+      validateProfilePicture,
     ],
     beforeLogin: [
       async ({ req, user }) => {
@@ -100,8 +115,11 @@ export const User: CollectionConfig = {
         }
         return user
       },
+      securityBeforeLogin,
     ],
     afterChange: [
+      syncPrimaryEmail,
+      securityAfterUserChange,
       async ({ doc, req, operation, previousDoc }) => {
         if (operation === 'create') {
           await logActivity(req.payload, doc.id, 'account_created', undefined, req)
