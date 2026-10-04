@@ -1,7 +1,7 @@
 import { getAdminSettingsData } from '@/features/admin/server/account'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
-import AdminSettingsNotificationPreferences from '@/components/admin-views/settings/AdminSettingsNotificationPreferences'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
+import AdminSettingsNotificationPreferences from '@/features/admin/components/views/settings/AdminSettingsNotificationPreferences'
 
 export default async function AdminNotificationsSettingsPage() {
   const data = await getAdminSettingsData()

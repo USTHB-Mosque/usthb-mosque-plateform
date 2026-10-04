@@ -161,6 +161,7 @@ export async function createTestLoan(
     dueDate?: string
     returnDate?: string
     refusalReason?: string
+    pickupWindowExpiresAt?: string
   },
 ): Promise<Loan> {
   return (await payload.create({
@@ -176,6 +177,7 @@ export async function createTestLoan(
       ...(opts.dueDate ? { dueDate: opts.dueDate } : {}),
       ...(opts.returnDate ? { returnDate: opts.returnDate } : {}),
       ...(opts.refusalReason ? { refusalReason: opts.refusalReason } : {}),
+      ...(opts.pickupWindowExpiresAt ? { pickupWindowExpiresAt: opts.pickupWindowExpiresAt } : {}),
     },
     overrideAccess: true,
   })) as Loan

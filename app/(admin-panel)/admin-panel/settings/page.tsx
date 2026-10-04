@@ -1,6 +1,6 @@
 import { getAdminSettingsData } from '@/features/admin/server/account'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
 import AccountInfoForm from '@/features/admin/components/settings/AccountInfoForm'
 
 export default async function AdminSettingsPage() {

@@ -1,5 +1,5 @@
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import ReviewsView from '@/components/admin-views/reviews/ReviewsView'
+import ReviewsView from '@/features/admin/components/views/reviews/ReviewsView'
 import { getAdminReviews, getReviewKpis } from '@/features/admin/server/reviews'
 
 export const dynamic = 'force-dynamic'

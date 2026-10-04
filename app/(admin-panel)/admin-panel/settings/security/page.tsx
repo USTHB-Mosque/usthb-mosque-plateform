@@ -2,7 +2,7 @@ import { getAdminSecurityData } from '@/features/admin/server/account'
 import { getAdminEmailSettings } from '@/features/admin/server/emails'
 import { getAdminTwoFactorSettings } from '@/features/admin/server/security'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
 import SecurityHub from '@/features/admin/components/settings/SecurityHub'
 
 export default async function AdminSecuritySettingsPage() {

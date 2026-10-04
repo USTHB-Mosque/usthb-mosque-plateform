@@ -12,3 +12,4 @@ export * from './server/activities'
 export * from './server/activity-registrations'
 
 export { bulkSoftDeleteBooks, deleteBook, softDeleteBook } from './server/books'
+export { getPendingLoansCount } from './server/loans'

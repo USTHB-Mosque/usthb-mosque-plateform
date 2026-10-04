@@ -1,4 +1,4 @@
-import ExtensionsQueue from '@/components/admin-views/loans/ExtensionsQueue'
+import ExtensionsQueue from '@/features/admin/components/views/loans/ExtensionsQueue'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 /**

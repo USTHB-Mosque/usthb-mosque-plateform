@@ -29,7 +29,7 @@ import {
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import BulkActionsBar from '@/shared/common/BulkActionsBar'
-import TableCheckbox from '@/components/admin-views/shared/TableCheckbox'
+import TableCheckbox from '@/shared/ui/table-checkbox'
 import { bookTypesConfigArray } from '@/utils/constants/books'
 import { languagesConfigArray } from '@/utils/constants/data'
 import { borrowBook } from '@/features/library/server/borrow-book'

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getAdminUser, getAdminUserHistory } from '@/features/admin/server/users'
-import UserDetail from '@/components/admin-views/users/UserDetail'
+import UserDetail from '@/features/admin/components/views/users/UserDetail'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {

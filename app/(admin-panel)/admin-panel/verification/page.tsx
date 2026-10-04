@@ -1,5 +1,5 @@
 import { getPendingVerifications } from '@/features/admin/server/verification'
-import VerificationQueue from '@/components/admin-views/verification/VerificationQueue'
+import VerificationQueue from '@/features/admin/components/views/verification/VerificationQueue'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function VerificationPage() {

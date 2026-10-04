@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getAdminActivity, getAdminActivityRegistrations } from '@/features/admin'
-import AdminActivityDetail from '@/components/admin-views/activities/AdminActivityDetail'
-import AdminRegistrations from '@/components/admin-views/activities/AdminRegistrations'
+import AdminActivityDetail from '@/features/admin/components/views/activities/AdminActivityDetail'
+import AdminRegistrations from '@/features/admin/components/views/activities/AdminRegistrations'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminActivityDetailPage({

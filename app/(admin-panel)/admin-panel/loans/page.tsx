@@ -1,5 +1,5 @@
 import { getAdminLoansStats } from '@/features/admin/server/loans'
-import Loans from '@/components/admin-views/loans/Loans'
+import Loans from '@/features/admin/components/views/loans/Loans'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function LoansPage() {

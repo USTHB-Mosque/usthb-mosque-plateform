@@ -1,5 +1,5 @@
 import { getAdminDashboardStats } from '@/features/admin/server/dashboard'
-import AdminDashboard from '@/components/admin-views/dashboard/Dashboard'
+import AdminDashboard from '@/features/admin/components/views/dashboard/Dashboard'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminDashboardPage() {
