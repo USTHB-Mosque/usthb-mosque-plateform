@@ -407,7 +407,7 @@
     @apply text-base border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background-2 text-foreground;
   }
   html {
     @apply font-sans;

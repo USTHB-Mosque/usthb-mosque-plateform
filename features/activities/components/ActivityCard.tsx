@@ -84,7 +84,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
   return (
     <article
       dir="rtl"
-      className={`group/activity relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer sm:h-[320px] sm:flex-row ${className}`}
+      className={`group/activity relative flex w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)] cursor-pointer sm:min-h-[320px] sm:flex-row ${className}`}
       aria-labelledby={`activity-title-${activity.id}`}
       onClick={handleOpen}
       onKeyDown={(e) => {
@@ -93,7 +93,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
       tabIndex={0}
       role="link"
     >
-      <div className="relative aspect-[16/9] w-full flex-none shrink-0 overflow-hidden border-b border-b-stroke-grey bg-cover bg-[50%_50%] sm:h-full sm:w-[45%] sm:max-w-[500px] sm:aspect-auto sm:border-e sm:border-b-0 sm:border-e-stroke-grey">
+      {/* #164: no sm:h-full — the card only has min-h, so a percentage
+          height collapses to 0 and hides the photo above 640px. Flex
+          stretch on the row gives the image the card's real height. */}
+      <div className="relative aspect-[16/9] w-full flex-none shrink-0 overflow-hidden border-b border-b-stroke-grey bg-cover bg-[50%_50%] sm:w-[45%] sm:max-w-[500px] sm:aspect-auto sm:border-e sm:border-b-0 sm:border-e-stroke-grey">
         {imageUrl && (
           <Image
             src={imageUrl}
@@ -129,9 +132,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, className, href }
                 </span>
               </span>
             </div>
+            {/* #164: titles wrap instead of being clipped to one line. */}
             <h2
               id={`activity-title-${activity.id}`}
-              className="relative w-full max-w-full items-center self-start text-2xl leading-[28px] font-khalid text-blue-400 line-clamp-1"
+              className="relative w-full max-w-full items-center self-start text-2xl leading-[28px] font-khalid text-blue-400"
             >
               {activity.title}
             </h2>

@@ -82,8 +82,8 @@ export default function LoginForm() {
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen">
-      {/* Image Section - Right */}
-      <div className="w-full lg:w-1/2 p-3 sm:p-4 order-1">
+      {/* Image Section - Right — phones render the form alone */}
+      <div className="order-1 hidden w-full p-3 sm:p-4 md:block lg:w-1/2">
         <div className="w-full h-[30vh] sm:h-[40vh] lg:h-full rounded-2xl sm:rounded-3xl overflow-hidden relative">
           <Image
             src="/static/images/login.jpg"

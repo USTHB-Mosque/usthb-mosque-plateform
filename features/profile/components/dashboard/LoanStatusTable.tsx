@@ -40,9 +40,10 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
 
       <ul className="divide-y divide-border sm:hidden">
         <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
-          <span className="w-[60%] font-medium text-muted-foreground md:w-[75%]">الكتاب</span>
-          <span className="font-medium text-muted-foreground">تاريخ الأخذ</span>
-          <span className="size-2.5 shrink-0" />
+          <span className="w-[60%] whitespace-nowrap font-medium text-muted-foreground md:w-[75%]">
+            الكتاب
+          </span>
+          <span className="whitespace-nowrap font-medium text-muted-foreground">تاريخ الأخذ</span>
         </li>
         {loans.length === 0 ? (
           <li className="px-4 py-10 text-center text-muted-foreground">
@@ -57,7 +58,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
               <li
                 key={loan.id}
                 onClick={() => openDetails(loan)}
-                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3"
+                className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-3 ${config.tintClassName}`}
               >
                 <span className="min-w-0 w-[60%] font-medium text-card-foreground md:w-[75%]">
                   {book?.title || 'كتاب'}
@@ -65,11 +66,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
                 <span className="shrink-0 text-sm text-muted-foreground">
                   {format(new Date(loan.loanDate), 'dd/MM/yyyy', { locale: arDZ })}
                 </span>
-                <span
-                  className={`size-2.5 shrink-0 rounded-full ${config.dotClassName}`}
-                  title={config.label}
-                  aria-label={config.label}
-                />
+                <span className="sr-only">{config.label}</span>
               </li>
             )
           })
@@ -80,16 +77,16 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-background-2">
-              <th className="w-[35%] px-4 py-3 text-right font-medium text-muted-foreground xl:w-[31%]">
+              <th className="w-[35%] whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-[31%]">
                 الكتاب
               </th>
-              <th className="w-1/4 px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
+              <th className="w-1/4 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
                 الرمز
               </th>
-              <th className="w-1/4 px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
+              <th className="w-1/4 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
                 تاريخ الأخذ
               </th>
-              <th className="w-[15%] px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/5 xl:text-right">
+              <th className="w-[15%] whitespace-nowrap px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/5 xl:text-right">
                 <span className="xl:hidden" aria-hidden="true">
                   &nbsp;
                 </span>
@@ -181,7 +178,7 @@ const LoanStatusTable: React.FC<LoanStatusTableProps> = ({ loans }) => {
         </table>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 xl:hidden">
+      <div className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 sm:flex xl:hidden">
         <span className="text-xs font-medium text-muted-foreground">حالة الطلب:</span>
         {Object.entries(statusConfig).map(([key, config]) => (
           <span key={key} className="flex items-center gap-1.5 text-xs text-card-foreground">

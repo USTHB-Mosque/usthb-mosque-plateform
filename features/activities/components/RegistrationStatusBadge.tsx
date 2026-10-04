@@ -10,42 +10,49 @@ export type EffectiveRegistrationStatus =
 
 export const statusConfig: Record<
   EffectiveRegistrationStatus,
-  { label: string; className: string; dotClassName: string }
+  { label: string; className: string; dotClassName: string; tintClassName: string }
 > = {
   pending: {
     label: 'قيد المراجعة',
     className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
     dotClassName: 'bg-amber-500',
+    tintClassName: 'bg-amber-500/15',
   },
   registered: {
     label: 'مسجّل',
     className: 'bg-[#0DEAC2]/15 text-[#0AAFC2] dark:text-[#4dedff]',
     dotClassName: 'bg-[#0AAFC2]',
+    tintClassName: 'bg-[#0DEAC2]/15',
   },
   refused: {
     label: 'مرفوض',
     className: 'bg-red-500/15 text-red-700 dark:text-red-200',
     dotClassName: 'bg-red-500',
+    tintClassName: 'bg-red-500/15',
   },
   quota_rejected: {
     label: 'اكتمل العدد',
     className: 'bg-red-500/15 text-red-700 dark:text-red-200',
     dotClassName: 'bg-red-500',
+    tintClassName: 'bg-red-500/15',
   },
   cancelled: {
     label: 'ملغى',
     className: 'bg-muted text-muted-foreground',
     dotClassName: 'bg-muted-foreground',
+    tintClassName: 'bg-muted',
   },
   attended: {
     label: 'تم الحضور',
     className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
     dotClassName: 'bg-emerald-500',
+    tintClassName: 'bg-emerald-500/15',
   },
   passed: {
     label: 'مكتمل',
     className: 'bg-muted text-muted-foreground',
     dotClassName: 'bg-muted-foreground/30',
+    tintClassName: 'bg-muted',
   },
 }
 

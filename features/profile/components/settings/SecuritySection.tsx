@@ -256,13 +256,17 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
                   )}
                 >
                   {/* Info side (right in RTL) */}
-                  <div className="flex shrink-0 items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-main-15">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-main-15">
                       <Icon className="h-5 w-5 text-primary-300" />
                     </div>
-                    <div className="flex flex-col shrink-0 items-start gap-2">
-                      <span className="text-base font-alyamama text-foreground">{item.label}</span>
-                      <span className="text-sm font-alyamama text-grey-500">{item.subtitle}</span>
+                    <div className="flex min-w-0 flex-col items-start gap-2">
+                      <span className="break-words text-base font-alyamama text-foreground">
+                        {item.label}
+                      </span>
+                      <span className="break-words text-sm font-alyamama text-grey-500">
+                        {item.subtitle}
+                      </span>
                     </div>
                   </div>
 

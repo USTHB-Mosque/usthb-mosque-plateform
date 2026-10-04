@@ -99,18 +99,24 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
           />
         </div>
 
-        <Separator />
+        {/* #164: below lg the register button lives in the fixed bottom bar,
+            so the separator would dangle at the card's end — hide it there. */}
+        <Separator className={!hideRegister && !isRegistered ? 'max-lg:hidden' : undefined} />
 
         {!hideRegister ? (
-          <div>
-            {isRegistered ? (
-              <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
-                <CheckCircle2 className="size-5 text-[#0DE9C3]" />
-                <span className="font-alyamama text-sm font-medium text-[#0AAFC2] dark:text-[#4dedff]">
-                  أنت مسجّل في هذا النشاط
-                </span>
-              </div>
-            ) : (
+          isRegistered ? (
+            <div className="flex items-center gap-2 rounded-lg border border-[#0DE9C3]/30 bg-[#0DE9C3]/10 px-4 py-3">
+              <CheckCircle2 className="size-5 text-[#0DE9C3]" />
+              <span className="font-alyamama text-sm font-medium text-[#0AAFC2] dark:text-[#4dedff]">
+                أنت مسجّل في هذا النشاط
+              </span>
+            </div>
+          ) : (
+            // #164: on phones the registration CTA becomes a fixed bar pinned
+            // to the bottom of the viewport; both detail pages pad their
+            // content so the schedule and the footer always scroll clear of
+            // it. lg+ keeps the in-card button. z-30 sits under the z-40 menu.
+            <div className="max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-30 max-lg:border-t max-lg:border-border max-lg:bg-card max-lg:px-4 max-lg:py-3 max-lg:shadow-[0_-4px_16px_0_rgba(0,0,0,0.08)]">
               <LandingCtaButton
                 label={getButtonLabel()}
                 onClick={handleRegister}
@@ -118,8 +124,8 @@ const ActivityDescription: React.FC<ActivityDescriptionProps> = ({
                 loading={isRegistering}
                 ariaLabel={getButtonLabel()}
               />
-            )}
-          </div>
+            </div>
+          )
         ) : null}
       </div>
     </Card>

@@ -42,7 +42,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
       href={destination}
       dir="rtl"
       className={cn(
-        'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
+        'group/card relative flex h-full w-full flex-col items-center overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white dark:bg-fill-main transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
         className,
       )}
     >
@@ -58,7 +58,7 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
         {isAvailable && (
-          <div className="absolute top-4 end-4 z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 bg-success-50 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px]">
+          <div className="absolute top-4 start-4 z-10 flex h-fit w-fit items-center justify-center gap-[5.36px] rounded-lg border border-solid border-fill-white/10 bg-success-50 px-[15px] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.40),inset_1px_0_0_rgba(255,255,255,0.32),inset_0_-1px_4px_rgba(0,0,0,0.13),inset_-1px_0_4px_rgba(0,0,0,0.11)] backdrop-blur-[6px]">
             <span className="relative flex w-fit items-center justify-center text-center font-alyamama text-sm font-normal leading-[normal] text-fill-white">
               متوفر
             </span>
@@ -91,7 +91,8 @@ const LandingBookCard: React.FC<LandingBookCardProps> = ({
         </div>
 
         <div className="relative flex w-full flex-none flex-col items-start gap-0.5 self-stretch">
-          <h2 className="relative mt-[-1.00px] flex w-fit items-center justify-center font-alyamama text-base font-bold leading-[normal] tracking-[0.16px] text-blue-400 line-clamp-1">
+          {/* #164: titles wrap instead of being clipped to one line. */}
+          <h2 className="relative mt-[-1.00px] flex w-fit items-center justify-center font-alyamama text-base font-bold leading-[normal] tracking-[0.16px] text-blue-400">
             {title}
           </h2>
           <div className="relative flex w-full flex-none items-center justify-start gap-2 self-stretch">

@@ -12,6 +12,7 @@ interface LandingCtaButtonProps {
   type?: 'button' | 'submit' | 'reset'
   disabled?: boolean
   loading?: boolean
+  size?: 'lg' | 'default' | 'sm'
 }
 
 const LandingCtaButton: React.FC<LandingCtaButtonProps> = ({
@@ -22,12 +23,13 @@ const LandingCtaButton: React.FC<LandingCtaButtonProps> = ({
   type = 'button',
   disabled = false,
   loading = false,
+  size = 'lg',
 }) => {
   return (
     <Button
       type={type}
       onClick={onClick}
-      size="lg"
+      size={size}
       disabled={disabled || loading}
       aria-label={ariaLabel ?? label}
       className={cn(

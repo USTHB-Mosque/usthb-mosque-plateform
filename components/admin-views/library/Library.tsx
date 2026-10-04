@@ -35,6 +35,7 @@ import ErrorData from '@/shared/common/ErrorData'
 import BooksTable from '@/features/library/components/BooksTable'
 import BooksTableSkeleton from '@/features/library/components/BooksTableSkeleton'
 import ViewSwitch, { CatalogView } from '@/features/library/components/ViewSwitch'
+import { useMediaQuery } from '@/shared/hooks/use-media-query'
 import type { Book } from '@/payload-types'
 
 interface LibraryProps {
@@ -55,6 +56,9 @@ const statCards = [
 
 const Library: React.FC<LibraryProps> = ({ stats }) => {
   const [view, setView] = useState<CatalogView>('table')
+  // #164: below md the switch is hidden, so the grid is the only view.
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const effectiveView: CatalogView = isDesktop ? view : 'grid'
   const [addBookOpen, setAddBookOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [editingBook, setEditingBook] = useState<Book | null>(null)
@@ -208,7 +212,7 @@ const Library: React.FC<LibraryProps> = ({ stats }) => {
               resetValue: '',
             },
           ]}
-          actions={<ViewSwitch view={view} onViewChange={setView} />}
+          actions={<ViewSwitch view={effectiveView} onViewChange={setView} />}
           filterButtonClassName="bg-card"
         />
       </div>
@@ -221,7 +225,7 @@ const Library: React.FC<LibraryProps> = ({ stats }) => {
         emptyFallback={<EmptyData title="لم يتم العثور على أي كتب" />}
         errorFallback={<ErrorData />}
         loader={
-          view === 'grid' ? (
+          effectiveView === 'grid' ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 12 }).map((_, index) => (
                 <BookCardSkeleton key={index} />
@@ -232,7 +236,7 @@ const Library: React.FC<LibraryProps> = ({ stats }) => {
           )
         }
       >
-        {view === 'grid' ? (
+        {effectiveView === 'grid' ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {books.map((book) => (
               <BookCard key={book.id} book={book} href={`/admin-panel/library/book/${book.id}`} />

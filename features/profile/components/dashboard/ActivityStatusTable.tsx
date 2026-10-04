@@ -36,18 +36,24 @@ const STATUS_LABELS: Record<string, string> = {
   attended: 'حاضر',
 }
 
-const STATUS_COLORS: Record<string, { className: string; dotClassName: string }> = {
+const STATUS_COLORS: Record<
+  string,
+  { className: string; dotClassName: string; tintClassName: string }
+> = {
   upcoming: {
     className: 'bg-primary-300/10 text-primary-300',
     dotClassName: 'bg-primary-300',
+    tintClassName: 'bg-primary-300/10',
   },
   past: {
     className: 'bg-muted text-muted-foreground',
     dotClassName: 'bg-muted-foreground/60',
+    tintClassName: 'bg-muted',
   },
   attended: {
     className: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
     dotClassName: 'bg-green-600',
+    tintClassName: 'bg-green-100 dark:bg-green-500/15',
   },
 }
 
@@ -65,9 +71,12 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
 
       <ul className="divide-y divide-border sm:hidden">
         <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
-          <span className="w-[60%] font-medium text-muted-foreground md:w-[75%]">النشاط</span>
-          <span className="font-medium text-muted-foreground">تاريخ بدأ النشاط</span>
-          <span className="size-2.5 shrink-0" />
+          <span className="w-[60%] whitespace-nowrap font-medium text-muted-foreground md:w-[75%]">
+            النشاط
+          </span>
+          <span className="whitespace-nowrap font-medium text-muted-foreground">
+            تاريخ بدأ النشاط
+          </span>
         </li>
         {registrations.length === 0 ? (
           <li className="px-4 py-10 text-center text-muted-foreground">لا توجد تسجيلات حالياً.</li>
@@ -80,7 +89,7 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
               <li
                 key={registration.id}
                 onClick={() => router.push(`/user/activities/${activityId}`)}
-                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3"
+                className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-3 ${STATUS_COLORS[status].tintClassName}`}
               >
                 <span className="min-w-0 w-[60%] font-medium text-card-foreground md:w-[75%]">
                   {activity?.title || 'نشاط'}
@@ -90,11 +99,7 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
                     ? format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: arDZ })
                     : '—'}
                 </span>
-                <span
-                  className={`size-2.5 shrink-0 rounded-full ${STATUS_COLORS[status].dotClassName}`}
-                  title={STATUS_LABELS[status]}
-                  aria-label={STATUS_LABELS[status]}
-                />
+                <span className="sr-only">{STATUS_LABELS[status]}</span>
               </li>
             )
           })
@@ -105,16 +110,16 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-background-2">
-              <th className="w-[35%] px-4 py-3 text-right font-medium text-muted-foreground xl:w-[31%]">
+              <th className="w-[35%] whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-[31%]">
                 النشاط
               </th>
-              <th className="w-1/4 px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
+              <th className="w-1/4 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
                 تاريخ بدأ النشاط
               </th>
-              <th className="w-1/4 px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
+              <th className="w-1/4 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground xl:w-1/5">
                 مكان النشاط
               </th>
-              <th className="w-[15%] px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/5 xl:text-right">
+              <th className="w-[15%] whitespace-nowrap px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/5 xl:text-right">
                 <span className="xl:hidden" aria-hidden="true">
                   &nbsp;
                 </span>
@@ -211,7 +216,7 @@ const ActivityStatusTable: React.FC<ActivityStatusTableProps> = ({ registrations
         </table>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 xl:hidden">
+      <div className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 sm:flex xl:hidden">
         <span className="text-xs font-medium text-muted-foreground">حالة الطلب:</span>
         {Object.entries(STATUS_LABELS).map(([key, label]) => (
           <span key={key} className="flex items-center gap-1.5 text-xs text-card-foreground">

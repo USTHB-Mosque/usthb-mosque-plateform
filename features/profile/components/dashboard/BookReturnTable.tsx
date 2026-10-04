@@ -29,7 +29,7 @@ const STATUS_LEGEND = [
 
 function getDueDateStatus(
   dueDate: string | null | undefined,
-): { label: string; dotClassName: string; badgeClassName: string } | null {
+): { label: string; dotClassName: string; badgeClassName: string; tintClassName: string } | null {
   if (!dueDate) return null
   const due = new Date(dueDate).getTime()
   const now = Date.now()
@@ -41,17 +41,20 @@ function getDueDateStatus(
       label: 'متأخر',
       dotClassName: 'bg-[#C0392B] dark:bg-[#ffb9b2]',
       badgeClassName: 'bg-[#FF6B6B]/15 text-[#C0392B] dark:text-[#ffb9b2]',
+      tintClassName: 'bg-[#FF6B6B]/15',
     }
   if (diff <= threeDays)
     return {
       label: 'قريب الموعد',
       dotClassName: 'bg-[#B45309] dark:bg-[#ffcaa2]',
       badgeClassName: 'bg-[#FFB020]/15 text-[#B45309] dark:text-[#ffcaa2]',
+      tintClassName: 'bg-[#FFB020]/15',
     }
   return {
     label: 'ضمن الموعد',
     dotClassName: 'bg-[#22C55E]',
     badgeClassName: 'bg-[#22C55E]/15 text-[#15803D] dark:text-[#00f15a]',
+    tintClassName: 'bg-[#22C55E]/15',
   }
 }
 
@@ -77,9 +80,10 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
 
       <ul className="divide-y divide-border sm:hidden">
         <li className="flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-background-2 px-4 py-3 text-right">
-          <span className="w-[60%] font-medium text-muted-foreground md:w-[75%]">الكتاب</span>
-          <span className="font-medium text-muted-foreground">تاريخ الإرجاع</span>
-          <span className="size-2.5 shrink-0" />
+          <span className="w-[60%] whitespace-nowrap font-medium text-muted-foreground md:w-[75%]">
+            الكتاب
+          </span>
+          <span className="whitespace-nowrap font-medium text-muted-foreground">تاريخ الإرجاع</span>
         </li>
         {loans.length === 0 ? (
           <li className="px-2 py-10 text-center text-muted-foreground">لا توجد إعارات حالية.</li>
@@ -91,7 +95,7 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
               <li
                 key={loan.id}
                 onClick={() => openDetails(loan)}
-                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3"
+                className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-3 ${dueStatus ? dueStatus.tintClassName : ''}`}
               >
                 <span className="min-w-0 w-[60%] font-medium text-card-foreground md:w-[75%]">
                   {book?.title || 'كتاب'}
@@ -101,13 +105,7 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
                     ? format(new Date(loan.dueDate), 'dd/MM/yyyy', { locale: arDZ })
                     : '—'}
                 </span>
-                {dueStatus && (
-                  <span
-                    className={`size-2.5 shrink-0 rounded-full ${dueStatus.dotClassName}`}
-                    title={dueStatus.label}
-                    aria-label={dueStatus.label}
-                  />
-                )}
+                {dueStatus && <span className="sr-only">{dueStatus.label}</span>}
               </li>
             )
           })
@@ -119,19 +117,19 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
           <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr className="border-b border-border bg-background-2">
-                <th className="w-1/4 px-4 py-3 text-right font-medium text-muted-foreground lg:w-[35%] xl:w-[24%]">
+                <th className="w-1/4 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground lg:w-[35%] xl:w-[24%]">
                   الكتاب
                 </th>
-                <th className="w-1/5 px-4 py-3 text-right font-medium text-muted-foreground lg:w-1/4 xl:w-1/6">
+                <th className="w-1/5 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground lg:w-1/4 xl:w-1/6">
                   الرمز
                 </th>
-                <th className="w-1/5 px-4 py-3 text-right font-medium text-muted-foreground lg:w-1/4 xl:w-1/6">
+                <th className="w-1/5 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground lg:w-1/4 xl:w-1/6">
                   تاريخ الإرجاع
                 </th>
-                <th className="hidden w-1/5 px-4 py-3 text-right font-medium text-muted-foreground sm:table-cell lg:hidden xl:table-cell xl:w-1/6">
+                <th className="hidden w-1/5 whitespace-nowrap px-4 py-3 text-right font-medium text-muted-foreground sm:table-cell lg:hidden xl:table-cell xl:w-1/6">
                   ساعة الإرجاع
                 </th>
-                <th className="w-[15%] px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/6 xl:text-right">
+                <th className="w-[15%] whitespace-nowrap px-4 py-3 text-center font-medium text-muted-foreground xl:w-1/6 xl:text-right">
                   <span className="xl:hidden" aria-hidden="true">
                     &nbsp;
                   </span>
@@ -233,7 +231,7 @@ const BookReturnTable: React.FC<BookReturnTableProps> = ({ loans, className }) =
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 xl:hidden">
+      <div className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border bg-card px-4 py-3 sm:flex xl:hidden">
         <span className="text-xs font-medium text-muted-foreground">الحالة:</span>
         {STATUS_LEGEND.map((item) => (
           <span key={item.label} className="flex items-center gap-1.5 text-xs text-card-foreground">

@@ -35,7 +35,7 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
       href={destination}
       dir="rtl"
       className={cn(
-        'group/card relative flex h-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-main px-0 pt-0 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
+        'group/card relative flex h-full flex-col items-center gap-5 overflow-hidden rounded-xl border border-solid border-stroke-grey bg-fill-white dark:bg-fill-main px-0 pt-0 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_8px_30px_rgba(10,175,146,0.15)]',
         className,
       )}
     >
@@ -83,7 +83,8 @@ const BlogArticleCard: React.FC<BlogArticleCardProps> = ({ article, className, h
           </div>
           <div className="relative flex w-full flex-none flex-col items-start gap-2 self-stretch">
             <div className="relative flex w-full flex-none items-center justify-center gap-2.5 self-stretch px-4 py-0">
-              <h2 className="relative mt-[-1.00px] flex flex-1 items-center justify-start font-khalid text-xl font-normal leading-[normal] tracking-[0.20px] text-blue-400 line-clamp-1">
+              {/* #164: titles wrap instead of being clipped to one line. */}
+              <h2 className="relative mt-[-1.00px] flex flex-1 items-center justify-start font-khalid text-xl font-normal leading-[normal] tracking-[0.20px] text-blue-400">
                 {title}
               </h2>
             </div>

@@ -179,8 +179,8 @@ export default function RegisterWizard() {
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen">
-      {/* Image Section - Left */}
-      <div className="w-full lg:w-1/2 p-3 sm:p-4 order-2">
+      {/* Image Section - Left — phones render the form alone */}
+      <div className="order-2 hidden w-full p-3 sm:p-4 md:block lg:w-1/2">
         <div className="w-full h-[30vh] sm:h-[40vh] lg:h-full rounded-2xl sm:rounded-3xl overflow-hidden relative">
           <Image
             src={stepImages[step as keyof typeof stepImages]}
@@ -457,7 +457,7 @@ export default function RegisterWizard() {
                                   استيراد شهادة المدرسة
                                 </span>
                                 <span className="block text-xs text-gray-500">
-                                  PDF, JPG, PNG - اضغط للاختيار
+                                  PDF, JPG, PNG — حتى 5 ميغابايت، اضغط للاختيار
                                 </span>
                               </>
                             )}

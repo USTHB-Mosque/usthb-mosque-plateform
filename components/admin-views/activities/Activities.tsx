@@ -16,6 +16,7 @@ import EmptyData from '@/shared/common/EmptyData'
 import ErrorData from '@/shared/common/ErrorData'
 import ActivitiesTable from './ActivitiesTable'
 import ViewSwitch, { CatalogView } from '@/features/library/components/ViewSwitch'
+import { useMediaQuery } from '@/shared/hooks/use-media-query'
 import StatCards from '@/components/admin-views/shared/StatCards'
 import { Pagination } from '@/shared/common/Pagination'
 import type { Activity } from '@/payload-types'
@@ -43,6 +44,9 @@ const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) =>
     if (typeof window === 'undefined') return 'table'
     return localStorage.getItem(VIEW_KEY) === 'table' ? 'table' : 'grid'
   })
+  // #164: below md the switch is hidden, so the grid is the only view.
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const effectiveView: CatalogView = isDesktop ? view : 'grid'
   const [addOpen, setAddOpen] = useState(false)
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null)
 
@@ -157,7 +161,7 @@ const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) =>
             },
             placeholder: 'عنوان النشاط، المشرف ...',
           }}
-          actions={<ViewSwitch view={view} onViewChange={setView} />}
+          actions={<ViewSwitch view={effectiveView} onViewChange={setView} />}
           filterButtonClassName="bg-card"
         />
       </div>
@@ -186,7 +190,7 @@ const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) =>
             emptyFallback={<EmptyData title="لم يتم العثور على أي أنشطة" />}
             errorFallback={<ErrorData />}
             loader={
-              view === 'grid' ? (
+              effectiveView === 'grid' ? (
                 <div className="grid grid-cols-1 gap-6">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <ActivityCardSkeleton key={index} />
@@ -197,7 +201,7 @@ const Activities: React.FC<ActivitiesProps> = ({ stats, calendarActivities }) =>
               )
             }
           >
-            {view === 'grid' ? (
+            {effectiveView === 'grid' ? (
               <div className="grid grid-cols-1 gap-6">
                 {activities.map((activity) => (
                   <ActivityCard
