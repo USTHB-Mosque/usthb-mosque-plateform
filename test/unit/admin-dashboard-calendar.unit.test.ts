@@ -5,7 +5,7 @@ import {
   buildCalendarEvents,
   buildCalendarEventsForLoans,
   buildCalendarEventsForPickups,
-} from '@/components/admin-views/dashboard/calendar-events'
+} from '@/features/admin/components/views/dashboard/calendar-events'
 
 function loan(overrides: Partial<Loan>): Loan {
   return {

@@ -1,4 +1,4 @@
-import WaitlistQueue from '@/components/admin-views/loans/WaitlistQueue'
+import WaitlistQueue from '@/features/admin/components/views/loans/WaitlistQueue'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 /**

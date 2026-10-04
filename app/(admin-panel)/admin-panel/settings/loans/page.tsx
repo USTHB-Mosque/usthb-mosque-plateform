@@ -1,8 +1,8 @@
 import { getAdminSettingsData } from '@/features/admin/server/account'
 import { getAdminLoanSettings } from '@/features/admin/server/loan-settings'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
-import SettingsView from '@/components/admin-views/settings/SettingsView'
-import AdminLoanSettingsForm from '@/components/admin-views/settings/AdminLoanSettingsForm'
+import SettingsView from '@/features/admin/components/views/settings/SettingsView'
+import AdminLoanSettingsForm from '@/features/admin/components/views/settings/AdminLoanSettingsForm'
 
 export default async function AdminLoanSettingsPage() {
   const data = await getAdminSettingsData()

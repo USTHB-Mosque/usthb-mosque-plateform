@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getAdminBook } from '@/features/admin/server/books'
-import BookDetail from '@/components/admin-views/library/BookDetail'
+import BookDetail from '@/features/admin/components/views/library/BookDetail'
 import AdminPage from '@/shared/layouts/admin/AdminPage'
 
 export default async function AdminBookDetailPage({ params }: { params: Promise<{ id: string }> }) {

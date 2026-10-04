@@ -85,6 +85,25 @@ export async function getAdminLoansStats(): Promise<AdminLoansStats> {
   }
 }
 
+/**
+ * The sidebar badge: how many loans are waiting on an admin decision (#65).
+ *
+ * Deliberately a pure read, unlike `getAdminLoansStats` above, which drains
+ * the pickup-window sweep before counting. The admin layout renders on every
+ * navigation, so the badge must not write on the way past — a lapsed window is
+ * the queue's problem to settle when the queue is actually opened.
+ */
+export async function getPendingLoansCount(): Promise<number> {
+  const { payload, user } = await getAdminCtx()
+  const pending = await payload.count({
+    collection: 'loans',
+    where: { status: { equals: 'pending' } },
+    overrideAccess: false,
+    user,
+  })
+  return pending.totalDocs
+}
+
 export interface LoansPageResult {
   docs: Loan[]
   totalPages: number
