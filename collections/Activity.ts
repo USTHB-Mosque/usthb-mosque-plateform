@@ -1,13 +1,33 @@
 import { activitiesTypesConfigArray } from '@/utils/constants/activities'
+import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
+import { notifyMembers } from '@/features/notifications/server/audiences'
 
 export const Activity: CollectionConfig = {
   slug: 'activities',
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'type', 'location'],
-  }, access: {
+  },
+  access: {
     read: () => true,
+    ...adminWriteAccess(),
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await notifyMembers(req, {
+            type: 'activity',
+            title: 'نشاط جديد',
+            message: `نُشر النشاط «${doc.title}».`,
+            link: `/user/activities/${doc.id}`,
+            eventKey: `bulk:activity:${doc.id}`,
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {
@@ -20,6 +40,15 @@ export const Activity: CollectionConfig = {
       type: 'select',
       options: activitiesTypesConfigArray,
       required: true,
+    },
+    {
+      name: 'kind',
+      type: 'select',
+      defaultValue: 'event',
+      options: [
+        { label: 'فعالية', value: 'event' },
+        { label: 'نشاط مستمر', value: 'ongoing' },
+      ],
     },
     {
       name: 'image',
@@ -110,6 +139,7 @@ export const Activity: CollectionConfig = {
         },
       },
     },
+    { name: 'endDate', type: 'date', label: 'تاريخ الانتهاء' },
     {
       name: 'maxParticipants',
       type: 'number',

@@ -1,0 +1,100 @@
+import { describe, expect, it } from 'vitest'
+
+import {
+  formatRelativeArabicTime,
+  groupNotificationsByDay,
+} from '@/features/notifications/lib/notifications-format'
+import { FIXTURE_NOW as NOW, makeNotificationItem as item } from '@/features/notifications/fixtures'
+
+describe('formatRelativeArabicTime', () => {
+  it('says الآن for anything under a minute', () => {
+    expect(formatRelativeArabicTime(new Date(NOW.getTime() - 10_000).toISOString(), NOW)).toBe(
+      'الآن',
+    )
+  })
+
+  it('says منذ … دقيقة for a few minutes ago', () => {
+    const text = formatRelativeArabicTime(new Date(NOW.getTime() - 5 * 60_000).toISOString(), NOW)
+    expect(text).toBe('منذ 5 دقائق')
+  })
+
+  it('says منذ … ساعة for a few hours ago', () => {
+    const text = formatRelativeArabicTime(
+      new Date(NOW.getTime() - (3 * 3_600_000 + 60_000)).toISOString(),
+      NOW,
+    )
+    // arDZ may append تقريباً when the lower unit rounds; assert the unit stem.
+    expect(text).toMatch(/^منذ/)
+    expect(text).toContain('ساع')
+  })
+
+  it('says منذ … يوم for one to six days ago', () => {
+    const text = formatRelativeArabicTime(
+      new Date(NOW.getTime() - 2 * 86_400_000).toISOString(),
+      NOW,
+    )
+    expect(text).toContain('يوم')
+  })
+
+  it('keeps older notifications relative, leaving the absolute date for hover', () => {
+    const text = formatRelativeArabicTime(
+      new Date(NOW.getTime() - 30 * 86_400_000).toISOString(),
+      NOW,
+    )
+    expect(text).toMatch(/^منذ/)
+    expect(text).not.toMatch(/2026/)
+  })
+})
+
+describe('groupNotificationsByDay', () => {
+  it('splits items into اليوم, أمس and أقدم groups, keeping the sort order', () => {
+    const groups = groupNotificationsByDay(
+      [
+        item({ id: 1, createdAt: NOW.toISOString() }),
+        item({ id: 2, createdAt: new Date(NOW.getTime() - 86_400_000).toISOString() }),
+        item({ id: 3, createdAt: new Date(NOW.getTime() - 5 * 86_400_000).toISOString() }),
+        item({ id: 4, createdAt: NOW.toISOString() }),
+      ],
+      NOW,
+    )
+
+    expect(groups.map((group) => group.key)).toEqual(['today', 'yesterday', 'older'])
+    expect(groups[0]?.label).toBe('اليوم')
+    expect(groups[1]?.label).toBe('أمس')
+    expect(groups[2]?.label).toBe('أقدم')
+    expect(groups[0]?.items.map((entry) => entry.id)).toEqual([1, 4])
+    expect(groups[1]?.items.map((entry) => entry.id)).toEqual([2])
+    expect(groups[2]?.items.map((entry) => entry.id)).toEqual([3])
+  })
+
+  it('collapses an absent group', () => {
+    const groups = groupNotificationsByDay([item({ id: 1, createdAt: NOW.toISOString() })], NOW)
+    expect(groups).toHaveLength(1)
+    expect(groups[0]?.key).toBe('today')
+  })
+
+  it('treats the previous calendar day as yesterday across a month boundary', () => {
+    // At 00:30 in Algeria, a UTC server still considers both instants Sep 30.
+    const now = new Date('2026-10-01T00:30:00+01:00')
+    const yesterday = new Date('2026-09-30T23:50:00+01:00')
+
+    const groups = groupNotificationsByDay([item({ createdAt: yesterday.toISOString() })], now)
+
+    expect(groups.map((group) => group.key)).toEqual(['yesterday'])
+  })
+
+  it('keeps the same Algeria calendar day across the UTC boundary', () => {
+    const now = new Date('2026-10-01T01:30:00+01:00')
+    const earlier = new Date('2026-10-01T00:15:00+01:00')
+
+    expect(
+      groupNotificationsByDay([item({ createdAt: earlier.toISOString() })], now).map(
+        (group) => group.key,
+      ),
+    ).toEqual(['today'])
+  })
+
+  it('returns no groups for no items', () => {
+    expect(groupNotificationsByDay([], NOW)).toEqual([])
+  })
+})

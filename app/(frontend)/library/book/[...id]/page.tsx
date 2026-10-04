@@ -1,15 +1,14 @@
-import Layout from '@/components/layouts'
-import BookBasicInformations from '../../_components/book-details/BookBasicInformations'
-import BookDetailedInformation from '../../_components/book-details/book-detailed-informations/BookDetailedInformations'
-import BookPreview from '../../_components/book-details/BookPreview'
-import BookAvailability from '../../_components/book-details/BookAvailability'
-import { ChevronLeft } from 'lucide-react'
+import Layout from '@/shared/layouts'
+import BookBasicInformations from '@/features/library/components/book-details/BookBasicInformations'
+import BookDetailedInformation from '@/features/library/components/book-details/book-detailed-informations/BookDetailedInformations'
+import BookPreview from '@/features/library/components/book-details/BookPreview'
+import BookAvailability from '@/features/library/components/book-details/BookAvailability'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
-import ReturnToIndex from '@/components/common/ReturnToIndex'
-import { getBookFavoriteState } from '@/actions/profile'
-import BookFavoriteButton from '../../_components/book-details/BookFavoriteButton'
+import ReturnToIndex from '@/shared/common/ReturnToIndex'
+import { getBookFavoriteState } from '@/features/library/server/favorites'
+import { getUserBookLoanState } from '@/features/library/server/borrow-book'
 
 const BookDetailsPage = async ({
   params,
@@ -31,15 +30,32 @@ const BookDetailsPage = async ({
   const book = result.docs[0]
   if (!book) return notFound()
 
-  const { favorited } = await getBookFavoriteState(book.id)
+  const similarBooksResult = await payload.find({
+    collection: 'books',
+    where: {
+      and: [{ type: { in: book.type } }, { id: { not_equals: book.id } }],
+    },
+    limit: 4,
+    sort: '-publishDate',
+  })
 
+  // This route serves visitors, but a signed-in member can land on it too, so
+  // it reads the same state as the member portal instead of pretending they
+  // hold nothing (#153).
+  const [{ favorited }, loanState] = await Promise.all([
+    getBookFavoriteState(book.id),
+    getUserBookLoanState(book.id),
+  ])
+
+  // #164: 16px side margins on phones — the shell's px-6 plus the old px-3
+  // stacked to 36px and squeezed the columns.
   return (
-    <Layout>
-      <div className="space-y-6">
+    <Layout containerClassName="px-4 sm:px-6">
+      <div className="md:px-6 lg:px-8">
         <ReturnToIndex title="فهرس الكتب" value={book.title} href="/library" />
 
-        <div className="flex gap-8">
-          <div className="flex flex-col gap-6 flex-3">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-4 lg:mt-6">
+          <div className="lg:col-span-4 xl:col-span-3 space-y-4 lg:space-y-6">
             <BookPreview
               image={book.image}
               averageRating={book.averageRating}
@@ -47,6 +63,8 @@ const BookDetailsPage = async ({
               isAvailable={book.availableBooks && book.availableBooks > 0 ? true : false}
               bookId={book.id}
               initialFavorited={favorited}
+              bookTitle={book.title}
+              loanState={loanState}
             />
             <BookAvailability
               totalBooks={book.totalBooks}
@@ -55,14 +73,15 @@ const BookDetailsPage = async ({
             />
           </div>
 
-          <div className="flex flex-col gap-6 flex-7">
+          <div className="lg:col-span-8 xl:col-span-9 space-y-4 lg:space-y-6">
             <BookBasicInformations
               title={book.title}
               author={book.author}
               shortDescription={book.shortDescription}
-              tags={book.tags}
+              types={book.type}
+              code={book.code}
             />
-            <BookDetailedInformation book={book} />
+            <BookDetailedInformation book={book} similarBooks={similarBooksResult.docs} />
           </div>
         </div>
       </div>

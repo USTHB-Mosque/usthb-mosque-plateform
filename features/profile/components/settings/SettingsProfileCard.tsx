@@ -1,0 +1,242 @@
+'use client'
+
+import React from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
+import { arDZ } from 'date-fns/locale'
+import { LogOut, Shield, Bell, BookMarked, Trash2, User } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { Media, User as UserType } from '@/payload-types'
+import { getImageUrl } from '@/shared/lib/image-utils'
+import { cn } from '@/shared/lib/utils'
+import { logout } from '@/features/auth'
+import { deleteMyAccount } from '@/features/users/server/delete-account'
+import { toast } from 'sonner'
+
+type SettingsProfileCardProps = {
+  user: UserType
+  activeTab?: SettingsTab
+  hrefBase?: string
+  hideDeleteAccount?: boolean
+  /** Tabs to render; a tab whose page does not exist must not be listed. */
+  availableTabs?: SettingsTab[]
+  avatarActions?: React.ReactNode
+}
+
+/**
+ * #156: `shortcuts` is gone. It linked to a route that has never existed in
+ * either the member or the admin panel, so it was a tab that 404'd — SPEC §7.9
+ * still wants keyboard shortcuts, but shipping a dead link is worse than not
+ * shipping the tab. Admin panels get `loans` (loan configuration) instead,
+ * which does exist.
+ */
+export type SettingsTab = 'info' | 'security' | 'notifications' | 'loans'
+
+function getTabs(hrefBase: string, available: SettingsTab[]) {
+  const all: Array<{ id: SettingsTab; label: string; icon: React.ElementType; href: string }> = [
+    { id: 'info', label: 'المعلومات', icon: User, href: hrefBase },
+    { id: 'security', label: 'الحماية', icon: Shield, href: `${hrefBase}/security` },
+    {
+      id: 'notifications',
+      label: 'الإشعارات',
+      icon: Bell,
+      href: `${hrefBase}/notifications`,
+    },
+    {
+      id: 'loans',
+      label: 'إعدادات الإعارة',
+      icon: BookMarked,
+      href: `${hrefBase}/loans`,
+    },
+  ]
+  return all.filter((tab) => available.includes(tab.id))
+}
+
+const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
+  user,
+  activeTab = 'info',
+  hrefBase = '/user/settings',
+  hideDeleteAccount = false,
+  availableTabs = ['info', 'security', 'notifications'],
+  avatarActions,
+}) => {
+  const router = useRouter()
+  const tabs = getTabs(hrefBase, availableTabs)
+  const profileMedia = user.profilePicture as Media | undefined
+  const avatarUrl = getImageUrl(profileMedia?.url)
+  const displayName = user.fullName || user.email || 'مستخدم'
+  const createdAt = user.createdAt
+    ? format(new Date(user.createdAt), 'dd/MM/yyyy', { locale: arDZ })
+    : 'غير محدد'
+
+  const onLogout = async () => {
+    await logout()
+    toast.success('تم تسجيل الخروج بنجاح')
+    router.push('/auth/login')
+  }
+
+  // Erasure is irreversible after the 30-day window, so the control confirms
+  // before it fires and never pretends to have succeeded.
+  const [isDeleting, setIsDeleting] = React.useState(false)
+  const [confirmingDelete, setConfirmingDelete] = React.useState(false)
+
+  const onDeleteAccount = async () => {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true)
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteMyAccount()
+      if (!result.ok) toast.error(result.error ?? 'تعذّر حذف الحساب')
+      // On success the action redirects, so there is nothing to do here.
+    } catch {
+      toast.error('تعذّر حذف الحساب، حاول مرة أخرى')
+      setIsDeleting(false)
+      setConfirmingDelete(false)
+    }
+  }
+
+  return (
+    <div
+      dir="rtl"
+      className="flex w-full flex-none flex-col overflow-hidden rounded-xl bg-background lg:w-72 lg:border lg:border-solid lg:border-stroke-grey"
+    >
+      {/* Banner */}
+      <div className="relative flex w-full flex-col items-start">
+        <div
+          className="flex h-[120px] w-full items-center justify-center rounded-t-xl"
+          style={{
+            backgroundColor: '#0DE9C333',
+            backgroundImage: 'url(/static/images/book-pattern.png)',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        {/* Avatar */}
+        <div className="absolute bottom-[-56px] left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:start-7">
+          <div className="relative h-[112px] w-[112px] overflow-hidden rounded-[7px] border-4 border-fill-main bg-fill-contrast shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={displayName}
+                fill
+                className="object-cover"
+                sizes="112px"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-primary-main-15">
+                <span className="text-2xl font-bold text-primary-300 font-khalid">
+                  {displayName.charAt(0)}
+                </span>
+              </div>
+            )}
+          </div>
+          {avatarActions && <div className="absolute -bottom-2 -end-3">{avatarActions}</div>}
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-col gap-6 pt-[68px] pb-6">
+        <div className="flex flex-col items-center gap-3 px-6 lg:items-start">
+          <span className="text-center text-2xl font-khalid text-foreground lg:text-start">
+            {displayName}
+          </span>
+          <span className="text-center text-sm font-alyamama text-grey-500 lg:text-start">
+            تاريخ إنشاء الحساب: {createdAt}
+          </span>
+        </div>
+
+        {/* Tabs (mobile) */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            const tab = tabs.find((t) => t.id === value)
+            if (tab) router.push(tab.href)
+          }}
+          className="w-fit self-center lg:hidden"
+        >
+          <TabsList className="w-fit flex-wrap overflow-x-auto rounded-[8px] gap-3 group-data-horizontal/tabs:h-auto group-data-horizontal/tabs:flex-row">
+            {tabs.map((tab) => {
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} className="gap-1 px-2 text-[10px]">
+                  <span>{tab.label}</span>
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+        </Tabs>
+
+        {/* Tabs (desktop) */}
+        <nav className="hidden flex-col gap-1 items-stretch lg:flex" aria-label="أقسام الإعدادات">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                className={cn(
+                  'flex items-center gap-2 py-2 pe-3 ps-3 text-sm font-alyamama transition-colors rounded-[10px] mx-2',
+                  isActive
+                    ? 'bg-primary-main-20 text-primary-300 font-bold'
+                    : 'text-foreground hover:bg-black/5 dark:hover:bg-white/5',
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                <span>{tab.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* Divider */}
+        <div className="mx-6 hidden h-px rounded-[5px] bg-stroke-grey lg:block" />
+
+        {/* Logout */}
+        <div className="hidden flex-col items-stretch lg:flex">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-foreground transition-colors hover:bg-red-500/10 hover:text-destructive rounded-[10px] mx-2"
+          >
+            <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+
+        {/* Delete Account — hidden in the desktop view per #164 */}
+        {!hideDeleteAccount ? (
+          <div className="hidden flex-col items-stretch">
+            <button
+              type="button"
+              onClick={onDeleteAccount}
+              disabled={isDeleting}
+              aria-label="حذف الحساب"
+              className="flex items-center gap-1.5 py-2 pe-3 ps-3 text-sm font-alyamama text-destructive transition-colors hover:bg-destructive/10 rounded-[10px] mx-2 disabled:opacity-60"
+            >
+              <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
+              <span>
+                {isDeleting
+                  ? 'جارٍ الحذف…'
+                  : confirmingDelete
+                    ? 'تأكيد الحذف نهائياً'
+                    : 'حذف الحساب'}
+              </span>
+            </button>
+            {confirmingDelete ? (
+              <p className="mx-2 text-xs text-muted-foreground">
+                سيُعطّل حسابك فوراً وتُحذف وثيقة التحقق، ثم يُحذف الحساب نهائياً بعد 30 يوماً.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+export default SettingsProfileCard

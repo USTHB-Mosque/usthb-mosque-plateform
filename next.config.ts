@@ -2,41 +2,49 @@ import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 import path from 'path'
 
+const publicUrl = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000')
+
 const nextConfig: NextConfig = {
+  // next dev otherwise appends a generated agent-rules block to AGENTS.md on
+  // every start; AGENTS.md is hand-maintained project guidance.
+  agentRules: false,
+  // Emits .next/standalone for the Docker image — but not on Vercel: Vercel's
+  // build-output handler expects the non-standalone file-tracing manifests
+  // (.next/next-server.js.nft.json) and fails with ENOENT when standalone
+  // output changes their location. VERCEL is set in every Vercel build.
+  output: process.env.VERCEL ? undefined : 'standalone',
   sassOptions: {
     includePaths: [path.resolve('node_modules'), path.resolve('node_modules/.pnpm')],
     silenceDeprecations: ['import'],
   },
-  webpack: (config) => {
-    config.resolve.fallback = { ...config.resolve.fallback, fs: false }
-
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      vars: path.resolve('node_modules/@payloadcms/ui/dist/scss/_vars.scss'),
-    }
-
-    return config
-  },
-
-  generateBuildId: async () => {
-    return `build-${Date.now()}`
-  },
   images: {
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'usthb-mosque-plateform.vercel.app',
-        pathname: '/**',
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/api/media/file/**',
       },
       {
-        protocol: 'https',
-        hostname: '*.public.blob.vercel-storage.com',
-        pathname: '/**',
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '3000',
+        pathname: '/api/media/file/**',
       },
+      {
+        protocol: publicUrl.protocol.slice(0, -1) as 'http' | 'https',
+        hostname: publicUrl.hostname,
+        port: publicUrl.port,
+        pathname: '/api/media/file/**',
+      },
+      // No direct storage bucket patterns here on purpose: media is always
+      // served through /api/media/file/** so collection access control applies.
     ],
   },
   headers: async () => {
-    const isProduction = process.env.NODE_ENV === 'production'
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
     return [
       {
@@ -45,9 +53,7 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           {
             key: 'Access-Control-Allow-Origin',
-            value: isProduction
-              ? 'https://usthb-mosque-plateform.vercel.app'
-              : 'http://localhost:3000',
+            value: isDevelopment ? 'http://localhost:3000' : serverUrl,
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -56,9 +62,9 @@ const nextConfig: NextConfig = {
           {
             key: 'Access-Control-Allow-Headers',
             value:
-              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-apollo-operation-name',
+              'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
           },
-          ...(isProduction
+          ...(!isDevelopment
             ? [
                 { key: 'X-Content-Type-Options', value: 'nosniff' },
                 { key: 'X-Frame-Options', value: 'DENY' },
@@ -67,14 +73,57 @@ const nextConfig: NextConfig = {
                   key: 'Referrer-Policy',
                   value: 'strict-origin-when-cross-origin',
                 },
+                {
+                  key: 'Permissions-Policy',
+                  value: 'camera=(), microphone=(), geolocation=()',
+                },
               ]
             : []),
         ],
       },
+      ...(!isDevelopment
+        ? [
+            {
+              source: '/(.*)',
+              headers: [
+                {
+                  key: 'Content-Security-Policy',
+                  value: [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                    "style-src 'self' 'unsafe-inline'",
+                    "img-src 'self' data: blob:",
+                    "font-src 'self' data:",
+                    "connect-src 'self'",
+                    "frame-ancestors 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "object-src 'none'",
+                  ].join('; '),
+                },
+              ],
+            },
+          ]
+        : []),
     ]
   },
 
-  serverExternalPackages: ['payload', '@payloadcms/db-vercel-postgres'],
+  serverExternalPackages: ['payload', '@payloadcms/db-postgres'],
+
+  async rewrites() {
+    return [
+      // Rewrites do not chain: an exact /user rewrite must come first and point
+      // at a real route (there is no /member-portal index page).
+      {
+        source: '/user',
+        destination: '/member-portal/dashboard',
+      },
+      {
+        source: '/user/:path*',
+        destination: '/member-portal/:path*',
+      },
+    ]
+  },
 }
 
 export default withPayload(nextConfig)

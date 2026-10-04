@@ -1,0 +1,88 @@
+import { formatArabicDate } from '@/shared/lib/dates'
+import { escapeHtml } from '@/shared/lib/email'
+
+type Pickup = {
+  bookTitle: string
+  pickupCode: string
+  pickupDate: string
+  pickupHour: string
+}
+type Due = { bookTitle: string; dueDate: string }
+
+/** Each variant names the real lifecycle data that must reach the email. */
+export type LoanEmail =
+  | ({ kind: 'reservation-available' | 'pickup-reminder' } & Pickup)
+  | ({ kind: 'loan-due-soon' | 'loan-overdue' } & Due)
+  | { kind: 'extension-approved'; bookTitle: string; newDueDate: string; response?: string | null }
+  | { kind: 'extension-rejected'; bookTitle: string; reason?: string | null }
+  | { kind: 'no-show-warning'; bookTitle: string; pickupDate: string; reason?: string | null }
+  | { kind: 'verification-approved' }
+  | { kind: 'verification-rejected'; reason?: string | null }
+
+/**
+ * Where the call to action sends the member. A verification email has nothing to
+ * do with a loan, so pointing it at the loans page was a dead end (#145): the
+ * decision itself is what the member has to act on.
+ */
+const CALL_TO_ACTION: Record<LoanEmail['kind'], { href: string; label: string }> = {
+  'reservation-available': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'pickup-reminder': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'loan-due-soon': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'loan-overdue': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'extension-approved': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'extension-rejected': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'no-show-warning': { href: '/user/my-loans', label: 'عرض إعاراتي' },
+  'verification-approved': { href: '/user/library', label: 'تصفّح المكتبة' },
+  'verification-rejected': { href: '/user/settings', label: 'إعدادات حسابي' },
+}
+
+export function renderLoanEmail(template: LoanEmail): { subject: string; html: string } {
+  // Verification emails carry no book; the book title only exists on the
+  // lifecycle variants.
+  const book = 'bookTitle' in template ? escapeHtml(template.bookTitle) : ''
+  let subject: string
+  let body: string
+  switch (template.kind) {
+    case 'reservation-available':
+      subject = 'كتابك جاهز للاستلام'
+      body = `<p>أصبح «${book}» متاحاً لاستلامك من مكتبة المسجد.</p><p>رمز الاستلام: <strong>${escapeHtml(template.pickupCode)}</strong></p><p>موعد الاستلام: ${formatArabicDate(template.pickupDate)} الساعة ${escapeHtml(template.pickupHour)}.</p>`
+      break
+    case 'loan-due-soon':
+      subject = 'تذكير بموعد إرجاع الكتاب'
+      body = `<p>يرجى إرجاع «${book}» قبل الموعد المحدد: ${formatArabicDate(template.dueDate)}.</p>`
+      break
+    case 'loan-overdue':
+      subject = 'إعارة متأخرة'
+      body = `<p>تأخر إرجاع «${book}» عن موعد ${formatArabicDate(template.dueDate)}. يرجى إرجاعه في أقرب وقت.</p><p>تتوقف إمكانية طلب إعارات جديدة حتى تتم تسوية الإعارة المتأخرة.</p>`
+      break
+    case 'extension-approved':
+      subject = 'تمت الموافقة على التمديد'
+      body = `<p>تم تمديد إعارة «${book}». الموعد الجديد: ${formatArabicDate(template.newDueDate)}.</p>${template.response ? `<p>ملاحظة الإدارة: ${escapeHtml(template.response)}</p>` : ''}`
+      break
+    case 'extension-rejected':
+      subject = 'تم رفض طلب التمديد'
+      body = `<p>تعذر تمديد إعارة «${book}».</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}`
+      break
+    case 'pickup-reminder':
+      subject = 'تذكير باستلام الكتاب'
+      body = `<p>يرجى استلام «${book}» قبل انتهاء فترة الاستلام.</p><p>رمز الاستلام: <strong>${escapeHtml(template.pickupCode)}</strong></p><p>الموعد: ${formatArabicDate(template.pickupDate)} الساعة ${escapeHtml(template.pickupHour)}.</p>`
+      break
+    case 'no-show-warning':
+      subject = 'انتهت مهلة استلام الكتاب'
+      body = `<p>انتهت مهلة استلام «${book}» بتاريخ ${formatArabicDate(template.pickupDate)}. قد تُلغى الإعارة.</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}`
+      break
+    case 'verification-approved':
+      subject = 'تم توثيق الحساب'
+      body = `<p>تم قبول وثيقة التحقق وتوثيق حسابك. يمكنك الآن طلب استعارة الكتب من مكتبة المسجد.</p>`
+      break
+    case 'verification-rejected':
+      subject = 'لم يتم توثيق الحساب'
+      body = `<p>تعذر توثيق حسابك بعد مراجعة الوثيقة المرفقة.</p>${template.reason ? `<p>السبب: ${escapeHtml(template.reason)}</p>` : ''}<p>يمكنك إعادة رفع وثيقة جديدة من إعدادات حسابك.</p>`
+      break
+  }
+  const cta = CALL_TO_ACTION[template.kind]
+  return {
+    subject,
+    html: `<div dir="rtl" style="font-family:sans-serif;text-align:right"><h2>${subject}</h2>${body}<p><a href="${cta.href}">${cta.label}</a></p><p>مسجد الجامعة USTHB</p></div>`,
+  }
+}

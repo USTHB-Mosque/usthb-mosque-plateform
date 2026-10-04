@@ -2,11 +2,12 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { fakerAR as faker } from '@faker-js/faker'
 
+import { LOAN_STATUSES } from '@/utils/constants/loans'
+
 export const createLoan = async (bookIds: number[], userIds: number[]) => {
   const payload = await getPayload({ config })
 
-  const statuses = ['pending', 'approved', 'returned', 'overdue'] as const
-  const status = faker.helpers.arrayElement(statuses)
+  const status = faker.helpers.arrayElement(LOAN_STATUSES)
 
   const loanDate = faker.date.past({ years: 1 })
   const dueDate = faker.date.future({ refDate: loanDate })
@@ -20,8 +21,20 @@ export const createLoan = async (bookIds: number[], userIds: number[]) => {
       user: faker.helpers.arrayElement(userIds),
       status,
       loanDate: new Date(loanDate).toISOString().split('T')[0],
-      dueDate: new Date(dueDate).toISOString().split('T')[0],
-      returnDate: returnDate ? new Date(returnDate).toISOString().split('T')[0] : null,
+      // Accepted and picked-up loans hold a reserved copy and carry a pickup
+      // code; picked-up loans additionally carry a (sometimes past) due date.
+      ...(status === 'accepted' || status === 'picked_up'
+        ? {
+            pickupCode: `${faker.number.int({ min: 1, max: 9 })}/${faker.string.alphanumeric(3)}/${String(loanDate.getFullYear()).slice(-2)}`,
+            pickupDate: new Date(loanDate).toISOString().split('T')[0],
+            pickupHour: `${String(faker.number.int({ min: 9, max: 16 })).padStart(2, '0')}:00`,
+            ...(status === 'picked_up'
+              ? { dueDate: new Date(dueDate).toISOString().split('T')[0] }
+              : {}),
+          }
+        : {}),
+      ...(status === 'refused' ? { refusalReason: faker.lorem.sentence() } : {}),
+      ...(returnDate ? { returnDate: new Date(returnDate).toISOString().split('T')[0] } : {}),
     },
   })
 

@@ -1,5 +1,8 @@
 import { articleTypesConfigArray } from '@/utils/constants/articles'
+import { ratingAggregateFields } from '@/utils/constants/reviews'
+import { adminWriteAccess } from '@/utils/access-helpers'
 import { CollectionConfig } from 'payload'
+import { notifyMembers } from '@/features/notifications/server/audiences'
 
 export const Article: CollectionConfig = {
   slug: 'articles',
@@ -7,8 +10,25 @@ export const Article: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', 'publishDate'],
   },
- access: {
+  access: {
     read: () => true,
+    ...adminWriteAccess(),
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await notifyMembers(req, {
+            type: 'article',
+            title: 'مقال جديد',
+            message: `نُشر المقال «${doc.title}».`,
+            link: `/user/articles/${doc.id}`,
+            eventKey: `bulk:article:${doc.id}`,
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {
@@ -65,5 +85,8 @@ export const Article: CollectionConfig = {
       name: 'content',
       type: 'richText',
     },
+    // Derived from the `reviews` rows targeting this article (#25), the same
+    // pair `books` carries.
+    ...ratingAggregateFields(),
   ],
 }

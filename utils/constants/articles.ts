@@ -1,4 +1,11 @@
-import { ArticleType } from '@/interfaces/articles.interfaces'
+// ArticleType is shared by this config (collections/Article.ts field options)
+// and the frontend articles feature (features/articles/types.ts).
+export enum ArticleType {
+  Aqidah = 'aqidah',
+  Fiqh = 'fiqh',
+  Hadith = 'hadith',
+  Other = 'other',
+}
 
 const articleTypesConfig: Record<string, string> = {
   [ArticleType.Aqidah]: 'عقيدة',

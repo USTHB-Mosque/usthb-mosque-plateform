@@ -1,7 +1,9 @@
 import { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
-
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
+import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 export const BookFavorite: CollectionConfig = {
   slug: 'book-favorites',
@@ -15,7 +17,7 @@ export const BookFavorite: CollectionConfig = {
       if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => Boolean(user?.collection === 'users'),
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
       if (isAdmin(user)) return true
@@ -44,11 +46,18 @@ export const BookFavorite: CollectionConfig = {
     },
   ],
   hooks: {
+    afterChange: [
+      // The favorite row is deletable by design; the record that the member
+      // once added the book is not (#178).
+      memberEventOnCreate(MemberEventAction.BookFavorited, (doc) => ({
+        type: 'book',
+        id: resolveRelationId(doc.book),
+      })),
+    ],
     beforeValidate: [
       async ({ data, req, operation }) => {
         if (operation !== 'create' || !data?.book) return
-        const userId =
-          data.user ?? (req.user?.collection === 'users' ? req.user.id : undefined)
+        const userId = data.user ?? req.user?.id
         if (!userId) return
         const dup = await req.payload.find({
           collection: 'book-favorites',
@@ -57,7 +66,11 @@ export const BookFavorite: CollectionConfig = {
           },
           limit: 1,
           req,
-          overrideAccess: true,
+          // The row is always the creator's own (`beforeChange` below stamps
+          // `req.user.id`), and that is exactly the row scoping the read
+          // access applies here — so the duplicate check runs under the same
+          // access rules as every other read (#152).
+          overrideAccess: false,
         })
         if (dup.totalDocs > 0) {
           throw new APIError('هذا الكتاب موجود بالفعل في المفضلة', 400)
@@ -66,7 +79,7 @@ export const BookFavorite: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, operation, req }) => {
-        if (operation === 'create' && req.user?.collection === 'users') {
+        if (operation === 'create' && req.user) {
           data.user = req.user.id
         }
       },

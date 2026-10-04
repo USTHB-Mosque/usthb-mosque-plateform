@@ -1,6 +1,10 @@
 import { CollectionConfig } from 'payload'
-
-const isAdmin = (user: { collection?: string } | null | undefined) => user?.collection === 'admins'
+import { isAdmin } from '@/utils/access-helpers'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { createNotification } from '@/features/notifications/server/create-notification'
+import { activityEndTime } from '@/utils/constants/activities'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
 export const ActivityRegistrations: CollectionConfig = {
   slug: 'activity-registrations',
@@ -14,17 +18,213 @@ export const ActivityRegistrations: CollectionConfig = {
       if (isAdmin(user)) return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => Boolean(user?.collection === 'users'),
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      if (isAdmin(user)) return true
-      return { user: { equals: user.id } }
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      if (isAdmin(user)) return true
-      return { user: { equals: user.id } }
-    },
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => isAdmin(user),
+    // Member cancellation is a guarded status transition, not an unrestricted delete.
+    delete: ({ req: { user } }) => isAdmin(user),
+  },
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation, originalDoc, context }) => {
+        if (operation === 'create' && req.user && !isAdmin(req.user)) {
+          data.user = req.user.id
+          data.status = 'pending'
+          data.attended = false
+          data.refusalReason = null
+          const activityId = resolveRelationId(data.activity)
+          const activity = await req.payload.findByID({
+            collection: 'activities',
+            id: activityId,
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          if (
+            !activity.openForRegistration ||
+            (activity.registrationDeadline &&
+              new Date(activity.registrationDeadline) < new Date()) ||
+            (activity.kind !== 'ongoing' && new Date(activity.startDate) <= new Date()) ||
+            activityEndTime(activity) <= Date.now()
+          ) {
+            throw new Error('التسجيل مغلق لهذا النشاط')
+          }
+          const previous = await req.payload.count({
+            collection: 'activity-registrations',
+            where: {
+              and: [{ user: { equals: req.user.id } }, { activity: { equals: activityId } }],
+            },
+            req,
+            overrideAccess: true,
+          })
+          if (previous.totalDocs) throw new Error('لديك بالفعل تسجيل في هذا النشاط')
+          const max = activity.maxParticipants
+          const current = activity.currentParticipants ?? 0
+          if (max != null && current >= max) {
+            data.status = 'quota_rejected'
+          }
+        }
+        // Transition guards fire only when an actor is attached: admins may
+        // decide pending rows (reason mandatory for refusals) and members may
+        // retry a quota rejection, while seed/administrative writes with no
+        // user pass through untouched.
+        if (
+          operation === 'update' &&
+          req.user &&
+          data.status &&
+          data.status !== originalDoc?.status
+        ) {
+          if (
+            ['quota_rejected', 'cancelled'].includes(originalDoc?.status ?? '') &&
+            data.status === 'pending' &&
+            context?.retryQuota
+          ) {
+            const activity = await req.payload.findByID({
+              collection: 'activities',
+              id: resolveRelationId(originalDoc.activity),
+              req,
+              overrideAccess: true,
+              depth: 0,
+            })
+            if (
+              originalDoc.user !== req.user.id ||
+              !activity.openForRegistration ||
+              (activity.registrationDeadline &&
+                new Date(activity.registrationDeadline) < new Date()) ||
+              (activity.kind !== 'ongoing' && new Date(activity.startDate) <= new Date()) ||
+              activityEndTime(activity) <= Date.now() ||
+              (activity.maxParticipants &&
+                (activity.currentParticipants ?? 0) >= activity.maxParticipants)
+            ) {
+              throw new Error('لا يمكن إعادة التسجيل')
+            }
+            return data
+          }
+          if (
+            context?.cancelRegistration &&
+            ['pending', 'accepted'].includes(originalDoc?.status ?? '') &&
+            data.status === 'cancelled' &&
+            resolveRelationId(originalDoc.user) === req.user.id
+          ) {
+            const activity = await req.payload.findByID({
+              collection: 'activities',
+              id: resolveRelationId(originalDoc.activity),
+              req,
+              overrideAccess: true,
+              depth: 0,
+            })
+            if (new Date(activity.startDate).getTime() <= Date.now())
+              throw new Error('بدأ النشاط، لا يمكن إلغاء التسجيل')
+            return data
+          }
+          if (
+            context?.completeActivity &&
+            data.status === 'completed' &&
+            ['pending', 'accepted'].includes(originalDoc?.status ?? '')
+          )
+            return data
+          if (originalDoc?.status !== 'pending' || !['accepted', 'refused'].includes(data.status)) {
+            throw new Error('لا يمكن تغيير قرار التسجيل')
+          }
+          if (data.status === 'refused' && !String(data.refusalReason ?? '').trim()) {
+            throw new Error('سبب الرفض مطلوب')
+          }
+          if (data.status === 'refused') data.refusalReason = String(data.refusalReason).trim()
+        }
+        return data
+      },
+    ],
+    afterChange: [
+      // Written whatever the row's starting status — including the quota
+      // rejection — because the record that the member signed up is the
+      // member's own action, not an outcome (#178).
+      memberEventOnCreate(MemberEventAction.RegistrationCreated, (doc) => ({
+        type: 'activity',
+        id: resolveRelationId(doc.activity),
+      })),
+      async ({ doc, previousDoc, operation, req }) => {
+        const activityId = resolveRelationId(doc.activity)
+        const counterChanged =
+          (operation === 'create' && doc.status === 'pending') ||
+          (operation === 'update' &&
+            ((previousDoc?.status === 'pending' && doc.status === 'refused') ||
+              (['pending', 'accepted'].includes(previousDoc?.status ?? '') &&
+                doc.status === 'cancelled') ||
+              (previousDoc?.status === 'quota_rejected' && doc.status === 'pending')))
+        const resolved =
+          (operation === 'create' && doc.status === 'quota_rejected') ||
+          (operation === 'update' &&
+            doc.status !== previousDoc?.status &&
+            (doc.status === 'accepted' || doc.status === 'refused'))
+        if (!counterChanged && !resolved) return doc
+
+        // One read serves both the counter write-back and the notice.
+        const activity = await req.payload.findByID({
+          collection: 'activities',
+          id: activityId,
+          req,
+          overrideAccess: true,
+          depth: 0,
+        })
+        if (counterChanged) {
+          await req.payload.update({
+            collection: 'activities',
+            id: activityId,
+            data: {
+              currentParticipants: Math.max(
+                0,
+                (activity.currentParticipants ?? 0) + (doc.status === 'pending' ? 1 : -1),
+              ),
+            },
+            req,
+            overrideAccess: true,
+          })
+        }
+        if (resolved) {
+          const accepted = doc.status === 'accepted'
+          const quota = doc.status === 'quota_rejected'
+          await createNotification({
+            req,
+            user: resolveRelationId(doc.user),
+            type: 'activity',
+            title: accepted
+              ? 'تم قبول التسجيل في النشاط'
+              : quota
+                ? 'اكتمل عدد المشاركين'
+                : 'تم رفض التسجيل في النشاط',
+            message: accepted
+              ? `تم قبول تسجيلك في «${activity.title}».`
+              : quota
+                ? `اكتمل عدد المشاركين في «${activity.title}».`
+                : `تم رفض تسجيلك في «${activity.title}». السبب: ${doc.refusalReason}.`,
+            link: '/user/my-registrations',
+            email: !quota,
+          })
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req }) => {
+        if (doc.status === 'pending' || doc.status === 'accepted') {
+          const activityId = resolveRelationId(doc.activity)
+          const activity = await req.payload.findByID({
+            collection: 'activities',
+            id: activityId,
+            req,
+            overrideAccess: true,
+            depth: 0,
+          })
+          await req.payload.update({
+            collection: 'activities',
+            id: activityId,
+            data: { currentParticipants: Math.max(0, (activity.currentParticipants ?? 0) - 1) },
+            req,
+            overrideAccess: true,
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {
@@ -49,5 +249,20 @@ export const ActivityRegistrations: CollectionConfig = {
       defaultValue: false,
       label: 'تم الحضور',
     },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'pending',
+      index: true,
+      options: [
+        { label: 'قيد المراجعة', value: 'pending' },
+        { label: 'مقبول', value: 'accepted' },
+        { label: 'مرفوض', value: 'refused' },
+        { label: 'اكتمل العدد', value: 'quota_rejected' },
+        { label: 'ملغى', value: 'cancelled' },
+        { label: 'مكتمل', value: 'completed' },
+      ],
+    },
+    { name: 'refusalReason', type: 'text' },
   ],
 }

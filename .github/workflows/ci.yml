@@ -1,0 +1,203 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          corepack: true
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm format:check
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      # Fast, database-free projects only; the integration project runs in its
+      # own job against the postgres service below.
+      - run: pnpm test --project rtl --project unit
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+      PAYLOAD_SECRET: ci-test-secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      S3_ENDPOINT: http://127.0.0.1:9000
+      S3_REGION: local
+      S3_ACCESS_KEY_ID: mosque
+      S3_SECRET_ACCESS_KEY: mosque-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          corepack: true
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Start object storage for S3 integration tests
+        uses: ./.github/actions/start-rustfs
+
+      - run: pnpm test:coverage
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  e2e:
+    runs-on: ubuntu-latest
+    # Drop the database + migrate + production build + the suite itself; the
+    # default 6h is far more than this needs.
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # The suite derives the dedicated `mosque_e2e` database from this URL and
+      # drops/recreates it on every canonical run, so only the host and the
+      # credentials matter — never point this at a database with real data.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      PAYLOAD_SECRET: ci-e2e-secret
+      # Object storage for the dedicated `media-e2e` bucket (S3_* selects the
+      # S3 adapter; the seed creates the bucket itself). No BLOB token is set on
+      # purpose: storage.ts prefers Blob on any Vercel deployment, and a stray
+      # token would silently take the suite off the S3 path.
+      S3_ENDPOINT: http://127.0.0.1:9000
+      S3_REGION: local
+      S3_ACCESS_KEY_ID: mosque
+      S3_SECRET_ACCESS_KEY: mosque-secret
+      # Visual baselines are pixel snapshots taken on a specific machine — font
+      # rasterisation and the runner's installed fonts move the pixels, so a
+      # GitHub-hosted runner cannot be held to them. The behavioural projects
+      # are the CI gate; the visual pass stays local (AGENTS.md, E2E section).
+      E2E_SKIP_VISUAL: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          corepack: true
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Start object storage for the media-e2e bucket
+        uses: ./.github/actions/start-rustfs
+        with:
+          name: mosque-e2e-rustfs
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # pnpm-lock.yaml pins @playwright/test, so a browser bump misses here.
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+          # Any other lockfile edit must not throw away ~500 MB of browsers;
+          # `install --with-deps` below repairs whatever the older cache holds.
+          restore-keys: ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers
+        # `--with-deps` installs the OS libraries the browsers need. A cache
+        # hit makes the download itself a no-op, so this one step covers both
+        # cases instead of branching on the cache key.
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Run the canonical e2e suite
+        id: e2e
+        # Non-blocking while the suite proves itself on the runner: the step
+        # keeps its failure outcome (so the next step can warn about it) but
+        # does not fail the job. Delete this one line to promote the job to a
+        # required gate once a full run is green here.
+        continue-on-error: true
+        # Canonical mode by default: drop + migrate `mosque_e2e`, production
+        # build, `next start`. The mock Google IdP and the Mailpit container
+        # (mail lands locally, never on real SMTP) are started by the config's
+        # webServer entries.
+        run: pnpm test:e2e
+
+      - name: Report the failure as a warning
+        if: steps.e2e.outcome == 'failure'
+        run: |
+          echo "::warning title=e2e (non-blocking)::The canonical e2e suite failed on this runner.%0AThe playwright-report artifact carries the HTML report and the traces.%0AFix the suite, then delete 'continue-on-error: true' from the step above to make this job a gate."
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  migration-guard:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if collections changed without a migration
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          schema_changed=$(git diff --name-only "$BASE...HEAD" -- collections/ globals/ | wc -l)
+          migrations_changed=$(git diff --name-only "$BASE...HEAD" -- migrations/ | wc -l)
+          if [ "$schema_changed" -gt 0 ] && [ "$migrations_changed" -eq 0 ]; then
+            echo "::error::A PR that changes collections/ or globals/ must add a migration under migrations/. Run 'pnpm payload:migrate-create <name>' and commit the result."
+            exit 1
+          fi

@@ -1,0 +1,34 @@
+import React from 'react'
+import { ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '../ui/button'
+
+interface ReturnToIndexProps {
+  href?: string
+  title: string
+  value: string
+}
+
+const ReturnToIndex: React.FC<ReturnToIndexProps> = ({ title, value, href }) => {
+  return (
+    // #164: phones swipe back — the breadcrumb shows from md up only.
+    <div className="hidden flex-wrap items-center gap-2 sm:gap-3 md:flex">
+      {href ? (
+        <Link href={href}>
+          <span className="text-lg hover:underline sm:text-2xl">{title}</span>
+        </Link>
+      ) : (
+        <span className="text-lg sm:text-2xl">{title}</span>
+      )}
+
+      <ChevronLeft className="h-4 w-4 shrink-0" />
+      {/* primary-400 passes the 3:1 large-text contrast rule; the brand's
+          lightest teal does not. */}
+      <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary-400 sm:text-2xl">
+        {value}
+      </span>
+    </div>
+  )
+}
+
+export default ReturnToIndex

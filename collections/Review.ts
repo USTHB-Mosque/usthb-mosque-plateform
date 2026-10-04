@@ -1,22 +1,85 @@
 import { CollectionConfig } from 'payload'
+import { isAdmin } from '@/utils/access-helpers'
+import { SKIP_REVIEW_AGGREGATE } from '@/utils/constants/reviews'
+import { maintainReviewAggregates } from '@/shared/lib/review-aggregate'
+import { notifyAdmins } from '@/features/notifications/server/audiences'
+import { resolveRelationId } from '@/shared/lib/relations'
+import { MemberEventAction } from '@/collections/MemberEvent'
+import { memberEventOnCreate } from '@/features/profile/server/member-events'
 
+/**
+ * One review model covering books and articles (#103): a row targets exactly
+ * one of the two, enforced in `beforeValidate` because Payload cannot express
+ * a peer-to-peer relationship.
+ */
 export const Review: CollectionConfig = {
   slug: 'reviews',
   access: {
     read: () => true,
-    create: () => true,
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (isAdmin(req.user)) return true
       return false
     },
     delete: ({ req }) => {
-      if (req.user?.collection === 'admins') return true
+      if (isAdmin(req.user)) return true
       return false
     },
   },
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        if (!data) return data
+        const hasBook = data.book != null
+        const hasArticle = data.article != null
+        if (hasBook === hasArticle) {
+          throw new Error('يجب أن يستهدف التقييم كتاباً أو مقالاً واحداً بالضبط')
+        }
+        return data
+      },
+    ],
+    // The target's `ratingCount` / `averageRating` are derived from these rows
+    // and were never written by anything (#25). A review is the only thing that
+    // can change them, so create, update and delete all recompute — written
+    // against the target, so an article review maintains the article the same
+    // way a book review maintains the book (#103).
+    afterChange: [
+      // A review targets exactly one side of the pair (enforced in
+      // `beforeValidate`), so the event carries whichever content was rated —
+      // admins may delete the review row, and the member's record stays (#178).
+      memberEventOnCreate(MemberEventAction.ReviewCreated, (doc) =>
+        doc.book
+          ? { type: 'book', id: resolveRelationId(doc.book) }
+          : { type: 'article', id: resolveRelationId(doc.article) },
+      ),
+      async ({ doc, previousDoc, operation, req, context }) => {
+        if (!context?.[SKIP_REVIEW_AGGREGATE]) {
+          await maintainReviewAggregates(req, { doc, previousDoc })
+        }
+        // A fresh review is actionable for admins (#154).
+        if (operation === 'create') {
+          await notifyAdmins(req, 'newReviews', {
+            type: 'system',
+            title: 'تقييم جديد',
+            message: 'تمت إضافة تقييم جديد.',
+            link: '/admin-panel/reviews',
+          })
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req, context }) => {
+        if (context?.[SKIP_REVIEW_AGGREGATE]) return doc
+        await maintainReviewAggregates(req, { doc })
+        return doc
+      },
+    ],
+  },
   fields: [
     { name: 'user', type: 'relationship', relationTo: 'users', required: true },
-    { name: 'book', type: 'relationship', relationTo: 'books', required: true },
+    { name: 'book', type: 'relationship', relationTo: 'books' },
+    { name: 'article', type: 'relationship', relationTo: 'articles' },
     { name: 'rating', type: 'number', min: 1, max: 5, required: true },
     { name: 'comment', type: 'textarea' },
   ],
